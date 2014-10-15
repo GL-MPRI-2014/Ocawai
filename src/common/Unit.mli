@@ -10,7 +10,7 @@ type public =
   | Recon
   | Tank
 
-type movement = Walk | Swim | Fly | Amphibie
+type movement = Walk | Swim | Fly | Amphibious
 
 (* Returns the texture associated to the given unit *)
 (* val texture_name : t -> string *)
