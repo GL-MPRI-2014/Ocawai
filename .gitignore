@@ -44,6 +44,7 @@ Temporary Items
 
 ### Linux ###
 *~
+*.sw?
 
 # KDE directory preferences
 .directory
