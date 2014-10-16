@@ -1,5 +1,7 @@
 type t
 
+exception Unknown_texture of string
+
 val create : unit -> t
 
 (* Recursively load the textures of a directory and its sub-directories *)
