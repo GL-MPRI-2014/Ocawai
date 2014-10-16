@@ -9,3 +9,5 @@ val get_producible : t -> Unit.t list
 
 (* Income of a given building *)
 val get_income : t -> Resource.t
+
+val get_position : t -> Position.t
