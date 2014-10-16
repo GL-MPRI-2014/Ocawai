@@ -5,4 +5,8 @@ type t
 
 (* Group operator *)
 val add_ressource : t -> t -> t
-val zero_ressource : unit -> t
+
+val create : int -> t
+
+val value : t -> int
+
