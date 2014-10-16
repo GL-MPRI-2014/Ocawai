@@ -3,7 +3,7 @@
 type t
 
 (** texture_name tile returns the name of the texture associated to tile *)
-val tile_name : t -> string
+val get_name : t -> string
 
 (** Those three functions check if a tile is traversable by a given type of
   * unit. *)
