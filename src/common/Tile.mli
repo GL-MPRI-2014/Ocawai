@@ -12,3 +12,6 @@ val walkable : t -> bool
 val navigable : t -> bool
 
 val flyable : t -> bool
+
+(** Create a tile from the XML file  *)
+val create_from_file : string -> string -> t
