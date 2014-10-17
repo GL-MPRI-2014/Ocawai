@@ -36,6 +36,9 @@ val square : t -> t -> t list
   * of center c and radius r *)
 val circle : t -> int -> t list
 
+(** Same as circle, but returns the ball *)
+val filled_circle : t -> int -> t list
+
 (** neighbours l returns the list containing the neighbours of the positions
   * of l, without duplicates *)
 val neighbours : t list -> t list

@@ -28,15 +28,19 @@ let square (a,b) (a',b') =
   in sq_aux (a,b)
 
 let circle c r = 
-  let l = ref [] in 
-  for i = 1 to r do 
-    for x = -i + 1 to i - 1 do
-      l := (x, i - (abs x)) :: (x, (abs x) - i) :: !l
+  if r = 0 then [c] 
+  else begin
+    let l = ref [] in 
+    for x = -r + 1 to r - 1 do
+      l := (x, r - (abs x)) :: (x, (abs x) - r) :: !l
     done;
-    l := (-i, 0) :: (i, 0) :: !l
-  done;
-  l := (0,0) :: !l;
-  List.map (fun p -> add p c) !l
+    l := (-r, 0) :: (r, 0) :: !l;
+    List.map (fun p -> add p c) !l
+  end
+
+let rec filled_circle c = function
+  | 0 -> [c]  
+  | r -> (circle c r) @ (filled_circle c (r-1))
 
 let neighbours l = 
   (* add an element to a list without duplication *)
