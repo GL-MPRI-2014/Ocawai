@@ -42,3 +42,6 @@ val filled_circle : t -> int -> t list
 (** neighbours l returns the list containing the neighbours of the positions
   * of l, without duplicates *)
 val neighbours : t list -> t list
+
+(** project p c i returns the couple corresponding to (p - c) * i *)
+val project : t -> t -> int -> (int * int)
