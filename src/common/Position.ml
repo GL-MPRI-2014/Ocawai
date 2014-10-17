@@ -66,3 +66,6 @@ let neighbours l =
   in 
   List.filter (fun e -> not (is_in e l)) (neigh_aux l)
       
+let project p c i = 
+  let (a,b) = diff p c in
+  (a * i, b * i)
