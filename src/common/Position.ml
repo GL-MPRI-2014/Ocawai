@@ -46,8 +46,8 @@ let neighbours l =
   (* add an element to a list without duplication *)
   let rec add_elt elt = function
     |[] -> [elt]
-    |t::q when t = elt -> l 
-    |t::q when t > elt -> elt::l
+    |t::q when t = elt -> t::q 
+    |t::q when t > elt -> elt::t::q
     |t::q -> t::(add_elt elt q)
   in 
   (* check if an element is in a list *)
