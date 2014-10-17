@@ -3,8 +3,11 @@ open OcsfmlGraphics
 let () = begin
   (* Main window *)
   let window = new render_window
-    (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ())
+    (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
+    (* (OcsfmlWindow.VideoMode.get_desktop_mode ()) *)
+    (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
     "Flower Wars"
+    ~style: [OcsfmlWindow.Window.Fullscreen]
   in
 
   (* Basic event manipulation *)
@@ -12,8 +15,23 @@ let () = begin
     match window#poll_event with
     | Some e -> OcsfmlWindow.Event.(
       begin match e with
-        | Closed -> window#close
-        |  _     -> ()
+        | Closed
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
+        | KeyPressed { code = OcsfmlWindow.KeyCode.C ; control = true ; _ } ->
+          window#close
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
+            window#create
+              (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
+              "Flower Wars"
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.F ; _ } ->
+            window#create
+              ~style: [OcsfmlWindow.Window.Fullscreen]
+              (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
+              "Flower Wars"
+              
+        | _ -> ()
       end);
       event_loop ()
     | None  -> ()
