@@ -16,3 +16,6 @@ let tile_iter f map =
 
 let tile_iteri f map =
   Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create x y))) map
+
+let dummy_map () =
+  make_matrix 10 10 (Tile.create_from_file "water.png" "")
