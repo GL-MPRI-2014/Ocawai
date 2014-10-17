@@ -18,4 +18,14 @@ let tile_iteri f map =
   Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) map
 
 let dummy_map () =
-  Array.make_matrix 10 10 (Tile.create_from_file "water.png" "")
+  let m = Array.make_matrix 10 10 (Tile.create_from_file "water" "") in
+  m.(4).(4) <- Tile.create_from_file "forest" "";
+  m.(5).(4) <- Tile.create_from_file "plain" "";
+  m.(3).(4) <- Tile.create_from_file "plain" "";
+  m.(4).(3) <- Tile.create_from_file "plain" "";
+  m.(4).(5) <- Tile.create_from_file "plain" "";
+  m.(5).(5) <- Tile.create_from_file "concrete" "";
+  m.(3).(3) <- Tile.create_from_file "concrete" "";
+  m.(3).(5) <- Tile.create_from_file "concrete" "";
+  m.(5).(3) <- Tile.create_from_file "concrete" "";
+  m
