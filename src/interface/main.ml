@@ -1,5 +1,4 @@
 open OcsfmlGraphics
-open TextureLibrary
 
 let () = begin
   (* Main window *)
