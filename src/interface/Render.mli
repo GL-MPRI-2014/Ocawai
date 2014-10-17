@@ -1,2 +1,2 @@
 
-val render_map : #OcsfmlGraphics.render_target -> Map.t -> unit
+val render_map : #OcsfmlGraphics.render_target -> Battlefield.t -> unit
