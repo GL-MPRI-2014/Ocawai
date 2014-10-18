@@ -11,7 +11,7 @@ let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
   let (sx,sy) =  foi2D texture#get_size in
   let origin = (sx/.2.,sy/.2.) in
-  let position = subf2D (foi2D (camera#project pos)) origin in
+  let position = foi2D (camera#project pos) in
   let rotation = rot in
   new OcsfmlGraphics.sprite
     ~texture
@@ -29,9 +29,11 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
   let (r,g,b) = Color.(base_color.r, base_color.g, base_color.b) in
   let position = foi2D (camera#project pos) in
+  let ts = float_of_int camera#tile_size in 
   new rectangle_shape
-    ~size:(48.,48.)
+    ~size:(ts -. 2., ts -. 2.)
     ~position
+    ~origin:(ts /. 2., ts /. 2.)
     ~fill_color:(Color.rgba r g b 140)
     ~outline_color:(Color.rgba 255 255 255 180)
     ~outline_thickness:2.
