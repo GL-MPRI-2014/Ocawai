@@ -10,6 +10,9 @@ let () = begin
     ~style: [OcsfmlWindow.Window.Fullscreen]
   in
 
+  let camera = new Camera.camera ~tile_size:50 
+    ~w:window#get_width ~h:window#get_height ~maxpos:(Position.create (9,9)) in
+
   (* Basic event manipulation *)
   let rec event_loop () =
     match window#poll_event with
@@ -30,7 +33,19 @@ let () = begin
               ~style: [OcsfmlWindow.Window.Fullscreen]
               (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
               "Flower Wars"
-              
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            camera#set_cursor (Position.right camera#cursor)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            camera#set_cursor (Position.up camera#cursor)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            camera#set_cursor (Position.left camera#cursor)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            camera#set_cursor (Position.down camera#cursor)
+
         | _ -> ()
       end);
       event_loop ()
@@ -43,7 +58,7 @@ let () = begin
       window#clear ();
       (* Rendering goes here *)
       (* For testing purpose we will draw a Map right there *)
-      Render.render_map window (Battlefield.dummy_map ());
+      Render.render_map window camera (Battlefield.dummy_map ());
       (* end of test *)
       window#display;
       main_loop ()

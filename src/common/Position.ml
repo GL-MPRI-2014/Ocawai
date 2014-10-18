@@ -12,9 +12,9 @@ let left (a,b) = (a-1,b)
 
 let right (a,b) = (a+1,b)
 
-let down (a,b) = (a,b-1)
+let down (a,b) = (a,b+1)
 
-let up (a,b) = (a,b+1)
+let up (a,b) = (a,b-1)
 
 let add (a,b) (a',b') = (a + a', b + b')
 

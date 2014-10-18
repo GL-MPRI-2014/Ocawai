@@ -1,2 +1,3 @@
 
-val render_map : #OcsfmlGraphics.render_target -> Battlefield.t -> unit
+val render_map : #OcsfmlGraphics.render_target -> Camera.camera -> 
+  Battlefield.t -> unit
