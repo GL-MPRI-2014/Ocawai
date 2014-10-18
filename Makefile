@@ -1,4 +1,4 @@
-INTERFACE_SRC = src/common,src/interface,src
+INTERFACE_SRC = src/common,src/interface,src/engine,src
 PACKAGES = ocsfml.graphics
 
 interface:
