@@ -77,6 +77,7 @@ let () = begin
         Position.create (39,41)
       ] in
       Render.draw_path window camera path;
+      Render.draw_hud window;
       (* end of test *)
       window#display;
       main_loop ()

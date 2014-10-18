@@ -54,22 +54,7 @@ let render_map (target : #OcsfmlGraphics.render_target) camera
   let circle = Position.filled_circle camera#cursor 2 in
   List.iter (highlight_tile target camera Color.yellow) circle;
   List.iter (highlight_tile target camera Color.red)
-    (Position.neighbours circle) ;
-
-  (* Some others *)
-  (* This would have to be drawn somewhere else later *)
-  let text : text = new text
-    ~string:"PingouinSetter's turn"
-    ~font
-    ~character_size:20
-    ~color:Color.white
-    ()
-  in
-  let (w,h) = target#get_size in
-  let (w,h) = float_of_int w, float_of_int h in
-  let text_width = text#get_global_bounds.width in
-  text#set_position ((w -. text_width) /. 2.) (h -. 60.);
-  target#draw text
+    (Position.neighbours circle)
 
 
 let draw_path (target : #OcsfmlGraphics.render_target) camera path =
@@ -109,6 +94,22 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
       draw start (angle start next) "arrow_start" ;
       aux start (next :: r)
     | [] -> ()
+
+
+let draw_hud (target : #OcsfmlGraphics.render_target) =
+
+  let text : text = new text
+    ~string:"PingouinSetter's turn"
+    ~font
+    ~character_size:20
+    ~color:Color.white
+    ()
+  in
+  let (w,h) = target#get_size in
+  let (w,h) = float_of_int w, float_of_int h in
+  let text_width = text#get_global_bounds.width in
+  text#set_position ((w -. text_width) /. 2.) (h -. 60.);
+  target#draw text
 
 
 let () =
