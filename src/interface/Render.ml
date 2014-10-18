@@ -35,13 +35,13 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
 let render_map (target : #OcsfmlGraphics.render_target) camera 
                (map : Battlefield.t) =
 
-  (* We should add out_of_bound exceptions handling 
-   * to module Position *)
+  (* We should add map_size parameter to camera, until then,
+   * the try/with block is necessary *)
   List.iter 
     (fun p -> 
       try render_tile target camera p (Battlefield.get_tile map p)
       with Invalid_argument(_) -> ())
-    (Position.square camera#up_left camera#bottom_right);
+    (Position.square camera#top_left camera#bottom_right);
 
 (*   Battlefield.tile_iteri (render_tile target camera) map; *)
 

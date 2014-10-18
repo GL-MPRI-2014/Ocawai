@@ -6,7 +6,7 @@ class camera : tile_size:int -> w:int -> h:int -> object
 
   method project : Position.t -> (int * int)
 
-  method up_left : Position.t
+  method top_left : Position.t
 
   method bottom_right : Position.t
 
