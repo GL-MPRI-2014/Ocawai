@@ -34,6 +34,10 @@ let () = begin
               (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
               "Flower Wars"
 
+        | Resized _ ->
+          (* We have to do something here -- or forbid resizing *)
+          ()
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
             camera#set_cursor (Position.right camera#cursor)
 
