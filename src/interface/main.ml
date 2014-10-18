@@ -10,6 +10,9 @@ let () = begin
     ~style: [OcsfmlWindow.Window.Fullscreen]
   in
 
+  let camera = new Camera.camera ~tile_size:50 
+    ~w:window#get_width ~h:window#get_height in
+
   (* Basic event manipulation *)
   let rec event_loop () =
     match window#poll_event with
@@ -43,7 +46,7 @@ let () = begin
       window#clear ();
       (* Rendering goes here *)
       (* For testing purpose we will draw a Map right there *)
-      Render.render_map window (Battlefield.dummy_map ());
+      Render.render_map window camera (Battlefield.dummy_map ());
       (* end of test *)
       window#display;
       main_loop ()
