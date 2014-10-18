@@ -1,10 +1,9 @@
-(* TODO : add map size to camera *)
-
-class camera ~tile_size ~w ~h = object(self)
+class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   val mutable cursor = Position.create (4,4)
 
-  method set_cursor p = cursor <- p
+  method set_cursor p = 
+    cursor <- Position.clamp p (Position.create (0,0)) maxpos
 
   method cursor = cursor
 
@@ -15,10 +14,16 @@ class camera ~tile_size ~w ~h = object(self)
 
   (* Use this one if you want a view centered on the cursor, except if it
    * is too close from top or left border, so that we never see the 
-   * "exterior" of the map. *)
+   * "exterior" of the map. 
+   *
+   * NOT WORKING *)
   
-  (*method project p = 
-    let (offx,offy) = Position.project self#top_left cursor tile_size in
+  (*method project p =
+    let tleft = Position.diff 
+      cursor
+      (Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1)) in
+    let (relx,rely) = Position.project tleft cursor tile_size in
+    let (offx,offy) = (relx + (w - tile_size)/2, rely + (h - tile_size)/2) in
     let (x,y) = Position.project p self#top_left tile_size in 
     (x + offx, y + offy)*)
 
@@ -27,13 +32,14 @@ class camera ~tile_size ~w ~h = object(self)
     Position.clamp 
       (Position.diff cursor p)
       (Position.create (0,0))
-      (* Here we should clamp to map size ... *)
-      cursor
+      maxpos
 
   method bottom_right = 
     let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
-    (* Here too *)
-    Position.add cursor p
+    Position.clamp 
+      (Position.add cursor p)
+      (Position.create (0,0))
+      maxpos
 
   method tile_size = tile_size
 

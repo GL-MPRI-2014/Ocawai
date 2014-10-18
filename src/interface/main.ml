@@ -11,7 +11,7 @@ let () = begin
   in
 
   let camera = new Camera.camera ~tile_size:50 
-    ~w:window#get_width ~h:window#get_height in
+    ~w:window#get_width ~h:window#get_height ~maxpos:(Position.create (9,9)) in
 
   (* Basic event manipulation *)
   let rec event_loop () =
@@ -33,7 +33,19 @@ let () = begin
               ~style: [OcsfmlWindow.Window.Fullscreen]
               (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
               "Flower Wars"
-              
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            camera#set_cursor (Position.right camera#cursor)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            camera#set_cursor (Position.up camera#cursor)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            camera#set_cursor (Position.left camera#cursor)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            camera#set_cursor (Position.down camera#cursor)
+
         | _ -> ()
       end);
       event_loop ()

@@ -1,4 +1,4 @@
-class camera : tile_size:int -> w:int -> h:int -> object
+class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
 
   method set_cursor : Position.t -> unit
 
