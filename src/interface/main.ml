@@ -59,6 +59,24 @@ let () = begin
       (* Rendering goes here *)
       (* For testing purpose we will draw a Map right there *)
       Render.render_map window camera (Battlefield.dummy_map ());
+      (* Not to be placed here either *)
+      let path = [
+        Position.create (41,42) ;
+        Position.create (41,43) ;
+        Position.create (42,43) ;
+        Position.create (43,43) ;
+        Position.create (44,43) ;
+        Position.create (45,43) ;
+        Position.create (45,42) ;
+        Position.create (45,41) ;
+        Position.create (44,41) ;
+        Position.create (43,41) ;
+        Position.create (42,41) ;
+        Position.create (41,41) ;
+        Position.create (40,41) ;
+        Position.create (39,41)
+      ] in
+      Render.draw_path window camera path;
       (* end of test *)
       window#display;
       main_loop ()

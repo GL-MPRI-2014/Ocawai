@@ -5,16 +5,20 @@ let foi2D (a,b) = (float_of_int a, float_of_int b)
 let texture_library = TextureLibrary.create ()
 let font = new font `None
 
-let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
+
+let draw_texture (target : #OcsfmlGraphics.render_target) camera pos name =
   let position = foi2D (camera#project pos) in
-  let texture_name = Tile.get_name tile in
-  let texture = TextureLibrary.get_texture texture_library texture_name in
+  let texture = TextureLibrary.get_texture texture_library name in
   let sprite = new OcsfmlGraphics.sprite
     ~texture
     ~position
     ()
   in
   target#draw sprite
+
+let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
+  let texture_name = Tile.get_name tile in
+  draw_texture target camera pos texture_name
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
@@ -60,6 +64,21 @@ let render_map (target : #OcsfmlGraphics.render_target) camera
   let text_width = text#get_global_bounds.width in
   text#set_position ((w -. text_width) /. 2.) (h -. 60.);
   target#draw text
+
+
+let draw_path (target : #OcsfmlGraphics.render_target) camera path =
+
+  let draw = draw_texture target camera in
+
+  let rec aux = function
+    | pos :: [] -> draw pos "arrow_end"
+    | pos :: r ->
+      draw pos "arrow_straight" ; aux r
+    | [] -> ()
+  in
+
+  draw (List.hd path) "arrow_start" ;
+  aux (List.tl path)
 
 
 let () =
