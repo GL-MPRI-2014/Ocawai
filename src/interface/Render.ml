@@ -29,7 +29,7 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
   let (r,g,b) = Color.(base_color.r, base_color.g, base_color.b) in
   let position = foi2D (camera#project pos) in
-  let ts = float_of_int camera#tile_size in 
+  let ts = float_of_int camera#tile_size in
   new rectangle_shape
     ~size:(ts -. 2., ts -. 2.)
     ~position
@@ -96,6 +96,18 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
       draw start (angle start next) "arrow_start" ;
       aux start (next :: r)
     | [] -> ()
+
+
+(* This is garbage *)
+let draw_units (target : #OcsfmlGraphics.render_target) camera =
+
+  (* We might later want to draw it a bit to the top *)
+  let draw x y =
+    draw_texture target camera (Position.create (x,y)) 0. "infantry"
+  in
+  draw 41 42 ;
+  draw 41 39 ;
+  draw 39 39
 
 
 let draw_hud (target : #OcsfmlGraphics.render_target) =

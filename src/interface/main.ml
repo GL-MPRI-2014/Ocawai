@@ -102,6 +102,8 @@ let () = begin
         Position.create (39,38)
       ] in
       Render.draw_path window camera path;
+      (* Everything will probably be drawn according to the data set *)
+      Render.draw_units window camera;
       Render.draw_hud window;
       (* end of test *)
       window#display;
