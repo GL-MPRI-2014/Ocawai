@@ -77,6 +77,31 @@ let () = begin
         Position.create (39,41)
       ] in
       Render.draw_path window camera path;
+      let path = [
+        Position.create (41,39)
+      ] in
+      Render.draw_path window camera path;
+      let path = [
+        Position.create (39,39) ;
+        Position.create (38,39) ;
+        Position.create (38,38) ;
+        Position.create (37,38) ;
+        Position.create (36,38) ;
+        Position.create (35,38) ;
+        Position.create (34,38) ;
+        Position.create (34,39) ;
+        Position.create (34,40) ;
+        Position.create (35,40) ;
+        Position.create (36,40) ;
+        Position.create (36,39) ;
+        Position.create (36,38) ;
+        Position.create (36,37) ;
+        Position.create (37,37) ;
+        Position.create (38,37) ;
+        Position.create (39,37) ;
+        Position.create (39,38)
+      ] in
+      Render.draw_path window camera path;
       Render.draw_hud window;
       (* end of test *)
       window#display;

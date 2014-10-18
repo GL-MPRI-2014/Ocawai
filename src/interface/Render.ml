@@ -73,12 +73,12 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
   let rec aux prev = function
     | pos :: [] -> draw pos (angle prev pos) "arrow_end"
     | pos :: next :: r ->
-      let ap = angle prev pos
+      let ap = angle pos prev
       and an = angle pos next in
-      if ap = an then
+      let (amax,amin) = if an > ap then (an,ap) else (ap,an) in
+      if amax = amin +. 180. then
         draw pos ap "arrow_straight"
       else begin
-        let (amax,amin) = if an > ap then (an,ap) else (ap,an) in
         if amax = amin +. 270. then
           draw pos 270. "arrow_corner"
         else
