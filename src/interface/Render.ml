@@ -16,7 +16,7 @@ let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
   in
   target#draw sprite
 
-let highlight_tile (target : #OcsfmlGraphics.render_target) camera 
+let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
   let (r,g,b) = Color.(base_color.r, base_color.g, base_color.b) in
   let position = foi2D (camera#project pos) in
@@ -32,10 +32,10 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
   |> target#draw
 
 
-let render_map (target : #OcsfmlGraphics.render_target) camera 
+let render_map (target : #OcsfmlGraphics.render_target) camera
                (map : Battlefield.t) =
 
-  List.iter 
+  List.iter
     (fun p -> render_tile target camera p (Battlefield.get_tile map p))
     (Position.square camera#top_left camera#bottom_right);
 
@@ -44,7 +44,7 @@ let render_map (target : #OcsfmlGraphics.render_target) camera
   (* Some tests *)
   let circle = Position.filled_circle camera#cursor 2 in
   List.iter (highlight_tile target camera Color.yellow) circle;
-  List.iter (highlight_tile target camera Color.red) 
+  List.iter (highlight_tile target camera Color.red)
     (Position.neighbours circle) ;
 
   (* Some others *)
@@ -57,7 +57,7 @@ let render_map (target : #OcsfmlGraphics.render_target) camera
   in
   let (w,h) = target#get_size in
   let (w,h) = float_of_int w, float_of_int h in
-  let text_width = text#get_global_bounds.FloatRect.width in
+  let text_width = text#get_global_bounds.width in
   text#set_position ((w -. text_width) /. 2.) (h -. 60.);
   target#draw text
 
