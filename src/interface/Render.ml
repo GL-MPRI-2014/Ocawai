@@ -1,24 +1,29 @@
 open OcsfmlGraphics
 
 let foi2D (a,b) = (float_of_int a, float_of_int b)
+let subf2D (a,b) (c,d) = (a-.c,b-.d)
 
 let texture_library = TextureLibrary.create ()
 let font = new font `None
 
 
-let draw_texture (target : #OcsfmlGraphics.render_target) camera pos name =
-  let position = foi2D (camera#project pos) in
+let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
-  let sprite = new OcsfmlGraphics.sprite
+  let (sx,sy) =  foi2D texture#get_size in
+  let origin = (sx/.2.,sy/.2.) in
+  let position = subf2D (foi2D (camera#project pos)) origin in
+  let rotation = rot in
+  new OcsfmlGraphics.sprite
     ~texture
     ~position
+    ~rotation
+    ~origin
     ()
-  in
-  target#draw sprite
+  |> target#draw
 
 let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
   let texture_name = Tile.get_name tile in
-  draw_texture target camera pos texture_name
+  draw_texture target camera pos 0. texture_name
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
@@ -52,6 +57,7 @@ let render_map (target : #OcsfmlGraphics.render_target) camera
     (Position.neighbours circle) ;
 
   (* Some others *)
+  (* This would have to be drawn somewhere else later *)
   let text : text = new text
     ~string:"PingouinSetter's turn"
     ~font
@@ -70,15 +76,39 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
 
   let draw = draw_texture target camera in
 
-  let rec aux = function
-    | pos :: [] -> draw pos "arrow_end"
-    | pos :: r ->
-      draw pos "arrow_straight" ; aux r
+  let angle s t =
+    match Position.diff t s with
+      | pos when pos = Position.create (1,0)  -> 0.
+      | pos when pos = Position.create (0,1)  -> 90.
+      | pos when pos = Position.create (-1,0) -> 180.
+      | pos when pos = Position.create (0,-1) -> -90.
+      | _ -> failwith "Not continuous path"
+  in
+
+  let rec aux prev = function
+    | pos :: [] -> draw pos (angle prev pos) "arrow_end"
+    | pos :: next :: r ->
+      let ap = angle prev pos
+      and an = angle pos next in
+      if ap = an then
+        draw pos ap "arrow_straight"
+      else begin
+        let (amax,amin) = if an > ap then (an,ap) else (ap,an) in
+        if amax = amin +. 270. then
+          draw pos 270. "arrow_corner"
+        else
+          draw pos amax "arrow_corner"
+      end ;
+      aux pos (next :: r)
     | [] -> ()
   in
 
-  draw (List.hd path) "arrow_start" ;
-  aux (List.tl path)
+  match path with
+    | start :: [] -> draw start 0. "arrow_lone"
+    | start :: next :: r ->
+      draw start (angle start next) "arrow_start" ;
+      aux start (next :: r)
+    | [] -> ()
 
 
 let () =
