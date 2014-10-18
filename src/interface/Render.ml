@@ -110,6 +110,9 @@ let draw_units (target : #OcsfmlGraphics.render_target) camera =
   draw 39 39
 
 
+(* Problem : Currently the text position depends of the resolution *)
+(* We need to think it through not to have weird effects depending *)
+(* on the screen *)
 let draw_hud (target : #OcsfmlGraphics.render_target) =
 
   let text : text = new text
