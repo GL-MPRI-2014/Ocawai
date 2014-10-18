@@ -7,7 +7,7 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   method cursor = cursor
 
-  (* For now, view is centered on the cursor, independantly of its position *)
+  (* For now, view is centered on the cursor, independently of its position *)
   method project p =
     let (x,y) = Position.project p cursor tile_size in
     (x + w/2, y + h/2)
