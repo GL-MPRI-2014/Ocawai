@@ -35,7 +35,15 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
 let render_map (target : #OcsfmlGraphics.render_target) camera 
                (map : Battlefield.t) =
 
-  Battlefield.tile_iteri (render_tile target camera) map;
+  (* We should add out_of_bound exceptions handling 
+   * to module Position *)
+  List.iter 
+    (fun p -> 
+      try render_tile target camera p (Battlefield.get_tile map p)
+      with Invalid_argument(_) -> ())
+    (Position.square camera#up_left camera#bottom_right);
+
+(*   Battlefield.tile_iteri (render_tile target camera) map; *)
 
   (* Some tests *)
   let circle = Position.filled_circle camera#cursor 2 in
