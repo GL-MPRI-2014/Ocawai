@@ -10,8 +10,8 @@ let () = begin
     ~style: [OcsfmlWindow.Window.Fullscreen]
   in
 
-  let camera = new Camera.camera ~tile_size:50 
-    ~w:window#get_width ~h:window#get_height ~maxpos:(Position.create (9,9)) in
+  let camera = new Camera.camera ~tile_size:50
+    ~w:window#get_width ~h:window#get_height ~maxpos:(Position.create (99,99)) in
 
   (* Basic event manipulation *)
   let rec event_loop () =
