@@ -111,6 +111,11 @@ let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
   List.iter (highlight_tile target camera Color.red) !attack_range
 
 
+(* Draw the cursor *)
+let draw_cursor (target : #OcsfmlGraphics.render_target) camera =
+  draw_texture target camera camera#cursor 0. "cursor"
+
+
 (* Problem : Currently the text position depends of the resolution *)
 (* We need to think it through not to have weird effects depending *)
 (* on the screen *)
@@ -133,6 +138,7 @@ let render_game (target : #OcsfmlGraphics.render_target) data =
   render_map target data#camera data#map;
   data#selected >? draw_range target data#camera;
   draw_path target data#camera data#current_move;
+  draw_cursor target data#camera;
   List.iter (draw_unit target data#camera) data#units;
   FPS.display target
 
