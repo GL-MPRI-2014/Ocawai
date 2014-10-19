@@ -92,19 +92,19 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
 (* This is not-so-garbage *)
 let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
   (* We might later want to draw it a bit to the top *)
-    draw_texture target camera (Unit.get_position my_unit) 
+    draw_texture target camera (Unit.get_position my_unit)
       0. (Unit.get_name my_unit)
 
 
 (* This is almost garbage *)
-let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit = 
+let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
   let move_range = Position.filled_circle
       (Unit.get_position my_unit)
-      (Unit.move_range my_unit) 
+      (Unit.move_range my_unit)
   in
-  let attack_range = ref [] in 
-  for i = 1 to Unit.attack_range my_unit do 
-    attack_range := !attack_range @ 
+  let attack_range = ref [] in
+  for i = 1 to Unit.attack_range my_unit do
+    attack_range := !attack_range @
       (Position.neighbours (!attack_range @ move_range))
   done;
   List.iter (highlight_tile target camera Color.yellow) move_range;
@@ -129,11 +129,11 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
   target#draw text
 
 
-let render_game (target : #OcsfmlGraphics.render_target) data = 
+let render_game (target : #OcsfmlGraphics.render_target) data =
   render_map target data#camera data#map;
-  List.iter (draw_unit target data#camera) data#units;
   data#selected >? draw_range target data#camera;
   draw_path target data#camera data#current_move;
+  List.iter (draw_unit target data#camera) data#units;
   FPS.display target
 
 
