@@ -2,7 +2,7 @@
 
 type t
 
-type movement = Walk | Swim | Fly | Amphibious
+type movement = Walking | Swimming | Flying | Amphibious
 
 (* Returns the texture associated to the given unit *)
 val get_name : t -> string
