@@ -11,7 +11,29 @@ let () = begin
   in
 
   let camera = new Camera.camera ~tile_size:50
-    ~w:window#get_width ~h:window#get_height ~maxpos:(Position.create (99,99)) in
+    ~w:window#get_width ~h:window#get_height 
+    ~maxpos:(Position.create (99,99)) in
+
+  let cdata = new ClientData.client_data ~camera 
+    ~map:(Battlefield.dummy_map ())
+    ~units:[] in
+
+  cdata#set_current_move [
+        Position.create (41,42) ;
+        Position.create (41,43) ;
+        Position.create (42,43) ;
+        Position.create (43,43) ;
+        Position.create (44,43) ;
+        Position.create (45,43) ;
+        Position.create (45,42) ;
+        Position.create (45,41) ;
+        Position.create (44,41) ;
+        Position.create (43,41) ;
+        Position.create (42,41) ;
+        Position.create (41,41) ;
+        Position.create (40,41) ;
+        Position.create (39,41)
+  ];
 
   (* Basic event manipulation *)
   let rec event_loop () =
@@ -61,53 +83,9 @@ let () = begin
       event_loop ();
       window#clear ();
       (* Rendering goes here *)
-      (* For testing purpose we will draw a Map right there *)
-      Render.render_map window camera (Battlefield.dummy_map ());
-      (* Not to be placed here either *)
-      let path = [
-        Position.create (41,42) ;
-        Position.create (41,43) ;
-        Position.create (42,43) ;
-        Position.create (43,43) ;
-        Position.create (44,43) ;
-        Position.create (45,43) ;
-        Position.create (45,42) ;
-        Position.create (45,41) ;
-        Position.create (44,41) ;
-        Position.create (43,41) ;
-        Position.create (42,41) ;
-        Position.create (41,41) ;
-        Position.create (40,41) ;
-        Position.create (39,41)
-      ] in
-      Render.draw_path window camera path;
-      let path = [
-        Position.create (41,39)
-      ] in
-      Render.draw_path window camera path;
-      let path = [
-        Position.create (39,39) ;
-        Position.create (38,39) ;
-        Position.create (38,38) ;
-        Position.create (37,38) ;
-        Position.create (36,38) ;
-        Position.create (35,38) ;
-        Position.create (34,38) ;
-        Position.create (34,39) ;
-        Position.create (34,40) ;
-        Position.create (35,40) ;
-        Position.create (36,40) ;
-        Position.create (36,39) ;
-        Position.create (36,38) ;
-        Position.create (36,37) ;
-        Position.create (37,37) ;
-        Position.create (38,37) ;
-        Position.create (39,37) ;
-        Position.create (39,38)
-      ] in
-      Render.draw_path window camera path;
-      (* Everything will probably be drawn according to the data set *)
-      Render.draw_units window camera;
+
+      Render.render_game window cdata;
+      
       Render.draw_hud window;
       (* end of test *)
       window#display;

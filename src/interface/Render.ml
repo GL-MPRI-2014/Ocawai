@@ -21,9 +21,11 @@ let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
     ()
   |> target#draw
 
+
 let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
   let texture_name = Tile.get_name tile in
   draw_texture target camera pos 0. texture_name
+
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
@@ -45,24 +47,13 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
                (map : Battlefield.t) =
-
   List.iter
     (fun p -> render_tile target camera p (Battlefield.get_tile map p))
-    (Position.square camera#top_left camera#bottom_right);
-
-(*   Battlefield.tile_iteri (render_tile target camera) map; *)
-
-  (* Some tests *)
-  let circle = Position.filled_circle camera#cursor 2 in
-  List.iter (highlight_tile target camera Color.yellow) circle;
-  List.iter (highlight_tile target camera Color.red)
-    (Position.neighbours circle)
+    (Position.square camera#top_left camera#bottom_right)
 
 
 let draw_path (target : #OcsfmlGraphics.render_target) camera path =
-
   let draw = draw_texture target camera in
-
   let angle s t =
     match Position.diff t s with
       | pos when pos = Position.create (1,0)  -> 0.
@@ -71,7 +62,6 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
       | pos when pos = Position.create (0,-1) -> -90.
       | _ -> failwith "Not continuous path"
   in
-
   let rec aux prev = function
     | pos :: [] -> draw pos (angle prev pos) "arrow_end"
     | pos :: next :: r ->
@@ -89,7 +79,6 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
       aux pos (next :: r)
     | [] -> ()
   in
-
   match path with
     | start :: [] -> draw start 0. "arrow_lone"
     | start :: next :: r ->
@@ -100,7 +89,6 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
 
 (* This is garbage *)
 let draw_units (target : #OcsfmlGraphics.render_target) camera =
-
   (* We might later want to draw it a bit to the top *)
   let draw x y =
     draw_texture target camera (Position.create (x,y)) 0. "infantry"
@@ -114,7 +102,6 @@ let draw_units (target : #OcsfmlGraphics.render_target) camera =
 (* We need to think it through not to have weird effects depending *)
 (* on the screen *)
 let draw_hud (target : #OcsfmlGraphics.render_target) =
-
   let text : text = new text
     ~string:"PingouinSetter's turn"
     ~font
@@ -127,6 +114,12 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
   let text_width = text#get_global_bounds.width in
   text#set_position ((w -. text_width) /. 2.) (h -. 60.);
   target#draw text
+
+
+let render_game (target : #OcsfmlGraphics.render_target) data = 
+  render_map target data#camera data#map;
+  draw_units target data#camera (*data#units*);
+  draw_path target data#camera data#current_move
 
 
 let () =
