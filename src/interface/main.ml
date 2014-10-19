@@ -16,7 +16,11 @@ let () = begin
 
   let cdata = new ClientData.client_data ~camera 
     ~map:(Battlefield.dummy_map ())
-    ~units:[] in
+    ~units:[
+      Unit.create_from_file "41" "42";
+      Unit.create_from_file "41" "39";
+      Unit.create_from_file "39" "39"
+    ] in
 
   cdata#set_current_move [
         Position.create (41,42) ;
@@ -34,6 +38,8 @@ let () = begin
         Position.create (40,41) ;
         Position.create (39,41)
   ];
+
+  cdata#select_unit (List.hd cdata#units);
 
   (* Basic event manipulation *)
   let rec event_loop () =

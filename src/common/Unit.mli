@@ -18,9 +18,5 @@ val attack_range : t -> int
 
 val move_range : t -> int
 
-(* We can also store position in a Unit if necessary
- * (maybe redundant with Map) *)
-(* val position : t -> int * int *)
-
 (** Create a unit from the XML file  *)
 val create_from_file : string -> string -> t

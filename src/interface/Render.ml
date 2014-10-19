@@ -2,6 +2,9 @@ open OcsfmlGraphics
 
 let foi2D (a,b) = (float_of_int a, float_of_int b)
 let subf2D (a,b) (c,d) = (a-.c,b-.d)
+let (>?) opt f = match opt with
+  |None -> ()
+  |Some(s) -> f s
 
 let texture_library = TextureLibrary.create ()
 let font = new font `None
@@ -87,15 +90,26 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
     | [] -> ()
 
 
-(* This is garbage *)
-let draw_units (target : #OcsfmlGraphics.render_target) camera =
+(* This is not-so-garbage *)
+let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
   (* We might later want to draw it a bit to the top *)
-  let draw x y =
-    draw_texture target camera (Position.create (x,y)) 0. "infantry"
+    draw_texture target camera (Unit.get_position my_unit) 
+      0. (Unit.get_name my_unit)
+
+
+(* This is almost garbage *)
+let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit = 
+  let move_range = Position.filled_circle
+      (Unit.get_position my_unit)
+      (Unit.move_range my_unit) 
   in
-  draw 41 42 ;
-  draw 41 39 ;
-  draw 39 39
+  let attack_range = ref [] in 
+  for i = 1 to Unit.attack_range my_unit do 
+    attack_range := !attack_range @ 
+      (Position.neighbours (!attack_range @ move_range))
+  done;
+  List.iter (highlight_tile target camera Color.yellow) move_range;
+  List.iter (highlight_tile target camera Color.red) !attack_range
 
 
 (* Problem : Currently the text position depends of the resolution *)
@@ -118,7 +132,8 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
 
 let render_game (target : #OcsfmlGraphics.render_target) data = 
   render_map target data#camera data#map;
-  draw_units target data#camera (*data#units*);
+  List.iter (draw_unit target data#camera) data#units;
+  data#selected >? draw_range target data#camera;
   draw_path target data#camera data#current_move
 
 
