@@ -3,11 +3,11 @@ PACKAGES = ocsfml.graphics
 
 OUTPUT = main.native
 
-run: interface
-	./$(OUTPUT)
-
 interface:
 	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT)
+
+run: interface
+	./$(OUTPUT)
 
 clean:
 	ocamlbuild -clean
