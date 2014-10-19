@@ -8,7 +8,7 @@ let get_name t = t.name
 
 let get_position t = t.pos
 
-let movement_type t = Walk
+let movement_type t = Walking
 
 let vision_range t = 3
 
