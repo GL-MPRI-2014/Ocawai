@@ -9,7 +9,6 @@ let (>?) opt f = match opt with
 let texture_library = TextureLibrary.create ()
 let font = new font `None
 
-
 let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
   let (sx,sy) =  foi2D texture#get_size in
@@ -134,7 +133,8 @@ let render_game (target : #OcsfmlGraphics.render_target) data =
   render_map target data#camera data#map;
   List.iter (draw_unit target data#camera) data#units;
   data#selected >? draw_range target data#camera;
-  draw_path target data#camera data#current_move
+  draw_path target data#camera data#current_move;
+  FPS.display target
 
 
 let () =
