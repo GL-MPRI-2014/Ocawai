@@ -113,7 +113,7 @@ let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
 
 (* Draw the cursor *)
 let draw_cursor (target : #OcsfmlGraphics.render_target) camera =
-  draw_texture target camera camera#cursor 0. "cursor"
+  draw_texture target camera camera#cursor#position 0. "cursor"
 
 
 (* Problem : Currently the text position depends of the resolution *)

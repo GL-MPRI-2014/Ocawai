@@ -11,10 +11,10 @@ let () = begin
   in
 
   let camera = new Camera.camera ~tile_size:50
-    ~w:window#get_width ~h:window#get_height 
+    ~w:window#get_width ~h:window#get_height
     ~maxpos:(Position.create (99,99)) in
 
-  let cdata = new ClientData.client_data ~camera 
+  let cdata = new ClientData.client_data ~camera
     ~map:(Battlefield.dummy_map ())
     ~units:[
       Unit.create_from_file "41" "42";
@@ -22,7 +22,7 @@ let () = begin
       Unit.create_from_file "39" "39"
     ] in
 
-  cdata#set_current_move [
+  (* cdata#set_current_move [
         Position.create (41,42) ;
         Position.create (41,43) ;
         Position.create (42,43) ;
@@ -37,11 +37,13 @@ let () = begin
         Position.create (41,41) ;
         Position.create (40,41) ;
         Position.create (39,41)
-  ];
+  ]; *)
+
+  cdata#set_current_move [Position.create (41,42)];
 
   cdata#select_unit (List.hd cdata#units);
 
-  (* We should move that to a dedicated module, or implement State 
+  (* We should move that to a dedicated module, or implement State
    * We should also parametrize that with a dt to stabilize camera
    * speed *)
   let check_keys () = OcsfmlWindow.(
@@ -94,7 +96,7 @@ let () = begin
       (* Rendering goes here *)
 
       Render.render_game window cdata;
-      
+
       Render.draw_hud window;
 
       (* end of test *)

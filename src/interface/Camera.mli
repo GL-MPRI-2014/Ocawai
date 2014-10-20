@@ -1,6 +1,6 @@
 class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
 
-  method cursor : Position.t
+  method cursor : Cursor.cursor
 
   method project : Position.t -> (int * int)
 
