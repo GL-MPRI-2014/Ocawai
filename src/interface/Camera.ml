@@ -18,14 +18,18 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
     (dx + (w + tile_size)/2, dy + (h + tile_size)/2)
 
   method top_left =
-    let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
+    let p = Position.create 
+      ((w + (fst offset * 2))/(2*tile_size) + 1, 
+       (h + (snd offset * 2))/(2*tile_size) + 1) in
     Position.clamp
       (Position.diff cursor#position p)
       (Position.create (0,0))
       maxpos
 
   method bottom_right =
-    let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
+    let p = Position.create 
+      ((w - (fst offset * 2))/(2*tile_size) + 1, 
+       (h - (snd offset * 2))/(2*tile_size) + 1) in
     Position.clamp
       (Position.add cursor#position p)
       (Position.create (0,0))
@@ -33,10 +37,16 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   method tile_size = tile_size
 
-  method move depl =
+  method move ((dx, dy) as displ) =
+    let (offx, offy) = foi2D (dx * tile_size, dy * tile_size) in
+    offset <- iof2D (offx, offy);
+    let interp_function t = 
+      offset <- iof2D (offx *. (1. -. t *. 10.), offy *. (1. -. t *. 10.))
+    in
+    ignore (Interpolators.new_ip_with_timeout interp_function 0.1);
     cursor#set_position
       (Position.clamp 
-        (Position.add (Position.create depl) cursor#position)
+        (Position.add (Position.create displ) cursor#position)
         (Position.create (0,0))
         maxpos)
        
