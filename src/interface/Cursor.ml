@@ -8,7 +8,7 @@ class cursor ~position = object(self)
   initializer 
     (* Let's interpolate that ! *)
     let my_fun t = 
-      scale <- 1. +. (sin (t *. 2.)) /. 20.
+      scale <- 1. +. (sin (t *. 3.)) /. 20.
     in
     ignore (Interpolators.new_ip_from_fun my_fun)
 

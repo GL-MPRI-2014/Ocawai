@@ -33,18 +33,17 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
   let (r,g,b) = Color.(base_color.r, base_color.g, base_color.b) in
   let position = foi2D (camera#project pos) in
-  let ts = float_of_int camera#tile_size in
-  new rectangle_shape
-    ~size:(ts -. 2., ts -. 2.)
+  let texture = TextureLibrary.get_texture texture_library "highlight" in
+  let (sx, sy) = foi2D texture#get_size in
+  new sprite
     ~position
-    ~origin:(ts /. 2., ts /. 2.)
-    ~fill_color:(Color.rgba r g b 140)
-    ~outline_color:(Color.rgba 255 255 255 180)
-    ~outline_thickness:2.
+    ~texture
+    ~origin:(sx /. 2., sy /. 2.)
+    ~color:(Color.rgba r g b 255)
     ()
   (* Additive blending is not so good finally, so I will stick with the good ol'
    * default blending *)
-  |> target#draw
+  |> target#draw ~blend_mode:BlendAdd
 
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
@@ -107,8 +106,8 @@ let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
     attack_range := !attack_range @
       (Position.neighbours (!attack_range @ move_range))
   done;
-  List.iter (highlight_tile target camera Color.yellow) move_range;
-  List.iter (highlight_tile target camera Color.red) !attack_range
+  List.iter (highlight_tile target camera (Color.rgb 255 255 100)) move_range;
+  List.iter (highlight_tile target camera (Color.rgb 255 50 50)) !attack_range
 
 
 (* Draw the cursor *)
