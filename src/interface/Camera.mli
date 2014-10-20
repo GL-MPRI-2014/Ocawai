@@ -1,7 +1,5 @@
 class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
 
-  method set_cursor : Position.t -> unit
-
   method cursor : Position.t
 
   method project : Position.t -> (int * int)
@@ -11,5 +9,7 @@ class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
   method bottom_right : Position.t
 
   method tile_size : int
+
+  method move : float * float -> unit
 
 end

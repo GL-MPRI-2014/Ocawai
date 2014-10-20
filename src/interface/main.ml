@@ -41,6 +41,20 @@ let () = begin
 
   cdata#select_unit (List.hd cdata#units);
 
+  (* We should move that to a dedicated module, or implement State 
+   * We should also parametrize that with a dt to stabilize camera
+   * speed *)
+  let check_keys () = OcsfmlWindow.(
+    if Keyboard.is_key_pressed KeyCode.Right then
+      camera#move (1.5,0.);
+    if Keyboard.is_key_pressed KeyCode.Down then
+      camera#move (0.,1.5);
+    if Keyboard.is_key_pressed KeyCode.Left then
+      camera#move (-1.5,0.);
+    if Keyboard.is_key_pressed KeyCode.Up then
+      camera#move (0.,-1.5))
+  in
+
   (* Basic event manipulation *)
   let rec event_loop () =
     match window#poll_event with
@@ -66,18 +80,6 @@ let () = begin
           (* We have to do something here -- or forbid resizing *)
           ()
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            camera#set_cursor (Position.right camera#cursor)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            camera#set_cursor (Position.up camera#cursor)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            camera#set_cursor (Position.left camera#cursor)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            camera#set_cursor (Position.down camera#cursor)
-
         | _ -> ()
       end);
       event_loop ()
@@ -86,6 +88,7 @@ let () = begin
 
   let rec main_loop () =
     if window#is_open then begin
+      check_keys ();
       event_loop ();
       window#clear ();
       (* Rendering goes here *)
@@ -93,6 +96,7 @@ let () = begin
       Render.render_game window cdata;
       
       Render.draw_hud window;
+
       (* end of test *)
       window#display;
       main_loop ()

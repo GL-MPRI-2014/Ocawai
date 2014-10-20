@@ -1,46 +1,48 @@
+let foi2D (a,b) = (float_of_int a, float_of_int b)
+let iof2D (a,b) = (int_of_float a, int_of_float b)
+let clamp2D (a,b) (mina, minb) (maxa, maxb) = 
+  (min (max a mina) maxa, min (max b minb) maxb)
+
 class camera ~tile_size ~w ~h ~maxpos = object(self)
 
-  val mutable cursor = Position.create (40,40)
+  val mutable center = foi2D
+    (40 * tile_size + tile_size / 2, 40 * tile_size + tile_size / 2)
 
-  method set_cursor p =
-    cursor <- Position.clamp p (Position.create (0,0)) maxpos
+  method private max_coordinates = 
+    let (maxa, maxb) = Position.topair maxpos in 
+    ((maxa + 1) * tile_size - 1, (maxb + 1) * tile_size - 1)
 
-  method cursor = cursor
+  method cursor = 
+    let (cx, cy) = iof2D center in
+    Position.create 
+    (cx / tile_size, cy / tile_size)
 
-  (* For now, view is centered on the cursor, independently of its position *)
   method project p =
-    let (x,y) = Position.project p cursor tile_size in
-    (x + w/2, y + h/2)
-
-  (* Use this one if you want a view centered on the cursor, except if it
-   * is too close from top or left border, so that we never see the
-   * "exterior" of the map.
-   *
-   * NOT WORKING *)
-
-  (*method project p =
-    let tleft = Position.diff
-      cursor
-      (Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1)) in
-    let (relx,rely) = Position.project tleft cursor tile_size in
-    let (offx,offy) = (relx + (w - tile_size)/2, rely + (h - tile_size)/2) in
-    let (x,y) = Position.project p self#top_left tile_size in
-    (x + offx, y + offy)*)
+    let (cx,cy) = iof2D center in 
+    let (x,y) = Position.topair p in 
+    let (dx,dy) = (x * tile_size - cx, y * tile_size - cy) in
+    (dx + (w + tile_size)/2, dy + (h + tile_size)/2)
 
   method top_left =
     let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
     Position.clamp
-      (Position.diff cursor p)
+      (Position.diff self#cursor p)
       (Position.create (0,0))
       maxpos
 
   method bottom_right =
     let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
     Position.clamp
-      (Position.add cursor p)
+      (Position.add self#cursor p)
       (Position.create (0,0))
       maxpos
 
   method tile_size = tile_size
 
+  method move (vx, vy) = 
+    let (a,b) = center in 
+    center <- clamp2D
+      (a +. vx, b +. vy)
+      (0., 0.)
+      (foi2D self#max_coordinates)
 end
