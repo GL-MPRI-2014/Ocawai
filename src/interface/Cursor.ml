@@ -1,6 +1,6 @@
-class cursor ~position = object
+class cursor ~position = object(self)
 
-  val mutable current_position = position
+  val mutable current_position : Position.t = position
 
   method set_position pos =
     current_position <- pos

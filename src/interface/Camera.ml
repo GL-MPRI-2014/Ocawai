@@ -1,15 +1,18 @@
 class camera ~tile_size ~w ~h ~maxpos = object(self)
 
-  val mutable cursor = Position.create (40,40)
+  val cursor = new Cursor.cursor ~position:(Position.create (40,40))
 
   method set_cursor p =
-    cursor <- Position.clamp p (Position.create (0,0)) maxpos
+    Position.clamp p (Position.create (0,0)) maxpos
+    |> cursor#set_position
 
-  method cursor = cursor
+  (* For now we hide the objetc cursor but later it might be interesting *)
+  (* to give it directly *)
+  method cursor = cursor#position
 
   (* For now, view is centered on the cursor, independently of its position *)
   method project p =
-    let (x,y) = Position.project p cursor tile_size in
+    let (x,y) = Position.project p cursor#position tile_size in
     (x + w/2, y + h/2)
 
   (* Use this one if you want a view centered on the cursor, except if it
@@ -30,14 +33,14 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
   method top_left =
     let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
     Position.clamp
-      (Position.diff cursor p)
+      (Position.diff cursor#position p)
       (Position.create (0,0))
       maxpos
 
   method bottom_right =
     let p = Position.create (w/(2*tile_size) + 1, h/(2*tile_size) + 1) in
     Position.clamp
-      (Position.add cursor p)
+      (Position.add cursor#position p)
       (Position.create (0,0))
       maxpos
 
