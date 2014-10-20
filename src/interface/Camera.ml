@@ -1,14 +1,24 @@
 let foi2D (a,b) = (float_of_int a, float_of_int b)
+
 let iof2D (a,b) = (int_of_float a, int_of_float b)
+
 let clamp2D (a,b) (mina, minb) (maxa, maxb) =
   (min (max a mina) maxa, min (max b minb) maxb)
+
 let diff2D (a,b) (c,d) = (a - c, b - d)
+
+let (>?) opt f = 
+  match opt with
+  |None -> ()
+  |Some(o) -> f o 
 
 class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   val cursor = new Cursor.cursor ~position:(Position.create (40,40))
 
   val mutable offset = (0, 0)
+
+  val mutable actual_interpolator = None
 
   method cursor = cursor
 
@@ -52,7 +62,9 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
     let interp_function t = 
       offset <- iof2D (offx *. (1. -. t *. 10.), offy *. (1. -. t *. 10.))
     in
-    ignore (Interpolators.new_ip_with_timeout interp_function 0.1);
+    actual_interpolator >? (fun i -> i#delete);
+    actual_interpolator <- Some(
+      Interpolators.new_ip_with_timeout interp_function 0.1);
     cursor#set_position new_position
        
   method set_position pos = 
