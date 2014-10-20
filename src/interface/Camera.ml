@@ -68,6 +68,6 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
     cursor#set_position new_position
        
   method set_position pos = 
-    cursor#set_position 
-      (Position.clamp pos (Position.create (0,0)) maxpos)
+    let clamped = Position.clamp pos (Position.create (0,0)) maxpos in
+    self#move (Position.topair (Position.diff clamped cursor#position))
 end
