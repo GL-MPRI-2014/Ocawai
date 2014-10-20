@@ -43,20 +43,6 @@ let () = begin
 
   cdata#select_unit (List.hd cdata#units);
 
-  (* We should move that to a dedicated module, or implement State
-   * We should also parametrize that with a dt to stabilize camera
-   * speed *)
-  let check_keys () = OcsfmlWindow.(
-    if Keyboard.is_key_pressed KeyCode.Right then
-      camera#move (1.5,0.);
-    if Keyboard.is_key_pressed KeyCode.Down then
-      camera#move (0.,1.5);
-    if Keyboard.is_key_pressed KeyCode.Left then
-      camera#move (-1.5,0.);
-    if Keyboard.is_key_pressed KeyCode.Up then
-      camera#move (0.,-1.5))
-  in
-
   (* Basic event manipulation *)
   let rec event_loop () =
     match window#poll_event with
@@ -78,6 +64,19 @@ let () = begin
               (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
               "Flower Wars"
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            camera#move (1,0)
+ 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            camera#move (0,1)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            camera#move (-1,0)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            camera#move (0,-1)
+
+
         | Resized _ ->
           (* We have to do something here -- or forbid resizing *)
           ()
@@ -90,7 +89,6 @@ let () = begin
 
   let rec main_loop () =
     if window#is_open then begin
-      check_keys ();
       event_loop ();
       window#clear ();
       (* Rendering goes here *)

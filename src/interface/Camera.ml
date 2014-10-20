@@ -5,23 +5,16 @@ let clamp2D (a,b) (mina, minb) (maxa, maxb) =
 
 class camera ~tile_size ~w ~h ~maxpos = object(self)
 
-
-  (* Double hardcoding... *)
-  val mutable center = foi2D
-    (40 * tile_size + tile_size / 2, 40 * tile_size + tile_size / 2)
-
   val cursor = new Cursor.cursor ~position:(Position.create (40,40))
 
-  method private max_coordinates =
-    let (maxa, maxb) = Position.topair maxpos in
-    ((maxa + 1) * tile_size - 1, (maxb + 1) * tile_size - 1)
+  val mutable offset = (0, 0)
 
   method cursor = cursor
 
   method project p =
-    let (cx,cy) = iof2D center in
-    let (x,y) = Position.topair p in
-    let (dx,dy) = (x * tile_size - cx, y * tile_size - cy) in
+    let (x,y) = Position.topair (Position.diff p cursor#position) in
+    let (dx,dy) = (x * tile_size + (fst offset), 
+                   y * tile_size + (snd offset)) in
     (dx + (w + tile_size)/2, dy + (h + tile_size)/2)
 
   method top_left =
@@ -40,13 +33,14 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   method tile_size = tile_size
 
-  method move (vx, vy) =
-    let (a,b) = center in
-    center <- clamp2D
-      (a +. vx, b +. vy)
-      (0., 0.)
-      (foi2D self#max_coordinates);
-    let (cx, cy) = iof2D center in
+  method move depl =
     cursor#set_position
-      (Position.create (cx / tile_size, cy / tile_size))
+      (Position.clamp 
+        (Position.add (Position.create depl) cursor#position)
+        (Position.create (0,0))
+        maxpos)
+       
+  method set_position pos = 
+    cursor#set_position 
+      (Position.clamp pos (Position.create (0,0)) maxpos)
 end
