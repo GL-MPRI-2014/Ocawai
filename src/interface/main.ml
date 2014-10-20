@@ -1,4 +1,5 @@
 open OcsfmlGraphics
+open Interpolators
 
 let () = begin
   (* Main window *)
