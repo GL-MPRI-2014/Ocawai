@@ -1,5 +1,4 @@
 open OcsfmlGraphics
-open Interpolators
 
 let () = begin
   (* Main window *)
@@ -90,6 +89,8 @@ let () = begin
 
   let rec main_loop () =
     if window#is_open then begin
+      Interpolators.update ();
+
       event_loop ();
       window#clear ();
       (* Rendering goes here *)

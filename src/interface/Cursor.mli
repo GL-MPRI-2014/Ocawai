@@ -8,4 +8,6 @@ class cursor : position:Position.t -> object
 
   method get_move : Action.movement
 
+  method scale : float
+
 end

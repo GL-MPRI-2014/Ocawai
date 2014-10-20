@@ -112,8 +112,20 @@ let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
 
 
 (* Draw the cursor *)
-let draw_cursor (target : #OcsfmlGraphics.render_target) camera =
-  draw_texture target camera camera#cursor#position 0. "cursor"
+let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera) =
+  let texture = TextureLibrary.get_texture texture_library "cursor" in
+  let (sx,sy) =  foi2D texture#get_size in
+  let origin = (sx/.2.,sy/.2.) in
+  let position = foi2D (camera#project camera#cursor#position) in
+  let scale = camera#cursor#scale in
+  new OcsfmlGraphics.sprite
+    ~texture
+    ~position
+    ~origin
+    ~scale:(scale, scale)
+    ()
+  |> target#draw
+
 
 
 (* Problem : Currently the text position depends of the resolution *)
