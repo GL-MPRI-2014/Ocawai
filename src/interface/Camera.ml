@@ -2,6 +2,7 @@ let foi2D (a,b) = (float_of_int a, float_of_int b)
 let iof2D (a,b) = (int_of_float a, int_of_float b)
 let clamp2D (a,b) (mina, minb) (maxa, maxb) =
   (min (max a mina) maxa, min (max b minb) maxb)
+let diff2D (a,b) (c,d) = (a - c, b - d)
 
 class camera ~tile_size ~w ~h ~maxpos = object(self)
 
@@ -37,18 +38,22 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   method tile_size = tile_size
 
-  method move ((dx, dy) as displ) =
+  method move displ =
+    let new_position = Position.clamp
+      (Position.add (Position.create displ) cursor#position)
+      (Position.create (0,0))
+      maxpos
+    in 
+    let (dx, dy) = Position.topair 
+      (Position.diff new_position cursor#position)
+    in
     let (offx, offy) = foi2D (dx * tile_size, dy * tile_size) in
     offset <- iof2D (offx, offy);
     let interp_function t = 
       offset <- iof2D (offx *. (1. -. t *. 10.), offy *. (1. -. t *. 10.))
     in
     ignore (Interpolators.new_ip_with_timeout interp_function 0.1);
-    cursor#set_position
-      (Position.clamp 
-        (Position.add (Position.create displ) cursor#position)
-        (Position.create (0,0))
-        maxpos)
+    cursor#set_position new_position
        
   method set_position pos = 
     cursor#set_position 
