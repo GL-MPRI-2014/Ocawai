@@ -4,6 +4,8 @@
 
 type t
 
+val empty : t
+
 val init : Position.t -> t
 
 val reach : t -> Position.t -> t

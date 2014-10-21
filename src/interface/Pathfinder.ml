@@ -2,6 +2,8 @@
 (* We want to make sure there is no loop and discontinuity in it *)
 type t = Position.t list
 
+let empty = []
+
 let init pos = [pos]
 
 (* The empty case is arbitrary and might need to be changed *)

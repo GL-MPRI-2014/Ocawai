@@ -66,7 +66,7 @@ let () = begin
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
             camera#move (1,0)
- 
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
             camera#move (0,1)
 
@@ -78,6 +78,9 @@ let () = begin
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
             camera#set_position (Position.create (80,80))
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
+          camera#cursor#toggle_moving ()
 
 
         | Resized _ ->

@@ -6,6 +6,10 @@ class cursor : position:Position.t -> object
 
   method set_moving : unit -> unit
 
+  method stop_moving : unit -> unit
+
+  method toggle_moving : unit -> unit
+
   method get_move : Action.movement
 
   method scale : float
