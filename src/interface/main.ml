@@ -1,9 +1,5 @@
 open OcsfmlGraphics
-
-let (>?) opt f = 
-  match opt with
-  |None -> ()
-  |Some(o) -> f o
+open Utils
 
 let () = begin
   (* Main window *)

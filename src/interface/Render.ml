@@ -1,10 +1,5 @@
 open OcsfmlGraphics
-
-let foi2D (a,b) = (float_of_int a, float_of_int b)
-let subf2D (a,b) (c,d) = (a-.c,b-.d)
-let (>?) opt f = match opt with
-  |None -> ()
-  |Some(s) -> f s
+open Utils
 
 let texture_library = TextureLibrary.create ()
 let font = new font `None
