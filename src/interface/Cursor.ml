@@ -19,17 +19,17 @@ class cursor ~position = object(self)
   method position =
     current_position
 
-  method set_moving () =
+  method set_moving =
     moving <- true ;
     path <- Pathfinder.init current_position
 
-  method stop_moving () =
+  method stop_moving =
     moving <- false ;
     path <- Pathfinder.empty
 
-  method toggle_moving () =
-    if moving then self#stop_moving ()
-    else self#set_moving ()
+  method toggle_moving =
+    if moving then self#stop_moving
+    else self#set_moving
 
   method get_move =
     Pathfinder.get_move path

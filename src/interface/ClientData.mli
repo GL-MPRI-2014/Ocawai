@@ -15,10 +15,10 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method selected : Unit.t option
 
-  (* Maybe a Displacement module would be useful here *)
-  (* I think it should be deprecated *)
-  method set_current_move : Position.t list -> unit
+  method unselect : unit
 
   method current_move : Position.t list
+
+  method unit_at_position : Position.t -> Unit.t option
 
 end

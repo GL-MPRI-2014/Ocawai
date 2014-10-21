@@ -1,5 +1,10 @@
 open OcsfmlGraphics
 
+let (>?) opt f = 
+  match opt with
+  |None -> ()
+  |Some(o) -> f o
+
 let () = begin
   (* Main window *)
   let window = new render_window
@@ -21,27 +26,6 @@ let () = begin
       Unit.create_from_file "41" "39";
       Unit.create_from_file "39" "39"
     ] in
-
-  (* cdata#set_current_move [
-        Position.create (41,42) ;
-        Position.create (41,43) ;
-        Position.create (42,43) ;
-        Position.create (43,43) ;
-        Position.create (44,43) ;
-        Position.create (45,43) ;
-        Position.create (45,42) ;
-        Position.create (45,41) ;
-        Position.create (44,41) ;
-        Position.create (43,41) ;
-        Position.create (42,41) ;
-        Position.create (41,41) ;
-        Position.create (40,41) ;
-        Position.create (39,41)
-  ]; *)
-
-  cdata#set_current_move [Position.create (41,42)];
-
-  cdata#select_unit (List.hd cdata#units);
 
   (* Basic event manipulation *)
   let rec event_loop () =
@@ -80,8 +64,11 @@ let () = begin
             camera#set_position (Position.create (80,80))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
-          camera#cursor#toggle_moving ()
-
+            cdata#unselect;
+            cdata#camera#cursor#stop_moving;
+            cdata#unit_at_position cdata#camera#cursor#position
+            >? (fun u -> cdata#select_unit u; 
+                         cdata#camera#cursor#set_moving)
 
         | Resized _ ->
           (* We have to do something here -- or forbid resizing *)

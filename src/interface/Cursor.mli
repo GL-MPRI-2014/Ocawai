@@ -4,11 +4,11 @@ class cursor : position:Position.t -> object
 
   method position : Position.t
 
-  method set_moving : unit -> unit
+  method set_moving : unit
 
-  method stop_moving : unit -> unit
+  method stop_moving : unit
 
-  method toggle_moving : unit -> unit
+  method toggle_moving :  unit
 
   method get_move : Action.movement
 
