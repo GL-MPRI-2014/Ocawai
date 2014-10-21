@@ -60,11 +60,16 @@ let () = begin
             camera#set_position (Position.create (80,80))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
-            cdata#unselect;
-            cdata#camera#cursor#stop_moving;
-            cdata#unit_at_position cdata#camera#cursor#position
-            >? (fun u -> cdata#select_unit u; 
-                         cdata#camera#cursor#set_moving)
+            begin
+              match cdata#selected with
+              | Some u ->
+                  cdata#unselect;
+                  cdata#camera#cursor#stop_moving
+              | None ->
+                  cdata#unit_at_position cdata#camera#cursor#position
+                  >? (fun u -> cdata#select_unit u;
+                               cdata#camera#cursor#set_moving)
+            end
 
         | Resized _ ->
           (* We have to do something here -- or forbid resizing *)
