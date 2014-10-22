@@ -1,3 +1,6 @@
+type t = { name : string; product : Unit.t list;
+           income : Resource.t; pos : Position.t }
+
 let get_name t = t.name
 
 let get_producible t = t.product
