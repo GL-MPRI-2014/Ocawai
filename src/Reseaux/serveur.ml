@@ -12,3 +12,35 @@ let _ =
   close sock ;
   count
 
+
+
+
+module FDSet = Set.Make struct
+  type t = file_descr
+  let compare = compare
+end
+
+let clients = ref (FDSet.singleton listen_sock)
+
+let _ =
+  while true do
+    let (fd_read, _, _) = select (FDSet.elements !clients) [] [] -1 in
+    List.iter (fun client ->
+      begin
+	if client = listen_sock then
+	  let (client, _) = accept listen_sock in
+	  clients := FDSet.add client !clients
+	else
+	  begin
+	    let count = read client buffer 0 buffer_size) in
+            if count = 0 then
+	      begin
+		clients := FDSet.remove client !clients ;
+		close client
+	      end
+	    else
+	      Printf.printf "%s\n" buffer
+          end
+      end
+    ) fd_read
+  done 
