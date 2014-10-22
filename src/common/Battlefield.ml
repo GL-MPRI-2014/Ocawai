@@ -3,6 +3,9 @@
 
 type t = Tile.t array array
 
+let create =
+  Array.make_matrix
+
 let get_tile map pos =
   let (x,y) = Position.topair pos in
   map.(x).(y)
