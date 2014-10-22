@@ -1,6 +1,7 @@
 (* Building interface (draft) *)
 
-type t
+type t = { name : string; product : Unit.t list;
+		       income : Resource.t; pos : Position.t }
 
 val get_name : t -> string
 

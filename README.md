@@ -11,3 +11,5 @@ en ce qui concerne le fonctionnement*
 * **F** : Mettre l'application en plein-écran
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
+* **flèches** : déplacer la caméra
+* **espace** : entrer en/sortir du mode déplacement d'unité
