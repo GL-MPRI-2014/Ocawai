@@ -17,5 +17,6 @@ let navigable tile = tile.navigable
 let flyable tile = tile.flyable
 
 let movement_cost tile mouvement = tile.cost
+
 (* Awful *)
 let create_from_file s1 s2 = s1
