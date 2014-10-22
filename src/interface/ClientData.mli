@@ -1,4 +1,4 @@
-class client_data : map:Battlefield.t -> camera:Camera.camera -> 
+class client_data : map:Battlefield.t -> camera:Camera.camera ->
   units:(Unit.t list) -> object
 
   method map : Battlefield.t
@@ -15,9 +15,10 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method selected : Unit.t option
 
-  (* Maybe a Displacement module would be useful here *)
-  method set_current_move : Position.t list -> unit
+  method unselect : unit
 
   method current_move : Position.t list
+
+  method unit_at_position : Position.t -> Unit.t option
 
 end

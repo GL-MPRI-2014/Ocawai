@@ -12,3 +12,4 @@ en ce qui concerne le fonctionnement*
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
 * **flèches** : déplacer la caméra
+* **espace** : entrer en/sortir du mode déplacement d'unité

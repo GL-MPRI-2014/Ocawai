@@ -1,4 +1,5 @@
 open OcsfmlGraphics
+open Utils
 
 let () = begin
   (* Main window *)
@@ -11,35 +12,16 @@ let () = begin
   in
 
   let camera = new Camera.camera ~tile_size:50
-    ~w:window#get_width ~h:window#get_height 
+    ~w:window#get_width ~h:window#get_height
     ~maxpos:(Position.create (99,99)) in
 
-  let cdata = new ClientData.client_data ~camera 
+  let cdata = new ClientData.client_data ~camera
     ~map:(Battlefield.dummy_map ())
     ~units:[
       Unit.create_from_file "41" "42";
       Unit.create_from_file "41" "39";
       Unit.create_from_file "39" "39"
     ] in
-
-  cdata#set_current_move [
-        Position.create (41,42) ;
-        Position.create (41,43) ;
-        Position.create (42,43) ;
-        Position.create (43,43) ;
-        Position.create (44,43) ;
-        Position.create (45,43) ;
-        Position.create (45,42) ;
-        Position.create (45,41) ;
-        Position.create (44,41) ;
-        Position.create (43,41) ;
-        Position.create (42,41) ;
-        Position.create (41,41) ;
-        Position.create (40,41) ;
-        Position.create (39,41)
-  ];
-
-  cdata#select_unit (List.hd cdata#units);
 
   (* Basic event manipulation *)
   let rec event_loop () =
@@ -62,21 +44,36 @@ let () = begin
               (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
               "Flower Wars"
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            camera#move (1,0)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            camera#move (0,1)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            camera#move (-1,0)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            camera#move (0,-1)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
+            camera#set_position (Position.create (80,80))
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
+            begin
+              match cdata#selected with
+              | Some u ->
+                  cdata#unselect;
+                  cdata#camera#cursor#stop_moving
+              | None ->
+                  cdata#unit_at_position cdata#camera#cursor#position
+                  >? (fun u -> cdata#select_unit u;
+                               cdata#camera#cursor#set_moving)
+            end
+
         | Resized _ ->
           (* We have to do something here -- or forbid resizing *)
           ()
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            camera#set_cursor (Position.right camera#cursor)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            camera#set_cursor (Position.up camera#cursor)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            camera#set_cursor (Position.left camera#cursor)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            camera#set_cursor (Position.down camera#cursor)
 
         | _ -> ()
       end);
@@ -86,13 +83,16 @@ let () = begin
 
   let rec main_loop () =
     if window#is_open then begin
+      Interpolators.update ();
+
       event_loop ();
       window#clear ();
       (* Rendering goes here *)
 
       Render.render_game window cdata;
-      
+
       Render.draw_hud window;
+
       (* end of test *)
       window#display;
       main_loop ()

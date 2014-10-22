@@ -1,10 +1,5 @@
 open OcsfmlGraphics
-
-let foi2D (a,b) = (float_of_int a, float_of_int b)
-let subf2D (a,b) (c,d) = (a-.c,b-.d)
-let (>?) opt f = match opt with
-  |None -> ()
-  |Some(s) -> f s
+open Utils
 
 let texture_library = TextureLibrary.create ()
 let font = new font `None
@@ -33,18 +28,17 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
   let (r,g,b) = Color.(base_color.r, base_color.g, base_color.b) in
   let position = foi2D (camera#project pos) in
-  let ts = float_of_int camera#tile_size in
-  new rectangle_shape
-    ~size:(ts -. 2., ts -. 2.)
+  let texture = TextureLibrary.get_texture texture_library "highlight" in
+  let (sx, sy) = foi2D texture#get_size in
+  new sprite
     ~position
-    ~origin:(ts /. 2., ts /. 2.)
-    ~fill_color:(Color.rgba r g b 140)
-    ~outline_color:(Color.rgba 255 255 255 180)
-    ~outline_thickness:2.
+    ~texture
+    ~origin:(sx /. 2., sy /. 2.)
+    ~color:(Color.rgba r g b 255)
     ()
   (* Additive blending is not so good finally, so I will stick with the good ol'
    * default blending *)
-  |> target#draw
+  |> target#draw ~blend_mode:BlendAdd
 
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
@@ -107,13 +101,25 @@ let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
     attack_range := !attack_range @
       (Position.neighbours (!attack_range @ move_range))
   done;
-  List.iter (highlight_tile target camera Color.yellow) move_range;
-  List.iter (highlight_tile target camera Color.red) !attack_range
+  List.iter (highlight_tile target camera (Color.rgb 255 255 100)) move_range;
+  List.iter (highlight_tile target camera (Color.rgb 255 50 50)) !attack_range
 
 
 (* Draw the cursor *)
-let draw_cursor (target : #OcsfmlGraphics.render_target) camera =
-  draw_texture target camera camera#cursor 0. "cursor"
+let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera) =
+  let texture = TextureLibrary.get_texture texture_library "cursor" in
+  let (sx,sy) =  foi2D texture#get_size in
+  let origin = (sx/.2.,sy/.2.) in
+  let position = foi2D (camera#project camera#cursor#position) in
+  let scale = camera#cursor#scale in
+  new OcsfmlGraphics.sprite
+    ~texture
+    ~position
+    ~origin
+    ~scale:(scale, scale)
+    ()
+  |> target#draw
+
 
 
 (* Problem : Currently the text position depends of the resolution *)
