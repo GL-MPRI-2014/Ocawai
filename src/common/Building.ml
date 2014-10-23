@@ -1,10 +1,13 @@
-type t = { name : string; product : Unit.t list;
-           income : Resource.t; pos : Position.t }
+class building =
+object (self)
+  val mutable name = ""
+  val mutable product = ([] : Unit.t list)
+  (* val mutable income = Resource.create 0 *) (* Resource à implanter *)
+  val mutable pos = Position.create (0,0)
+  method get_name = name
+  method get_producible = product
+  (* method get_income = income *)
+  method get_position = pos
+end
 
-let get_name t = t.name
-
-let get_producible t = t.product
-
-let get_income t = t.income
-
-let get_position t = t.pos
+type t = building
