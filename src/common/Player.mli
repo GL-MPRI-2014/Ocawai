@@ -1,4 +1,4 @@
-type t = {army : Unit.t list; buildings : Building.t list (*; ia : ia ?*)}
+type t
 
 val get_army : t -> Unit.t list
 
