@@ -31,7 +31,7 @@ doc : interface
 clean:
 	ocamlbuild -clean
 	rm -f documentation/*.html documentation/*.css
-	rmdir documentation
+	rmdir -- /documentation
 	rm -f documentation.html
 
 test:
