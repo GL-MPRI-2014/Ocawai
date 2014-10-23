@@ -2,7 +2,7 @@
 
 type tile_t = 
   {
-    name : string
+    name : string;
     walkable : bool;
     navigable : bool;
     flyable : bool;
@@ -10,7 +10,7 @@ type tile_t =
   }
 type t = tile_t
 
-let get_name tile = tile.string
+let get_name tile = tile.name
 
 let walkable tile = tile.walkable
 let navigable tile = tile.navigable
@@ -19,4 +19,4 @@ let flyable tile = tile.flyable
 let movement_cost tile mouvement = tile.cost
 
 (* Awful *)
-let create_from_file s1 s2 = s1
+let create_from_file s1 s2 = {name = s1; walkable = true; navigable = false; flyable = false; cost = 1 };
