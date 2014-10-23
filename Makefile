@@ -25,12 +25,14 @@ doc : interface
 	ocamlfind ocamldoc -package $(PACKAGES) -d documentation \
 	-t "Notre super Documentation" -I _build/src/common -I _build/src/interface \
 	-I _build/src/engine -html -colorize-code $(files)
-	rm documentation.html
+	rm -f documentation.html
 	ln -s documentation/index.html documentation.html
 
 clean:
 	ocamlbuild -clean
-	rm -r -- documentation
+	rm -f documentation/*.html documentation/*.css
+	rmdir documentation
+	rm -f documentation.html
 
 test:
 	echo "To be completed, this is a command that returns 0 for Travis."
