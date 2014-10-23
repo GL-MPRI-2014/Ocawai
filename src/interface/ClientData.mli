@@ -1,3 +1,4 @@
+(** Class representing the data hold by the client *)
 class client_data : map:Battlefield.t -> camera:Camera.camera ->
   units:(Unit.t list) -> object
 

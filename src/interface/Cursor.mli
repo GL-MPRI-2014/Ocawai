@@ -14,7 +14,7 @@ class cursor : position:Position.t -> object
   (** Stop movement recording *)
   method stop_moving : unit
 
-  (** Same as set_moving or stop_moving depending on what is active *)
+  (** Same as [set_moving] or [stop_moving] depending on what is active *)
   method toggle_moving :  unit
 
   (** Get the current movement (useful only if movement is beeing recorded) *)

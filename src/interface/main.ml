@@ -1,4 +1,4 @@
-(** This is the main *)
+(** Main function for the interface *)
 open OcsfmlGraphics
 open Utils
 
