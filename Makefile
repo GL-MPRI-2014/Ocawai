@@ -22,7 +22,7 @@ run: interface
 # For now, we cannot handle engine
 doc : interface
 	mkdir -p documentation
-	ocamlfind ocamldoc -package $(PACKAGES) -d documentation \
+	ocamlfind ocamldoc -stars -package $(PACKAGES) -d documentation \
 	-t "Notre super Documentation" -I _build/src/common -I _build/src/interface \
 	-I _build/src/engine -html -colorize-code $(files)
 	rm -f documentation.html
