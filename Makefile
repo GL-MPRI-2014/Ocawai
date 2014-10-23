@@ -21,6 +21,7 @@ doc :
 	ocamlfind ocamldoc -package $(PACKAGES) -d documentation \
 	-t "Notre super Documentation" -I _build/src/common -I _build/src/interface \
 	-I _build/src/engine -html -colorize-code $(files)
+	rm documentation.html
 	ln -s documentation/index.html documentation.html
 
 clean:

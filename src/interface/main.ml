@@ -4,7 +4,6 @@ open Utils
 
 (* Needed to compile them (otherwise no doc) *)
 open Player
-open FieldGenerator
 
 let () = begin
   (* Main window *)
