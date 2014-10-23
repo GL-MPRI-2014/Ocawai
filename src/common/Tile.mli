@@ -9,6 +9,10 @@ val get_name : t -> string
   * unit. *)
 val walkable : t -> bool
 
+val wheelable : t -> bool
+
+val trackable : t -> bool
+
 val navigable : t -> bool
 
 val flyable : t -> bool
