@@ -1,11 +1,10 @@
-type t = {army : Unit.t list; buildings : Building.t list (*; ia : ia ?*)}
+class player = 
+object (self)
+  method get_army = Unit.t list
+  method add_unit u = unit
+  method get_buildings = Building.t
+  method add_building b = unit
+  method get_next_action = (Action.movement * Action.action)
+end
 
-val get_army : t -> Unit.t list
-
-val add_unit : t -> Unit.t -> unit
-
-val get_buildings : t -> Building.t list
-
-val add_building : t -> Building.t -> unit
-
-val get_next_action : t -> (Action.movement * Action.action)
+type t = player

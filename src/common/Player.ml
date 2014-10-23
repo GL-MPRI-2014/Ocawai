@@ -1,9 +1,12 @@
-let get_army t = t.army
+class player = 
+object (self)
+  val mutable army = ([] : Unit.t list)
+  val mutable buildings = ([] : Building.t list)
+  method get_army = army
+  method add_unit u = army <- u::army
+  method get_buildings = buildings
+  method add_building b = buildings <- b::buildings
+  method get_next_action = ((0,0),Wait)
+end
 
-let add_unit t u = t.army <- (u::(t.army))
-
-let get_buildings t = t.buidings
-
-let add_building t b = t.buildings <- (b::(t.buildings))
-
-let get_next_action t  = ((0,0),Wait)
+type t = player
