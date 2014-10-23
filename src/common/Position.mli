@@ -6,7 +6,7 @@
 (** The type of the positions *)
 type t
 
-(** Create a position *)
+(** Creates a position *)
 val create : int * int -> t
 
 (** Returns the effective position for manipulation *)
@@ -16,16 +16,16 @@ val topair : t -> int * int
   * by pmin and pmax *)
 val clamp : t -> t -> t -> t
 
-(** Move the given position to the left *)
+(** Moves the given position to the left *)
 val left : t -> t
 
-(** Move the given position to the right *)
+(** Moves the given position to the right *)
 val right : t -> t
 
-(** Move the given position downwards *)
+(** Moves the given position downwards *)
 val down : t -> t
 
-(** Move the given position upwards *)
+(** Moves the given position upwards *)
 val up : t -> t
 
 (** add p1 p2 returns the position p1 + p2 *)
