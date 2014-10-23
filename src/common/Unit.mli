@@ -1,22 +1,14 @@
 (* Unit interface (draft) *)
 
-type t
-
 type movement = Walking | Swimming | Flying | Amphibious
 
-(* Returns the texture associated to the given unit *)
-val get_name : t -> string
+type t = <
+  name : string;
+  position : Position.t;
+  movement_type : movement;
+  vision_range : int;
+  attack_range : int;
+  move_range : int
+>
 
-val get_position : t -> Position.t
-
-(* Returns the type of movement of the given unit *)
-val movement_type : t -> movement
-
-val vision_range : t -> int
-
-val attack_range : t -> int
-
-val move_range : t -> int
-
-(** Create a unit from the XML file  *)
 val create_from_file : string -> string -> t
