@@ -1,4 +1,6 @@
-# Edit this for your own project dependencies
+# Here are the various libs that will be required. They will be installed
+# either with opam or with the system manager.
+
 OPAM_DEPENDS="ocamlfind ocsfml"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev"
 
@@ -9,7 +11,6 @@ sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam ${LIB_DE
 export OPAMYES=1
 opam init 
 eval `opam config env`
-opam switch 4.02.0
 opam install ${OPAM_DEPENDS}
 make
 make test
