@@ -8,4 +8,4 @@ val get_buildings : t -> Building.t list
 
 val add_building : t -> Building.t -> unit
 
-val get_next_action : t -> (Action.movement * Action.action)
+val get_next_action : t -> Action.t
