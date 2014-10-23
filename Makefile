@@ -15,3 +15,6 @@ run: interface
 
 clean:
 	ocamlbuild -clean
+
+test:
+	echo "To be completed, this is a command that returns 0 for Travis."
