@@ -49,7 +49,6 @@ let dummy_map () =
   m.(29).(33) <- Tile.create_from_file "plain" "";
   m.(29).(32) <- Tile.create_from_file "plain" "";
   m.(28).(35) <- Tile.create_from_file "plain" "";
-  m.(28).(34) <- Tile.create_from_file "plain" "";
   m.(27).(34) <- Tile.create_from_file "plain" "";
   m.(27).(33) <- Tile.create_from_file "plain" "";
   m.(27).(32) <- Tile.create_from_file "plain" "";
