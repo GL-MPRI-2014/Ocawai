@@ -31,6 +31,9 @@ let dummy_map () =
   m.(39).(39) <- Tile.create_from_file "concrete" "";
   m.(39).(41) <- Tile.create_from_file "concrete" "";
   m.(41).(39) <- Tile.create_from_file "concrete" "";
+  m.(40).(38) <- Tile.create_from_file "mountain" "";
+  m.(40).(42) <- Tile.create_from_file "mountain" "";
+  m.(41).(42) <- Tile.create_from_file "mountain" "";
   m.(35).(34) <- Tile.create_from_file "plain" "";
   m.(35).(33) <- Tile.create_from_file "plain" "";
   m.(34).(35) <- Tile.create_from_file "plain" "";

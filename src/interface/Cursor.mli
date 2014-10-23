@@ -1,7 +1,11 @@
+(** This class represents the cursor on the map *)
+
 class cursor : position:Position.t -> object
 
+  (** Sets the position of the cursor *)
   method set_position : Position.t -> unit
 
+  (** @return the position of the cursor *)
   method position : Position.t
 
   method set_moving : unit
