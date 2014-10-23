@@ -1,22 +1,31 @@
-(* TODO : Functorize this module to take an interval as an argument, such 
- * that positions will never get out of this interval *)
+(** 
+ * This module handles positions on the battlefield, and provides some utility
+ * functions to manipulate those positions.
+ *)
 
+(** The type of the positions *)
 type t
 
+(** Create a position *)
 val create : int * int -> t
 
+(** Returns the effective position for manipulation *)
 val topair : t -> int * int
 
 (** clamp p pmin pmax returns the position p clamped to the square delimited
   * by pmin and pmax *)
 val clamp : t -> t -> t -> t
 
+(** Move the given position to the left *)
 val left : t -> t
 
+(** Move the given position to the right *)
 val right : t -> t
 
+(** Move the given position downwards *)
 val down : t -> t
 
+(** Move the given position upwards *)
 val up : t -> t
 
 (** add p1 p2 returns the position p1 + p2 *)
