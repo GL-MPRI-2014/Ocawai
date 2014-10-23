@@ -2,13 +2,13 @@
 
 type t = {name : string; pos : Position.t}
 
-type movement = Walking | Swimming | Flying | Amphibious
+type movement = Walk | Roll | Tracks | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tracks
 
 let get_name t = t.name
 
 let get_position t = t.pos
 
-let movement_type t = Walking
+let movement_type t = Walk
 
 let vision_range t = 3
 
