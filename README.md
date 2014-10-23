@@ -13,3 +13,15 @@ en ce qui concerne le fonctionnement*
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
 * **flèches** : déplacer la caméra
 * **espace** : entrer en/sortir du mode déplacement d'unité
+
+
+# Compilation
+
+* `make interface` : compiler l'interface graphique
+* `make run` : compiler l'interface et la lancer
+* `make doc` : compile la documentation
+
+# Documentation
+
+La documentation est accessible depuis le lien symbolique `documentation.html`
+qui est créé après `make doc`.
