@@ -11,10 +11,11 @@ class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
 
   method tile_size : int
 
-  (* move v moves the camera by adding v to its current position *)
+  (** [move v moves] the camera by adding [v] to its current position *)
   method move : (int*int) -> unit
 
-  (* set_position v moves the camera by setting its current position to v *)
+  (** [set_position v] moves the camera by setting its current position to
+   *  [v] *)
   method set_position : Position.t -> unit
 
 end
