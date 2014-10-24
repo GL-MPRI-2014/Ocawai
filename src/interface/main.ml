@@ -1,10 +1,9 @@
-(** This is the main *)
+(** Main function for the interface *)
 open OcsfmlGraphics
 open Utils
 
 (* Needed to compile them (otherwise no doc) *)
 open Player
-open FieldGenerator
 open BaseMixins
 
 let () = begin
