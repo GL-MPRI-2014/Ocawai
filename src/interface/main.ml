@@ -5,6 +5,7 @@ open Utils
 (* Needed to compile them (otherwise no doc) *)
 open Player
 open FieldGenerator
+open BaseMixins
 
 let () = begin
   (* Main window *)

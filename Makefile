@@ -1,8 +1,8 @@
-INTERFACE_SRC = src/common,src/interface,src/engine,src
+INTERFACE_SRC = src/common,src/interface,src/interface/gui,src/engine,src
 PACKAGES = ocsfml.graphics
 
 find_files = $(wildcard $(dir)/*.ml*)
-dirs := src/common src/interface src/engine src
+dirs := src/common src/interface src/engine src/interface/gui src
 files := $(foreach dir,$(dirs),$(find_files))
 
 OUTPUT = main.native
