@@ -40,7 +40,7 @@ end
 
 class menu pos width i_height = object(self)
 
-  inherit evq_container as super
+  inherit [item] evq_container as super
 
   inherit key_ctrl_list
 

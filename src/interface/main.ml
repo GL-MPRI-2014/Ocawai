@@ -32,20 +32,16 @@ let () = begin
   (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
   let my_menu = new menu (300,0) 120 30 in
 
-  (new item "infantry" "item 1" (fun () -> print_endline "item 1 activated") :>
-   Widget.widget)
+  new item "infantry" "item 1" (fun () -> print_endline "item 1 activated")
   |> my_menu#add_child;
 
-  (new item "infantry" "item 2" (fun () -> print_endline "item 2 activated") :>
-   Widget.widget)
+  new item "infantry" "item 2" (fun () -> print_endline "item 2 activated")
   |> my_menu#add_child;
 
-  (new item "infantry" "item 3" (fun () -> print_endline "item 3 activated") :>
-   Widget.widget)
+  new item "infantry" "item 3" (fun () -> print_endline "item 3 activated")
   |> my_menu#add_child;
 
-  (new item "infantry" "item 4" (fun () -> print_endline "item 4 activated") :>
-   Widget.widget)
+  new item "infantry" "item 4" (fun () -> print_endline "item 4 activated")
   |> my_menu#add_child;
 
   (* Basic event manipulation *)
