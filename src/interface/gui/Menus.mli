@@ -1,3 +1,4 @@
+(** Module for menus *)
 
 (** A class representing an item (in a menu) *)
 class item : string -> string -> (unit -> unit) -> object

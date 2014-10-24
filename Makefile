@@ -24,7 +24,7 @@ doc : interface
 	mkdir -p documentation
 	ocamlfind ocamldoc -stars -package $(PACKAGES) -d documentation \
 	-t "Projet Genie Logiciel MPRI 2014" \
-	-I _build/src/common -I _build/src/interface \
+	-I _build/src/common -I _build/src/interface -I _build/src/interface/gui \
 	-I _build/src/engine -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s documentation/index.html documentation.html

@@ -15,7 +15,7 @@ end
 
 
 (** A mixin that represents an Expandable Vertical container, where all
-  * item heights are eQual *)
+  * item heights are equal *)
 
 class virtual ['a] evq_container : object
 
@@ -36,5 +36,3 @@ class virtual key_ctrl_list : object
   method selected : int
 
 end
-
-
