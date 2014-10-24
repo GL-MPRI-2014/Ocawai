@@ -1,72 +1,63 @@
-open OcsfmlWindow
 open OcsfmlGraphics
+open OcsfmlWindow
 open Utils
-
-let my_font = new font (`File "resources/fonts/AdvoCut.ttf")
-
-class virtual widget = object(self)
-
-  val virtual mutable position : (int * int)
-
-  val virtual mutable parent : widget option 
-
-  val virtual mutable size : (int * int)
-
-  val mutable event_funs : (Event.t -> unit) list = []
-
-  method position = 
-    match parent with
-    |None -> position
-    |Some(s) -> add2D s#position position
-
-  method add_event f = event_funs <- f :: event_funs
-
-  method on_event e = List.iter (fun f -> f e) event_funs
-
-  method virtual draw : render_target -> TextureLibrary.t -> unit
-
-end
+open Widget
 
 
-class virtual transformable = object(self)
-
-  val virtual mutable position : int * int
-
-  val virtual mutable size : int * int
-
-  method set_size s = size <- s
-
-  method set_position p = position <- p
-
-end
-
-
-class virtual item icon text (action : unit -> unit) = object(self)
+class virtual widget_container = object(self)
 
   inherit widget
 
-  inherit transformable
+  val mutable children : widget list = []
 
-  method draw target lib = 
-    (* First draw the background and the icon *)
-    let texture = TextureLibrary.(get_texture lib icon) in
-    let (sx, sy) = foi2D texture#get_size in
-    let (selfx, selfy) = foi2D size in
-    let scale = (selfx /. sx, selfy /. sy) in
-    let position = foi2D self#position in
-    new rectangle_shape ~outline_thickness:2. ~fill_color:Color.white 
-      ~outline_color:Color.black ~size:(selfx, selfy) ~position ()
-    |> target#draw;
-    new sprite ~texture ~scale ~position ()
-    |> target#draw;
-    (* Then draw the text *)
-    new text ~string:text ~character_size:(snd size)
-      ~font:my_font ~color:Color.black ()
-    |> target#draw
+  method add_child w =
+    children <- w::children;
+    w#set_parent (Some (self :> widget));
+    self#add_event (fun e -> w#on_event e)
 
-  method action = action ()
+  method children = children
 
 end
+
+
+class virtual evq_container = object(self)
+
+  inherit widget_container as super
+
+  val virtual mutable item_height : int
+
+  method add_child w = 
+    super#add_child w;
+    size <- (fst size, snd size + item_height);
+    w#set_size (fst size, item_height);
+    w#set_position (0, (List.length children - 1) * item_height)
+
+  
+end
+  
+
+
+class virtual key_ctrl_list = object(self)
+
+  val mutable selected = 0
+
+  val virtual mutable nb_items : int
+
+  method virtual add_event : (Event.t -> unit) -> unit
+
+  method selected = selected
+
+  initializer
+    self#add_event (function
+      |Event.KeyPressed {Event.code = KeyCode.Up; _} -> 
+          if nb_items <> 0 then 
+            selected <- (selected - 1 + nb_items) mod nb_items
+      |Event.KeyPressed {Event.code = KeyCode.Down; _} ->
+          if nb_items <> 0 then 
+            selected <- (selected + 1 + nb_items) mod nb_items
+      | _ -> ())
+end
+
 
 
 

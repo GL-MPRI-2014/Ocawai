@@ -148,6 +148,9 @@ let render_game (target : #OcsfmlGraphics.render_target) data =
   List.iter (draw_unit target data#camera) data#units;
   FPS.display target
 
+let render_widget (target : #OcsfmlGraphics.render_target) 
+  (widget : #Widget.widget) = 
+  widget#draw (target :> render_target) texture_library
 
 let () =
   TextureLibrary.load_directory texture_library "resources/textures/" ;

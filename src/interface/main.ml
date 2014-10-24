@@ -4,7 +4,7 @@ open Utils
 
 (* Needed to compile them (otherwise no doc) *)
 open Player
-open BaseMixins
+open Menus
 
 let () = begin
   (* Main window *)
@@ -28,10 +28,32 @@ let () = begin
       Unit.create_from_file "39" "39"
     ] in
 
+  (* Can be dimensioned as we like *)
+  (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
+  let my_menu = new menu (300,0) 120 30 in
+
+  (new item "infantry" "item 1" (fun () -> print_endline "item 1 activated") :>
+   Widget.widget)
+  |> my_menu#add_child;
+
+  (new item "infantry" "item 2" (fun () -> print_endline "item 2 activated") :>
+   Widget.widget)
+  |> my_menu#add_child;
+
+  (new item "infantry" "item 3" (fun () -> print_endline "item 3 activated") :>
+   Widget.widget)
+  |> my_menu#add_child;
+
+  (new item "infantry" "item 4" (fun () -> print_endline "item 4 activated") :>
+   Widget.widget)
+  |> my_menu#add_child;
+
   (* Basic event manipulation *)
   let rec event_loop () =
     match window#poll_event with
     | Some e -> OcsfmlWindow.Event.(
+      (* just a test *)
+      my_menu#on_event e;
       begin match e with
         | Closed
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
@@ -97,6 +119,9 @@ let () = begin
       Render.render_game window cdata;
 
       Render.draw_hud window;
+
+      (* This is really garbage *)
+      Render.render_widget window my_menu;
 
       (* end of test *)
       window#display;
