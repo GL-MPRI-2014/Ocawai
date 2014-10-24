@@ -5,20 +5,17 @@ type t
 (** texture_name tile returns the name of the texture associated to tile *)
 val get_name : t -> string
 
-(** Those three functions check if a tile is traversable by a given type of
-  * unit. *)
-val walkable : t -> bool
+(** Check if a tile is traversable by a given type of movement/unit *)
 
-val rollable : t -> bool
+val traversable_m : t -> Unit.movement -> bool
 
-val trackable : t -> bool
+val traversable : t -> Unit.t -> bool
 
-val navigable : t -> bool
+(** Takes a movement type/unit and return a tile cost. *)
 
-val flyable : t -> bool
-
-(** Takes a movement type and return a tile cost. Min(Walk,Swim) if Amphibious *)
 val movement_cost : t -> Unit.movement -> int
+
+val tile_cost : t -> Unit.t -> int
 
 (** Create a tile from the XML file  *)
 val create_from_file : string -> string -> t
