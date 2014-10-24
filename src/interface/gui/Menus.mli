@@ -18,7 +18,7 @@ end
 (** Usage : menu position width item_height *)
 class menu : (int * int) -> int -> int -> object
 
-  inherit BaseMixins.evq_container
+  inherit [item] BaseMixins.evq_container 
 
   inherit BaseMixins.key_ctrl_list
 

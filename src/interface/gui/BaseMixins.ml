@@ -4,13 +4,15 @@ open Utils
 open Widget
 
 
-class virtual widget_container = object(self)
+class virtual ['a] widget_container = object(self)
 
   inherit widget
 
-  val mutable children : widget list = []
+  constraint 'a = #widget
 
-  method add_child w =
+  val mutable children : 'a list = []
+
+  method add_child (w : 'a) =
     children <- w::children;
     w#set_parent (Some (self :> widget));
     self#add_event (fun e -> w#on_event e)
@@ -20,9 +22,9 @@ class virtual widget_container = object(self)
 end
 
 
-class virtual evq_container = object(self)
+class virtual ['a] evq_container = object(self)
 
-  inherit widget_container as super
+  inherit ['a] widget_container as super
 
   val virtual mutable item_height : int
 

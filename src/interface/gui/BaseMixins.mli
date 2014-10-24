@@ -1,22 +1,25 @@
 open OcsfmlWindow
 
 (** A mixin that represents widget containers *)
-class virtual widget_container : object
+class virtual ['a] widget_container : object
 
   inherit Widget.widget
 
-  method add_child : Widget.widget -> unit
+  constraint 'a = #Widget.widget
 
-  method children : Widget.widget list
+  method add_child : 'a -> unit
+
+  method children : 'a list
 
 end
 
 
 (** A mixin that represents an Expandable Vertical container, where all
   * item heights are equal *)
-class virtual evq_container : object
 
-  inherit widget_container
+class virtual ['a] evq_container : object
+
+  inherit ['a] widget_container
 
   val virtual mutable item_height : int
 
