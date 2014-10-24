@@ -96,7 +96,8 @@ let () = begin
                         cdata#select_unit u;
                         cdata#camera#cursor#set_moving
                     | None ->
-                        showing_menu := not (!showing_menu)
+                        showing_menu := not (!showing_menu) ;
+                        my_menu#set_position (camera#project cdata#camera#cursor#position)
                   end
                   (* cdata#unit_at_position cdata#camera#cursor#position
                   >? (fun u -> cdata#select_unit u;
