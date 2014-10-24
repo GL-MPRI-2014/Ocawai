@@ -6,7 +6,7 @@ open Widget
 
 class virtual ['a] widget_container = object(self)
 
-  inherit widget
+  inherit widget as super
 
   constraint 'a = #widget
 
@@ -18,6 +18,11 @@ class virtual ['a] widget_container = object(self)
     self#add_event (fun e -> w#on_event e)
 
   method children = children
+
+  method toggle = 
+    super#toggle;
+    List.iter (fun c -> c#toggle) children
+    
 
 end
 

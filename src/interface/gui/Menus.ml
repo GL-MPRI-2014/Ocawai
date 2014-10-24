@@ -15,7 +15,7 @@ class item icon text (action : unit -> unit) = object(self)
 
   val mutable size = (0,0)
 
-  method draw target lib = 
+  method draw target lib = if self#active then begin
     (* First draw the background and the icon *)
     let texture = TextureLibrary.(get_texture lib icon) in
     let (sx, sy) = foi2D texture#get_size in
@@ -31,7 +31,7 @@ class item icon text (action : unit -> unit) = object(self)
     new text ~string:text ~character_size:(snd size - 1)
       ~position:(fst position +. sx *. scale +. 5., snd position -. 2.)
       ~font:my_font ~color:Color.black ()
-    |> target#draw
+    |> target#draw end
 
   method action = action ()
 
@@ -52,15 +52,23 @@ class menu pos width i_height = object(self)
 
   val mutable item_height = i_height
 
-  method draw target lib = List.iter (fun c -> c#draw target lib) 
-    self#children;
+  method draw target lib = if self#active then begin
+    List.iter (fun c -> c#draw target lib) self#children;
     let (posx, posy) = self#position in
     new rectangle_shape ~outline_thickness:2. ~fill_color:(Color.rgba 0 0 0 0)
       ~outline_color:Color.blue ~size:(foi2D (width,item_height))
       ~position:(foi2D (posx, posy + self#selected * item_height)) ()
-    |> target#draw
+    |> target#draw end
 
   method add_child w = 
     super#add_child w;
     nb_items <- nb_items + 1
+
+  initializer
+    self#add_event(function
+      |Event.KeyPressed{Event.code = KeyCode.Space; _} ->
+          if nb_items <> 0 then 
+            (List.nth self#children self#selected)#action;
+          self#toggle
+      | _ -> ())
 end

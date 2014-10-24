@@ -35,5 +35,11 @@ class virtual widget : object
   (** Set the parent of this widget, should only be used internally *)
   method set_parent : widget option -> unit
 
+  (** Returns true iff the widget is active *)
+  method active : bool
+
+  (** Toggle the widget between active/inactive *)
+  method toggle : unit
+
 end
 
