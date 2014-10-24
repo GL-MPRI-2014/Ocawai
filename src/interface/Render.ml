@@ -94,7 +94,7 @@ let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
 let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
   let move_range = Position.filled_circle
       (my_unit#position)
-      (my_unit#moverange)
+      (my_unit#move_range)
   in
   let attack_range = ref [] in
   for i = 1 to my_unit#attack_range do
@@ -140,7 +140,8 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
   target#draw text
 
 
-let render_game (target : #OcsfmlGraphics.render_target) data =
+let render_game (target : #OcsfmlGraphics.render_target) 
+  (data : ClientData.client_data) =
   render_map target data#camera data#map;
   data#selected >? draw_range target data#camera;
   draw_path target data#camera data#current_move;

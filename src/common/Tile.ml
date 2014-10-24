@@ -14,7 +14,7 @@ type t = tile_t
 let get_name tile = tile.name
 
 let walkable tile = tile.walk_cost >= 0
-let wheelable tile = tile.wheels_cost >= 0 (*ouch*)
+let rollable tile = tile.wheels_cost >= 0 (*ouch*)
 let trackable tile = tile.tracks_cost >= 0 (*big ouch*)
 let navigable tile = tile.swim_cost >= 0
 let flyable tile = tile.fly_cost >= 0
@@ -25,12 +25,12 @@ let cost = begin
     let open Unit in
     match movement with
     | Walk -> tile.walk_cost
-    | Wheels -> tile.wheels_cost
+    | Roll -> tile.wheels_cost
     | Tracks -> tile.tracks_cost
     | Swim -> tile.swim_cost
     | Fly -> tile.fly_cost
     | Amphibious_Walk -> min_pos tile.swim_cost tile.walk_cost
-    | Amphibious_Wheels -> min_pos tile.swim_cost tile.wheels_cost
+    | Amphibious_Roll -> min_pos tile.swim_cost tile.wheels_cost
     | Amphibious_Tracks-> min_pos tile.swim_cost tile.tracks_cost
 end in
 if cost >=0 then cost else failwith("Tile.movement_cost : not a valid movement")
