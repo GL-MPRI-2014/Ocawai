@@ -21,51 +21,54 @@ let tile_iteri f map =
   Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) map
 
 let dummy_map () =
-  let m = Array.make_matrix 100 100 (Tile.create_from_config "water") in
-  m.(40).(40) <- Tile.create_from_config "forest";
-  m.(41).(40) <- Tile.create_from_config "plain";
-  m.(39).(40) <- Tile.create_from_config "plain";
-  m.(40).(39) <- Tile.create_from_config "plain";
-  m.(40).(41) <- Tile.create_from_config "plain";
-  m.(41).(41) <- Tile.create_from_config "concrete";
-  m.(39).(39) <- Tile.create_from_config "concrete";
-  m.(39).(41) <- Tile.create_from_config "concrete";
-  m.(41).(39) <- Tile.create_from_config "concrete";
-  m.(35).(34) <- Tile.create_from_config "plain";
-  m.(35).(33) <- Tile.create_from_config "plain";
-  m.(34).(35) <- Tile.create_from_config "plain";
-  m.(34).(32) <- Tile.create_from_config "plain";
-  m.(33).(35) <- Tile.create_from_config "plain";
-  m.(33).(34) <- Tile.create_from_config "plain";
-  m.(33).(33) <- Tile.create_from_config "plain";
-  m.(33).(32) <- Tile.create_from_config "plain";
-  m.(31).(35) <- Tile.create_from_config "plain";
-  m.(31).(34) <- Tile.create_from_config "plain";
-  m.(31).(32) <- Tile.create_from_config "plain";
-  m.(29).(34) <- Tile.create_from_config "plain";
-  m.(29).(33) <- Tile.create_from_config "plain";
-  m.(29).(32) <- Tile.create_from_config "plain";
-  m.(28).(35) <- Tile.create_from_config "plain";
-  m.(28).(34) <- Tile.create_from_config "plain";
-  m.(27).(34) <- Tile.create_from_config "plain";
-  m.(27).(33) <- Tile.create_from_config "plain";
-  m.(27).(32) <- Tile.create_from_config "plain";
-  m.(25).(35) <- Tile.create_from_config "plain";
-  m.(25).(34) <- Tile.create_from_config "plain";
-  m.(25).(33) <- Tile.create_from_config "plain";
-  m.(25).(32) <- Tile.create_from_config "plain";
-  m.(24).(34) <- Tile.create_from_config "plain";
-  m.(24).(32) <- Tile.create_from_config "plain";
-  m.(23).(35) <- Tile.create_from_config "plain";
-  m.(23).(34) <- Tile.create_from_config "plain";
-  m.(23).(33) <- Tile.create_from_config "plain";
-  m.(23).(32) <- Tile.create_from_config "plain";
-  m.(21).(34) <- Tile.create_from_config "plain";
-  m.(21).(33) <- Tile.create_from_config "plain";
-  m.(20).(35) <- Tile.create_from_config "plain";
-  m.(20).(32) <- Tile.create_from_config "plain";
-  m.(19).(35) <- Tile.create_from_config "plain";
-  m.(19).(34) <- Tile.create_from_config "plain";
-  m.(19).(33) <- Tile.create_from_config "plain";
-  m.(19).(32) <- Tile.create_from_config "plain";
+  let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
+  let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
+  let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in
+  let m = Array.make_matrix 100 100 (tile "water") in
+  m.(40).(40) <- tile "forest";
+  m.(41).(40) <- tile "plain";
+  m.(39).(40) <- tile "plain";
+  m.(40).(39) <- tile "plain";
+  m.(40).(41) <- tile "plain";
+  m.(41).(41) <- tile "concrete";
+  m.(39).(39) <- tile "concrete";
+  m.(39).(41) <- tile "concrete";
+  m.(41).(39) <- tile "concrete";
+  m.(35).(34) <- tile "plain";
+  m.(35).(33) <- tile "plain";
+  m.(34).(35) <- tile "plain";
+  m.(34).(32) <- tile "plain";
+  m.(33).(35) <- tile "plain";
+  m.(33).(34) <- tile "plain";
+  m.(33).(33) <- tile "plain";
+  m.(33).(32) <- tile "plain";
+  m.(31).(35) <- tile "plain";
+  m.(31).(34) <- tile "plain";
+  m.(31).(32) <- tile "plain";
+  m.(29).(34) <- tile "plain";
+  m.(29).(33) <- tile "plain";
+  m.(29).(32) <- tile "plain";
+  m.(28).(35) <- tile "plain";
+  m.(28).(34) <- tile "plain";
+  m.(27).(34) <- tile "plain";
+  m.(27).(33) <- tile "plain";
+  m.(27).(32) <- tile "plain";
+  m.(25).(35) <- tile "plain";
+  m.(25).(34) <- tile "plain";
+  m.(25).(33) <- tile "plain";
+  m.(25).(32) <- tile "plain";
+  m.(24).(34) <- tile "plain";
+  m.(24).(32) <- tile "plain";
+  m.(23).(35) <- tile "plain";
+  m.(23).(34) <- tile "plain";
+  m.(23).(33) <- tile "plain";
+  m.(23).(32) <- tile "plain";
+  m.(21).(34) <- tile "plain";
+  m.(21).(33) <- tile "plain";
+  m.(20).(35) <- tile "plain";
+  m.(20).(32) <- tile "plain";
+  m.(19).(35) <- tile "plain";
+  m.(19).(34) <- tile "plain";
+  m.(19).(33) <- tile "plain";
+  m.(19).(32) <- tile "plain";
   m

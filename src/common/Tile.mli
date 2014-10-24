@@ -17,7 +17,10 @@ val movement_cost : t -> Unit.movement -> int
 
 val tile_cost : t -> Unit.t -> int
 
-(** Create a tile from the XML file  *)
+(** Create a tile from the json file  *)
+
+val tile_t_to_t : Tile_t.t -> t
+
 val create_from_file : string -> string -> t
 
 val create_from_config : string -> t
