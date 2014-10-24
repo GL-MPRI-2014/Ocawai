@@ -2,7 +2,7 @@
 
 type t
 
-(** texture_name tile returns the name of the texture associated to tile *)
+(** get_name tile returns the name of the tile *)
 val get_name : t -> string
 
 (** Check if a tile is traversable by a given type of movement/unit *)

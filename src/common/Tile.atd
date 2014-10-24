@@ -1,7 +1,6 @@
 
 type t = {
   name: string;
-  texture_name: string;
   ~walk_cost<ocaml default="-1">: int;
   ~roll_cost<ocaml default="-1">: int;
   ~tracks_cost<ocaml default="-1">: int;

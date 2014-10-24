@@ -1,7 +1,6 @@
 
 type t = {
   name: string;
-  texture_name: string;
   walk_cost: int;
   roll_cost: int;
   tracks_cost: int;
@@ -50,7 +49,6 @@ if cost >=0 then cost else failwith("Tile.movement_cost : not a valid movement")
 let tile_cost tile soldier = movement_cost tile soldier#movement_type
 
 let tile_t_to_t ti = {name = ti.Tile_t.name;
-  texture_name = ti.Tile_t.texture_name;
   walk_cost = ti.Tile_t.walk_cost;
   roll_cost = ti.Tile_t.roll_cost;
   tracks_cost = ti.Tile_t.tracks_cost;
