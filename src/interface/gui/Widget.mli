@@ -1,5 +1,5 @@
-(** 
-  * Provides a basic mixin for widgets 
+(**
+  * Provides a basic mixin for widgets
   *
   *)
 
@@ -23,7 +23,7 @@ class virtual widget : object
   method on_event : OcsfmlWindow.Event.t -> unit
 
   (** Draw the widget to the given target *)
-  method virtual draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> 
+  method virtual draw : OcsfmlGraphics.render_target -> TextureLibrary.t ->
     unit
 
   (** Set the relative position of this widget *)
@@ -31,6 +31,9 @@ class virtual widget : object
 
   (** Set the size of this widget *)
   method set_size : int * int -> unit
+
+  (** Get the size of this widget *)
+  method get_size : int * int
 
   (** Set the parent of this widget, should only be used internally *)
   method set_parent : widget option -> unit
@@ -42,4 +45,3 @@ class virtual widget : object
   method toggle : unit
 
 end
-

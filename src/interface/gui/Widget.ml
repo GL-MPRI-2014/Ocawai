@@ -14,10 +14,10 @@ class virtual widget = object(self)
 
   val mutable event_funs : (Event.t -> unit) list = []
 
-  method position = 
+  method position =
     match parent with
-    |None -> position
-    |Some(s) -> add2D s#position position
+    | None -> position
+    | Some(s) -> add2D s#position position
 
   method add_event f = event_funs <- f :: event_funs
 
@@ -26,6 +26,8 @@ class virtual widget = object(self)
   method set_position p = position <- p
 
   method set_size s = size <- s
+
+  method get_size = size
 
   method set_parent p = parent <- p
 
