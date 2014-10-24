@@ -6,7 +6,7 @@ object (self)
   method add_unit u = army <- u::army
   method get_buildings = buildings
   method add_building b = buildings <- b::buildings
-  method get_next_action = ((0,0),Wait)
+  method get_next_action = Wait
 end
 
 type t = player

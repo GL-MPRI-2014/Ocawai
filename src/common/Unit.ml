@@ -1,6 +1,6 @@
 (* Dummy Unit implementation to test interface *)
 
-type movement = Walking | Swimming | Flying | Amphibious
+type movement = Walk | Roll | Tracks | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tracks
 
 class soldier (s : string) (p : Position.t) (m : movement) 
   (v :int) (a : int) (r : int) = 
@@ -20,4 +20,4 @@ type t = soldier
 (* Wow. Much bad. *)
 let create_from_file s1 s2 = 
   new soldier "infantry" (Position.create (int_of_string s1, int_of_string s2))
-    Walking 3 2 4
+    Walk 3 2 4
