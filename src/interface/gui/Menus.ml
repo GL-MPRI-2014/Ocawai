@@ -76,8 +76,7 @@ class menu pos width i_height = object(self)
     self#add_event(function
       |Event.KeyPressed{Event.code = KeyCode.Space; _} ->
           if nb_items <> 0 then 
-            (List.nth self#children self#selected)#action;
-          self#toggle
+            (List.nth self#children (nb_items - self#selected - 1))#action
       | _ -> ())
 
 end

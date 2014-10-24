@@ -95,10 +95,8 @@ let () = begin
                         cdata#select_unit u;
                         cdata#camera#cursor#set_moving
                     | None ->
-                        if not my_menu#active then begin
-                          my_menu#toggle;
-                          my_menu#set_position (camera#project cdata#camera#cursor#position)
-                        end
+                        my_menu#toggle;
+                        my_menu#set_position (camera#project cdata#camera#cursor#position)
                   end
             end
 
