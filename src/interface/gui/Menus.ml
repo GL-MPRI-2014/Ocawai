@@ -67,10 +67,7 @@ class menu pos width i_height = object(self)
 
   method add_child w =
     super#add_child w;
-    nb_items <- nb_items + 1;
-    let (width, height) = size
-    and (_,wh) = w#get_size in
-    size <- (width,height+wh)
+    nb_items <- nb_items + 1
 
   initializer
     self#add_event(function
