@@ -31,15 +31,15 @@ let () = begin
   (* Can be dimensioned as we like *)
   (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
   let showing_menu = ref false in
-  let my_menu = new menu (300,50) 120 30 in
+  let my_menu = new menu (300,50) 150 30 in
 
-  new item "infantry" "item 1" (fun () -> print_endline "item 1 activated")
+  new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited")
   |> my_menu#add_child;
 
-  new item "infantry" "item 2" (fun () -> print_endline "item 2 activated")
+  new item "info" "Info" (fun () -> print_endline "info activated")
   |> my_menu#add_child;
 
-  new item "infantry" "item 3" (fun () -> print_endline "item 3 activated")
+  new item "params" "Settings" (fun () -> print_endline "settings activated")
   |> my_menu#add_child;
 
   new item "infantry" "item 4" (fun () -> print_endline "item 4 activated")
@@ -105,7 +105,7 @@ let () = begin
             end
 
         | Resized _ ->
-          (* We have to do something here -- or forbid resizing *)
+          (* We have to do something here *)
           ()
 
         | _ -> ()
