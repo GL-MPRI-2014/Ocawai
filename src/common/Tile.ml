@@ -44,5 +44,7 @@ let tile_cost tile soldier = movement_cost tile soldier#movement_type
 let create_from_file s1 s2 =
   List.find
     (fun tile -> tile.Tile_t.name = s1)
-    (Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json"(*s2*))
+    (Ag_util.Json.from_file Tile_j.read_t_list s2)
   (*TODO : cache *)
+
+let create_from_config s1 = create_from_file s1 "resources/config/tiles.json"

@@ -19,3 +19,5 @@ val tile_cost : t -> Unit.t -> int
 
 (** Create a tile from the XML file  *)
 val create_from_file : string -> string -> t
+
+val create_from_config : string -> t
