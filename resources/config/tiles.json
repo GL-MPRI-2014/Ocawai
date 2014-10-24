@@ -1,0 +1,48 @@
+[
+  {
+    "name": "water",
+    "texture_name": "water",
+    "walk_cost": -1,
+    "wheels_cost": -1,
+    "tracks_cost": -1,
+    "swim_cost": 1,
+    "fly_cost": 1
+  },
+  {
+    "name": "plain",
+    "texture_name": "plain",
+    "walk_cost": 1,
+    "wheels_cost": 2,
+    "tracks_cost": 2,
+    "swim_cost": -1,
+    "fly_cost": 1
+  },
+  {
+    "name": "forest",
+    "texture_name": "forest",
+    "walk_cost": 2,
+    "wheels_cost": 5,
+    "tracks_cost": 10,
+    "swim_cost": -1,
+    "fly_cost": 1
+  },
+  {
+    "name": "concrete",
+    "texture_name": "concrete",
+    "walk_cost": 1,
+    "wheels_cost": 1,
+    "tracks_cost": 1,
+    "swim_cost": -1,
+    "fly_cost": 1
+  },
+  {
+    "name": "mountain",
+    "texture_name": "mountain",
+    "walk_cost": -1,
+    "wheels_cost": -1,
+    "tracks_cost": -1,
+    "swim_cost": -1,
+    "fly_cost": 3
+  }
+]
+
