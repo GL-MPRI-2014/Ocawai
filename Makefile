@@ -23,7 +23,8 @@ run: interface
 doc : interface
 	mkdir -p documentation
 	ocamlfind ocamldoc -stars -package $(PACKAGES) -d documentation \
-	-t "Notre super Documentation" -I _build/src/common -I _build/src/interface \
+	-t "Projet Genie Logiciel MPRI 2014" \
+	-I _build/src/common -I _build/src/interface \
 	-I _build/src/engine -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s documentation/index.html documentation.html
@@ -31,7 +32,7 @@ doc : interface
 clean:
 	ocamlbuild -clean
 	rm -f documentation/*.html documentation/*.css
-	rmdir documentation
+	rmdir -- /documentation
 	rm -f documentation.html
 
 test:

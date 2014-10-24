@@ -1,2 +1,2 @@
-language: c
+language: c++
 script: bash -ex .travis-ci.sh
