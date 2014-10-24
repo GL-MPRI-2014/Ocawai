@@ -30,7 +30,8 @@ let () = begin
 
   (* Can be dimensioned as we like *)
   (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
-  let my_menu = new menu (300,0) 120 30 in
+  let showing_menu = ref false in
+  let my_menu = new menu (300,50) 120 30 in
 
   (new item "infantry" "item 1" (fun () -> print_endline "item 1 activated") :>
    Widget.widget)
@@ -53,7 +54,7 @@ let () = begin
     match window#poll_event with
     | Some e -> OcsfmlWindow.Event.(
       (* just a test *)
-      my_menu#on_event e;
+      if !showing_menu then my_menu#on_event e;
       begin match e with
         | Closed
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
@@ -72,16 +73,16 @@ let () = begin
               "Flower Wars"
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            camera#move (1,0)
+            if not (!showing_menu) then camera#move (1,0)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            camera#move (0,1)
+            if not (!showing_menu) then camera#move (0,1)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            camera#move (-1,0)
+            if not (!showing_menu) then camera#move (-1,0)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            camera#move (0,-1)
+            if not (!showing_menu) then camera#move (0,-1)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
             camera#set_position (Position.create (80,80))
@@ -93,9 +94,17 @@ let () = begin
                   cdata#unselect;
                   cdata#camera#cursor#stop_moving
               | None ->
-                  cdata#unit_at_position cdata#camera#cursor#position
+                  begin match cdata#unit_at_position
+                    cdata#camera#cursor#position with
+                    | Some u ->
+                        cdata#select_unit u;
+                        cdata#camera#cursor#set_moving
+                    | None ->
+                        showing_menu := not (!showing_menu)
+                  end
+                  (* cdata#unit_at_position cdata#camera#cursor#position
                   >? (fun u -> cdata#select_unit u;
-                               cdata#camera#cursor#set_moving)
+                               cdata#camera#cursor#set_moving) *)
             end
 
         | Resized _ ->
@@ -121,7 +130,7 @@ let () = begin
       Render.draw_hud window;
 
       (* This is really garbage *)
-      Render.render_widget window my_menu;
+      if !showing_menu then Render.render_widget window my_menu;
 
       (* end of test *)
       window#display;
