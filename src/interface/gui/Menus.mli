@@ -1,3 +1,4 @@
+(** Module for menus *)
 
 (** A class representing an item (in a menu) *)
 class item : string -> string -> (unit -> unit) -> object
@@ -17,7 +18,7 @@ end
 (** Usage : menu position width item_height *)
 class menu : (int * int) -> int -> int -> object
 
-  inherit BaseMixins.evq_container 
+  inherit BaseMixins.evq_container
 
   inherit BaseMixins.key_ctrl_list
 

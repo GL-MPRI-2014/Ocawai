@@ -13,11 +13,10 @@ end
 
 
 (** A mixin that represents an Expandable Vertical container, where all
-  * item heights are eQual *)
-
+  * item heights are equal *)
 class virtual evq_container : object
 
-  inherit widget_container 
+  inherit widget_container
 
   val virtual mutable item_height : int
 
@@ -34,5 +33,3 @@ class virtual key_ctrl_list : object
   method selected : int
 
 end
-
-
