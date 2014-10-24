@@ -29,9 +29,26 @@ class virtual widget : object
 end
 
 
+(** A mixin to handle transformations *)
+class virtual transformable : object
+
+  val virtual mutable position : int * int
+
+  val virtual mutable size : int * int
+
+  method set_size : int * int -> unit
+
+  method set_position : int * int -> unit
+
+end
+
+
+(** A class representing an item (in a menu) *)
 class virtual item : string -> string -> (unit -> unit) -> object
 
   inherit widget
+
+  inherit transformable
 
   method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
 

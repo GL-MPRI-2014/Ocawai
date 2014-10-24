@@ -28,10 +28,24 @@ class virtual widget = object(self)
 end
 
 
+class virtual transformable = object(self)
+
+  val virtual mutable position : int * int
+
+  val virtual mutable size : int * int
+
+  method set_size s = size <- s
+
+  method set_position p = position <- p
+
+end
+
 
 class virtual item icon text (action : unit -> unit) = object(self)
 
   inherit widget
+
+  inherit transformable
 
   method draw target lib = 
     (* First draw the background and the icon *)
