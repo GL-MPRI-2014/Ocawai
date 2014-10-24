@@ -34,10 +34,7 @@ val add : t -> t -> t
 (** diff p1 p2 returns the position p1 - p2 *)
 val diff : t -> t -> t
 
-(** square p1 p2 returns the list of positions in the square :
-  *      p1 x  x 
-  *      x  x  x
-  *      x  x  p2 
+(** square p1 p2 returns the list of positions in the square p1 x p2 
   * including p1 and p2, from left to right, top to bottom *)
 val square : t -> t -> t list
 
