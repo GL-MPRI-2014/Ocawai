@@ -32,7 +32,9 @@ doc : interface
 clean:
 	ocamlbuild -clean
 	rm -f documentation/*.html documentation/*.css
-	rmdir -- /documentation
+	printf "#!/bin/bash\n\n[ -d ./documentation ] && rmdir -- ./documentation" >> cleanDoc.sh
+	bash cleanDoc.sh || true
+	rm -f -- cleanDoc.sh
 	rm -f documentation.html
 
 test:
