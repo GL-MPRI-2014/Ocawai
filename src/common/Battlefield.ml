@@ -23,11 +23,11 @@ let tile_iteri f map =
 let print map = 
 Array.iter (fun t -> (Array.iter (fun tt -> 
   print_string (match (Tile.get_name tt) with
-              | "water" -> " "
-              | "plain" -> "."
-              | "forest" -> ":"
-              | "concrete" -> "X"
-              | "mountain" -> "M"
+              | "water" -> "  "
+              | "plain" -> ".."
+              | "forest" -> "::"
+              | "concrete" -> "=="
+              | "mountain" -> "MM"
               | _ -> "?"
   )) t;print_string "\n")) map
 

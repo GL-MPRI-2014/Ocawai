@@ -7,7 +7,7 @@
     "tracks_cost": -1,
     "swim_cost": 1,
     "fly_cost": 1,
-    "densite": 5
+    "densite": 11
   },
   {
     "name": "plain",
@@ -17,7 +17,7 @@
     "tracks_cost": 2,
     "swim_cost": -1,
     "fly_cost": 1,
-    "densite": 5
+    "densite": 10
   },
   {
     "name": "forest",
@@ -27,7 +27,7 @@
     "tracks_cost": 10,
     "swim_cost": -1,
     "fly_cost": 1,
-    "densite": 5
+    "densite": 10
   },
   {
     "name": "concrete",
@@ -47,7 +47,7 @@
     "tracks_cost": -1,
     "swim_cost": -1,
     "fly_cost": 3,
-    "densite": 0
+    "densite": 2
   }
 ]
 
