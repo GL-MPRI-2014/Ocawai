@@ -16,6 +16,10 @@ val topair : t -> int * int
   * by [pmin] and [pmax] *)
 val clamp : t -> t -> t -> t
 
+(** [out_of_bounds p pmin pmax] returns true iff [p] is outside the square
+ * delimited by [pmin] and [pmax] *)
+val out_of_bounds : t -> t -> t -> bool
+
 (** Moves the given position to the left *)
 val left : t -> t
 

@@ -49,8 +49,7 @@ class sliced_texture filename ~upcut ~downcut ~rightcut ~leftcut =
               ?rotation:(rotation=0.) ?origin:(origin=(0.,0.)) 
               ?color:(color=Color.white) ?scale:(scale=(1.,1.)) 
               ?blend_mode:(blend_mode=BlendAlpha) () =
-    let (++) = add2D in 
-    let (--) = sub2D in
+    let (++) = add2D in let (--) = sub2D in
     let rp r = OcsfmlGraphics.(r.left, r.top)     in 
     let rs r = OcsfmlGraphics.(r.width, r.height) in
     let ffst = fun s -> float_of_int (fst s)  in 

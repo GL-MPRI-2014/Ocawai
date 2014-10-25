@@ -8,6 +8,9 @@ let clamp (a,b) (mina,minb) (maxa, maxb) =
   let clamp_aux x minx maxx = max (min x maxx) minx in
   (clamp_aux a mina maxa, clamp_aux b minb maxb)
 
+let out_of_bounds p minp maxp = 
+  clamp p minp maxp <> p
+
 let left (a,b) = (a-1,b)
 
 let right (a,b) = (a+1,b)
