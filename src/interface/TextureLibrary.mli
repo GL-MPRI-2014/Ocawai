@@ -11,4 +11,4 @@ val load_directory : t -> string -> unit
 
 val load_texture : t -> string -> unit
 
-val get_texture : t -> string -> OcsfmlGraphics.texture
+val get_texture : t -> string -> CustomDrawable.drawable

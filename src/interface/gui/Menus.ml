@@ -16,20 +16,16 @@ class item icon text (action : unit -> unit) = object(self)
   val mutable size = (0,0)
 
   method draw target lib = if self#active then begin
-    (* First draw the background and the icon *)
+    (* First draw the icon *)
     let texture = TextureLibrary.(get_texture lib icon) in
-    let (sx, sy) = foi2D texture#get_size in
+    let (sx, sy) = foi2D texture#default_size in
     let (selfx, selfy) = foi2D size in
-    let scale = selfy /. sy in
+    let tex_size_x = sx *. selfy /. sy in 
     let position = foi2D self#position in
-    (* new rectangle_shape ~outline_thickness:1. ~fill_color:Color.white
-      ~outline_color:Color.black ~size:(selfx, selfy) ~position ()
-    |> target#draw; *)
-    new sprite ~texture ~scale:(scale,scale) ~position ()
-    |> target#draw;
+    texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
     (* Then draw the text *)
     new text ~string:text ~character_size:(snd size - 1)
-      ~position:(fst position +. sx *. scale +. 5., snd position -. 2.)
+      ~position:(fst position +. tex_size_x +. 5., snd position -. 2.)
       ~font:my_font ~color:Color.black ()
     |> target#draw end
 

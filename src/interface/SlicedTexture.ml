@@ -21,12 +21,13 @@ let create tex ~up ~up_right ~right ~down_right
 	{texture = tex; up; up_right; right; down_right; 
                    down; down_left; left; up_left; center}
 
-class sliced_texture filename ~upcut ~downcut ~rightcut ~leftcut = object
+class sliced_texture filename ~upcut ~downcut ~rightcut ~leftcut = 
+  let tex_base = new texture (`File filename) in object(self)
 
   inherit CustomDrawable.drawable
   
   val sl_texture = 
-    let tex_base = new texture (`File filename) in
+    tex_base#set_smooth true;
     let (w,h) = tex_base#get_size in 
     let (u,d,r,l) = (upcut, downcut, rightcut, leftcut) in 
     let up_left    = IntRect.create ~position: (0, 0) ~size:(l    , u    ) ()
@@ -41,74 +42,90 @@ class sliced_texture filename ~upcut ~downcut ~rightcut ~leftcut = object
     in create tex_base ~up_left ~up ~up_right ~left ~center 
                        ~right ~down_left ~down ~down_right
 
-    method draw ~target ~position ~size ~rotation ~origin ~color () = 
-      let (++) = add2D in 
-      let (--) = sub2D in
-      let rp r = OcsfmlGraphics.(r.left, r.top)     in 
-      let rs r = OcsfmlGraphics.(r.width, r.height) in
-      let ffst = fun s -> float_of_int (fst s)  in 
-      let fsnd = fun s -> float_of_int (snd s)  in 
-      let size = iof2D size in
-      let position = iof2D position in
+  method default_size = tex_base#get_size
 
-      let scalew = (ffst (size -- (rs sl_texture.up_right) -- 
-        (rs sl_texture.up_left))) /. (ffst (rs sl_texture.up))   in 
-      let scaleh = (fsnd (size -- (rs sl_texture.up_right) -- 
-        (rs sl_texture.up_left))) /. (fsnd (rs sl_texture.left)) in 
+  (* rotation/origin/color are unused for now *)
+  method draw ~target ?position:(position=(0.,0.)) ?size:(size=(0.,0.)) 
+              ?rotation:(rotation=0.) ?origin:(origin=(0.,0.)) 
+              ?color:(color=Color.white) ?scale:(scale=(1.,1.)) 
+              ?blend_mode:(blend_mode=BlendAlpha) () =
+    let (++) = add2D in 
+    let (--) = sub2D in
+    let rp r = OcsfmlGraphics.(r.left, r.top)     in 
+    let rs r = OcsfmlGraphics.(r.width, r.height) in
+    let ffst = fun s -> float_of_int (fst s)  in 
+    let fsnd = fun s -> float_of_int (snd s)  in 
+    let size = iof2D size in
+    let position = iof2D position in
 
-      let dborder = snd size - (snd (rs sl_texture.down))  in 
-      let rborder = fst size - (fst (rs sl_texture.right)) in
-      let lborder = fst (rp sl_texture.down) in 
-      let uborder = snd (rp sl_texture.right) in 
+    let scalew = (fst scale) *. 
+      (ffst (size -- (rs sl_texture.up_right) -- 
+      (rs sl_texture.up_left))) /. (ffst (rs sl_texture.up))   in 
+    let scaleh = (snd scale) *.
+      (fsnd (size -- (rs sl_texture.up_right) -- 
+      (rs sl_texture.up_left))) /. (fsnd (rs sl_texture.left)) in 
 
-      let up_sprite    = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((lborder, 0) ++ position))
-                            ~scale:(scalew, 1.)
-                            ~texture_rect:(sl_texture.up) () in 
+    let dborder = snd size - (snd (rs sl_texture.down))  in 
+    let rborder = fst size - (fst (rs sl_texture.right)) in
+    let lborder = fst (rp sl_texture.down) in 
+    let uborder = snd (rp sl_texture.right) in 
 
-      let right_sprite = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((rborder, uborder) ++ position))
-                            ~scale:(1., scaleh)
-                            ~texture_rect:(sl_texture.right) () in 
+    let up_sprite    = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((lborder, 0) ++ position))
+                          ~scale:(scalew, 1.)
+                          ~texture_rect:(sl_texture.up) () in 
 
-      let left_sprite  = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((0, uborder) ++ position))
-                            ~scale:(1., scaleh)
-                            ~texture_rect:(sl_texture.left) () in
+    let right_sprite = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((rborder, uborder) ++ position))
+                          ~scale:(1., scaleh)
+                          ~texture_rect:(sl_texture.right) () in 
 
-      let down_sprite  = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((lborder, dborder) ++ position))
-                            ~scale:(scalew, 1.)
-                            ~texture_rect:(sl_texture.down) () in
+    let left_sprite  = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((0, uborder) ++ position))
+                          ~scale:(1., scaleh)
+                          ~texture_rect:(sl_texture.left) () in
 
-      let ul_sprite    = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D position)
-                            ~texture_rect:(sl_texture.up_left) () in 
+    let down_sprite  = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((lborder, dborder) ++ position))
+                          ~scale:(scalew, 1.)
+                          ~texture_rect:(sl_texture.down) () in
 
-      let ur_sprite    = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((rborder, 0) ++ position))
-                            ~texture_rect:(sl_texture.up_right) () in
+    let ul_sprite    = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D position)
+                          ~scale
+                          ~texture_rect:(sl_texture.up_left) () in 
 
-      let dr_sprite    = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((rborder, dborder) ++ position))
-                            ~texture_rect:(sl_texture.down_right) () in
+    let ur_sprite    = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((rborder, 0) ++ position))
+                          ~scale
+                          ~texture_rect:(sl_texture.up_right) () in
 
-      let dl_sprite    = new sprite 
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((0, dborder) ++ position))
-                            ~texture_rect:(sl_texture.down_left) () in 						  
-      let c_sprite     = new sprite  
-                            ~texture:(sl_texture.texture) 
-                            ~position:(foi2D ((lborder, uborder) ++ position))
-                            ~scale:(scalew, scaleh)
-                            ~texture_rect:(sl_texture.center) () in 									  
-      List.iter target#draw [up_sprite; right_sprite; left_sprite; 
-        down_sprite; ul_sprite; ur_sprite; dr_sprite; dl_sprite; c_sprite]
+    let dr_sprite    = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((rborder, dborder) ++ position))
+                          ~scale
+                          ~texture_rect:(sl_texture.down_right) () in
+
+    let dl_sprite    = new sprite 
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((0, dborder) ++ position))
+                          ~scale
+                          ~texture_rect:(sl_texture.down_left) () in
+
+    let c_sprite     = new sprite  
+                          ~texture:(sl_texture.texture) 
+                          ~position:(foi2D ((lborder, uborder) ++ position))
+                          ~scale:(scalew, scaleh)
+                          ~texture_rect:(sl_texture.center) () in 
+
+    List.iter (target#draw ~blend_mode) 
+      [up_sprite; right_sprite; left_sprite; down_sprite; ul_sprite; 
+       ur_sprite; dr_sprite; dl_sprite; c_sprite]
+
 end
