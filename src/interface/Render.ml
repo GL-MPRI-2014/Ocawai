@@ -7,7 +7,9 @@ let font = new font `None
 let filter_positions map p = 
   not (Position.out_of_bounds p 
         (Position.create (0,0)) 
-        (Position.create (Battlefield.size map)))
+        (Position.diff 
+          (Position.create (Battlefield.size map)) 
+          (Position.create (1,1))))
 
 let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
