@@ -77,4 +77,21 @@ let dummy_gen width height =
     m
   end
 
-let generate width height = dummy_gen width height
+let generate width height nbplayers = 
+let rec empt = function
+| 0 -> ([]:Unit.t list list)
+|n when n>0 -> ([]:Unit.t list)::(empt (n-1))
+|_ -> failwith("generate : nbplayer < 0")
+in (dummy_gen width height,[
+      Unit.create_from_file "41" "42";
+      Unit.create_from_file "41" "39";
+      Unit.create_from_file "39" "39"
+      ]::(empt (nbplayers-1)))
+
+class t (width:int) (height:int) (nbplayers:int) = 
+object (self)
+  val g = generate width height nbplayers
+  method field = fst g
+  method armies = snd g
+end
+

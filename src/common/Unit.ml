@@ -5,7 +5,7 @@ type movement = Walk | Roll | Tracks | Swim | Fly | Amphibious_Walk | Amphibious
 class soldier (s : string) (p : Position.t) (m : movement) 
   (v :int) (a : int) (r : int) = 
 object (self)
-  val mutable name = s
+  val name = s
   val mutable pos = p
   method name = name
   method position = pos

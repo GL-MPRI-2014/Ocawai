@@ -19,13 +19,11 @@ let () = begin
     ~w:window#get_width ~h:window#get_height
     ~maxpos:(Position.create (99,99)) in
 
+  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  let num = 0 in (*player 1*)
   let cdata = new ClientData.client_data ~camera
-    ~map:(FieldGenerator.generate 100 100)
-    ~units:[
-      Unit.create_from_file "41" "42";
-      Unit.create_from_file "41" "39";
-      Unit.create_from_file "39" "39"
-    ] in
+    ~map:(generator#field)
+    ~units:(List.nth (generator#armies) num) in
 
   (* Basic event manipulation *)
   let rec event_loop () =
