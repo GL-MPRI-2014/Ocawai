@@ -1,4 +1,4 @@
-(* Map interface (draft) *)
+(* Battlefield interface *)
 
 type t
 

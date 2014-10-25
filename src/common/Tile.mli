@@ -1,4 +1,4 @@
-(* Tile interface (draft) *)
+(* Tile interface *)
 
 type t
 

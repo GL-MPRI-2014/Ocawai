@@ -2,9 +2,10 @@ open Position
 
 let dummy_gen width height =
   Random.self_init();
+  
   let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
   let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
-  let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in
+  let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in (*liste des tiles*)
   let m = Battlefield.create width height (tile "water") in begin
     print_string "Generating Battlefield...\n";
     
@@ -14,20 +15,19 @@ let dummy_gen width height =
       | [] -> 0
       in sum tiles
     in
-    
     let rec nth_dens n = function
     | p::q when Tile.get_densite p < n -> nth_dens (n - Tile.get_densite p) q
     | p::q when Tile.get_densite p >= n -> p
     | _ -> failwith("FieldGenerator.dummy_gen : failure nth_dens")
     in
-    
+    (*remplir aleatoirement la map, en tenant compte des densites*)
     for i = 0 to (width - 1) do
       for j = 0 to (height - 1) do
         let r = Random.int total_densite +1 in
         Battlefield.set_tile m (create(i,j))  (nth_dens r tiles);
       done;
     done;
-    
+    (*renvoie la liste des voisins d'une case*)
     let neighbors pos = let l = ref ([] : Tile.t list) in let (x,y) = topair pos in begin
       if x > 0 then begin
         if y > 0 then
@@ -49,7 +49,7 @@ let dummy_gen width height =
       end;
       !l
     end in
-    
+    (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
     let contiguite pos = 
       let tpos = Battlefield.get_tile m pos in
       let nei = neighbors pos in
@@ -65,8 +65,8 @@ let dummy_gen width height =
         Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
         Battlefield.set_tile m pos2 t1
       end in
-      
-    for i = 0 to 50 * width * height do
+    (* on prends 2 positions random, on les swap si ca augmente la contiguite, et on itere*)
+    for i = 0 to 50 * width * height (* arbitraire *) do
       let pos1 = create (Random.int width , Random.int height) in
       let pos2 = create (Random.int width , Random.int height) in
       let previous = contiguite pos1 +. contiguite pos2 in

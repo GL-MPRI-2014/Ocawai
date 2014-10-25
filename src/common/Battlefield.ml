@@ -1,5 +1,3 @@
-(** This file is not meant to be pushed on master.                           **)
-(** It is only built for testing purpose while the real one is not ready.    **)
 
 type t = Tile.t array array
 
