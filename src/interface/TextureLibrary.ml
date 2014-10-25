@@ -1,4 +1,6 @@
 open OcsfmlGraphics
+open CustomDrawable
+open SlicedTexture
 
 exception Unknown_texture of string
 

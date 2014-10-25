@@ -7,6 +7,7 @@ open Player
 open Menus
 
 let () = begin
+
   (* Main window *)
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
