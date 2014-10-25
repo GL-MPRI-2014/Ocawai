@@ -9,21 +9,21 @@ let dummy_gen width height =
   let m = Battlefield.create width height (tile "water") in begin
     print_string "Generating Battlefield...\n";
     
-    let total_densite =
+    let total_density =
       let rec sum = function
-      | p::q -> Tile.get_densite p + sum q
+      | p::q -> Tile.get_density p + sum q
       | [] -> 0
       in sum tiles
     in
     let rec nth_dens n = function
-    | p::q when Tile.get_densite p < n -> nth_dens (n - Tile.get_densite p) q
-    | p::q when Tile.get_densite p >= n -> p
+    | p::q when Tile.get_density p < n -> nth_dens (n - Tile.get_density p) q
+    | p::q when Tile.get_density p >= n -> p
     | _ -> failwith("FieldGenerator.dummy_gen : failure nth_dens")
     in
-    (*remplir aleatoirement la map, en tenant compte des densites*)
+    (*remplir aleatoirement la map, en tenant compte des densitys*)
     for i = 0 to (width - 1) do
       for j = 0 to (height - 1) do
-        let r = Random.int total_densite +1 in
+        let r = Random.int total_density +1 in
         Battlefield.set_tile m (create(i,j))  (nth_dens r tiles);
       done;
     done;

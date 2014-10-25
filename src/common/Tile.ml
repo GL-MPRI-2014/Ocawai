@@ -6,12 +6,12 @@ type t = {
   tracks_cost: int;
   swim_cost: int;
   fly_cost: int;
-  densite: int
+  density: int
 }
 
 let get_name tile = tile.name
 
-let get_densite tile = tile.densite
+let get_density tile = tile.density
 
 let traversable_m tile movement =
 let open Unit in
@@ -51,7 +51,7 @@ let tile_t_to_t ti = {name = ti.Tile_t.name;
   tracks_cost = ti.Tile_t.tracks_cost;
   swim_cost = ti.Tile_t.swim_cost;
   fly_cost = ti.Tile_t.fly_cost;
-  densite = ti.Tile_t.densite}
+  density = ti.Tile_t.density}
 
 let create_from_file s1 s2 =
   let ti =List.find
