@@ -13,7 +13,6 @@ OUTPUT = main.native
 
 find_files_atd = $(wildcard $(dir)/*.atd)
 
-dirs := src/common src/interface
 files_atd := $(foreach dir,$(dirs),$(find_files_atd))
 files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
 files_atd_mli := $(files_atd_ml:.ml=.mli)
@@ -30,7 +29,6 @@ interface: $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT)
 
 engine : $(files_atd_ml)
-
 	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT)
 
 run: interface

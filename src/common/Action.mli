@@ -5,5 +5,4 @@ type action =
   Attack_building of (Unit.t * Building.t) |
   Wait
 
-type t = (movement*action)
 
