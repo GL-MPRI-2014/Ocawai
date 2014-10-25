@@ -4,21 +4,23 @@ type t = Tile.t array array
 let create =
   Array.make_matrix
 
-let get_tile map pos =
+let get_tile m pos =
   let (x,y) = Position.topair pos in
-  map.(x).(y)
+  m.(x).(y)
 
-let set_tile map pos tile =
+let set_tile m pos tile =
   let (x,y) = Position.topair pos in
-  map.(x).(y) <- tile
+  m.(x).(y) <- tile
 
-let tile_iter f map =
-  Array.iter (Array.iter f) map
+let tile_iter f m =
+  Array.iter (Array.iter f) m
 
-let tile_iteri f map =
-  Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) map
+let tile_iteri f m =
+  Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) m
 
-let print map = 
+let size m = (Array.length m,Array.length m.(0))
+
+let print m = 
 Array.iter (fun t -> (Array.iter (fun tt -> 
   print_string (match (Tile.get_name tt) with
               | "water" -> "  "
@@ -27,7 +29,7 @@ Array.iter (fun t -> (Array.iter (fun tt ->
               | "concrete" -> "=="
               | "mountain" -> "MM"
               | _ -> "?"
-  )) t;print_string "\n")) map
+  )) t;print_string "\n")) m
 
 let dummy_map () =
 

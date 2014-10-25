@@ -1,5 +1,36 @@
 open Position
 
+(*renvoie la liste des voisins d'une case*)
+let neighbors m pos = 
+  let (width,height) = Battlefield.size m in 
+  let l = ref ([] : Tile.t list) in
+  let (x,y) = topair pos in begin
+  if x > 0 then begin
+    if y > 0 then
+      l := (Battlefield.get_tile m (left (up pos)))::( !l);
+    l := (Battlefield.get_tile m (left pos))::( !l);
+    if y < height-1 then
+      l := (Battlefield.get_tile m (left (down pos)))::( !l);
+  end;
+  if y > 0 then
+    l := (Battlefield.get_tile m (up pos))::( !l);
+  if y < height-1 then
+    l := (Battlefield.get_tile m (down pos))::( !l);
+  if x < width -1 then begin
+    if y > 0 then
+      l := (Battlefield.get_tile m (right (up pos)))::( !l);
+    l := (Battlefield.get_tile m (right pos))::( !l);
+    if y < height-1 then
+      l := (Battlefield.get_tile m (right (down pos)))::( !l);
+  end;
+  !l
+end
+let rec count f = function
+|p::q when f p -> 1 + (count f q)
+|p::q -> count f q
+|[] -> 0
+
+    
 let dummy_gen width height =
   Random.self_init();
   
@@ -26,37 +57,11 @@ let dummy_gen width height =
         Battlefield.set_tile m (create(i,j))  (nth_dens r tiles);
       done;
     done;
-    (*renvoie la liste des voisins d'une case*)
-    let neighbors pos = let l = ref ([] : Tile.t list) in let (x,y) = topair pos in begin
-      if x > 0 then begin
-        if y > 0 then
-          l := (Battlefield.get_tile m (left (up pos)))::( !l);
-        l := (Battlefield.get_tile m (left pos))::( !l);
-        if y < height-1 then
-          l := (Battlefield.get_tile m (left (down pos)))::( !l);
-      end;
-      if y > 0 then
-        l := (Battlefield.get_tile m (up pos))::( !l);
-      if y < height-1 then
-        l := (Battlefield.get_tile m (down pos))::( !l);
-      if x < width -1 then begin
-        if y > 0 then
-          l := (Battlefield.get_tile m (right (up pos)))::( !l);
-        l := (Battlefield.get_tile m (right pos))::( !l);
-        if y < height-1 then
-          l := (Battlefield.get_tile m (right (down pos)))::( !l);
-      end;
-      !l
-    end in
     (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
     let contiguite pos = 
       let tpos = Battlefield.get_tile m pos in
-      let nei = neighbors pos in
-      let rec count f = function
-      |p::q when f p -> 1 + (count f q)
-      |p::q -> count f q
-      |[] -> 0
-      in (float_of_int (count (fun t -> Tile.get_name t = Tile.get_name tpos) nei) /. float_of_int (List.length nei))
+      let nei = neighbors m pos in
+      (float_of_int (count (fun t -> Tile.get_name t = Tile.get_name tpos) nei) /. float_of_int (List.length nei))
     in
     
     let swap pos1 pos2 = 
@@ -81,22 +86,42 @@ let test attempt = let (m,a) = attempt in
 List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a
 
 let placement m nbplayers =
-  (*let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in
-  let units = List.map (fun ui -> Unit.unit_t_to_t ui) ui_list in *)
-  let placement_army = function (* Unit.t list list -> Unit.t list*)
-  | [] -> (* premiere armee*) []
-  | _ -> []
+  let (width,height) = Battlefield.size m in 
+  (*let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in (* Unit.create_from_unit_t ui pos pour crer une unite*) *)
+  let poslist = ref ([]:Position.t list) in
+  let dist pos1 pos2 = let (x1,y1) = topair pos1 in let (x2,y2) = topair pos2 in (abs (x2-x1)) + (abs (y2-y1)) in
+  let init_positions () = begin
+    for i = 0 to (width - 1) do
+      for j = 0 to (height - 1) do
+        let pos = create(i,j) in
+        let nei = neighbors m pos in
+        let name = Tile.get_name (Battlefield.get_tile m (create(i,j))) in
+        if name <> "water" && name <> "mountain" then
+          if count (fun t -> Tile.get_name t <> "water" && Tile.get_name t <> "mountain") nei = 8 then
+            poslist := pos::( !poslist);
+      done;
+    done;
+    let rec condition p = function
+    | [] -> true
+    | p1::q -> (dist p p1 > (max width height)/2) && condition p q in
+    let filtered_pos = ref [] in
+    for i = 0 to List.length ( !poslist) do
+      let r = Random.int (List.length ( !poslist)) in
+      let pos = List.nth ( !poslist) r in
+      if condition pos ( !filtered_pos) then filtered_pos := pos :: ( !filtered_pos);
+    done;
+    poslist := !filtered_pos;
+  end in
+  let placement_army n =
+  (*let spawn = List.nth ( !poslist) n in*)
+  List.map (fun pos -> Unit.create_from_config "infantry" pos) ( !poslist) (* temporary, will be changed when interface will render several players*)
   in
   let rec placement_armies = function
   | 0 -> ([]:Unit.t list list)
   | n when n > 0 -> let others = placement_armies (n-1) in
-                    (placement_army others)::others
+                    (placement_army n)::others
   | _ -> failwith("generate : nbplayer < 0")
-  in [
-      Unit.create_from_config "infantry" (create(41,42));
-      Unit.create_from_config "infantry" (create(41,39));
-      Unit.create_from_config "infantry" (create(39,39))
-      ]::(placement_armies (nbplayers-1))
+  in (init_positions(); placement_armies nbplayers)
 
 let generate width height nbplayers nbattempts=
   let rec generate_aux = function
