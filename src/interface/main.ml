@@ -6,6 +6,9 @@ open Utils
 open Player
 
 let () = begin
+
+  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  
   (* Main window *)
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
@@ -19,7 +22,6 @@ let () = begin
     ~w:window#get_width ~h:window#get_height
     ~maxpos:(Position.create (99,99)) in
 
-  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
   let num = 0 in (*player 1*)
   let cdata = new ClientData.client_data ~camera
     ~map:(generator#field)

@@ -7,8 +7,7 @@ let dummy_gen width height =
   let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
   let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in (*liste des tiles*)
   let m = Battlefield.create width height (tile "water") in begin
-    print_string "Generating Battlefield...\n";
-    
+
     let total_density =
       let rec sum = function
       | p::q -> Tile.get_density p + sum q
@@ -76,21 +75,35 @@ let dummy_gen width height =
     done;
     m
   end
+  
+(* un placement est valide si les unites ne sont pas placees sur de l'eau ou des montagnes *)
+let test attempt = let (m,a) = attempt in
+List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a
 
-let generate width height nbplayers = 
-let rec empt = function
-| 0 -> ([]:Unit.t list list)
-|n when n>0 -> ([]:Unit.t list)::(empt (n-1))
-|_ -> failwith("generate : nbplayer < 0")
-in (dummy_gen width height,[
+let placement_armies m nbplayers = 
+  let rec empt = function
+  | 0 -> ([]:Unit.t list list)
+  | n when n > 0 -> ([]:Unit.t list)::(empt (n-1))
+  | _ -> failwith("generate : nbplayer < 0")
+  in [
       Unit.create_from_file "infantry" "" (create(41,42));
       Unit.create_from_file "infantry" "" (create(41,39));
       Unit.create_from_file "infantry" "" (create(39,39))
-      ]::(empt (nbplayers-1)))
+      ]::(empt (nbplayers-1))
+
+let generate width height nbplayers nbattempts=
+  let rec generate_aux = function
+  | 0 -> failwith("generator failed, try more attempts")
+  | n -> (print_endline ("attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^" ..."); 
+    let attempt =
+      let m = dummy_gen width height in
+        (m,placement_armies m nbplayers)
+    in if test attempt then attempt else generate_aux (n-1) )
+  in generate_aux nbattempts
 
 class t (width:int) (height:int) (nbplayers:int) = 
 object (self)
-  val g = generate width height nbplayers
+  val g = (flush_all();print_string "Generating valid Battlefield, ";generate width height nbplayers 50)
   method field = fst g
   method armies = snd g
 end
