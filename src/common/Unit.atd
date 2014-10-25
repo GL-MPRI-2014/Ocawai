@@ -1,0 +1,10 @@
+
+type t = {
+  name : string;
+  movement_type : string;
+  vision_range : int;
+  attack_range : int;
+  move_range : int;
+}
+
+type t_list = t list

@@ -9,6 +9,7 @@ object (self)
   val mutable pos = p
   method name = name
   method position = pos
+  method move newpos = pos<-newpos
   method movement_type = m
   method vision_range = v
   method attack_range = a
@@ -17,6 +18,23 @@ end
 
 type t = soldier
 
-(* Wow. Much bad. *)
-let create_from_file s1 s2 pos = 
-  new soldier s1 pos Walk 3 2 4
+let unit_t_to_t u pos = new soldier (u.Unit_t.name) pos (match (u.Unit_t.movement_type) with 
+                                                  | "walk" -> Walk
+                                                  | "roll" -> Roll
+                                                  | "tracks" -> Tracks
+                                                  | "swim" -> Swim
+                                                  | "fly" -> Fly
+                                                  | "amphibious_walk" -> Amphibious_Walk
+                                                  | "amphibious_roll" -> Amphibious_Roll
+                                                  | "amphibious_tracks" -> Amphibious_Tracks
+                                                  | a -> failwith("unit_t_to_t : "^a^" is not a movement\n")
+) (u.Unit_t.vision_range) (u.Unit_t.attack_range) (u.Unit_t.move_range)
+
+let create_from_file s1 s2 pos =
+  let ui =List.find
+    (fun uni -> uni.Unit_t.name = s1)
+    (Ag_util.Json.from_file Unit_j.read_t_list s2) in
+  unit_t_to_t ui pos
+
+let create_from_config s1 = create_from_file s1 "resources/config/units.json"
+

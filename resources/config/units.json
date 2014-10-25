@@ -1,0 +1,10 @@
+[
+  {
+    "name": "infantry",
+    "movement_type": "walk",
+    "vision_range": 4,
+    "attack_range": 2,
+    "move_range":3
+  }
+]
+

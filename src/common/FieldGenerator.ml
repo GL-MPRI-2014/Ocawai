@@ -80,16 +80,23 @@ let dummy_gen width height =
 let test attempt = let (m,a) = attempt in
 List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a
 
-let placement_armies m nbplayers = 
-  let rec empt = function
+let placement m nbplayers =
+  (*let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in
+  let units = List.map (fun ui -> Unit.unit_t_to_t ui) ui_list in *)
+  let placement_army = function (* Unit.t list list -> Unit.t list*)
+  | [] -> (* premiere armee*) []
+  | _ -> []
+  in
+  let rec placement_armies = function
   | 0 -> ([]:Unit.t list list)
-  | n when n > 0 -> ([]:Unit.t list)::(empt (n-1))
+  | n when n > 0 -> let others = placement_armies (n-1) in
+                    (placement_army others)::others
   | _ -> failwith("generate : nbplayer < 0")
   in [
-      Unit.create_from_file "infantry" "" (create(41,42));
-      Unit.create_from_file "infantry" "" (create(41,39));
-      Unit.create_from_file "infantry" "" (create(39,39))
-      ]::(empt (nbplayers-1))
+      Unit.create_from_config "infantry" (create(41,42));
+      Unit.create_from_config "infantry" (create(41,39));
+      Unit.create_from_config "infantry" (create(39,39))
+      ]::(placement_armies (nbplayers-1))
 
 let generate width height nbplayers nbattempts=
   let rec generate_aux = function
@@ -97,7 +104,7 @@ let generate width height nbplayers nbattempts=
   | n -> (print_endline ("attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^" ..."); 
     let attempt =
       let m = dummy_gen width height in
-        (m,placement_armies m nbplayers)
+        (m,placement m nbplayers)
     in if test attempt then attempt else generate_aux (n-1) )
   in generate_aux nbattempts
 
