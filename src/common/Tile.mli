@@ -5,6 +5,8 @@ type t
 (** get_name tile returns the name of the tile *)
 val get_name : t -> string
 
+val get_densite : t -> int
+
 (** Check if a tile is traversable by a given type of movement/unit *)
 
 val traversable_m : t -> Unit.movement -> bool

@@ -6,7 +6,8 @@
     "roll_cost": -1,
     "tracks_cost": -1,
     "swim_cost": 1,
-    "fly_cost": 1
+    "fly_cost": 1,
+    "densite": 5
   },
   {
     "name": "plain",
@@ -15,7 +16,8 @@
     "roll_cost": 2,
     "tracks_cost": 2,
     "swim_cost": -1,
-    "fly_cost": 1
+    "fly_cost": 1,
+    "densite": 5
   },
   {
     "name": "forest",
@@ -24,7 +26,8 @@
     "roll_cost": 5,
     "tracks_cost": 10,
     "swim_cost": -1,
-    "fly_cost": 1
+    "fly_cost": 1,
+    "densite": 5
   },
   {
     "name": "concrete",
@@ -33,7 +36,8 @@
     "roll_cost": 1,
     "tracks_cost": 1,
     "swim_cost": -1,
-    "fly_cost": 1
+    "fly_cost": 1,
+    "densite": 0
   },
   {
     "name": "mountain",
@@ -42,7 +46,8 @@
     "roll_cost": -1,
     "tracks_cost": -1,
     "swim_cost": -1,
-    "fly_cost": 3
+    "fly_cost": 3,
+    "densite": 0
   }
 ]
 

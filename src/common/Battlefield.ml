@@ -23,12 +23,12 @@ let tile_iteri f map =
 let print map = 
 Array.iter (fun t -> (Array.iter (fun tt -> 
   print_string (match (Tile.get_name tt) with
-              | "water" -> "0"
-              | "plain" -> "1"
-              | "forest" -> "2"
-              | "concrete" -> "3"
-              | "mountain" -> "4"
-              | a -> failwith(a^"not matched\n")
+              | "water" -> " "
+              | "plain" -> "."
+              | "forest" -> ":"
+              | "concrete" -> "X"
+              | "mountain" -> "M"
+              | _ -> "?"
   )) t;print_string "\n")) map
 
 let dummy_map () =

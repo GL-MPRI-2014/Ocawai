@@ -1,16 +1,27 @@
 open Position
 
-let generate width height =
+let dummy_gen width height =
   Random.self_init();
   let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
-  let tiles_raw = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
-  let tiles = List.filter (fun ti -> let name = Tile.get_name ti in name <> "mountain" && name <> "concrete") tiles_raw in
+  let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
   let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in
   let m = Battlefield.create width height (tile "water") in begin
   print_string "Generating Battlefield...\n";
+  let total_densite =
+    let rec sum = function
+    | p::q -> Tile.get_densite p + sum q
+    | [] -> 0
+    in sum tiles
+  in
+  let rec nth_dens n = function
+  | p::q when Tile.get_densite p < n -> nth_dens (n - Tile.get_densite p) q
+  | p::q when Tile.get_densite p >= n -> p
+  | _ -> failwith("FieldGenerator.dummy_gen : failure nth_dens")
+  in
   for i = 0 to (width - 1) do
     for j = 0 to (height - 1) do
-     Battlefield.set_tile m (create(i,j))  (List.nth tiles (Random.int (List.length tiles)));
+      let r = Random.int total_densite +1 in
+      Battlefield.set_tile m (create(i,j))  (nth_dens r tiles);
     done;
   done;
   let neighbors pos = let l = ref ([] : Tile.t list) in let (x,y) = topair pos in begin
@@ -47,7 +58,7 @@ let generate width height =
   Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
   Battlefield.set_tile m pos2 t1
   end in
-  for i = 0 to 1000000 do
+  for i = 0 to 500000 do
     let pos1 = create (Random.int width , Random.int height) in
     let pos2 = create (Random.int width , Random.int height) in
     let previous = contiguite pos1 +. contiguite pos2 in
@@ -57,3 +68,5 @@ let generate width height =
   done;
   m
   end
+
+let generate width height = dummy_gen width height
