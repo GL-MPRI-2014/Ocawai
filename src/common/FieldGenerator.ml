@@ -83,9 +83,9 @@ let rec empt = function
 |n when n>0 -> ([]:Unit.t list)::(empt (n-1))
 |_ -> failwith("generate : nbplayer < 0")
 in (dummy_gen width height,[
-      Unit.create_from_file "41" "42";
-      Unit.create_from_file "41" "39";
-      Unit.create_from_file "39" "39"
+      Unit.create_from_file "infantry" "" (create(41,42));
+      Unit.create_from_file "infantry" "" (create(41,39));
+      Unit.create_from_file "infantry" "" (create(39,39))
       ]::(empt (nbplayers-1)))
 
 class t (width:int) (height:int) (nbplayers:int) = 

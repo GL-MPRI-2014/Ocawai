@@ -13,4 +13,4 @@ type t = <
 
 (** Create a unit from the XML file  *)
 
-val create_from_file : string -> string -> t
+val create_from_file : string -> string -> Position.t -> t

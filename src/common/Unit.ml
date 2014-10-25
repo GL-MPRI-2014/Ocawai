@@ -18,6 +18,5 @@ end
 type t = soldier
 
 (* Wow. Much bad. *)
-let create_from_file s1 s2 = 
-  new soldier "infantry" (Position.create (int_of_string s1, int_of_string s2))
-    Walk 3 2 4
+let create_from_file s1 s2 pos = 
+  new soldier s1 pos Walk 3 2 4
