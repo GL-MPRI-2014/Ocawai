@@ -8,6 +8,8 @@ open Menus
 
 let () = begin
 
+  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  print_endline "generation ok";
   (* Main window *)
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
@@ -21,13 +23,10 @@ let () = begin
     ~w:window#get_width ~h:window#get_height
     ~maxpos:(Position.create (99,99)) in
 
+  let num = 0 in (*player 1*)
   let cdata = new ClientData.client_data ~camera
-    ~map:(Battlefield.dummy_map ())
-    ~units:[
-      Unit.create_from_file "41" "42";
-      Unit.create_from_file "41" "39";
-      Unit.create_from_file "39" "39"
-    ] in
+    ~map:(generator#field)
+    ~units:(List.nth (generator#armies) num) in
 
   (* Can be dimensioned as we like *)
   (* Here, it will be 120 pixels large, and 30 pixels tall per item *)

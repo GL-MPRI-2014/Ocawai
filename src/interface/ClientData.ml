@@ -25,7 +25,7 @@ class client_data ~(map:Battlefield.t) ~(camera:Camera.camera)
   method unit_at_position p = 
     let rec aux = function
       |[] -> None
-      |t::q when Unit.get_position t = p -> Some(t)
+      |t::q when t#position = p -> Some(t)
       |t::q -> aux q
     in aux units
 

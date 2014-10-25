@@ -3,7 +3,7 @@
 # Here are the various libs that will be required. They will be installed
 # either with opam or with the system manager.
 
-OPAM_DEPENDS="ocamlfind ocsfml"
+OPAM_DEPENDS="ocamlfind ocsfml atdgen"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev"
 COMPILER_DEPENDS="g++ binutils make"
 
@@ -18,7 +18,8 @@ export OPAMYES=1
 opam init 
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
-make
+make interface
+make engine
 make doc
 make test
 make clean
