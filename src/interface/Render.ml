@@ -144,7 +144,7 @@ let render_widget (target : #OcsfmlGraphics.render_target)
   (widget : #Widget.widget) = 
   widget#draw (target :> render_target) texture_library
 
-let () =
+let load_ressources () =
   TextureLibrary.load_directory texture_library "resources/textures/" ;
   if not (font#load_from_file "resources/fonts/Roboto-Regular.ttf")
   then failwith "Couldn't load the font"

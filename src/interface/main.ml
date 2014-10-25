@@ -8,9 +8,6 @@ open Menus
 
 let () = begin
 
-  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
-  print_endline "generation ok";
-  (* Main window *)
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
     (* (OcsfmlWindow.VideoMode.get_desktop_mode ()) *)
@@ -18,6 +15,12 @@ let () = begin
     "Flower Wars"
     ~style: [OcsfmlWindow.Window.Fullscreen]
   in
+
+  Render.load_ressources () ;
+
+  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  print_endline "generation ok";
+  (* Main window *)
 
   let camera = new Camera.camera ~def_tile_size:50
     ~w:window#get_width ~h:window#get_height

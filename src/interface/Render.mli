@@ -9,3 +9,6 @@ val render_game : #OcsfmlGraphics.render_target ->
 
 val render_widget : #OcsfmlGraphics.render_target ->
   #Widget.widget -> unit
+
+(** Load the various ressources stored in ressources/ *)
+val load_ressources : unit -> unit
