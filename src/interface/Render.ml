@@ -4,6 +4,11 @@ open Utils
 let texture_library = TextureLibrary.create ()
 let font = new font `None
 
+let filter_positions map p = 
+  not (Position.out_of_bounds p 
+        (Position.create (0,0)) 
+        (Position.create (Battlefield.size map)))
+
 let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
   let (sx,sy) =  foi2D texture#default_size in
@@ -78,16 +83,17 @@ let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
 
 
 (* This is almost garbage *)
-let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
-  let move_range = Position.filled_circle
-      (my_unit#position)
-      (my_unit#move_range)
+let draw_range (target : #OcsfmlGraphics.render_target) camera map my_unit =
+  let move_range = 
+      List.filter (filter_positions map)
+      (Position.filled_circle (my_unit#position) (my_unit#move_range))
   in
   let attack_range = ref [] in
   for i = 1 to my_unit#attack_range do
     attack_range := !attack_range @
       (Position.neighbours (!attack_range @ move_range))
   done;
+  attack_range := List.filter (filter_positions map) !attack_range;
   List.iter (highlight_tile target camera (Color.rgb 255 255 100)) move_range;
   List.iter (highlight_tile target camera (Color.rgb 255 50 50)) !attack_range
 
@@ -125,7 +131,7 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
 let render_game (target : #OcsfmlGraphics.render_target) 
   (data : ClientData.client_data) =
   render_map target data#camera data#map;
-  data#selected >? draw_range target data#camera;
+  data#selected >? draw_range target data#camera data#map;
   draw_path target data#camera data#current_move;
   draw_cursor target data#camera;
   List.iter (draw_unit target data#camera) data#units;
