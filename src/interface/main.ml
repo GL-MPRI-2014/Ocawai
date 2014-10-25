@@ -4,8 +4,10 @@ open Utils
 
 (* Needed to compile them (otherwise no doc) *)
 open Player
+open Menus
 
 let () = begin
+
   (* Main window *)
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
@@ -27,10 +29,28 @@ let () = begin
       Unit.create_from_file "39" "39"
     ] in
 
+  (* Can be dimensioned as we like *)
+  (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
+  let my_menu = new menu (300,50) 150 30 in
+
+  new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited")
+  |> my_menu#add_child;
+
+  new item "info" "Info" (fun () -> print_endline "info activated")
+  |> my_menu#add_child;
+
+  new item "params" "Settings" (fun () -> print_endline "settings activated")
+  |> my_menu#add_child;
+
+  new item "infantry" "item 4" (fun () -> print_endline "item 4 activated")
+  |> my_menu#add_child;
+
   (* Basic event manipulation *)
   let rec event_loop () =
     match window#poll_event with
     | Some e -> OcsfmlWindow.Event.(
+      (* just a test *)
+      my_menu#on_event e;
       begin match e with
         | Closed
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
@@ -49,16 +69,16 @@ let () = begin
               "Flower Wars"
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            camera#move (1,0)
+            if not (my_menu#active) then camera#move (1,0)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            camera#move (0,1)
+            if not (my_menu#active) then camera#move (0,1)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            camera#move (-1,0)
+            if not (my_menu#active) then camera#move (-1,0)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            camera#move (0,-1)
+            if not (my_menu#active) then camera#move (0,-1)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
             camera#set_position (Position.create (80,80))
@@ -70,13 +90,19 @@ let () = begin
                   cdata#unselect;
                   cdata#camera#cursor#stop_moving
               | None ->
-                  cdata#unit_at_position cdata#camera#cursor#position
-                  >? (fun u -> cdata#select_unit u;
-                               cdata#camera#cursor#set_moving)
+                  begin match cdata#unit_at_position
+                    cdata#camera#cursor#position with
+                    | Some u ->
+                        cdata#select_unit u;
+                        cdata#camera#cursor#set_moving
+                    | None ->
+                        my_menu#toggle;
+                        my_menu#set_position (camera#project cdata#camera#cursor#position)
+                  end
             end
 
         | Resized _ ->
-          (* We have to do something here -- or forbid resizing *)
+          (* We have to do something here *)
           ()
 
         | _ -> ()
@@ -96,6 +122,9 @@ let () = begin
       Render.render_game window cdata;
 
       Render.draw_hud window;
+
+      (* This is really garbage *)
+      Render.render_widget window my_menu;
 
       (* end of test *)
       window#display;

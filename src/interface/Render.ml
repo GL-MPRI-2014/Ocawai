@@ -6,17 +6,11 @@ let font = new font `None
 
 let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
-  let (sx,sy) =  foi2D texture#get_size in
+  let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
   let position = foi2D (camera#project pos) in
   let rotation = rot in
-  new OcsfmlGraphics.sprite
-    ~texture
-    ~position
-    ~rotation
-    ~origin
-    ()
-  |> target#draw
+  texture#draw ~target:(target :> render_target) ~origin ~position ~rotation ()
 
 
 let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
@@ -26,19 +20,12 @@ let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
-  let (r,g,b) = Color.(base_color.r, base_color.g, base_color.b) in
   let position = foi2D (camera#project pos) in
   let texture = TextureLibrary.get_texture texture_library "highlight" in
-  let (sx, sy) = foi2D texture#get_size in
-  new sprite
-    ~position
-    ~texture
-    ~origin:(sx /. 2., sy /. 2.)
-    ~color:(Color.rgba r g b 255)
-    ()
-  (* Additive blending is not so good finally, so I will stick with the good ol'
-   * default blending *)
-  |> target#draw ~blend_mode:BlendAdd
+  let (sx, sy) = foi2D texture#default_size in
+  let origin = (sx /. 2., sy /. 2.) in
+  texture#draw ~target:(target :> render_target) ~position ~origin 
+    ~color:base_color ~blend_mode:BlendAdd ()
 
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
@@ -108,17 +95,12 @@ let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
 (* Draw the cursor *)
 let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera) =
   let texture = TextureLibrary.get_texture texture_library "cursor" in
-  let (sx,sy) =  foi2D texture#get_size in
+  let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
   let position = foi2D (camera#project camera#cursor#position) in
   let scale = camera#cursor#scale in
-  new OcsfmlGraphics.sprite
-    ~texture
-    ~position
-    ~origin
-    ~scale:(scale, scale)
-    ()
-  |> target#draw
+  texture#draw ~target:(target :> render_target) 
+    ~position ~origin ~scale:(scale, scale) ()
 
 
 
@@ -148,6 +130,9 @@ let render_game (target : #OcsfmlGraphics.render_target) data =
   List.iter (draw_unit target data#camera) data#units;
   FPS.display target
 
+let render_widget (target : #OcsfmlGraphics.render_target) 
+  (widget : #Widget.widget) = 
+  widget#draw (target :> render_target) texture_library
 
 let () =
   TextureLibrary.load_directory texture_library "resources/textures/" ;

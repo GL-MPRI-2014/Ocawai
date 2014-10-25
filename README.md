@@ -3,8 +3,7 @@ GL_MPRI_2014
 
 Projet de Génie Logiciel du MPRI, année 2014-2015
 
-![Is it building ?]
-(https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014.svg?branch=master)
+[![Is it building ? Click here for more details.](https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014.svg?branch=master)](https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014/builds)
 
 # Comment utiliser l'application
 
@@ -15,7 +14,10 @@ en ce qui concerne le fonctionnement*
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
 * **flèches** : déplacer la caméra
-* **espace** : entrer en/sortir du mode déplacement d'unité
+* **espace** : entrer en/sortir du mode déplacement d'unité;
+  permet aussi d'afficher le menu dans le cas où aucune unité n'est
+  sélectionnable (et une fois dans le menu, permet d'effectuer les actions
+  affichées -- bien sûr rien ne se passe pour le moment)
 
 
 # Compilation

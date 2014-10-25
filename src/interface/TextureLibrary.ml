@@ -1,9 +1,11 @@
 open OcsfmlGraphics
+open CustomDrawable
+open SlicedTexture
 
 exception Unknown_texture of string
 
 
-type t = (string, texture) Hashtbl.t
+type t = (string, drawable) Hashtbl.t
 
 
 let create () = Hashtbl.create 13
@@ -14,8 +16,7 @@ let load_texture lib path =
   let name = String.sub path (i'+1) (i-i'-1) in 
   let ext  = String.sub path (i+1) (String.length path - i - 1) in
   if ext = "png" then begin 
-    let tex = new texture (`File path) in 
-    tex#set_smooth true;
+    let tex = new basic_texture path in
     print_endline ("Texture " ^ name ^ " ... stored");
     Hashtbl.add lib name tex
   end
