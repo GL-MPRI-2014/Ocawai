@@ -1,6 +1,6 @@
 open Utils
 
-class camera ~tile_size ~w ~h ~maxpos = object(self)
+class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   val cursor = new Cursor.cursor ~position:(Position.create (40,40))
 
@@ -8,18 +8,20 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   val mutable actual_interpolator = None
 
+  val mutable zoom_factor = 1. 
+
   method cursor = cursor
 
   method project p =
     let (x,y) = Position.topair (Position.diff p cursor#position) in
-    let (dx,dy) = (x * tile_size + (fst offset), 
-                   y * tile_size + (snd offset)) in
-    (dx + (w + tile_size)/2, dy + (h + tile_size)/2)
+    let (dx,dy) = (x * self#tile_size + (fst offset), 
+                   y * self#tile_size + (snd offset)) in
+    (dx + (w + self#tile_size)/2, dy + (h + self#tile_size)/2)
 
   method top_left =
     let p = Position.create 
-      ((w + (fst offset * 2))/(2*tile_size) + 1, 
-       (h + (snd offset * 2))/(2*tile_size) + 1) in
+      ((w + (fst offset * 2))/(2*self#tile_size) + 1, 
+       (h + (snd offset * 2))/(2*self#tile_size) + 1) in
     Position.clamp
       (Position.diff cursor#position p)
       (Position.create (0,0))
@@ -27,14 +29,14 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
 
   method bottom_right =
     let p = Position.create 
-      ((w - (fst offset * 2))/(2*tile_size) + 1, 
-       (h - (snd offset * 2))/(2*tile_size) + 1) in
+      ((w - (fst offset * 2))/(2*self#tile_size) + 1, 
+       (h - (snd offset * 2))/(2*self#tile_size) + 1) in
     Position.clamp
       (Position.add cursor#position p)
       (Position.create (0,0))
       maxpos
 
-  method tile_size = tile_size
+  method tile_size = int_of_float (float_of_int def_tile_size *. zoom_factor)
 
   method move displ =
     let new_position = Position.clamp
@@ -45,7 +47,7 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
     let (dx, dy) = Position.topair 
       (Position.diff new_position cursor#position)
     in
-    let (offx, offy) = foi2D (dx * tile_size, dy * tile_size) in
+    let (offx, offy) = foi2D (dx * self#tile_size, dy * self#tile_size) in
     offset <- iof2D (offx, offy);
     let interp_function t = 
       offset <- iof2D (offx *. (1. -. t *. 10.), offy *. (1. -. t *. 10.))
@@ -58,4 +60,9 @@ class camera ~tile_size ~w ~h ~maxpos = object(self)
   method set_position pos = 
     let clamped = Position.clamp pos (Position.create (0,0)) maxpos in
     self#move (Position.topair (Position.diff clamped cursor#position))
+
+  method zoom = zoom_factor
+
+  method set_zoom z = zoom_factor <- max z 0.1
+
 end

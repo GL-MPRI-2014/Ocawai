@@ -17,7 +17,8 @@ let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let origin = (sx/.2.,sy/.2.) in
   let position = foi2D (camera#project pos) in
   let rotation = rot in
-  texture#draw ~target:(target :> render_target) ~origin ~position ~rotation ()
+  texture#draw ~target:(target :> render_target) ~origin 
+    ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
 
 
 let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
@@ -32,7 +33,7 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
   let (sx, sy) = foi2D texture#default_size in
   let origin = (sx /. 2., sy /. 2.) in
   texture#draw ~target:(target :> render_target) ~position ~origin 
-    ~color:base_color ~blend_mode:BlendAdd ()
+    ~color:base_color ~scale:(camera#zoom, camera#zoom) ~blend_mode:BlendAdd ()
 
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
@@ -106,7 +107,7 @@ let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera
   let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
   let position = foi2D (camera#project camera#cursor#position) in
-  let scale = camera#cursor#scale in
+  let scale = camera#cursor#scale *. camera#zoom in
   texture#draw ~target:(target :> render_target) 
     ~position ~origin ~scale:(scale, scale) ()
 

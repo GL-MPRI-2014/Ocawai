@@ -19,7 +19,7 @@ let () = begin
     ~style: [OcsfmlWindow.Window.Fullscreen]
   in
 
-  let camera = new Camera.camera ~tile_size:50
+  let camera = new Camera.camera ~def_tile_size:50
     ~w:window#get_width ~h:window#get_height
     ~maxpos:(Position.create (99,99)) in
 
@@ -81,6 +81,12 @@ let () = begin
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
             camera#set_position (Position.create (80,80))
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Z ; _ } ->
+            camera#set_zoom (camera#zoom *. 1.1)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.A ; _ } ->
+            camera#set_zoom (camera#zoom *. 0.90909)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
             begin

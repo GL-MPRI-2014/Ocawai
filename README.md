@@ -18,6 +18,8 @@ en ce qui concerne le fonctionnement*
   permet aussi d'afficher le menu dans le cas où aucune unité n'est
   sélectionnable (et une fois dans le menu, permet d'effectuer les actions
   affichées -- bien sûr rien ne se passe pour le moment)
+* **A** : Dézoomer
+* **Z** : Zoomer
 
 
 # Compilation

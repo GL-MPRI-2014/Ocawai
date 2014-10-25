@@ -1,5 +1,6 @@
 (** Camera for displaying *)
-class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
+class camera : def_tile_size:int -> w:int -> h:int -> maxpos:Position.t 
+  -> object
 
   method cursor : Cursor.cursor
 
@@ -17,5 +18,9 @@ class camera : tile_size:int -> w:int -> h:int -> maxpos:Position.t -> object
   (** [set_position v] moves the camera by setting its current position to
    *  [v] *)
   method set_position : Position.t -> unit
+
+  method zoom : float
+
+  method set_zoom : float -> unit
 
 end
