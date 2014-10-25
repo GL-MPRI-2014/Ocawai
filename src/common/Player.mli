@@ -4,6 +4,6 @@ type t = <
   add_unit : Unit.t -> unit;
   get_buildings : Building.t list;
   add_building : Building.t -> unit;
-  get_next_action : Action.action
+  get_next_action : (Action.movement * Action.action)
 >
 
