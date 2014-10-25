@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 class player :
 object (self)
   method get_army : Unit.t list
@@ -8,3 +9,4 @@ object (self)
 end
 
 type t = player
+

@@ -1,6 +1,8 @@
-(*À changer par l'équipe interface pour respecter le paradigme objet de Unit*)
+(** Rendering module *)
 
+(** Draw the Head-User-Display *)
 val draw_hud : #OcsfmlGraphics.render_target -> unit
 
-val render_game : #OcsfmlGraphics.render_target -> 
+(** Draw the whole game on the screen *)
+val render_game : #OcsfmlGraphics.render_target ->
   ClientData.client_data -> unit

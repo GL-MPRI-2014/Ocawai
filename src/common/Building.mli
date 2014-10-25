@@ -1,4 +1,4 @@
-(* Building interface (draft) *)
+(** Building interface (draft) *)
 
 class building :
 object
@@ -9,3 +9,4 @@ object
 end
 
 type t = building
+

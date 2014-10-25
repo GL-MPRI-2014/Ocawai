@@ -1,5 +1,9 @@
+(** Main function for the interface *)
 open OcsfmlGraphics
 open Utils
+
+(* Needed to compile them (otherwise no doc) *)
+open Player
 
 let () = begin
   (* Main window *)
