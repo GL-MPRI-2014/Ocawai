@@ -20,11 +20,22 @@ let tile_iter f map =
 let tile_iteri f map =
   Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) map
 
+let print map = 
+Array.iter (fun t -> (Array.iter (fun tt -> 
+  print_string (match (Tile.get_name tt) with
+              | "water" -> "0"
+              | "plain" -> "1"
+              | "forest" -> "2"
+              | "concrete" -> "3"
+              | "mountain" -> "4"
+              | a -> failwith(a^"not matched\n")
+  )) t;print_string "\n")) map
+
 let dummy_map () =
-  let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
+let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
   let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
   let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in
-  let m = Array.make_matrix 100 100 (tile "water") in
+  let m = create 100 100 (tile "water") in
   m.(40).(40) <- tile "forest";
   m.(41).(40) <- tile "plain";
   m.(39).(40) <- tile "plain";

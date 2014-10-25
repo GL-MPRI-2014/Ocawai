@@ -1,4 +1,4 @@
-INTERFACE_SRC = src/common,src/interface
+INTERFACE_SRC = src/common,src/interface,src/engine
 ENGINE_SRC = src/engine,src/common
 PACKAGES = ocsfml.graphics,atdgen
 
@@ -26,6 +26,9 @@ engine : $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT)
 
 run: interface
+	./$(OUTPUT)
+
+eng: engine
 	./$(OUTPUT)
 
 clean:

@@ -16,7 +16,7 @@ let () = begin
     ~maxpos:(Position.create (99,99)) in
 
   let cdata = new ClientData.client_data ~camera
-    ~map:(Battlefield.dummy_map ())
+    ~map:(FieldGenerator.generate 100 100)
     ~units:[
       Unit.create_from_file "41" "42";
       Unit.create_from_file "41" "39";
