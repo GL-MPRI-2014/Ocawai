@@ -10,6 +10,7 @@ let () = begin
 
   let generator = new FieldGenerator.t 100 100 2 in (* map : 100*100, 2 players*)
   print_endline "generation ok";
+  
   (* Main window *)
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
