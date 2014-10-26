@@ -40,10 +40,11 @@ let dijkstra m pos move_type =
     |t::q -> min_dist (a0,b0) q
   in
   let remove r l = List.filter (fun x -> x <> r) l in
+  (* liste des somments non parcourus *)
   let li = ref [] in 
   let (x0,y0) = Position.topair pos in
   
-  (* initialisation de la liste des somets non parcourus *)
+  (* initialisations *)
   dist.(x0).(y0) <- 0;
   for i = 0 to w-1 do
     for j = 0 to h-1 do
@@ -53,7 +54,7 @@ let dijkstra m pos move_type =
   
   (* boucle principale *)
   while !li <> [] do
-    (* x,y : min dist (a,b) pour tout a,b non parcourus *)
+    (* x,y : min dist (a,b) pour tout a,b non parcourus, i.e. plus près voisin atteignable des parcourus *)
     let (x,y) = let (xh,yh) = List.hd( !li) in min_dist (xh,yh) (List.tl( !li)) in
       li := remove (x,y) ( !li);
       if dist.(x).(y) <> max_int then
@@ -67,7 +68,7 @@ let dijkstra m pos move_type =
                   dist.(a).(b) <- alt;
                   prev.(a).(b) <- Some (Position.create (x,y));
                 end
-              ) (List.filter (fun (a,b) -> a>=0 && b>=0 && a<w && b<h) [(x,y+1);(x,y-1);(x+1,y);(x-1,y)]);
+              ) ( List.filter (fun (a,b) -> a>=0 && b>=0 && a<w && b<h) [(x,y+1);(x,y-1);(x+1,y);(x-1,y)] );
   done;
   (* construit le chemin jusqu'à pos en remontant  prev *)
   let rec rev_path = function
