@@ -69,7 +69,7 @@ let dijkstra m pos move_type =
               | None -> ()
               | Some co ->  (* pour tout voisin a,b de x,y atteignable d'une autre façon, on teste si c'est plus court d'aller en x,y par a,b *)
                 let alt = dxy + co in 
-                if alt < match dist.(a).(b) with | None -> max_int | Some dab -> dab then
+                if match dist.(a).(b) with | None -> true | Some dab -> alt < dab then
                 begin
                   dist.(a).(b) <- Some alt;
                   prev.(a).(b) <- Some (Position.create (x,y));
