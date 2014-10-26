@@ -8,7 +8,7 @@ open Menus
 
 let () = begin
 
-  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  let generator = new FieldGenerator.t 100 100 2 in (* map : 100*100, 2 players*)
   print_endline "generation ok";
   (* Main window *)
   let window = new render_window

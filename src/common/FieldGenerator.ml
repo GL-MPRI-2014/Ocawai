@@ -1,5 +1,9 @@
 open Position
 
+exception NotEnoughSpawns
+exception NotEnoughPlace
+exception InvalidPlacement
+
 (*renvoie la liste des voisins d'une case*)
 let neighbors m pos = 
   let (width,height) = Battlefield.size m in 
@@ -82,15 +86,8 @@ let swap_gen width height =
     m
   end
   
-(* un placement est valide si les unites ne sont pas placees sur de l'eau ou des montagnes *)
-let test attempt = let (m,a) = attempt in
-  List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a
-
-exception NotEnoughSpawns
-
 let placement m nbplayers =
   let (width,height) = Battlefield.size m in 
-  (*let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in (* Unit.create_from_unit_t ui pos pour crer une unite*) *)
   let poslist = ref ([]:Position.t list) in
   let dist pos1 pos2 = let (x1,y1) = topair pos1 in let (x2,y2) = topair pos2 in (abs (x2-x1)) + (abs (y2-y1)) in
   let init_positions () = begin
@@ -107,7 +104,7 @@ let placement m nbplayers =
     (*print_endline ("poslist size "^string_of_int (List.length ( !poslist)));*)
     let rec condition p = function
       | [] -> true
-      | p1::q -> (dist p p1 > (2 * max width height)/nbplayers) && condition p q 
+      | p1::q -> (dist p p1 > (width + height)/nbplayers) && condition p q 
     in
     let filtered_pos = ref [] in 
     begin
@@ -118,8 +115,7 @@ let placement m nbplayers =
       done;
       print_endline (string_of_int (List.length ( !filtered_pos))^" possibles spawns");
       if List.length ( !filtered_pos) < nbplayers then raise NotEnoughSpawns;
-      poslist := ( !filtered_pos);
-      (*poslist := [];
+      poslist := [];
       let rec add_elt elt = function
         |[] -> [elt]
         |t::q when t = elt -> t::q 
@@ -129,20 +125,46 @@ let placement m nbplayers =
       while List.length ( !poslist) < nbplayers do (* put nbplayers positions in poslist*)
         let r = Random.int (List.length ( !filtered_pos)) in
         poslist := add_elt (List.nth ( !filtered_pos) r) ( !poslist);
-      done;*)
+      done;
     end
   end in
   
+  let place_army_around spawn =
+  let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in
+  let army = ref [] in 
+  let army_pos = ref [spawn] in
+  begin
+  List.iter (fun ui -> 
+    for i = 1 to ui.Unit_t.spawn_number do
+      let ne = List.filter (fun p -> (not (out_of_bounds p (create(0,0)) (up (left (create (width,height)))))) && let name = Tile.get_name (Battlefield.get_tile m p) in ( name <> "water" && name <> "mountain" ) ) (neighbours ( !army_pos)) in
+      if ne = [] then raise NotEnoughPlace else
+      let r = Random.int (List.length ne) in
+      let pos = List.nth ne r in
+      begin
+        army := (Unit.create_from_unit_t ui pos) :: ( !army);
+        army_pos := pos :: (!army_pos);
+      end
+    done;
+  ) ui_list;
+  !army
+  end in
+  
   let placement_army n =
-  (*let spawn = List.nth ( !poslist) n in*)
-  List.map (fun pos -> Unit.create_from_config "infantry" pos) ( !poslist) (* temporary, will be changed when interface will render several players*)
+  let spawn = List.nth ( !poslist) (n-1) in
+    place_army_around spawn 
+  (*List.map (fun pos -> Unit.create_from_config "infantry" pos) ( !poslist) (* temporary, will be changed when interface will render several players*) *)
   in
   let rec placement_armies = function
-  | 0 -> ([]:Unit.t list list)
+  | 0 -> ([[]]:Unit.t list list) (* a remplacer par ([]:Unit.t list list) pour separer les armees *)
   | n when n > 0 -> let others = placement_armies (n-1) in
-                    (placement_army n)::others
+                    [(placement_army n)@(List.hd others)] (* fusionne toutes les armes au player 1, a remplacer par (placement_army n)::others *)
   | _ -> failwith("generate : nbplayer < 0")
   in (init_positions(); placement_armies nbplayers)
+
+(* un placement est valide si les unites ne sont pas placees sur de l'eau ou des montagnes *)
+let test attempt = let (m,a) = attempt in
+  if not (List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a)
+    then raise InvalidPlacement else ()
 
 let generate width height nbplayers nbattempts=
   let rec generate_aux = function
@@ -155,10 +177,12 @@ let generate width height nbplayers nbattempts=
           let attempt =
             let m = swap_gen width height in
               ( m , placement m nbplayers )
-          in if test attempt then attempt else generate_aux (n-1) 
+          in (test attempt; attempt) 
         end
       with
       | NotEnoughSpawns -> (print_endline " Not enough spawns"; generate_aux (n-1) )
+      | InvalidPlacement -> (print_endline " Unit placed on water/mountain"; generate_aux (n-1) )
+      | NotEnoughPlace -> (print_endline " Not enough space around spawn for army"; generate_aux (n-1) )
     end
   in generate_aux nbattempts
 
