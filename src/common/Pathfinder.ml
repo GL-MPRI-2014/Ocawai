@@ -74,7 +74,7 @@ let dijkstra m pos move_type =
       | (-1,-1) -> []
       | (a,b) ->(Position.create (a,b))::(rev_path (Position.topair prev.(a).(b)))
     in
-    (fun tar -> let a,b = Position.topair tar in (dist.(a).(b),List.rev (rev_path (a,b))))
+    (fun tar -> let a,b = Position.topair tar in if dist.(a).(b) <> max_int then Some (dist.(a).(b),List.rev (rev_path (a,b))) else None)
   end
 
 

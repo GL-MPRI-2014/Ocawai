@@ -5,10 +5,10 @@ let () = begin
   begin
     Battlefield.print gen#field;
     let dij = Pathfinder.dijkstra (gen#field) (Position.create(25,25)) (Unit.Walk) in
-    let r = dij (Position.create(0,0)) in print_endline ("25 25 to 0 0 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
-    let r = dij (Position.create(0,49)) in print_endline ("25 25 to 0 49 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
-    let r = dij (Position.create(49,0)) in print_endline ("25 25 to 49 0 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
-    let r = dij (Position.create(49,49)) in print_endline ("25 25 to 49 49 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
+    let r = dij (Position.create(0,0)) in print_endline ("25 25 to 0 0 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a));
+    let r = dij (Position.create(0,49)) in print_endline ("25 25 to 0 49 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a));
+    let r = dij (Position.create(49,0)) in print_endline ("25 25 to 49 0 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a));
+    let r = dij (Position.create(49,49)) in print_endline ("25 25 to 49 49 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a));
     print_newline();
   end
 end
