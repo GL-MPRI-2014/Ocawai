@@ -21,17 +21,20 @@ let get_move path =
   List.rev path
   
 let dijkstra m pos move_type =
+  (* renvoie le cout de la tuile en Position.create(a,b) *)
   let cost(a,b) = 
     let ti = (Battlefield.get_tile m (Position.create (a,b))) in 
     if (Tile.traversable_m ti move_type) then Tile.movement_cost ti move_type else max_int 
   in
   let (w,h) = Battlefield.size m in
+  (* table des distances à pos *)
   let dist = Array.make_matrix w h max_int in
-  let prev = Array.make_matrix w h (Position.create(-1,-1)) in
-  let rec min_dist r (a0,b0) = function
+  (* prev.(x).(y) est la position de la tuile precedant Position.create(x,y) sur le chemin de pos a Position.create(x,y) *)
+  let prev = Array.make_matrix w h None in
+  let rec min_dist (a0,b0) = function
     |[] -> (a0,b0)
-    |(a,b)::q when dist.(a).(b) <= r -> min_dist (dist.(a).(b)) (a,b) q
-    |t::q -> min_dist r (a0,b0) q
+    |(a,b)::q when dist.(a).(b) <= dist.(a0).(b0) -> min_dist (a,b) q
+    |t::q -> min_dist (a0,b0) q
   in
   let rec remove r = function
     |[] -> []
@@ -50,7 +53,7 @@ let dijkstra m pos move_type =
     
     li := (x0,y0)::( !li);
     while !li <> [] do
-      let (x,y) = let (xh,yh) = List.hd( !li) in min_dist (dist.(xh).(yh)) (xh,yh) (List.tl( !li)) in
+      let (x,y) = let (xh,yh) = List.hd( !li) in min_dist (xh,yh) (List.tl( !li)) in
       begin
         li := remove (x,y) ( !li);
         if dist.(x).(y) <> max_int then
@@ -62,7 +65,7 @@ let dijkstra m pos move_type =
                   if alt < dist.(a).(b) then
                   begin
                     dist.(a).(b) <- alt;
-                    prev.(a).(b) <- Position.create (x,y);
+                    prev.(a).(b) <- Some (Position.create (x,y));
                   end
                 end
 
@@ -71,10 +74,10 @@ let dijkstra m pos move_type =
     done;
 
     let rec rev_path = function
-      | (-1,-1) -> []
-      | (a,b) ->(Position.create (a,b))::(rev_path (Position.topair prev.(a).(b)))
+      | None -> []
+      | Some prev_pos ->let (a,b) = Position.topair prev_pos in prev_pos::(rev_path prev.(a).(b))
     in
-    (fun tar -> let a,b = Position.topair tar in if dist.(a).(b) <> max_int then Some (dist.(a).(b),List.rev (rev_path (a,b))) else None)
+    (fun tar -> let a,b = Position.topair tar in if dist.(a).(b) <> max_int then Some (dist.(a).(b),List.rev (rev_path (Some tar))) else None)
   end
 
 
