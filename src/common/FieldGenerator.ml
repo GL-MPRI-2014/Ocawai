@@ -111,6 +111,7 @@ let placement m nbplayers =
       in
       let filtered_pos = ref [] in 
       begin
+        if ( !poslist) = [] then raise NotEnoughSpawns;
         for i = 0 to List.length ( !poslist) do
           let r = Random.int (List.length ( !poslist)) in
           let pos = List.nth ( !poslist) r in
@@ -130,7 +131,7 @@ let placement m nbplayers =
           poslist := add_elt (List.nth ( !filtered_pos) r) ( !poslist);
         done;
       end
-    end 
+    end
   in
   (* positionne une armée autours de la position spawn*)
   let place_army_around spawn =

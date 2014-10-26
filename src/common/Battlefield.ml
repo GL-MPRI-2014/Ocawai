@@ -29,7 +29,7 @@ Array.iter (fun t -> (Array.iter (fun tt ->
               | "concrete" -> "=="
               | "mountain" -> "MM"
               | _ -> "?"
-  )) t;print_string "\n")) m
+  )) t;print_endline "")) m
 
 let dummy_map () =
 

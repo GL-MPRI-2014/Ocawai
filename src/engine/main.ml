@@ -1,6 +1,14 @@
 (** main function for testing the engine (only the generation for now) *)
 
 let () = begin
-  (*let gen = *)ignore (new FieldGenerator.t 100 100 1 )(* in
-  Battlefield.print gen#field*)
+  let gen = new FieldGenerator.t 50 50 1 in
+  begin
+    Battlefield.print gen#field;
+    let dij = Pathfinder.dijkstra (gen#field) (Position.create(25,25)) (Unit.Walk) in
+    let r = dij (Position.create(0,0)) in print_endline ("25 25 to 0 0 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
+    let r = dij (Position.create(0,49)) in print_endline ("25 25 to 0 49 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
+    let r = dij (Position.create(49,0)) in print_endline ("25 25 to 49 0 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
+    let r = dij (Position.create(49,49)) in print_endline ("25 25 to 49 49 : "^(if fst r <> max_int then string_of_int (fst r) else "no path"));
+    print_newline();
+  end
 end
