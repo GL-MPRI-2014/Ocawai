@@ -25,13 +25,14 @@ let neighbors m pos =
   end;
   !l
 end
+
 let rec count f = function
 |p::q when f p -> 1 + (count f q)
 |p::q -> count f q
 |[] -> 0
 
     
-let dummy_gen width height =
+let swap_gen width height =
   Random.self_init();
   
   let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
@@ -83,7 +84,9 @@ let dummy_gen width height =
   
 (* un placement est valide si les unites ne sont pas placees sur de l'eau ou des montagnes *)
 let test attempt = let (m,a) = attempt in
-List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a
+  List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a
+
+exception NotEnoughSpawns
 
 let placement m nbplayers =
   let (width,height) = Battlefield.size m in 
@@ -96,22 +99,40 @@ let placement m nbplayers =
         let pos = create(i,j) in
         let nei = neighbors m pos in
         let name = Tile.get_name (Battlefield.get_tile m (create(i,j))) in
-        if name <> "water" && name <> "mountain" then
-          if count (fun t -> Tile.get_name t <> "water" && Tile.get_name t <> "mountain") nei = 8 then
+        if name = "plain" then
+          if count (fun t -> Tile.get_name t = "plain") nei = 8 then
             poslist := pos::( !poslist);
       done;
     done;
+    (*print_endline ("poslist size "^string_of_int (List.length ( !poslist)));*)
     let rec condition p = function
-    | [] -> true
-    | p1::q -> (dist p p1 > (max width height)/2) && condition p q in
-    let filtered_pos = ref [] in
-    for i = 0 to List.length ( !poslist) do
-      let r = Random.int (List.length ( !poslist)) in
-      let pos = List.nth ( !poslist) r in
-      if condition pos ( !filtered_pos) then filtered_pos := pos :: ( !filtered_pos);
-    done;
-    poslist := !filtered_pos;
+      | [] -> true
+      | p1::q -> (dist p p1 > (2 * max width height)/nbplayers) && condition p q 
+    in
+    let filtered_pos = ref [] in 
+    begin
+      for i = 0 to List.length ( !poslist) do
+        let r = Random.int (List.length ( !poslist)) in
+        let pos = List.nth ( !poslist) r in
+        if condition pos ( !filtered_pos) then filtered_pos := pos :: ( !filtered_pos);
+      done;
+      print_endline (string_of_int (List.length ( !filtered_pos))^" possibles spawns");
+      if List.length ( !filtered_pos) < nbplayers then raise NotEnoughSpawns;
+      poslist := ( !filtered_pos);
+      (*poslist := [];
+      let rec add_elt elt = function
+        |[] -> [elt]
+        |t::q when t = elt -> t::q 
+        |t::q when t > elt -> elt::t::q
+        |t::q -> t::(add_elt elt q)
+      in 
+      while List.length ( !poslist) < nbplayers do (* put nbplayers positions in poslist*)
+        let r = Random.int (List.length ( !filtered_pos)) in
+        poslist := add_elt (List.nth ( !filtered_pos) r) ( !poslist);
+      done;*)
+    end
   end in
+  
   let placement_army n =
   (*let spawn = List.nth ( !poslist) n in*)
   List.map (fun pos -> Unit.create_from_config "infantry" pos) ( !poslist) (* temporary, will be changed when interface will render several players*)
@@ -126,16 +147,24 @@ let placement m nbplayers =
 let generate width height nbplayers nbattempts=
   let rec generate_aux = function
   | 0 -> failwith("generator failed, try more attempts")
-  | n -> (print_endline ("attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^" ..."); 
-    let attempt =
-      let m = dummy_gen width height in
-        (m,placement m nbplayers)
-    in if test attempt then attempt else generate_aux (n-1) )
+  | n -> 
+    begin
+      print_endline ("attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^" ..."); 
+      try
+        begin
+          let attempt =
+            let m = swap_gen width height in
+              ( m , placement m nbplayers )
+          in if test attempt then attempt else generate_aux (n-1) 
+        end
+      with
+      | NotEnoughSpawns -> (print_endline " Not enough spawns"; generate_aux (n-1) )
+    end
   in generate_aux nbattempts
 
 class t (width:int) (height:int) (nbplayers:int) = 
 object (self)
-  val g = (flush_all();print_string "Generating valid Battlefield, ";generate width height nbplayers 50)
+  val g = (print_string "Generating valid Battlefield, ";generate width height nbplayers 20)
   method field = fst g
   method armies = snd g
 end
