@@ -47,8 +47,10 @@ class timed_interpolator func lifespan = object(self)
   inherit interpolator_class func as super
 
   method update t = 
-    if t -. origin > lifespan then self#delete
-    else super#update t
+    if t -. origin > lifespan then begin
+      super#update (origin +. lifespan);
+      self#delete
+    end else super#update t
 
 end
 
