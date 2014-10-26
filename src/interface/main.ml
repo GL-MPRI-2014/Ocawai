@@ -8,6 +8,9 @@ open Menus
 
 let () = begin
 
+  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  print_endline "generation ok";
+  
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
     (* (OcsfmlWindow.VideoMode.get_desktop_mode ()) *)
@@ -18,8 +21,6 @@ let () = begin
 
   Render.load_ressources () ;
 
-  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
-  print_endline "generation ok";
   (* Main window *)
 
   let camera = new Camera.camera ~def_tile_size:50
