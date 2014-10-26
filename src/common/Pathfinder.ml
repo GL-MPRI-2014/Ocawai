@@ -17,15 +17,13 @@ let reach path pos =
   if List.mem pos path then back_to pos path
   else pos :: path
 
-let get_move path =
-  List.rev path
+let get_move = List.rev
   
 let dijkstra m pos move_type =
   (* renvoie le cout de la tuile en Position.create(a,b) *)
   let cost(a,b) = 
     let ti = (Battlefield.get_tile m (Position.create (a,b))) in 
-    if (Tile.traversable_m ti move_type) then Tile.movement_cost ti move_type else max_int 
-  in
+    if (Tile.traversable_m ti move_type) then Tile.movement_cost ti move_type else max_int in
   let (w,h) = Battlefield.size m in
   (* table des distances à pos *)
   let dist = Array.make_matrix w h max_int in
@@ -36,13 +34,10 @@ let dijkstra m pos move_type =
     |(a,b)::q when dist.(a).(b) <= dist.(a0).(b0) -> min_dist (a,b) q
     |t::q -> min_dist (a0,b0) q
   in
-  let rec remove r = function
-    |[] -> []
-    |p::q when p = r -> remove r q
-    |p::q ->p::(remove r q)
-  in
+  let remove r l = List.filter (fun x -> x <> r) l in
   let li = ref [] in 
   let (x0,y0) = Position.topair pos in
+
   begin
     dist.(x0).(y0) <- 0;
     for i = 0 to w-1 do
