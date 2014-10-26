@@ -42,7 +42,7 @@ let swap_gen width height =
   let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
   let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in
   let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in (*liste des tiles*)
-  let m = Battlefield.create width height (tile "water") in begin
+  let m = Battlefield.create width height (tile "plain") in begin
 
     let total_density =
       let rec sum = function
@@ -135,8 +135,11 @@ let placement m nbplayers =
   let army_pos = ref [spawn] in
   begin
   List.iter (fun ui -> 
-    for i = 1 to ui.Unit_t.spawn_number do
-      let ne = List.filter (fun p -> (not (out_of_bounds p (create(0,0)) (up (left (create (width,height)))))) && let name = Tile.get_name (Battlefield.get_tile m p) in ( name <> "water" && name <> "mountain" ) ) (neighbours ( !army_pos)) in
+    for i = 0 to ui.Unit_t.spawn_number - 1 do
+      let ne = List.filter (fun p -> 
+        (not (out_of_bounds p (create(0,0)) (up (left (create (width,height)))))) && 
+        (Tile.traversable_m (Battlefield.get_tile m p) Unit.Walk) 
+                            ) (neighbours ( !army_pos)) in
       if ne = [] then raise NotEnoughPlace else
       let r = Random.int (List.length ne) in
       let pos = List.nth ne r in
@@ -163,7 +166,7 @@ let placement m nbplayers =
 
 (* un placement est valide si les unites ne sont pas placees sur de l'eau ou des montagnes *)
 let test attempt = let (m,a) = attempt in
-  if not (List.for_all (List.for_all (fun u -> let name = Tile.get_name (Battlefield.get_tile m (u#position)) in name <> "water" && name <> "mountain")) a)
+  if not (List.for_all (List.for_all (fun u -> Tile.traversable (Battlefield.get_tile m (u#position)) u)) a)
     then raise InvalidPlacement else ()
 
 let generate width height nbplayers nbattempts=
@@ -181,7 +184,7 @@ let generate width height nbplayers nbattempts=
         end
       with
       | NotEnoughSpawns -> (print_endline " Not enough spawns"; generate_aux (n-1) )
-      | InvalidPlacement -> (print_endline " Unit placed on water/mountain"; generate_aux (n-1) )
+      | InvalidPlacement -> (print_endline " Unit placed on non walkable area"; generate_aux (n-1) )
       | NotEnoughPlace -> (print_endline " Not enough space around spawn for army"; generate_aux (n-1) )
     end
   in generate_aux nbattempts
