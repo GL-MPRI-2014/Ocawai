@@ -40,7 +40,7 @@ class game = object(self)
     (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
     let my_menu = new menu (300,50) 150 30 in
 
-    new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited")
+    new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited" ; Manager.manager#pop)
     |> my_menu#add_child;
 
     new item "info" "Info" (fun () -> print_endline "info activated")

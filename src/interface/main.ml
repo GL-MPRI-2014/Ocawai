@@ -1,8 +1,10 @@
 (** Launcher of the interface *)
+open Manager
 
 let () = begin
 
-  (new Game.game :> State.state) |> Manager.manager#push ;
-  Manager.manager#run
+  (* (new Game.game :> State.state) |> Manager.manager#push ; *)
+  (new MainMenu.main_menu :> State.state) |> manager#push ;
+  manager#run
 
 end
