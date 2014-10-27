@@ -23,6 +23,14 @@ let get_move = List.rev
 
 let cat p1 p2 = p2 @ p1
 
+let rec cost mvt_type m path = match path with
+  | [] -> 0 (*arbitrary value*)
+  | [pos] -> 0
+  | pos :: t ->
+    let tile = Battlefield.get_tile m pos in
+    assert (Tile.traversable_m tile mvt_type);
+    (Tile.movement_cost tile mvt_type) + (cost mvt_type m t)
+     
 let dijkstra m pos move_type =
 
   (* renvoie Some "cout de la tuile en Position.create(a,b)" ou None si pas traversable *)
