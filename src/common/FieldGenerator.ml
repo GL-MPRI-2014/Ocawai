@@ -137,7 +137,7 @@ let placement m nbplayers =
   (* positionne une armée autours de la position spawn*)
   let place_army_around spawn =
     let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in
-    let army = ref [] in 
+    let army = ref [Unit.create_from_config "general" spawn] in 
     let army_pos = ref [spawn] in
     begin
     List.iter (fun ui -> 
@@ -174,7 +174,7 @@ let test_movement attempt = let (m,(a,_)) = attempt in
     then raise InvalidPlacement else ()
 
 let test_path attempt = let (m,(_,sp)) = attempt in
-  if not (List.for_all (fun sp1 -> let dij = Pathfinder.dijkstra m sp1 Unit.Walk in List.for_all (fun sp2 -> sp1 >= sp2 || dij sp2 <> None ) sp) sp)
+  if not  (let sp1 = List.hd sp in let dij = Pathfinder.dijkstra m sp1 Unit.Walk in List.for_all (fun sp2 -> dij sp2 <> None ) (List.tl sp))
     then raise NoPath else ()
 
 
