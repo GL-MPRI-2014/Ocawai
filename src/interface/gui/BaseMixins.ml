@@ -50,19 +50,19 @@ class virtual key_ctrl_list = object(self)
 
   val virtual mutable nb_items : int
 
-  method virtual add_event : (Event.t -> unit) -> unit
+  method virtual add_event : (Event.t -> bool) -> unit
 
   method selected = selected
 
   initializer
     self#add_event (function
       |Event.KeyPressed {Event.code = KeyCode.Up; _} -> 
-          if nb_items <> 0 then 
-            selected <- (selected - 1 + nb_items) mod nb_items
+          nb_items <> 0 
+          && (selected <- (selected - 1 + nb_items) mod nb_items; true)
       |Event.KeyPressed {Event.code = KeyCode.Down; _} ->
-          if nb_items <> 0 then 
-            selected <- (selected + 1 + nb_items) mod nb_items
-      | _ -> ())
+          nb_items <> 0
+          && (selected <- (selected + 1 + nb_items) mod nb_items; true)
+      | _ -> false)
 end
 
 
