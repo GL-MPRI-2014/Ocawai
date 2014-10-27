@@ -3,6 +3,7 @@ open Position
 exception NotEnoughSpawns
 exception NotEnoughPlace
 exception InvalidPlacement
+exception NoPath
 
 (*renvoie la liste des 8 voisins d'une case, <> neighbours de Position, utilisé aussi plus bas :/ *)
 let neighbors m pos = 
@@ -117,7 +118,7 @@ let placement m nbplayers =
           let pos = List.nth ( !poslist) r in
           if condition pos ( !filtered_pos) then filtered_pos := pos :: ( !filtered_pos);
         done;
-        print_endline (string_of_int (List.length ( !filtered_pos))^" possibles spawns");
+        
         if List.length ( !filtered_pos) < nbplayers then raise NotEnoughSpawns;
         poslist := [];
         let rec add_elt elt = function
@@ -165,12 +166,17 @@ let placement m nbplayers =
                     (* fusionne toutes les armes au player 1, a remplacer par (place_army_around (List.nth ( !poslist) (n-1)))::others *)
   | _ -> failwith("generate : nbplayer < 0")
   in 
-  (init_positions(); placement_armies nbplayers)
+  (init_positions(); (placement_armies nbplayers, !poslist))
 
 (* un placement est valide si les unites sont placees sur des tuiles acceptant leurs mouvements *)
-let test attempt = let (m,a) = attempt in
+let test_movement attempt = let (m,(a,_)) = attempt in
   if not (List.for_all (List.for_all (fun u -> Tile.traversable (Battlefield.get_tile m (u#position)) u)) a)
     then raise InvalidPlacement else ()
+
+let test_path attempt = let (m,(_,sp)) = attempt in
+  if not (List.for_all (fun sp1 -> let dij = Pathfinder.dijkstra m sp1 Unit.Walk in List.for_all (fun sp2 -> sp1 >= sp2 || dij sp2 <> None ) sp) sp)
+    then raise NoPath else ()
+
 
 let generate width height nbplayers nbattempts =
   let rec generate_aux = function
@@ -182,11 +188,12 @@ let generate width height nbplayers nbattempts =
         let attempt =
           let m = swap_gen width height in
             ( m , placement m nbplayers )
-        in (test attempt; attempt) 
+        in (test_movement attempt; test_path attempt; attempt) 
       with
       | NotEnoughSpawns -> (print_endline " Not enough spawns found"; generate_aux (n-1) )
       | InvalidPlacement -> (print_endline " Unit placed on an area not coresponding to its movement modes"; generate_aux (n-1) )
       | NotEnoughPlace -> (print_endline " Not enough space around spawn for army"; generate_aux (n-1) )
+      | NoPath -> (print_endline " No path between armies"; generate_aux (n-1) )
     end
   in generate_aux nbattempts
 
@@ -194,6 +201,7 @@ class t (width:int) (height:int) (nbplayers:int) =
 object (self)
   val g = (print_string "Generating valid Battlefield, ";generate width height nbplayers 20)
   method field = fst g
-  method armies = snd g
+  method armies = fst (snd g)
+  method spawns = snd (snd g)
 end
 

@@ -17,7 +17,3 @@ val tile_iteri : (Position.t -> Tile.t -> unit) -> t -> unit
 
 val size : t -> int * int
 
-val print : t -> unit
-
-(** In order to have a simple map for testing *)
-val dummy_map : unit -> t

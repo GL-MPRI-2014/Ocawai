@@ -19,4 +19,6 @@ val reach : t -> Position.t -> t
 (** @return an [Action.movement] representing the same path. *)
 val get_move : t -> Action.movement
 
+val cat : t -> t -> t
+
 val dijkstra : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option

@@ -18,7 +18,9 @@ let reach path pos =
   else pos :: path
 
 let get_move = List.rev
-  
+
+let cat p1 p2 = p2 @ p1
+
 let dijkstra m pos move_type =
 
   (* renvoie Some "cout de la tuile en Position.create(a,b)" ou None si pas traversable *)
@@ -51,8 +53,8 @@ let dijkstra m pos move_type =
   (* initialisations *)
   dist.(x0).(y0) <- Some 0;
   for i = 0 to w-1 do
-    for j = 0 to h-1 do
-      li := (i,j)::( !li);
+    for j = 0 to h-1 do 
+      if (Tile.traversable_m (Battlefield.get_tile m (Position.create (i,j))) move_type) then li := (i,j)::( !li)
     done;
   done;    
   
@@ -62,7 +64,7 @@ let dijkstra m pos move_type =
     let (x,y) = let (xh,yh) = List.hd( !li) in min_dist (xh,yh) (List.tl( !li)) in
       li := remove (x,y) ( !li);
       match dist.(x).(y) with
-      | None -> ()
+      | None -> li := []
       | Some dxy ->
          List.iter (fun (a,b) -> 
               match cost (a,b) with
