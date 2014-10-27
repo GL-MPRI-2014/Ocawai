@@ -1,4 +1,7 @@
-(** [new t width height nbplayers] genere une map de taille [width * height] et une liste d'armees, de taille [nbplayers] *)
+(** BattleField Generator and armies spawner *)
+
+(** [new t width height nbplayers] generate an object containing a Battlefield with size [width * height], an armies list containing [nbplayers] Unit lists, and a armies spawns list containing [nbplayers] positions *)
+
 class t : int -> int -> int -> object
   method field : Battlefield.t
   method armies : Unit.t list list

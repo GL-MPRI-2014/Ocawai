@@ -1,28 +1,30 @@
-(* Tile interface *)
+(** Tile interface *)
 
 type t
 
-(** [get_name] tile returns the name of the tile *)
-
+(** [get_name tile] returns the name of the tile *)
 val get_name : t -> string
 
+(** [get_density tile] return the generation factor used by FieldGenerator *)
 val get_density : t -> int
 
-(** Check if a tile is traversable by a given type of movement/unit *)
-
+(** Check if a tile is traversable by a given type of movement *)
 val traversable_m : t -> Unit.movement -> bool
 
+(** Check if a tile is traversable by a given unit *)
 val traversable : t -> Unit.t -> bool
 
-(** Takes a movement type/unit and return a tile cost. *)
-
+(** Takes a movement type and return a tile cost. *)
 val movement_cost : t -> Unit.movement -> int
 
+(** Takes a unit and return a tile cost. *)
 val tile_cost : t -> Unit.t -> int
 
+(** conversion from parsed format from json config files *)
 val tile_t_to_t : Tile_t.t -> t
 
-(** Create a tile from the json file  *)
+(** Create a tile based on a json file containing a tile list*)
 val create_from_file : string -> string -> t
 
+(** Create a tile based on the tiles config file *)
 val create_from_config : string -> t
