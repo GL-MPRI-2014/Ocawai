@@ -52,7 +52,7 @@ Temporary Items
 
 ### Build ###
 _build
-main.native
+*.native
 documentation.html
 documentation
 
