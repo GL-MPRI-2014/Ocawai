@@ -5,8 +5,11 @@ open Utils
 (* Needed to compile them (otherwise no doc) *)
 open Player
 open Menus
+open State
+open Game
+open Manager
 
-let create_ui manager = 
+let create_ui manager =
   (* Can be dimensioned as we like *)
   (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
   let my_menu = new menu (300,50) 150 30 in
@@ -31,9 +34,9 @@ let create_ui manager =
 
 let () = begin
 
-  let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
+  (* let generator = new FieldGenerator.t 100 100 1 in (* map : 100*100, 1 player *)
   print_endline "generation ok";
-  
+
   let window = new render_window
     (* (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ()) *)
     (* (OcsfmlWindow.VideoMode.get_desktop_mode ()) *)
@@ -151,5 +154,9 @@ let () = begin
     end
   in
 
-  main_loop ()
+  main_loop () *)
+
+  new Game.game |> Manager.manager#push ;
+
+  Manager.manager#run
 end
