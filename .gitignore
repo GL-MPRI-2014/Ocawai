@@ -55,3 +55,10 @@ _build
 main.native
 documentation.html
 documentation
+
+# ATD files
+*_j.ml
+*_j.mli
+*_t.ml
+*_t.mli
+*.atd
