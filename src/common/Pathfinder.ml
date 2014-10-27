@@ -1,3 +1,5 @@
+open Utils
+
 (* We might want to change it later, leave it hidden *)
 (* We want to make sure there is no loop and discontinuity in it *)
 type t = Position.t list
@@ -65,18 +67,16 @@ let dijkstra m pos move_type =
       li := remove (x,y) ( !li);
       match dist.(x).(y) with
       | None -> li := []
-      | Some dxy ->
-         List.iter (fun (a,b) -> 
-              match cost (a,b) with
-              | None -> ()
-              | Some co ->  (* pour tout voisin a,b de x,y atteignable d'une autre façon, on teste si c'est plus court d'aller en x,y par a,b *)
-                let alt = dxy + co in 
-                if match dist.(a).(b) with | None -> true | Some dab -> alt < dab then
-                begin
-                  dist.(a).(b) <- Some alt;
-                  prev.(a).(b) <- Some (Position.create (x,y));
-                end
-              ) ( List.filter (fun (a,b) -> a>=0 && b>=0 && a<w && b<h) [(x,y+1);(x,y-1);(x+1,y);(x-1,y)] );
+      | Some dxy -> (* pour tout voisin a,b de x,y atteignable d'une autre façon, on teste si c'est plus court d'aller en x,y par a,b *)
+          let shorter_path a b co = 
+            let alt = dxy + co in 
+            if match dist.(a).(b) with | None -> true | Some dab -> alt < dab then
+            begin
+              dist.(a).(b) <- Some alt;
+              prev.(a).(b) <- Some (Position.create (x,y));
+            end
+          in
+          List.iter (fun (a,b) -> cost (a,b) >? shorter_path a b) ( List.filter (fun (a,b) -> a>=0 && b>=0 && a<w && b<h) [(x,y+1);(x,y-1);(x+1,y);(x-1,y)] );
   done;
   (* construit le chemin jusqu'à pos en remontant  prev *)
   let rec rev_path = function
