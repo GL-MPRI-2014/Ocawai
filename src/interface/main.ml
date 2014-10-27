@@ -8,6 +8,8 @@ open Menus
 open State
 open Game
 open Manager
+open FieldGenerator
+open UIManager
 
 let create_ui manager =
   (* Can be dimensioned as we like *)
