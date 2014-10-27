@@ -5,4 +5,6 @@ class game : object
 
   inherit State.state
 
+  method create_ui : UIManager.ui_manager -> Menus.menu
+
 end

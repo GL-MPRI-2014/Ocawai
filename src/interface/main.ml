@@ -11,7 +11,7 @@ open Manager
 open FieldGenerator
 open UIManager
 
-let create_ui manager =
+(* let create_ui manager =
   (* Can be dimensioned as we like *)
   (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
   let my_menu = new menu (300,50) 150 30 in
@@ -31,7 +31,7 @@ let create_ui manager =
   manager#add_widget (my_menu :> Widget.widget);
   (* Return it because we need it in the main (until we find a better solution)
    *)
-  my_menu
+  my_menu *)
 
 
 let () = begin
@@ -158,7 +158,7 @@ let () = begin
 
   main_loop () *)
 
-  new Game.game |> Manager.manager#push ;
+  (new Game.game :> State.state) |> Manager.manager#push ;
 
   Manager.manager#run
 end
