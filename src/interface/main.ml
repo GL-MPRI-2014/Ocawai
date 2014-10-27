@@ -5,6 +5,7 @@ open Utils
 (* Needed to compile them (otherwise no doc) *)
 open Player
 open Menus
+open Logics
 
 let () = begin
 
