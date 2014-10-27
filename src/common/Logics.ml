@@ -22,14 +22,6 @@ let player_vision (player : Player.t) (bf : Battlefield.t) : Position.t list =
   remove_double l
 
 
-let path_movement_cost mvt_type bf path =   
-  List.fold_left 
-    (fun sum pos -> 
-      sum + Tile.movement_cost (Battlefield.get_tile bf pos) mvt_type
-    )
-    0 path
-
-
 let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
   if mvt_point < 0 then failwith "dfs: mvt_point < 0";
   let neighbour_unsafe = 
@@ -43,19 +35,19 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
 	Tile.movement_cost tile mvt_type
       else mvt_point + 1
     in
-    let newpath = pos::path in
+    let newpath = Pathfinder.reach path pos in
     (* now we check if we can actually go to this new position *)
     if cost <= mvt_point 
       && (not (Hashtbl.mem h pos)
-	  || (path_movement_cost mvt_type bf (Hashtbl.find h pos) >
-	      path_movement_cost mvt_type bf newpath)
+	  || (Pathfinder.cost mvt_type bf (Hashtbl.find h pos) >
+	      Pathfinder.cost mvt_type bf newpath)
       )
       && (not (List.mem pos visible_pos)
 	  || not (Hashtbl.mem unit_pos pos)
 	  || snd (Hashtbl.find unit_pos pos) = player
       )   
     then (
-      Hashtbl.add h pos (List.rev newpath);
+      Hashtbl.add h pos newpath;
       let mvt_point = mvt_point - cost in
       dfs bf player mvt_point mvt_type visible_pos unit_pos h pos newpath
     )
@@ -75,8 +67,9 @@ let accessible_positions unit player player_list bf =
     )
     player_list;
   let h = Hashtbl.create 50 in
-  Hashtbl.add h unit#position [];
+  let path_init = Pathfinder.init unit#position in
+  Hashtbl.add h unit#position path_init;
   dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h 
-    unit#position [];
+    unit#position path_init;
   h
   
