@@ -15,8 +15,23 @@ class item : string -> string -> (unit -> unit) -> object
 
 end
 
+(** A class representing key-controlled buttons *)
+class key_button : icon:string -> text:string -> m_position:(int*int) ->
+  m_size:(int*int) -> keycode:OcsfmlWindow.KeyCode.t ->
+  callback:(unit -> unit) -> object
+
+  inherit Widget.widget
+
+  val mutable position : int * int
+
+  val mutable size : int * int
+
+  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+
+end
+
 (** Usage : menu position width item_height *)
-class menu : (int * int) -> int -> int -> object
+class menu : (int * int) -> int -> int -> OcsfmlWindow.KeyCode.t -> object
 
   inherit [item] BaseMixins.evq_container 
 

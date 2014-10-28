@@ -31,7 +31,7 @@ class virtual key_ctrl_list : object
 
   val virtual mutable nb_items : int
 
-  method virtual add_event : (Event.t -> unit) -> unit
+  method virtual add_event : (Event.t -> bool) -> unit
 
   method selected : int
 

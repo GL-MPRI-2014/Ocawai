@@ -64,6 +64,13 @@ let new_ip_from_fun f =
   ip_list := ip :: !ip_list; 
   (ip :> interpolator)
 
+let new_sine_ip set spe amp med = 
+  let ip = new interpolator_class 
+    (function t -> set (amp *. (sin (spe *. t)) +. med))
+  in
+  ip_list := ip :: !ip_list;
+  (ip :> interpolator)
+
 let new_ip_with_timeout f t = 
   let ip = new timed_interpolator f t in
   ip_list := ip :: !ip_list;

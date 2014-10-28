@@ -12,7 +12,7 @@ class virtual widget = object(self)
 
   val mutable active = false
 
-  val mutable event_funs : (Event.t -> unit) list = []
+  val mutable event_funs : (Event.t -> bool) list = []
 
   method position =
     match parent with
@@ -21,7 +21,14 @@ class virtual widget = object(self)
 
   method add_event f = event_funs <- f :: event_funs
 
-  method on_event e = if active then List.iter (fun f -> f e) event_funs
+  method on_event e = 
+    (* Not a fold left because we want to evaluate everything *)
+    let rec event_aux = function
+      |[] -> false
+      |t::q -> let b = event_aux q in 
+        t e || b
+    in
+    active && event_aux event_funs 
 
   method set_position p = position <- p
 

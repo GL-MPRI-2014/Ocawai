@@ -131,6 +131,10 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
   target#draw text
 
 
+let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager = 
+  ui_manager#draw (target :> render_target) texture_library
+
+
 let render_game (target : #OcsfmlGraphics.render_target) 
   (data : ClientData.client_data) =
   render_map target data#camera data#map;
@@ -139,10 +143,6 @@ let render_game (target : #OcsfmlGraphics.render_target)
   draw_cursor target data#camera;
   List.iter (draw_unit target data#camera) data#units;
   FPS.display target
-
-let render_widget (target : #OcsfmlGraphics.render_target) 
-  (widget : #Widget.widget) = 
-  widget#draw (target :> render_target) texture_library
 
 let load_ressources () =
   TextureLibrary.load_directory texture_library "resources/textures/" ;

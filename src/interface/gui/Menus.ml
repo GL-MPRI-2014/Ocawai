@@ -34,7 +34,41 @@ class item icon text (action : unit -> unit) = object(self)
 end
 
 
-class menu pos width i_height = object(self)
+class key_button ~icon ~text ~m_position ~m_size ~keycode 
+  ~callback = object(self)
+
+  inherit widget
+
+  val mutable position = m_position
+
+  val mutable size = m_size
+
+  initializer
+    self#add_event (function
+      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc -> 
+          (callback (); true)
+      | _ -> false)
+
+  method draw target lib = if self#active then begin
+    new rectangle_shape ~position:(foi2D self#position) ~size:(foi2D size)
+      ~fill_color:(Color.rgb 255 255 255) ()
+    |> target#draw;
+    let texture = TextureLibrary.(get_texture lib icon) in
+    let (sx, sy) = foi2D texture#default_size in
+    let (selfx, selfy) = foi2D size in
+    let tex_size_x = sx *. selfy /. sy in 
+    let position = foi2D self#position in
+    texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
+    new text ~string:text ~character_size:(snd size - 1)
+      ~position:(fst position +. tex_size_x +. 5., snd position -. 2.)
+      ~font:my_font ~color:Color.black ()
+    |> target#draw 
+  end
+
+end
+
+
+class menu pos width i_height keycode = object(self)
 
   inherit [item] evq_container as super
 
@@ -67,9 +101,10 @@ class menu pos width i_height = object(self)
 
   initializer
     self#add_event(function
-      |Event.KeyPressed{Event.code = KeyCode.Space; _} ->
-          if nb_items <> 0 then 
-            (List.nth self#children (nb_items - self#selected - 1))#action
-      | _ -> ())
+      |Event.KeyPressed{Event.code = kc; _} when keycode = kc ->
+          nb_items <> 0 && 
+          ((List.nth self#children (nb_items - self#selected - 1))#action;
+          true)
+      | _ -> false)
 
 end
