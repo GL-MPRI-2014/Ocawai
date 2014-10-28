@@ -1,8 +1,5 @@
 (** Some useful functions related to the game's logic *)
 
-(** Returns true iff the given position is within the battlefield *)
-val in_battlefield : Battlefield.t -> Position.t -> bool
-
 (** Returns the list of positions that a given unit can see *)
 val unit_vision : Unit.t -> Battlefield.t -> Position.t list
 

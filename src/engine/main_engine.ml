@@ -49,5 +49,4 @@ begin
   let r = dij (List.nth gen#spawns 1) in
   print_ascii gen#field gen#armies (match r with | None -> Pathfinder.empty | Some (_,b) -> b) gen#spawns;
   print_endline ("path length between spawns 1 and 2 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a));
-  
 end

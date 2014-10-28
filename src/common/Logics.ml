@@ -1,12 +1,6 @@
-let in_battlefield (bf : Battlefield.t) (pos : Position.t) : bool =
-  let pmin = Position.create (0,0) in
-  let pmax = Position.create (Battlefield.size bf) in
-  not (Position.out_of_bounds pos pmin pmax)
-
-
 let unit_vision (unit : Unit.t) (bf : Battlefield.t) : Position.t list =
   let l = Position.filled_circle (unit#position) (unit#vision_range) in
-  List.filter (in_battlefield bf) l
+  List.filter (Battlefield.in_range bf) l
 
 
 let rec remove_double l = match l with
@@ -27,7 +21,7 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
   let neighbour_unsafe = 
     [Position.left pos; Position.up pos; Position.right pos; Position.down pos]
   in
-  let neighbour = List.filter (in_battlefield bf) neighbour_unsafe in
+  let neighbour = List.filter (Battlefield.in_range bf) neighbour_unsafe in
   let visit pos =
     let tile = Battlefield.get_tile bf pos in
     let cost = 

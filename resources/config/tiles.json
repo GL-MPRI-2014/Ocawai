@@ -7,7 +7,7 @@
     "tracks_cost": -1,
     "swim_cost": 1,
     "fly_cost": 1,
-    "density": 11
+    "density": 10
   },
   {
     "name": "plain",
@@ -47,7 +47,7 @@
     "tracks_cost": -1,
     "swim_cost": -1,
     "fly_cost": 3,
-    "density": 2
+    "density": 3
   }
 ]
 

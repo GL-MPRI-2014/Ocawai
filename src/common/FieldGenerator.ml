@@ -36,7 +36,7 @@ let rec count f = function
 |p::q -> count f q
 |[] -> 0
     
-let swap_gen width height =
+let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
   Random.self_init();
   
   let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
@@ -110,13 +110,16 @@ let placement m nbplayers =
         | [] -> true
         | p1::q -> (dist p p1 > (width + height)/nbplayers) && condition p q 
       in
+      let dist_min_b pos =
+        let (a,b) = Position.topair(pos) in a > 10*width/100 && b > 10*height/100 && a < 90*width/100 && b < 90*height/100
+      in
       let filtered_pos = ref [] in 
       begin
         if ( !poslist) = [] then raise NotEnoughSpawns;
         for i = 0 to List.length ( !poslist) do
           let r = Random.int (List.length ( !poslist)) in
           let pos = List.nth ( !poslist) r in
-          if condition pos ( !filtered_pos) then filtered_pos := pos :: ( !filtered_pos);
+          if condition pos ( !filtered_pos) && dist_min_b pos then filtered_pos := pos :: ( !filtered_pos);
         done;
         
         if List.length ( !filtered_pos) < nbplayers then raise NotEnoughSpawns;

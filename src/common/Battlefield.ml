@@ -20,3 +20,7 @@ let tile_iteri f m =
 
 let size m = (Array.length m,Array.length m.(0))
 
+let in_range (bf : t) (pos : Position.t) : bool =
+  let pmin = Position.create (0,0) in
+  let pmax = Position.create (let w,h = size bf in w-1,h-1) in
+  not (Position.out_of_bounds pos pmin pmax)
