@@ -51,10 +51,7 @@ doc : interface
 clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
-	rm -f documentation/*.html documentation/*.css
-	printf "#!/bin/bash\n\n[ -d ./documentation ] && rmdir -- ./documentation" >> cleanDoc.sh
-	bash cleanDoc.sh || true
-	rm -f -- cleanDoc.sh
+	rm -rf documentation
 	rm -f documentation.html
 
 test:
