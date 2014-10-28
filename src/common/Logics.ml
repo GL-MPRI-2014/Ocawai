@@ -9,7 +9,7 @@ let rec remove_double l = match l with
 
 
 let player_vision (player : Player.t) (bf : Battlefield.t) : Position.t list =
-  let l = List.fold_left 
+  let l = List.fold_left
     (fun list unit -> list @ (unit_vision unit bf))
     [] player#get_army
   in
@@ -18,28 +18,28 @@ let player_vision (player : Player.t) (bf : Battlefield.t) : Position.t list =
 
 let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
   if mvt_point < 0 then failwith "dfs: mvt_point < 0";
-  let neighbour_unsafe = 
+  let neighbour_unsafe =
     [Position.left pos; Position.up pos; Position.right pos; Position.down pos]
   in
   let neighbour = List.filter (Battlefield.in_range bf) neighbour_unsafe in
   let visit pos =
     let tile = Battlefield.get_tile bf pos in
-    let cost = 
+    let cost =
       if Tile.traversable_m tile mvt_type then
 	Tile.movement_cost tile mvt_type
       else mvt_point + 1
     in
-    let newpath = Pathfinder.reach path pos in
+    let newpath = Path.reach path pos in
     (* now we check if we can actually go to this new position *)
-    if cost <= mvt_point 
+    if cost <= mvt_point
       && (not (Hashtbl.mem h pos)
-	  || (Pathfinder.cost mvt_type bf (Hashtbl.find h pos) >
-	      Pathfinder.cost mvt_type bf newpath)
+	  || (Path.cost mvt_type bf (Hashtbl.find h pos) >
+	      Path.cost mvt_type bf newpath)
       )
       && (not (List.mem pos visible_pos)
 	  || not (Hashtbl.mem unit_pos pos)
 	  || snd (Hashtbl.find unit_pos pos) = player
-      )   
+      )
     then (
       Hashtbl.add h pos newpath;
       let mvt_point = mvt_point - cost in
@@ -50,20 +50,20 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
 
 
 let accessible_positions unit player player_list bf =
-  if not (List.mem unit player#get_army) then 
+  if not (List.mem unit player#get_army) then
     failwith "accessible_positions: wrong player";
   let visible_pos = player_vision player bf in
   let unit_pos = Hashtbl.create 50 in
-  List.iter 
-    (fun player -> List.iter 
+  List.iter
+    (fun player -> List.iter
       (fun unit -> Hashtbl.add unit_pos unit#position (unit,player))
       player#get_army
     )
     player_list;
   let h = Hashtbl.create 50 in
-  let path_init = Pathfinder.init unit#position in
+  let path_init = Path.init unit#position in
   Hashtbl.add h unit#position path_init;
-  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h 
+  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h
     unit#position path_init;
   h
-  
+
