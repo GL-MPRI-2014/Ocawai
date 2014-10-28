@@ -54,9 +54,8 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
       | _ -> false)
 
   method draw target lib = if self#active then begin
-    new rectangle_shape ~position:(foi2D self#position) ~size:(foi2D size)
-      ~fill_color:(Color.rgb 255 255 255) ()
-    |> target#draw;
+    let texture = TextureLibrary.get_texture lib "menu" in 
+    texture#draw ~target ~position:(foi2D self#position) ~size:(foi2D size) ();
 
     let texture = TextureLibrary.(get_texture lib icon) in
     let (sx, sy) = foi2D texture#default_size in
@@ -77,6 +76,18 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
 end
 
 
+class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode 
+  ~callback = object(self)
+
+  inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback
+
+  initializer
+    self#add_event(function
+      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc -> 
+          (self#toggle; true)
+      | _ -> false)
+end
+
 class menu pos width i_height keycode = object(self)
 
   inherit [item] evq_container as super
@@ -94,9 +105,11 @@ class menu pos width i_height keycode = object(self)
   method draw target lib = if self#active then begin
     let (selfx, selfy) = foi2D size in
     let position = foi2D self#position in
-    new rectangle_shape ~outline_thickness:1. ~fill_color:Color.white
+    (*new rectangle_shape ~outline_thickness:1. ~fill_color:Color.white
       ~outline_color:Color.black ~size:(selfx, selfy) ~position ()
-    |> target#draw;
+    |> target#draw;*)
+    let texture = TextureLibrary.get_texture lib "menu" in 
+    texture#draw ~target ~position ~size:(selfx, selfy) ();
     List.iter (fun c -> c#draw target lib) self#children;
     let (posx, posy) = self#position in
     new rectangle_shape ~outline_thickness:2. ~fill_color:(Color.rgba 0 0 0 0)

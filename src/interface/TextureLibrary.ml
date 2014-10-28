@@ -19,6 +19,11 @@ let load_texture lib path =
     let tex = new basic_texture path in
     print_endline ("  [\027[32mstored\027[37m] " ^ name);
     Hashtbl.add lib name tex
+  end else if ext = "slc" then begin
+    let tex = new sliced_texture path ~upcut:10 ~downcut:40 
+      ~rightcut:40 ~leftcut:10 in
+    print_endline ("  [\027[32mstored\027[37m] " ^ name);
+    Hashtbl.add lib name tex
   end
 
 

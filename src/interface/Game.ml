@@ -28,32 +28,30 @@ class game = object(self)
   val mutable cdata : ClientData.client_data option = None
 
   method private create_ui =
-    let my_menu = new menu (manager#window#get_width / 2 - 50, 0) 150 30
+    let my_menu = new menu (manager#window#get_width / 2 - 75, 0) 150 30
     OcsfmlWindow.KeyCode.Return in
 
-    new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited" ; Manager.manager#pop)
-    |> my_menu#add_child;
-
-    new item "info" "Info" (fun () -> print_endline "info activated";
-      my_menu#toggle)
-    |> my_menu#add_child;
-
-    new item "params" "Settings" (fun () -> print_endline "settings activated"; 
-      my_menu#toggle)
-    |> my_menu#add_child;
-
-    new item "infantry" "Cancel" (fun () -> print_endline "canceled"; 
-      my_menu#toggle)
-    |> my_menu#add_child;
-
-    let main_button = new key_button ~icon:"return"
+    let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
-      ~m_position:(manager#window#get_width / 2 - 50, 0)
+      ~m_position:(manager#window#get_width / 2 - 75, 0)
       ~callback:(fun () -> my_menu#toggle)
     in
 
-    (* Add the button before the menu, so that the menu will display on top of
-     * the button (yes, this is bad, we need to implement focusing) *)
+    new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited"; Manager.manager#pop)
+    |> my_menu#add_child;
+
+    new item "info" "Info" (fun () -> print_endline "info activated";
+      my_menu#toggle; main_button#toggle)
+    |> my_menu#add_child;
+
+    new item "params" "Settings" (fun () -> print_endline "settings activated"; 
+      my_menu#toggle; main_button#toggle)
+    |> my_menu#add_child;
+
+    new item "infantry" "Cancel" (fun () -> print_endline "canceled"; 
+      my_menu#toggle; main_button#toggle)
+    |> my_menu#add_child;
+
     ui_manager#add_widget (main_button :> Widget.widget);
     main_button#toggle;
     ui_manager#add_widget (my_menu :> Widget.widget)
