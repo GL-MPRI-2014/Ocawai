@@ -36,29 +36,35 @@ run: interface
 	./$(OUTPUT)
 
 server:	
-	ocamlbuild -use-ocamlfind -lib unix -I $(SERVER_SRC) $(OUTPUT_SERVEUR)
+	ocamlbuild -use-ocamlfind -lib unix -Is $(SERVER_SRC) $(OUTPUT_SERVEUR)
 
 eng: engine
 	./$(OUTPUT)
 
 # For now, we cannot handle engine
 doc : interface
-	mkdir -p documentation
-	ocamlfind ocamldoc -stars -package $(PACKAGES) -d documentation \
+	mkdir -p doc
+	ocamlfind ocamldoc -stars -package $(PACKAGES) -d doc \
 	-t "Projet Genie Logiciel MPRI 2014" \
 	-I _build/src/common -I _build/src/interface -I _build/src/interface/gui \
 	-I _build/src/engine -html -colorize-code $(files)
 	rm -f documentation.html
-	ln -s documentation/index.html documentation.html
+	ln -s doc/index.html documentation.html
 
 clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
 	rm -f documentation/*.html documentation/*.css
+	rm -f doc/*.html doc/*.css
 	printf "#!/bin/bash\n\n[ -d ./documentation ] && rmdir -- ./documentation" >> cleanDoc.sh
 	bash cleanDoc.sh || true
 	rm -f -- cleanDoc.sh
 	rm -f documentation.html
+
+
+distclean:
+	rm -f config.status config.log
+	rm -rf autom4te.cache
 
 test:
 	echo "To be completed, this is a command that returns 0 for Travis."
