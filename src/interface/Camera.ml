@@ -10,12 +10,14 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   val mutable zoom_factor = 1.
 
-  val mutable min_zoom = 
-    let (a,b) = Position.topair maxpos in 
-    let w = float_of_int w in 
+  val mutable min_zoom =
+    let (a,b) = Position.topair maxpos in
+    let w = float_of_int w in
     let h = float_of_int h in
-    min (w /. ((float_of_int (def_tile_size * a)) *. 1.5)) 
+    min (w /. ((float_of_int (def_tile_size * a)) *. 1.5))
         (h /. ((float_of_int (def_tile_size * b)) *. 1.5))
+
+  val mutable max_zoom = 2.5
 
   method cursor = cursor
 
@@ -70,18 +72,18 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   method zoom = zoom_factor
 
-  method set_zoom z = 
-    let end_zoom = min (max z min_zoom) 2.5 in
-    let begin_zoom = zoom_factor in 
-    let interp_function t = 
-      zoom_factor <- begin_zoom *. (1. -. t *. 10.) +. 
+  method set_zoom z =
+    let end_zoom = min (max z min_zoom) max_zoom in
+    let begin_zoom = zoom_factor in
+    let interp_function t =
+      zoom_factor <- begin_zoom *. (1. -. t *. 10.) +.
                      end_zoom *. t *. 10.
     in
     actual_interpolator >? (fun i -> i#delete);
     actual_interpolator <- Some(
       Interpolators.new_ip_with_timeout interp_function 0.1)
 
-  method toggle_zoom = 
+  method toggle_zoom =
     if zoom_factor > (min_zoom *. 1.5) then self#set_zoom min_zoom
     else self#set_zoom 1.
 
