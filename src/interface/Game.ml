@@ -131,9 +131,7 @@ class game = object(self)
     (* Rendering goes here *)
     Render.render_game window cdata;
     Render.draw_hud window;
-
-    (* This is really garbage *)
-    Render.render_widget window my_menu;
+    Render.draw_gui window ui_manager;
 
     window#display
 
