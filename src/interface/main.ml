@@ -1,5 +1,4 @@
 (** Launcher of the interface *)
-
 open Manager
 
 (* Helps compiling doc -- to be removed ! *)
