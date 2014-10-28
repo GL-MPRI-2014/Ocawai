@@ -28,11 +28,6 @@ class game = object(self)
     ~map:(generator#field)
     ~units:(List.nth (generator#armies) num) *)
 
-  (* val cdata = (new ClientData.client_data
-    ~camera
-    ~map:Battlefield.create 10 10
-    ~units:[]) *)
-
   val mutable cdata : ClientData.client_data option = None
 
   method create_ui manager =
