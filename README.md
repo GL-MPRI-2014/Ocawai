@@ -16,11 +16,10 @@ jeu.
 * **F** : Mettre l'application en plein-écran
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
-* **flèches** : déplacer la caméra
-* **espace** : entrer en/sortir du mode déplacement d'unité;
-  permet aussi d'afficher le menu dans le cas où aucune unité n'est
-  sélectionnable (et une fois dans le menu, permet d'effectuer les actions
-  affichées -- *forfeit* permet de revenir au menu principal)
+* **touches fléchées** : Déplacer la caméra
+* **espace** : Entrer/sortir du mode déplacement d'unité
+* **entrée** : Affiche le menu (*forfeit* permet de revenir au menu
+  principal)
 * **A** : Dézoomer
 * **Z** : Zoomer
 * **0** : Réinitialiser le zoom
@@ -28,9 +27,9 @@ jeu.
 
 # Compilation
 
-* `make interface` : compiler l'interface graphique
-* `make run` : compiler l'interface et la lancer
-* `make doc` : compile la documentation
+* `make interface` : Compiler l'interface graphique
+* `make run` : Compiler l'interface et la lancer
+* `make doc` : Compile la documentation
 
 # Documentation
 
