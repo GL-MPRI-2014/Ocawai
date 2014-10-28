@@ -9,7 +9,7 @@ open Logics
 
 let () = begin
 
-  let generator = new FieldGenerator.t 100 100 2 in (* map : 100*100, 2 players*)
+  let generator = new FieldGenerator.t 100 100 2 10 5 in (* map : 100*100, 2 players, 10 map gen tried and 5 units placement tried for each map before failure*)
   print_endline "generation ok";
   
   let window = new render_window
@@ -89,7 +89,7 @@ let () = begin
             
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#set_position (Position.create (50,50));
-            camera#set_zoom (0.197841306) (* = 0.90909 ** 17.0, i.e. 17 fois la touche A. oui, c'est débile ... *)
+            camera#set_zoom (0.197841306) (* = 0.90909 ** 17.0, i.e. 17 fois la touche A. oui, c'est débile ... mais ça m'affiche la map en grand d'un coup*)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Z ; _ } ->
             camera#set_zoom (camera#zoom *. 1.1)

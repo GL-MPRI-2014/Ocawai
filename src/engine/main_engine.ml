@@ -44,7 +44,7 @@ done
 
 let () = 
 begin
-  let gen = new FieldGenerator.t 45 45 2 in
+  let gen = new FieldGenerator.t 45 45 2 10 5 in
   let dij = Pathfinder.dijkstra (gen#field) (List.hd gen#spawns) (Unit.Walk) in
   let r = dij (List.nth gen#spawns 1) in
   print_ascii gen#field gen#armies (match r with | None -> Pathfinder.empty | Some (_,b) -> b) gen#spawns;
