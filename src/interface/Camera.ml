@@ -70,10 +70,19 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   method zoom = zoom_factor
 
-  method set_zoom z = zoom_factor <- min (max z min_zoom) 2.5
+  method set_zoom z = 
+    let end_zoom = min (max z min_zoom) 2.5 in
+    let begin_zoom = zoom_factor in 
+    let interp_function t = 
+      zoom_factor <- begin_zoom *. (1. -. t *. 10.) +. 
+                     end_zoom *. t *. 10.
+    in
+    actual_interpolator >? (fun i -> i#delete);
+    actual_interpolator <- Some(
+      Interpolators.new_ip_with_timeout interp_function 0.1)
 
   method toggle_zoom = 
-    if zoom_factor > min_zoom then self#set_zoom min_zoom
+    if zoom_factor > (min_zoom *. 1.5) then self#set_zoom min_zoom
     else self#set_zoom 1.
 
 end
