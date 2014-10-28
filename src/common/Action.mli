@@ -1,3 +1,5 @@
+(** Action Interface *)
+
 type movement = Position.t list
 
 type action = 

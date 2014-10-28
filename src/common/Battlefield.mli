@@ -17,4 +17,5 @@ val tile_iteri : (Position.t -> Tile.t -> unit) -> t -> unit
 
 val size : t -> int * int
 
-val print : t -> unit
+(** Returns true iff the given position is within the battlefield *)
+val in_range : t -> Position.t -> bool

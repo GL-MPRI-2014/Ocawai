@@ -10,7 +10,7 @@ class game = object(self)
 
   inherit State.state as super
 
-  val generator = new FieldGenerator.t 100 100 1
+  val generator = new FieldGenerator.t 100 100 2 10 5
 
   val ui_manager = new UIManager.ui_manager
 

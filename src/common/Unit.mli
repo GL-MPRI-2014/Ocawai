@@ -13,9 +13,11 @@ type t = <
   spawn_number : int
 >
 
+(** conversion from parsed format from json config files *)
 val create_from_unit_t : Unit_t.t -> Position.t ->t
 
-(** Create a unit from the XML file  *)
+(** Create a unit based on a json file containing a unit list*)
 val create_from_file : string -> string -> Position.t -> t
 
+(** Create a unit based on the the units config file *)
 val create_from_config : string -> Position.t -> t
