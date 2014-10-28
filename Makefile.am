@@ -7,7 +7,7 @@ bin_PROGRAMS = server interface engine
 
 PACKAGES = -package ocsfml,graphics,atdgen
 LIBS = -libs unix
-CLEANFILES = *.html *.css *.cmo *.cmi *~ $(bin_PROGRAMS)
+#CLEANFILES = *.html *.css *.cmo *.cmi *~ $(bin_PROGRAMS)
 
 INTERFACE_SRC = src/common,src/interface,src/interface/gui
 ENGINE_SRC = src/engine,src/common
@@ -42,7 +42,7 @@ engine : $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) $(PACKAGES) main.native
 
 server:	
-	ocamlbuild -use-ocamlfind -lib unix -Is $(SERVER_SRC) $@.native
+	ocamlbuild -use-ocamlfind $(LIBS) -Is $(SERVER_SRC) $@.native
 
 
 # For now, we cannot handle engine
