@@ -24,10 +24,14 @@ class item icon text (action : unit -> unit) = object(self)
     let position = foi2D self#position in
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
     (* Then draw the text *)
-    new text ~string:text ~character_size:(snd size - 1)
-      ~position:(fst position +. tex_size_x +. 5., snd position -. 2.)
-      ~font:my_font ~color:Color.black ()
-    |> target#draw end
+    let txt = new text ~string:text ~character_size:(snd size - 1)
+      ~font:my_font ~color:Color.black () in
+    let txt_bounds = txt#get_global_bounds in
+    txt#set_origin (txt_bounds.width /. 2.) (txt_bounds.height /. 2.);
+    txt#set_position (fst position +. (selfx +. tex_size_x)/.2.)
+                     (snd position +. selfy /. 4.);
+    target#draw txt
+  end
 
   method action = action ()
 
@@ -53,16 +57,21 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
     new rectangle_shape ~position:(foi2D self#position) ~size:(foi2D size)
       ~fill_color:(Color.rgb 255 255 255) ()
     |> target#draw;
+
     let texture = TextureLibrary.(get_texture lib icon) in
     let (sx, sy) = foi2D texture#default_size in
     let (selfx, selfy) = foi2D size in
     let tex_size_x = sx *. selfy /. sy in 
     let position = foi2D self#position in
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
-    new text ~string:text ~character_size:(snd size - 1)
-      ~position:(fst position +. tex_size_x +. 5., snd position -. 2.)
-      ~font:my_font ~color:Color.black ()
-    |> target#draw 
+
+    let txt = new text ~string:text ~character_size:(snd size - 1)
+      ~font:my_font ~color:Color.black () in
+    let txt_bounds = txt#get_global_bounds in
+    txt#set_origin (txt_bounds.width /. 2.) (txt_bounds.height /. 2.);
+    txt#set_position (fst position +. (selfx +. tex_size_x)/.2.)
+                     (snd position +. selfy /. 4.);
+    target#draw txt
   end
 
 end
