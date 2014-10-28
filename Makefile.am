@@ -5,13 +5,13 @@
 bin_PROGRAMS = server interface engine
 
 
-PACKAGES = -package ocsfml,graphics,atdgen
+PACKAGES = ocsfml.graphics,atdgen
 LIBS = -libs unix
 #CLEANFILES = *.html *.css *.cmo *.cmi *~ $(bin_PROGRAMS)
 
-INTERFACE_SRC = src/common,src/interface,src/interface/gui
-ENGINE_SRC = src/engine,src/common
-SERVER_SRC = src/Reseaux
+INTERFACE_SOURCES = src/common,src/interface,src/interface/gui
+ENGINE_SOURCES = src/engine,src/common
+SERVER_SOURRCES = src/Reseaux
 
 # We will later need to add engine, but while it is not compiled we cannot make
 # the corresponding documentation
@@ -33,16 +33,16 @@ default: interface
 %_j.ml: %.atd
 	atdgen -j $<
 
-.PHONY: interface engine run server eng doc distclean test
+#.PHONY: interface engine run server eng doc distclean test
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SRC) $(PACKAGES) main.native
+	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SOURCES) -package $(PACKAGES) main.native
 
 engine : $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) $(PACKAGES) main.native
+	ocamlbuild -use-ocamlfind -Is $(ENGINE_SOURRCES) -package $(PACKAGES) main.native
 
 server:	
-	ocamlbuild -use-ocamlfind $(LIBS) -Is $(SERVER_SRC) $@.native
+	ocamlbuild -use-ocamlfind $(LIBS) -Is $(SERVER_SOURCES) $@.native
 
 
 # For now, we cannot handle engine
@@ -58,7 +58,6 @@ doc : interface
 clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
-	rm -f documentation/*.html documentation/*.css
 	rm -f doc/*.html doc/*.css
 	printf "#!/bin/bash\n\n[ -d ./documentation ] && rmdir -- ./documentation" >> cleanDoc.sh
 	bash cleanDoc.sh || true
