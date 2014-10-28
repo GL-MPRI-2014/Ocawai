@@ -7,6 +7,9 @@ let manager = object(self)
       "Flower Wars"
       ~style: [OcsfmlWindow.Window.Fullscreen]
 
+  initializer
+    Render.load_ressources ()
+
   method window : OcsfmlGraphics.render_window = window
 
   method push (state : State.state) =

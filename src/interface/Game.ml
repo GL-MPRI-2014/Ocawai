@@ -60,7 +60,6 @@ class game = object(self)
   initializer
 
     my_menu <- self#create_ui ui_manager;
-    Render.load_ressources () ;
     cdata <-Some (new ClientData.client_data ~camera
       ~map:(generator#field)
       ~units:(List.nth (generator#armies) num))
