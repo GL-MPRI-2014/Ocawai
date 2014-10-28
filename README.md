@@ -23,6 +23,7 @@ jeu.
   affichées -- *forfeit* permet de revenir au menu principal)
 * **A** : Dézoomer
 * **Z** : Zoomer
+* **0** : Réinitialiser le zoom
 
 
 # Compilation
