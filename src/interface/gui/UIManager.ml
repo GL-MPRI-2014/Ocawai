@@ -15,5 +15,5 @@ class ui_manager = object(self)
     widgets <- w :: widgets
 
   method draw target texlib = 
-    List.iter (fun w -> w#draw target texlib) widgets
+    List.iter (fun w -> w#draw target texlib) (List.rev widgets)
 end

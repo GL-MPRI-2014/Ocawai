@@ -14,9 +14,6 @@ class game = object(self)
 
   val ui_manager = new UIManager.ui_manager
 
-  (* How ugly *)
-  val mutable my_menu = new menu (0,0) 0 0
-
   val camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
@@ -30,31 +27,39 @@ class game = object(self)
 
   val mutable cdata : ClientData.client_data option = None
 
-  method create_ui manager =
-    (* Can be dimensioned as we like *)
-    (* Here, it will be 120 pixels large, and 30 pixels tall per item *)
-    let my_menu = new menu (300,50) 150 30 in
+  method private create_ui =
+    let my_menu = new menu (manager#window#get_width / 2 - 50, 0) 150 30
+    OcsfmlWindow.KeyCode.Return in
 
     new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited" ; Manager.manager#pop)
     |> my_menu#add_child;
 
-    new item "info" "Info" (fun () -> print_endline "info activated")
+    new item "info" "Info" (fun () -> print_endline "info activated";
+      my_menu#toggle)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> print_endline "settings activated")
+    new item "params" "Settings" (fun () -> print_endline "settings activated"; 
+      my_menu#toggle)
     |> my_menu#add_child;
 
-    new item "infantry" "item 4" (fun () -> print_endline "item 4 activated")
+    new item "infantry" "Cancel" (fun () -> print_endline "canceled"; 
+      my_menu#toggle)
     |> my_menu#add_child;
 
-    manager#add_widget (my_menu :> Widget.widget);
-    (* Return it because we need it in the main (until we find a better solution)
-     *)
-    my_menu
+    let main_button = new key_button ~icon:"return"
+      ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
+      ~m_position:(manager#window#get_width / 2 - 50, 0)
+      ~callback:(fun () -> my_menu#toggle)
+    in
+
+    (* Add the button before the menu, so that the menu will display on top of
+     * the button (yes, this is bad, we need to implement focusing) *)
+    ui_manager#add_widget (main_button :> Widget.widget);
+    main_button#toggle;
+    ui_manager#add_widget (my_menu :> Widget.widget)
 
   initializer
-
-    my_menu <- self#create_ui ui_manager;
+    self#create_ui;
     cdata <-Some (new ClientData.client_data ~camera
       ~map:(generator#field)
       ~units:(List.nth (generator#armies) num))
@@ -104,9 +109,7 @@ class game = object(self)
                     | Some u ->
                         cdata#select_unit u;
                         cdata#camera#cursor#set_moving
-                    | None ->
-                        my_menu#toggle;
-                        my_menu#set_position (camera#project cdata#camera#cursor#position)
+                    | None -> ()
                   end
             end
 
