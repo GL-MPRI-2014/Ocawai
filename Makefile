@@ -1,5 +1,6 @@
 INTERFACE_SRC = src/common,src/interface,src/interface/gui
 ENGINE_SRC = src/engine,src/common
+SERVER_SRC = src/Reseaux
 PACKAGES = ocsfml.graphics,atdgen
 
 # We will later need to add engine, but while it is not compiled we cannot make
@@ -9,6 +10,7 @@ find_files = $(wildcard $(dir)/*.ml*)
 files := $(foreach dir,$(dirs),$(find_files))
 
 OUTPUT = main.native
+OUTPUT_SERVEUR = serveur.native
 
 find_files_atd = $(wildcard $(dir)/*.atd)
 
@@ -32,6 +34,9 @@ engine : $(files_atd_ml)
 
 run: interface
 	./$(OUTPUT)
+
+server:	
+	ocamlbuild -use-ocamlfind -lib unix -I $(SERVER_SRC) $(OUTPUT_SERVEUR)
 
 eng: engine
 	./$(OUTPUT)
