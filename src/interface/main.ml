@@ -1,4 +1,5 @@
 (** Launcher of the interface *)
+open Logics
 open Manager
 
 let () = begin
