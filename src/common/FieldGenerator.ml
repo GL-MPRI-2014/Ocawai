@@ -86,7 +86,8 @@ let init_placement m nbplayers = (* séparé de placement pour ne pas le recalcu
                             poslist := pos:: !poslist
                           ) m;
   if !poslist = [] then raise UnitsSpawnFail else !poslist
-  (*begin
+  (*begin (* précalcul isolant la composante connexe maximale de poslist, permet d'éviter des fail de placement d'armées. 
+            Après test, pas rentable, les fails ne pénalisent pas beaucoup et le précalcul coute cher (1-2 secondes en 100*100) *)
     let le = List.length !poslist in
     let connected = Array.init le (fun i -> i) in
     let rec find_first n nn = function

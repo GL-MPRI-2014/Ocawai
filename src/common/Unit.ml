@@ -1,9 +1,9 @@
 (* Dummy Unit implementation to test interface *)
 
-type movement = Walk | Roll | Tracks | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tracks
+type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
 
-class soldier (s : string) (p : Position.t) (m : movement) 
-  (v :int) (a : int) (r : int) (sp : int) = 
+class soldier (s : string) (p : Position.t) (m : movement)
+  (v :int) (a : int) (r : int) (sp : int) =
 object (self)
   val name = s
   val mutable pos = p
@@ -19,15 +19,15 @@ end
 
 type t = soldier
 
-let create_from_unit_t u pos = new soldier (u.Unit_t.name) pos (match (u.Unit_t.movement_type) with 
+let create_from_unit_t u pos = new soldier (u.Unit_t.name) pos (match (u.Unit_t.movement_type) with
                                                   | "walk" -> Walk
                                                   | "roll" -> Roll
-                                                  | "tracks" -> Tracks
+                                                  | "tread" -> Tread
                                                   | "swim" -> Swim
                                                   | "fly" -> Fly
                                                   | "amphibious_walk" -> Amphibious_Walk
                                                   | "amphibious_roll" -> Amphibious_Roll
-                                                  | "amphibious_tracks" -> Amphibious_Tracks
+                                                  | "amphibious_tread" -> Amphibious_Tread
                                                   | a -> failwith("unit_t_to_t : "^a^" is not a movement\n")
 ) (u.Unit_t.vision_range) (u.Unit_t.attack_range) (u.Unit_t.move_range) (u.Unit_t.spawn_number)
 

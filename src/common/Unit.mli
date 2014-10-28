@@ -1,6 +1,6 @@
 (** Unit interface *)
 
-type movement = Walk | Roll | Tracks | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tracks
+type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
 
 type t = <
   name : string;
