@@ -47,8 +47,10 @@ class timed_interpolator func lifespan = object(self)
   inherit interpolator_class func as super
 
   method update t = 
-    if t -. origin > lifespan then self#delete
-    else super#update t
+    if t -. origin > lifespan then begin
+      super#update (origin +. lifespan);
+      self#delete
+    end else super#update t
 
 end
 
@@ -60,6 +62,13 @@ let update () =
 let new_ip_from_fun f = 
   let ip = new interpolator_class f in
   ip_list := ip :: !ip_list; 
+  (ip :> interpolator)
+
+let new_sine_ip set spe amp med = 
+  let ip = new interpolator_class 
+    (function t -> set (amp *. (sin (spe *. t)) +. med))
+  in
+  ip_list := ip :: !ip_list;
   (ip :> interpolator)
 
 let new_ip_with_timeout f t = 

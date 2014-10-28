@@ -17,10 +17,10 @@ class virtual widget : object
   method position : int * int
 
   (** Adds an event catcher to this widget *)
-  method add_event : (OcsfmlWindow.Event.t -> unit) -> unit
+  method add_event : (OcsfmlWindow.Event.t -> bool) -> unit
 
   (** Catches the given event *)
-  method on_event : OcsfmlWindow.Event.t -> unit
+  method on_event : OcsfmlWindow.Event.t -> bool
 
   (** Draw the widget to the given target *)
   method virtual draw : OcsfmlGraphics.render_target -> TextureLibrary.t ->

@@ -10,6 +10,9 @@ Projet de Génie Logiciel du MPRI, année 2014-2015
 *Il s'agit bien sûr d'une version de démo et tout sera potentiellement jeté
 en ce qui concerne le fonctionnement*
 
+Depuis le menu principal, il suffit d'appuyer sur **espace** pour lancer le
+jeu.
+
 * **F** : Mettre l'application en plein-écran
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
@@ -17,7 +20,10 @@ en ce qui concerne le fonctionnement*
 * **espace** : entrer en/sortir du mode déplacement d'unité;
   permet aussi d'afficher le menu dans le cas où aucune unité n'est
   sélectionnable (et une fois dans le menu, permet d'effectuer les actions
-  affichées -- bien sûr rien ne se passe pour le moment)
+  affichées -- *forfeit* permet de revenir au menu principal)
+* **A** : Dézoomer
+* **Z** : Zoomer
+* **0** : Réinitialiser le zoom
 
 
 # Compilation
