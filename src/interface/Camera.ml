@@ -16,7 +16,7 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
     let (x,y) = Position.topair (Position.diff p cursor#position) in
     let (dx,dy) = (x * self#tile_size + (fst offset),
                    y * self#tile_size + (snd offset)) in
-    (dx + (w + self#tile_size)/2, dy + (h + self#tile_size)/2)
+    (dx + w/2, dy + h/2)
 
   method top_left =
     let p = Position.create
