@@ -23,4 +23,6 @@ class camera : def_tile_size:int -> w:int -> h:int -> maxpos:Position.t
 
   method set_zoom : float -> unit
 
+  method toggle_zoom : unit
+
 end

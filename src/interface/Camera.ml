@@ -10,6 +10,13 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   val mutable zoom_factor = 1.
 
+  val mutable min_zoom = 
+    let (a,b) = Position.topair maxpos in 
+    let w = float_of_int w in 
+    let h = float_of_int h in
+    min (w /. ((float_of_int (def_tile_size * a)) *. 1.5)) 
+        (h /. ((float_of_int (def_tile_size * b)) *. 1.5))
+
   method cursor = cursor
 
   method project p =
@@ -63,6 +70,10 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   method zoom = zoom_factor
 
-  method set_zoom z = zoom_factor <- min (max z 0.1) 2.5
+  method set_zoom z = zoom_factor <- min (max z min_zoom) 2.5
+
+  method toggle_zoom = 
+    if zoom_factor > min_zoom then self#set_zoom min_zoom
+    else self#set_zoom 1.
 
 end

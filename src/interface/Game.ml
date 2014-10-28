@@ -95,6 +95,9 @@ class game = object(self)
         | KeyPressed { code = OcsfmlWindow.KeyCode.Num0 ; _ } ->
             camera#set_zoom 1.
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
+            camera#toggle_zoom
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
             begin
               match cdata#selected with
