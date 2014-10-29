@@ -2,7 +2,8 @@ type interpolator = <
   delete : unit;
   pause  : unit;
   reset  : unit;
-  run    : unit
+  run    : unit;
+  dead   : bool
 >
 
 let ip_list = ref []
@@ -17,6 +18,8 @@ class interpolator_class func = object(self)
 
   val mutable id = !identifier
 
+  val mutable dead = false
+
   initializer
     incr identifier
 
@@ -26,6 +29,7 @@ class interpolator_class func = object(self)
   method id = id
 
   method delete = 
+    dead <- true;
     let rec aux = function
       |[] -> []
       |t::q -> 
@@ -38,6 +42,8 @@ class interpolator_class func = object(self)
   method reset = origin <- (Unix.gettimeofday ())
 
   method run = running <- true
+
+  method dead = dead
 
 end
 

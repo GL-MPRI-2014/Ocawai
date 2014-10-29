@@ -10,6 +10,8 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   val mutable zoom_factor = 1.
 
+  val mutable move_speed = 20. (* movements per second *)
+
   val mutable min_zoom =
     let (a,b) = Position.topair maxpos in
     let w = float_of_int w in
@@ -47,7 +49,7 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
   method tile_size = int_of_float (float_of_int def_tile_size *. zoom_factor)
 
-  method move displ =
+  method private move_priv displ = 
     let new_position = Position.clamp
       (Position.add (Position.create displ) cursor#position)
       (Position.create (0,0))
@@ -59,29 +61,41 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
     let (offx, offy) = foi2D (dx * self#tile_size, dy * self#tile_size) in
     offset <- iof2D (offx, offy);
     let interp_function t =
-      offset <- iof2D (offx *. (1. -. t *. 10.), offy *. (1. -. t *. 10.))
+      offset <- iof2D (offx *. (1. -. t *. move_speed), 
+                       offy *. (1. -. t *. move_speed))
     in
-    actual_interpolator >? (fun i -> i#delete);
     actual_interpolator <- Some(
-      Interpolators.new_ip_with_timeout interp_function 0.1);
+      Interpolators.new_ip_with_timeout interp_function (1./.move_speed));
     cursor#set_position new_position
 
+
+  method move displ =
+    match actual_interpolator with
+    | None -> self#move_priv displ
+    | Some(i) when i#dead -> self#move_priv displ
+    | _ -> ()
+    
   method set_position pos =
     let clamped = Position.clamp pos (Position.create (0,0)) maxpos in
     self#move (Position.topair (Position.diff clamped cursor#position))
 
   method zoom = zoom_factor
 
-  method set_zoom z =
+  method private set_zoom_priv z = 
     let end_zoom = min (max z min_zoom) max_zoom in
     let begin_zoom = zoom_factor in
     let interp_function t =
       zoom_factor <- begin_zoom *. (1. -. t *. 10.) +.
                      end_zoom *. t *. 10.
     in
-    actual_interpolator >? (fun i -> i#delete);
     actual_interpolator <- Some(
       Interpolators.new_ip_with_timeout interp_function 0.1)
+
+  method set_zoom z =
+    match actual_interpolator with
+    |None -> self#set_zoom_priv z
+    |Some(i) when i#dead -> self#set_zoom_priv z
+    | _ -> ()
 
   method toggle_zoom =
     if zoom_factor > (min_zoom *. 1.5) then self#set_zoom min_zoom

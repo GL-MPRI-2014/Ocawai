@@ -2,7 +2,8 @@ type interpolator = <
   delete : unit;
   pause : unit;
   reset : unit;
-  run : unit
+  run : unit;
+  dead : bool
 >
 
 val update : unit -> unit
