@@ -23,6 +23,8 @@ class virtual ['a] evq_container : object
 
   val virtual mutable item_height : int
 
+  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+
 end
 
 
