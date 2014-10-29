@@ -64,13 +64,12 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
     let position = foi2D self#position in
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
 
-    let txt = new text ~string:text ~character_size:(snd size - 1)
-      ~font:my_font ~color:Color.black () in
-    let txt_bounds = txt#get_global_bounds in
-    txt#set_origin (txt_bounds.width /. 2.) (txt_bounds.height /. 2.);
-    txt#set_position (fst position +. (selfx +. tex_size_x)/.2.)
-                     (snd position +. selfy /. 4.);
-    target#draw txt
+    rect_print
+      target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
+        left = fst position +. tex_size_x ;
+        top = snd position ;
+        width = selfx -. tex_size_x ;
+        height = selfy }
   end
 
 end
