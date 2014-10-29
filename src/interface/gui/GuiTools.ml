@@ -1,11 +1,11 @@
 open OcsfmlGraphics
 
 type alignment = Center | Left | Right
-type quantity = Pix of int | Pt of int
+type quantity = Pix of int | Pt of float
 
 let to_pixels = function
   | Pix i -> i
-  | Pt p -> p
+  | Pt p -> int_of_float p
 
 let rec rect_print (target : #OcsfmlGraphics.render_target)
   string font color size interline alignment rectangle =

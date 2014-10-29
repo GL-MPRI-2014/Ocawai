@@ -4,7 +4,7 @@
 type alignment = Center | Left | Right
 
 (** Abstracts ints to give sizes as pixels or points *)
-type quantity = Pix of int | Pt of int
+type quantity = Pix of int | Pt of float
 
 (** @return a quantity in pixels (as [int]) (TODO) *)
 val to_pixels : quantity -> int
