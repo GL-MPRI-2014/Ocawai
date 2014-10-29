@@ -33,7 +33,7 @@ let get_tile_with_density total tiles =
 (* others useful functions *)
 (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
 let contiguite m pos =
-  let name = Battlefield.get_tile m pos in
+  let name = Tile.get_name (Battlefield.get_tile m pos) in
   let nei = neighbors m pos in
   float_of_int (count (fun t -> Tile.get_name t = name) nei) /. float_of_int (List.length nei)
 
@@ -57,9 +57,9 @@ let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joue
   for i = 0 to 50 * width * height (* arbitraire *) do
     let pos1 = create (Random.int width , Random.int height) in
     let pos2 = create (Random.int width , Random.int height) in
-    let previous = contiguite pos1 +. contiguite pos2 in
+    let previous = contiguite m pos1 +. contiguite m pos2 in
     swap pos1 pos2;
-    if previous > contiguite pos1 +. contiguite pos2 then
+    if previous > contiguite m pos1 +. contiguite m pos2 then
       swap pos1 pos2;
   done;
   m
