@@ -1,7 +1,6 @@
 [
   {
     "name": "water",
-    "texture_name": "water",
     "walk_cost": -1,
     "roll_cost": -1,
     "tread_cost": -1,
@@ -10,8 +9,15 @@
     "density": 10
   },
   {
+    "name": "shallow",
+    "walk_cost": -1,
+    "roll_cost": -1,
+    "tread_cost": -1,
+    "swim_cost": 1,
+    "fly_cost": 1
+  },
+  {
     "name": "plain",
-    "texture_name": "plain",
     "walk_cost": 1,
     "roll_cost": 2,
     "tread_cost": 2,
@@ -20,8 +26,15 @@
     "density": 10
   },
   {
+    "name": "sand",
+    "walk_cost": 2,
+    "roll_cost": 10,
+    "tread_cost": 15,
+    "swim_cost": -1,
+    "fly_cost": 1
+  },
+  {
     "name": "forest",
-    "texture_name": "forest",
     "walk_cost": 2,
     "roll_cost": 5,
     "tread_cost": 10,
@@ -31,17 +44,22 @@
   },
   {
     "name": "concrete",
-    "texture_name": "concrete",
     "walk_cost": 1,
     "roll_cost": 1,
     "tread_cost": 1,
     "swim_cost": -1,
-    "fly_cost": 1,
-    "density": 0
+    "fly_cost": 1
+  },
+  {
+    "name": "road",
+    "walk_cost": 1,
+    "roll_cost": 1,
+    "tread_cost": 1,
+    "swim_cost": -1,
+    "fly_cost": 1
   },
   {
     "name": "mountain",
-    "texture_name": "mountain",
     "walk_cost": -1,
     "roll_cost": -1,
     "tread_cost": -1,
