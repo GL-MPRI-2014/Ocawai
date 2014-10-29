@@ -95,7 +95,6 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
       | Left   -> 0.
       | Right  -> rectangle.width -. text_bounds.width
     in
-    (* text#set_origin ox 0.; *)
 
     text#set_position (rectangle.left +. ox) rectangle.top;
 
