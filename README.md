@@ -22,6 +22,7 @@ jeu.
   principal)
 * **A** : Dézoomer
 * **Z** : Zoomer
+* **M** : Zoome au minimum/Rétablit le zoom
 * **0** : Réinitialiser le zoom
 
 
