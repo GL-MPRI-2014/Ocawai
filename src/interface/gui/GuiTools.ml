@@ -87,15 +87,15 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
     (* In case things were modified we recompute the bounds *)
     let text_bounds = text#get_global_bounds in
 
-    (* The line we're about to draw is aligned through origin *)
+    (* The line we're about to draw is aligned through offset *)
     let ox = match alignment with
       | Center -> (rectangle.width -. text_bounds.width) /. 2.
       | Left   -> 0.
       | Right  -> rectangle.width -. text_bounds.width
     in
-    text#set_origin ox 0.;
+    (* text#set_origin ox 0.; *)
 
-    text#set_position rectangle.left rectangle.top;
+    text#set_position (rectangle.left +. ox) rectangle.top;
 
     target#draw text
 
