@@ -78,22 +78,6 @@ class main_menu = object(self)
     text#set_position ((w -. text_width) /. 2.) (h -. 200.);
     window#draw text ;
 
-    (* Testing the new gui tools *)
-    let str = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." in
-    GuiTools.rect_print window str font Color.red (GuiTools.Pix 30)
-      (GuiTools.Pix 2) (GuiTools.Left)
-      { left = 100. ; top = 100. ; width = 200. ; height = 500. } ;
-
-    let str = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." in
-    GuiTools.rect_print window str font Color.red (GuiTools.Pix 30)
-      (GuiTools.Pix 2) (GuiTools.Center)
-      { left = 550. ; top = 100. ; width = 200. ; height = 500. } ;
-
-    let str = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." in
-    GuiTools.rect_print window str font Color.red (GuiTools.Pix 30)
-      (GuiTools.Pix 2) (GuiTools.Right)
-      { left = 1000. ; top = 100. ; width = 200. ; height = 500. } ;
-
     window#display
 
   initializer
