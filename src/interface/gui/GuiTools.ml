@@ -33,6 +33,9 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
       (* We compute the line to be drawn and draw the rest recursively *)
       let words = Str.split (Str.regexp " ") text#get_string in
 
+      (* We clear the text object *)
+      text#set_string "";
+
       (* We create a function to check if s is too long *)
       (* Sets the text if not too long and if [reset] is false *)
       let set_too_long reset s =
