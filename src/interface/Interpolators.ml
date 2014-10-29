@@ -14,6 +14,8 @@ class interpolator_class func = object(self)
 
   val mutable origin = Unix.gettimeofday ()
 
+  val mutable last_time = Unix.gettimeofday ()
+
   val mutable running = true
 
   val mutable id = !identifier
@@ -24,7 +26,10 @@ class interpolator_class func = object(self)
     incr identifier
 
   method update t = 
-    if running then func (t -. origin)
+    if running then begin
+      func (t -. origin) (t -. last_time);
+      last_time <- t
+    end
 
   method id = id
 
@@ -72,7 +77,7 @@ let new_ip_from_fun f =
 
 let new_sine_ip set spe amp med = 
   let ip = new interpolator_class 
-    (function t -> set (amp *. (sin (spe *. t)) +. med))
+    (function t -> function dt -> set (amp *. (sin (spe *. t)) +. med))
   in
   ip_list := ip :: !ip_list;
   (ip :> interpolator)
