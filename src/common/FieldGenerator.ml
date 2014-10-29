@@ -41,7 +41,9 @@ let contiguite m pos =
 let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
   Random.self_init();
   let tiles = Tile.create_list_from_config () in
-  let get_tile_with_density () = get_tile_with_density (total_density tiles) tiles in
+  let get_tile_with_density () =
+    let total = total_density tiles in
+    get_tile_with_density total tiles in
   let m = Battlefield.create width height (List.hd tiles) in
 
   (* fill the map with regards to densities *)
