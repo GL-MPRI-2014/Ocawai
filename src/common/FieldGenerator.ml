@@ -30,27 +30,29 @@ let get_tile_with_density total tiles =
   in
   nth_dens d tiles
 
+(* others useful functions *)
+(* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
+let contiguite m pos =
+  let name = Battlefield.get_tile m pos in
+  let nei = neighbors m pos in
+  float_of_int (count (fun t -> Tile.get_name t = name) nei) /. float_of_int (List.length nei)
+
+
 let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
   Random.self_init();
   let tiles = Tile.create_list_from_config () in
   let get_tile_with_density () = get_tile_with_density (total_density tiles) tiles in
   let m = Battlefield.create width height (List.hd tiles) in
-  
+
   (* fill the map with regards to densities *)
   Battlefield.tile_iteri (fun p _ -> Battlefield.set_tile m p (get_tile_with_density ())) m;
 
-  (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
-  let contiguite pos =
-    let tpos = Battlefield.get_tile m pos in
-    let nei = neighbors m pos in
-    (float_of_int (count (fun t -> Tile.get_name t = Tile.get_name tpos) nei) /. float_of_int (List.length nei))
-  in
-
   let swap pos1 pos2 =
     let t1 = Battlefield.get_tile m pos1 in
-      Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
-      Battlefield.set_tile m pos2 t1
+    Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
+    Battlefield.set_tile m pos2 t1
   in
+
   (* on prends 2 positions random, on les swap si ca augmente la contiguite, et on itere*)
   for i = 0 to 50 * width * height (* arbitraire *) do
     let pos1 = create (Random.int width , Random.int height) in
