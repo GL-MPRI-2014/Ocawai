@@ -96,7 +96,10 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
       | Right  -> rectangle.width -. text_bounds.width
     in
 
-    text#set_position (rectangle.left +. ox) rectangle.top;
+    (* Poor attempt at vertical centering *)
+    let oy = (float_of_int interline_size) -. text_bounds.height /. 4. in
+
+    text#set_position (rectangle.left +. ox) (rectangle.top +. oy);
 
     target#draw text
 
