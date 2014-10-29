@@ -13,10 +13,7 @@ let neighbors m pos =
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
 
-let rec count f = function
-|p::q when f p -> 1 + (count f q)
-|p::q -> count f q
-|[] -> 0
+let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
 
 let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
   Random.self_init();
