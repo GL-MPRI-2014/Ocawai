@@ -72,3 +72,8 @@ let neighbours l =
 let project p c i = 
   let (a,b) = diff p c in
   (a * i, b * i)
+
+
+let dist (x1,y1) (x2,y2) =
+  (abs (x2-x1)) + (abs (y2-y1)) 
+

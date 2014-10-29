@@ -121,11 +121,10 @@ let placement m nbplayers legit_spawns =
   | n,[] -> raise NotEnoughSpawns
   | n,p::q -> p::(behead (n-1,q))
   in
-  let dist pos1 pos2 = let (x1,y1) = topair pos1 in let (x2,y2) = topair pos2 in (abs (x2-x1)) + (abs (y2-y1)) in
   (* vaut true ssi p est a une certaine distance de toutes les positions dans une liste*)
   let rec test_dist_spawns p = function
     | [] -> true
-    | p1::q -> (dist p p1 > (90*width + 90*height)/(100*nbplayers)) && test_dist_spawns p q
+    | p1::q -> (Position.dist p p1 > (90*width + 90*height)/(100*nbplayers)) && test_dist_spawns p q
   in
   let filtered_pos = ref [] in
   List.iter (fun pos -> if test_dist_spawns pos !filtered_pos then filtered_pos := pos :: !filtered_pos) (shuffle legit_spawns);
