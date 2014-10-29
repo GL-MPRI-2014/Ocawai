@@ -1,5 +1,6 @@
 open OcsfmlGraphics
 open Utils
+open GuiTools
 
 open Manager
 
@@ -65,18 +66,13 @@ class main_menu = object(self)
     text#set_rotation (-20.);
     window#draw text;
 
-    let text : text = new text
-      ~string:"Press space to begin."
-      ~font
-      ~character_size:60
-      ~color:(Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)))
-      ()
-    in
+    let color = Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)) in
     let (w,h) = window#get_size in
     let (w,h) = float_of_int w, float_of_int h in
-    let text_width = text#get_global_bounds.width in
-    text#set_position ((w -. text_width) /. 2.) (h -. 200.);
-    window#draw text ;
+
+    rect_print
+      window "Press any key to continue." font color (Pix 60) (Pix 10) Center
+      { left = 0. ; top = h -. 200. ; width = w ; height = 100. };
 
     window#display
 
