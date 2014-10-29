@@ -79,9 +79,9 @@ class main_menu = object(self)
     window#draw text ;
 
     (* Testing the new gui tools *)
-    GuiTools.rect_print window "This is text" font Color.red (GuiTools.Pix 40)
-      (GuiTools.Pix 2) (GuiTools.Right)
-      { left = 0. ; top = 0. ; width = 400. ; height = 500. } ;
+    GuiTools.rect_print window "This is text" font Color.red (GuiTools.Pix 30)
+      (GuiTools.Pix 2) (GuiTools.Left)
+      { left = 100. ; top = 100. ; width = 400. ; height = 500. } ;
 
     window#display
 
