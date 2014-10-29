@@ -15,25 +15,29 @@ let neighbors m pos =
 
 let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
 
-let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
-  Random.self_init();
+(* functions working with densities *)
+(* compute the total density of a list of tiles *)
+let total_density tiles =
+  List.fold_left (+) 0 (List.map Tile.get_density tiles)
 
-  let tiles = Tile.create_list_from_config () in
-  let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in
-  let m = Battlefield.create width height (tile "plain") in
-  let total_density =
-    let rec sum = function
-    | p::q -> Tile.get_density p + sum q
-    | [] -> 0
-    in sum tiles
-  in
+(* return a random tile with regards to densities *)
+let get_tile_with_density total tiles =
+  let d = (Random.int total) + 1 in
   let rec nth_dens n = function
   | p::q when Tile.get_density p < n -> nth_dens (n - Tile.get_density p) q
-  | p::q when Tile.get_density p >= n -> p
-  | _ -> failwith("FieldGenerator.swap_gen : failure nth_dens")
+  | p::q -> p
+  | _ -> assert false
   in
-  (*remplir aleatoirement la map, en tenant compte des densites*)
-  Battlefield.tile_iteri (fun p t ->let r = Random.int total_density +1 in Battlefield.set_tile m p (nth_dens r tiles)) m;
+  nth_dens d tiles
+
+let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
+  Random.self_init();
+  let tiles = Tile.create_list_from_config () in
+  let get_tile_with_density () = get_tile_with_density (total_density tiles) tiles in
+  let m = Battlefield.create width height (List.hd tiles) in
+  
+  (* fill the map with regards to densities *)
+  Battlefield.tile_iteri (fun p _ -> Battlefield.set_tile m p (get_tile_with_density ())) m;
 
   (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
   let contiguite pos =
