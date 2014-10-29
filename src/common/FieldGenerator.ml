@@ -117,11 +117,6 @@ let init_placement m nbplayers = (* séparé de placement pour ne pas le recalcu
 (* place nbplayers sur la map m *)
 let placement m nbplayers legit_spawns =
   let (width,height) = Battlefield.size m in
-  let shuffle l =
-    let nd = List.map (fun c -> (Random.bits (), c)) l in
-    let sond = List.sort compare nd in
-    List.map snd sond
-  in
   let rec behead = function
   | 0,_ -> []
   | n,[] -> raise NotEnoughSpawns
@@ -133,8 +128,8 @@ let placement m nbplayers legit_spawns =
     | p1::q -> (Position.dist p p1 > (90*width + 90*height)/(100*nbplayers)) && test_dist_spawns p q
   in
   let filtered_pos = ref [] in
-  List.iter (fun pos -> if test_dist_spawns pos !filtered_pos then filtered_pos := pos :: !filtered_pos) (shuffle legit_spawns);
-  let poslist = behead (nbplayers, shuffle !filtered_pos) in
+  List.iter (fun pos -> if test_dist_spawns pos !filtered_pos then filtered_pos := pos :: !filtered_pos) (Utils.shuffle legit_spawns);
+  let poslist = behead (nbplayers, Utils.shuffle !filtered_pos) in
   (* check la connexite de l'ensemble de spawns selectionnés *)
   test_path (m,(),poslist);
 
