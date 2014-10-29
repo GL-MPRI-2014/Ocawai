@@ -4,11 +4,11 @@ open Utils
 let texture_library = TextureLibrary.create ()
 let font = new font `None
 
-let filter_positions map p = 
-  not (Position.out_of_bounds p 
-        (Position.create (0,0)) 
-        (Position.diff 
-          (Position.create (Battlefield.size map)) 
+let filter_positions map p =
+  not (Position.out_of_bounds p
+        (Position.create (0,0))
+        (Position.diff
+          (Position.create (Battlefield.size map))
           (Position.create (1,1))))
 
 let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
@@ -17,7 +17,7 @@ let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   let origin = (sx/.2.,sy/.2.) in
   let position = foi2D (camera#project pos) in
   let rotation = rot in
-  texture#draw ~target:(target :> render_target) ~origin 
+  texture#draw ~target:(target :> render_target) ~origin
     ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
 
 
@@ -32,7 +32,7 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
   let texture = TextureLibrary.get_texture texture_library "highlight" in
   let (sx, sy) = foi2D texture#default_size in
   let origin = (sx /. 2., sy /. 2.) in
-  texture#draw ~target:(target :> render_target) ~position ~origin 
+  texture#draw ~target:(target :> render_target) ~position ~origin
     ~color:base_color ~scale:(camera#zoom, camera#zoom) ~blend_mode:BlendAdd ()
 
 
@@ -87,7 +87,7 @@ let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
 
 (* This is almost garbage *)
 let draw_range (target : #OcsfmlGraphics.render_target) camera map my_unit =
-  let move_range = 
+  let move_range =
       List.filter (filter_positions map)
       (Position.filled_circle (my_unit#position) (my_unit#move_range))
   in
@@ -108,7 +108,7 @@ let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera
   let origin = (sx/.2.,sy/.2.) in
   let position = foi2D (camera#project camera#cursor#position) in
   let scale = camera#cursor#scale *. camera#zoom in
-  texture#draw ~target:(target :> render_target) 
+  texture#draw ~target:(target :> render_target)
     ~position ~origin ~scale:(scale, scale) ()
 
 
@@ -131,11 +131,11 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
   target#draw text
 
 
-let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager = 
+let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager =
   ui_manager#draw (target :> render_target) texture_library
 
 
-let render_game (target : #OcsfmlGraphics.render_target) 
+let render_game (target : #OcsfmlGraphics.render_target)
   (data : ClientData.client_data) =
   render_map target data#camera data#map;
   data#selected >? draw_range target data#camera data#map;
