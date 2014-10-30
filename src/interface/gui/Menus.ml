@@ -1,5 +1,6 @@
 open OcsfmlGraphics
 open OcsfmlWindow
+open GuiTools
 open Widget
 open BaseMixins
 open Utils
@@ -20,17 +21,16 @@ class item icon text (action : unit -> unit) = object(self)
     let texture = TextureLibrary.(get_texture lib icon) in
     let (sx, sy) = foi2D texture#default_size in
     let (selfx, selfy) = foi2D size in
-    let tex_size_x = sx *. selfy /. sy in 
+    let tex_size_x = sx *. selfy /. sy in
     let position = foi2D self#position in
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
     (* Then draw the text *)
-    let txt = new text ~string:text ~character_size:(snd size - 1)
-      ~font:my_font ~color:Color.black () in
-    let txt_bounds = txt#get_global_bounds in
-    txt#set_origin (txt_bounds.width /. 2.) (txt_bounds.height /. 2.);
-    txt#set_position (fst position +. (selfx +. tex_size_x)/.2.)
-                     (snd position +. selfy /. 4.);
-    target#draw txt
+    rect_print
+      target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
+        left = fst position +. tex_size_x ;
+        top = snd position ;
+        width = selfx -. tex_size_x ;
+        height = selfy }
   end
 
   method action = action ()
@@ -38,7 +38,7 @@ class item icon text (action : unit -> unit) = object(self)
 end
 
 
-class key_button ~icon ~text ~m_position ~m_size ~keycode 
+class key_button ~icon ~text ~m_position ~m_size ~keycode
   ~callback = object(self)
 
   inherit widget
@@ -49,41 +49,40 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
 
   initializer
     self#add_event (function
-      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc -> 
+      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc ->
           (callback (); true)
       | _ -> false)
 
   method draw target lib = if self#active then begin
-    let texture = TextureLibrary.get_texture lib "menu" in 
+    let texture = TextureLibrary.get_texture lib "menu" in
     texture#draw ~target ~position:(foi2D self#position) ~size:(foi2D size) ();
 
     let texture = TextureLibrary.(get_texture lib icon) in
     let (sx, sy) = foi2D texture#default_size in
     let (selfx, selfy) = foi2D size in
-    let tex_size_x = sx *. selfy /. sy in 
+    let tex_size_x = sx *. selfy /. sy in
     let position = foi2D self#position in
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
 
-    let txt = new text ~string:text ~character_size:(snd size - 1)
-      ~font:my_font ~color:Color.black () in
-    let txt_bounds = txt#get_global_bounds in
-    txt#set_origin (txt_bounds.width /. 2.) (txt_bounds.height /. 2.);
-    txt#set_position (fst position +. (selfx +. tex_size_x)/.2.)
-                     (snd position +. selfy /. 4.);
-    target#draw txt
+    rect_print
+      target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
+        left = fst position +. tex_size_x ;
+        top = snd position ;
+        width = selfx -. tex_size_x ;
+        height = selfy }
   end
 
 end
 
 
-class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode 
+class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
   ~callback = object(self)
 
   inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback
 
   initializer
     self#add_event(function
-      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc -> 
+      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc ->
           (self#toggle; true)
       | _ -> false)
 end
@@ -108,7 +107,7 @@ class menu pos width i_height keycode = object(self)
     (*new rectangle_shape ~outline_thickness:1. ~fill_color:Color.white
       ~outline_color:Color.black ~size:(selfx, selfy) ~position ()
     |> target#draw;*)
-    let texture = TextureLibrary.get_texture lib "menu" in 
+    let texture = TextureLibrary.get_texture lib "menu" in
     texture#draw ~target ~position ~size:(selfx, selfy) ();
     List.iter (fun c -> c#draw target lib) self#children;
     let (posx, posy) = self#position in
@@ -124,7 +123,7 @@ class menu pos width i_height keycode = object(self)
   initializer
     self#add_event(function
       |Event.KeyPressed{Event.code = kc; _} when keycode = kc ->
-          nb_items <> 0 && 
+          nb_items <> 0 &&
           ((List.nth self#children (nb_items - self#selected - 1))#action;
           true)
       | _ -> false)

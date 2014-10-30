@@ -3,6 +3,7 @@ open Manager
 
 (* Helps compiling doc -- to be removed ! *)
 open Logics
+open Theme
 
 let () = begin
 

@@ -1,5 +1,6 @@
 open OcsfmlGraphics
 open Utils
+open GuiTools
 
 open Manager
 
@@ -15,10 +16,10 @@ class main_menu = object(self)
 
   val mutable splash_size = 1.
 
-  method private set_alpha a = 
+  method private set_alpha a =
     text_alpha <- a
 
-  method private set_splash_size s = 
+  method private set_splash_size s =
     splash_size <- s
 
   method handle_event e =
@@ -42,7 +43,7 @@ class main_menu = object(self)
       ~string:"PGL"
       ~font
       ~character_size:200
-      ~color:Color.white      
+      ~color:Color.white
       ()
     in
     let (w,h) = window#get_size in
@@ -59,24 +60,19 @@ class main_menu = object(self)
       ~scale:(splash_size, splash_size)
       ()
     in
-    let tbounds = text#get_global_bounds in 
+    let tbounds = text#get_global_bounds in
     text#set_origin (tbounds.width /. 2.) (tbounds.height /. 2.);
     text#set_position ((w +. text_width) /. 2. -. 80.) 330.;
     text#set_rotation (-20.);
     window#draw text;
 
-    let text : text = new text
-      ~string:"Press space to begin."
-      ~font
-      ~character_size:60
-      ~color:(Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)))
-      ()
-    in
+    let color = Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)) in
     let (w,h) = window#get_size in
     let (w,h) = float_of_int w, float_of_int h in
-    let text_width = text#get_global_bounds.width in
-    text#set_position ((w -. text_width) /. 2.) (h -. 200.);
-    window#draw text ;
+
+    rect_print
+      window "Press any key to continue." font color (Pix 60) (Pix 10) Center
+      { left = 0. ; top = h -. 200. ; width = w ; height = 100. };
 
     window#display
 
@@ -86,7 +82,7 @@ class main_menu = object(self)
     then failwith "Couldn't load the font here";
     if not (splash_font#load_from_file "resources/fonts/AdvoCut.ttf")
     then failwith "Couldn't load the font here";
-    ignore(Interpolators.new_sine_ip 
+    ignore(Interpolators.new_sine_ip
       self#set_alpha 2. 0.4 0.6);
     ignore(Interpolators.new_sine_ip
       self#set_splash_size 1.8 0.05 1.)
