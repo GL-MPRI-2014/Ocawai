@@ -27,18 +27,18 @@ class virtual ['a] widget_container = object(self)
 end
 
 
-(* TODO : Add theme module *)
+class virtual themed_widget = object(self)
+
+  val virtual mutable theme : Theme.t
+
+end
+
+
 class virtual ['a] evq_container = object(self)
 
   inherit ['a] widget_container as super
 
   val virtual mutable item_height : int
-
-  method draw target lib = 
-    new rectangle_shape ~fill_color:(Color.rgb 160 160 255)
-      ~size:(foi2D size) ~position:(foi2D self#position) ()
-    |> target#draw;
-    List.iter (fun w -> w#draw target lib) children
 
   method add_child w = 
     super#add_child w;

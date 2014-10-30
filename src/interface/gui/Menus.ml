@@ -39,13 +39,17 @@ end
 
 
 class key_button ~icon ~text ~m_position ~m_size ~keycode
-  ~callback = object(self)
+  ~callback ~m_theme = object(self)
 
   inherit widget
+
+  inherit themed_widget
 
   val mutable position = m_position
 
   val mutable size = m_size
+
+  val mutable theme = m_theme
 
   initializer
     self#add_event (function
@@ -54,8 +58,9 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
       | _ -> false)
 
   method draw target lib = if self#active then begin
-    let texture = TextureLibrary.get_texture lib "menu" in
-    texture#draw ~target ~position:(foi2D self#position) ~size:(foi2D size) ();
+    new rectangle_shape ~fill_color:theme.Theme.default_color
+      ~size:(foi2D size) ~position:(foi2D self#position) ()
+    |> target#draw;
 
     let texture = TextureLibrary.(get_texture lib icon) in
     let (sx, sy) = foi2D texture#default_size in
@@ -76,9 +81,10 @@ end
 
 
 class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
-  ~callback = object(self)
+  ~callback ~m_theme = object(self)
 
-  inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback
+  inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback 
+    ~m_theme
 
   initializer
     self#add_event(function
@@ -87,7 +93,7 @@ class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
       | _ -> false)
 end
 
-class menu pos width i_height keycode = object(self)
+class menu pos width i_height keycode m_theme = object(self)
 
   inherit [item] evq_container as super
 
@@ -101,20 +107,18 @@ class menu pos width i_height keycode = object(self)
 
   val mutable item_height = i_height
 
+  val mutable theme = m_theme
+
   method draw target lib = if self#active then begin
-    let (selfx, selfy) = foi2D size in
-    let position = foi2D self#position in
-    (*new rectangle_shape ~outline_thickness:1. ~fill_color:Color.white
-      ~outline_color:Color.black ~size:(selfx, selfy) ~position ()
-    |> target#draw;*)
-    let texture = TextureLibrary.get_texture lib "menu" in
-    texture#draw ~target ~position ~size:(selfx, selfy) ();
-    List.iter (fun c -> c#draw target lib) self#children;
+    new rectangle_shape ~fill_color:theme.Theme.default_color
+      ~size:(foi2D size) ~position:(foi2D self#position) ()
+    |> target#draw;
     let (posx, posy) = self#position in
-    new rectangle_shape ~outline_thickness:2. ~fill_color:(Color.rgba 0 0 0 0)
-      ~outline_color:Color.blue ~size:(foi2D (width,item_height))
+    new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
+      ~size:(foi2D (width, item_height)) 
       ~position:(foi2D (posx, posy + self#selected * item_height)) ()
-    |> target#draw end
+    |> target#draw;
+    List.iter (fun w -> w#draw target lib) self#children end 
 
   method add_child w =
     super#add_child w;

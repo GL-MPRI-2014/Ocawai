@@ -18,7 +18,7 @@ end
 (** A class representing key-controlled buttons *)
 class key_button : icon:string -> text:string -> m_position:(int*int) ->
   m_size:(int*int) -> keycode:OcsfmlWindow.KeyCode.t ->
-  callback:(unit -> unit) -> object
+  callback:(unit -> unit) -> m_theme:Theme.t -> object
 
   inherit Widget.widget
 
@@ -34,15 +34,16 @@ end
 (** Same as key_button, but togges itself after usage *)
 class key_button_oneuse : icon:string -> text:string -> m_position:(int*int) 
   -> m_size:(int*int) -> keycode:OcsfmlWindow.KeyCode.t ->
-  callback:(unit -> unit) -> object
+  callback:(unit -> unit) -> m_theme:Theme.t -> object
 
   inherit key_button
 
 end
 
 
-(** Usage : menu position width item_height *)
-class menu : (int * int) -> int -> int -> OcsfmlWindow.KeyCode.t -> object
+(** Usage : menu position width item_height theme *)
+class menu : (int * int) -> int -> int -> OcsfmlWindow.KeyCode.t -> 
+  Theme.t -> object
 
   inherit [item] BaseMixins.evq_container 
 

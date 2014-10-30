@@ -14,6 +14,14 @@ class virtual ['a] widget_container : object
 end
 
 
+(** A mixin that represents widgets with a theme associated to them *)
+class virtual themed_widget : object
+
+  val virtual mutable theme : Theme.t
+
+end
+
+
 (** A mixin that represents an Expandable Vertical container, where all
   * item heights are equal *)
 
@@ -22,8 +30,6 @@ class virtual ['a] evq_container : object
   inherit ['a] widget_container
 
   val virtual mutable item_height : int
-
-  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
 
 end
 

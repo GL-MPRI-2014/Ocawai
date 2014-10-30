@@ -29,12 +29,12 @@ class game = object(self)
 
   method private create_ui =
     let my_menu = new menu (manager#window#get_width / 2 - 75, 0) 150 30
-    OcsfmlWindow.KeyCode.Return in
+    OcsfmlWindow.KeyCode.Return Theme.blue_theme in
 
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
-      ~callback:(fun () -> my_menu#toggle)
+      ~callback:(fun () -> my_menu#toggle) ~m_theme:Theme.blue_theme
     in
 
     new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited"; Manager.manager#pop)
