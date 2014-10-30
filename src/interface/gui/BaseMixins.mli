@@ -44,3 +44,19 @@ class virtual key_ctrl_list : object
   method selected : int
 
 end
+
+
+(** A mixin that represents widgets with a toolbar *)
+class virtual has_toolbar : object
+
+  inherit Widget.widget
+
+  inherit themed_widget
+
+  val virtual mutable toolbar_height : int
+
+  val virtual mutable toolbar_icon : string
+
+  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+
+end

@@ -28,8 +28,8 @@ class game = object(self)
   val mutable cdata : ClientData.client_data option = None
 
   method private create_ui =
-    let my_menu = new menu (manager#window#get_width / 2 - 75, 0) 150 30
-    OcsfmlWindow.KeyCode.Return Theme.blue_theme in
+    let my_menu = new menu (manager#window#get_width / 2 - 75, 30) 150 30
+    OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "info" in
 
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
@@ -53,7 +53,7 @@ class game = object(self)
     |> my_menu#add_child;
 
     ui_manager#add_widget (main_button :> Widget.widget);
-    main_button#toggle;
+    my_menu#toggle;
     ui_manager#add_widget (my_menu :> Widget.widget)
 
   initializer

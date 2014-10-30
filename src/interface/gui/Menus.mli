@@ -41,9 +41,10 @@ class key_button_oneuse : icon:string -> text:string -> m_position:(int*int)
 end
 
 
-(** Usage : menu position width item_height theme *)
+(** Usage : menu position width item_height theme bar_height bar_icon *)
+  (* TODO : label arguments *)
 class menu : (int * int) -> int -> int -> OcsfmlWindow.KeyCode.t -> 
-  Theme.t -> object
+  Theme.t -> int -> string -> object
 
   inherit [item] BaseMixins.evq_container 
 

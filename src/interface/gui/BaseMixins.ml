@@ -73,5 +73,31 @@ class virtual key_ctrl_list = object(self)
 end
 
 
+class virtual has_toolbar = object(self)
+
+  inherit Widget.widget
+
+  inherit themed_widget
+
+  val virtual mutable toolbar_height : int
+
+  val virtual mutable toolbar_icon : string
+
+  method draw target lib = 
+    let position = foi2D (sub2D self#position (0, toolbar_height)) in 
+    new rectangle_shape ~position ~size:(foi2D (fst size, toolbar_height))
+      ~fill_color:theme.Theme.bar_color ()
+    |> target#draw;
+    let texture = TextureLibrary.get_texture lib toolbar_icon in
+    let (sx, sy) = texture#default_size in
+    let tex_size_x = sx * toolbar_height / sy in
+    texture#draw ~target ~position ~size:(foi2D (tex_size_x, toolbar_height))
+    ()
+
+end
+
+    
+      
+    
 
 
