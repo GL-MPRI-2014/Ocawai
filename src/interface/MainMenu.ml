@@ -26,7 +26,7 @@ class main_menu = object(self)
 
     OcsfmlWindow.Event.(
       match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
+        | KeyPressed { code = _ ; _ } ->
             (new Game.game :> State.state) |> manager#push
         | _ -> ()
     )
