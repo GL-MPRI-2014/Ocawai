@@ -10,7 +10,7 @@ class virtual widget = object(self)
 
   val virtual mutable size : (int * int)
 
-  val mutable active = false
+  val mutable active = true
 
   val mutable event_funs : (Event.t -> bool) list = []
 
