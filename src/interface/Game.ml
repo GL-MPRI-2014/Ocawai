@@ -29,7 +29,7 @@ class game = object(self)
 
   method private create_ui =
     let my_menu = new menu (manager#window#get_width / 2 - 75, 30) 150 30
-    OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "info" in
+    OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "menu_icon" in
 
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
@@ -44,11 +44,11 @@ class game = object(self)
       my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> print_endline "settings activated"; 
+    new item "params" "Settings" (fun () -> print_endline "settings activated";
       my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    new item "infantry" "Cancel" (fun () -> print_endline "canceled"; 
+    new item "infantry" "Cancel" (fun () -> print_endline "canceled";
       my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
