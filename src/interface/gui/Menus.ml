@@ -93,11 +93,14 @@ class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
       | _ -> false)
 end
 
-class menu pos width i_height keycode m_theme = object(self)
+(* TODO : label arguments *)
+class menu pos width i_height keycode m_theme bar_height bar_icon = object(self)
 
   inherit [item] evq_container as super
 
   inherit key_ctrl_list
+
+  inherit has_toolbar as toolbar
 
   val mutable position = pos
 
@@ -109,7 +112,12 @@ class menu pos width i_height keycode m_theme = object(self)
 
   val mutable theme = m_theme
 
+  val mutable toolbar_height = bar_height
+
+  val mutable toolbar_icon = bar_icon
+
   method draw target lib = if self#active then begin
+    toolbar#draw target lib;
     new rectangle_shape ~fill_color:theme.Theme.default_color
       ~size:(foi2D size) ~position:(foi2D self#position) ()
     |> target#draw;
