@@ -32,7 +32,7 @@ end
 
 
 (** Same as key_button, but togges itself after usage *)
-class key_button_oneuse : icon:string -> text:string -> m_position:(int*int) 
+class key_button_oneuse : icon:string -> text:string -> m_position:(int*int)
   -> m_size:(int*int) -> keycode:OcsfmlWindow.KeyCode.t ->
   callback:(unit -> unit) -> m_theme:Theme.t -> object
 
@@ -41,12 +41,13 @@ class key_button_oneuse : icon:string -> text:string -> m_position:(int*int)
 end
 
 
-(** Usage : menu position width item_height theme bar_height bar_icon *)
+(** Usage : [new menu position width item_height theme bar_height bar_icon
+  * bar_text] *)
   (* TODO : label arguments *)
-class menu : (int * int) -> int -> int -> OcsfmlWindow.KeyCode.t -> 
-  Theme.t -> int -> string -> object
+class menu : (int * int) -> int -> int -> OcsfmlWindow.KeyCode.t ->
+  Theme.t -> int -> string -> string -> object
 
-  inherit [item] BaseMixins.evq_container 
+  inherit [item] BaseMixins.evq_container
 
   inherit BaseMixins.key_ctrl_list
 
