@@ -20,10 +20,37 @@ let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
   texture#draw ~target:(target :> render_target) ~origin
     ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
 
+(* Ugly but temporary *)
+let draw_texture_2 (target : #OcsfmlGraphics.render_target) camera pos rot name =
+  let texture = TextureLibrary.get_texture texture_library name in
+  let (sx,sy) =  foi2D texture#default_size in
+  let origin = (sx/.2.,sy/.2.) in
+  let position = addf2D (foi2D (camera#project pos)) (0., 25. *. camera#zoom) in
+  let rotation = rot in
+  texture#draw ~target:(target :> render_target) ~origin
+    ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
+
 
 let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
   let texture_name = Tile.get_name tile in
   draw_texture target camera pos 0. texture_name
+
+let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile map =
+  let texture_name = Tile.get_name tile in
+  (* Hardcode for testing *)
+  (* Let's draw the junction *)
+  let up = Position.up pos in
+  let is_ground name =
+    name = "plain" || name = "forest" || name = "mountain"
+  in
+  if filter_positions map up then
+  begin
+    let upname = Tile.get_name (Battlefield.get_tile map up) in
+    if texture_name = "water" && is_ground upname then
+      draw_texture_2 target camera up 0. "ground_water_v"
+    else if is_ground texture_name && upname = "water" then
+      draw_texture_2 target camera up 0. "water_ground_v"
+  end
 
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
@@ -39,7 +66,8 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
 let render_map (target : #OcsfmlGraphics.render_target) camera
                (map : Battlefield.t) =
   List.iter
-    (fun p -> render_tile target camera p (Battlefield.get_tile map p))
+    (fun p -> render_tile target camera p (Battlefield.get_tile map p) ;
+      render_joint target camera p (Battlefield.get_tile map p) map)
     (Position.square camera#top_left camera#bottom_right)
 
 
