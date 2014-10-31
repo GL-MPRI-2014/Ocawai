@@ -12,8 +12,9 @@ type quantity = Pix of int | Pt of float
 val to_pixels : quantity -> int
 
 (** [rect_print traget text font color size interline alignment rectangle]
-  * prints [text] in [rectangle] ; for now it doesn't support vertical
-  * alignment *)
+  * prints [text] in [rectangle] ;
+  * it supports multiline and in case the rectangle is too narrow,
+  * the text is truncated (warning : it can even remain unprinted!) *)
 val rect_print : #OcsfmlGraphics.render_target -> string ->
   OcsfmlGraphics.font -> OcsfmlGraphics.Color.t -> quantity -> quantity ->
   alignment -> (float OcsfmlGraphics.rect) -> unit
