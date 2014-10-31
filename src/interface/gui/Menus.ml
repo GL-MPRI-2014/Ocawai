@@ -26,7 +26,7 @@ class item icon text (action : unit -> unit) = object(self)
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
     (* Then draw the text *)
     rect_print
-      target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
+      target text my_font Color.black (Pix (snd size - 3)) (Pix 2) Left {
         left = fst position +. tex_size_x ;
         top = snd position ;
         width = selfx -. tex_size_x ;
