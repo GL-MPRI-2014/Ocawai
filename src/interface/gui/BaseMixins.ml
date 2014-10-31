@@ -103,7 +103,7 @@ class virtual has_toolbar = object(self)
     let (sx,sy) = foi2D (fst size, toolbar_height) in
     let tx = float_of_int tex_size_x in
     rect_print
-      target toolbar_text bold_font Color.white (Pix (snd size - 1))
+      target toolbar_text bold_font Color.white (Pix (toolbar_height - 3))
         (Pix 2) Left {
           left = posx +. tx ;
           top = posy ;
