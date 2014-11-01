@@ -1,7 +1,8 @@
 (**
  * Doubly chained list module used in music generation.
  * implements constant time insert in head AND tail.
- * From [Théis]' internship.
+ * Based on the TPTM model developed by P. Hudak and
+ * D. Janin, code inspired by [Théis]' internship.
 **)
 
 type time
