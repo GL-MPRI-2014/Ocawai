@@ -69,10 +69,10 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
     let (offx, offy) = foi2D (dx * self#tile_size, dy * self#tile_size) in
     offset <- addf2D offset (offx, offy);
     let interp_function t dt = 
-      offset <- addf2D offset (-. dt *. move_speed *. offx,
-                               -. dt *. move_speed *. offy)
+      offset <- addf2D offset (-. dt *. move_speed *. offx /. 2.,
+                               -. dt *. move_speed *. offy /. 2.)
     in
-    ignore(Interpolators.new_ip_with_timeout interp_function (1./.move_speed));
+    ignore(Interpolators.new_ip_with_timeout interp_function (2./.move_speed));
     (* Interpolating cursor *)
     cursor#set_offset (addf2D cursor#offset (offx, offy));
     let interp_cursor t dt = 
