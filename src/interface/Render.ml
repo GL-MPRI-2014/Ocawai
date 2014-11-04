@@ -12,8 +12,8 @@ let filter_positions map p =
           (Position.create (1,1))))
 
 let draw_txr (target : #OcsfmlGraphics.render_target)
-  lib name position rotation =
-    let texture = TextureLibrary.get_texture lib name in
+  name position rotation =
+    let texture = TextureLibrary.get_texture texture_library name in
     let (sx,sy) =  foi2D texture#default_size in
     let origin = (sx/.2.,sy/.2.) in
     texture#draw ~target:(target :> render_target) ~origin

@@ -42,16 +42,8 @@ class main_menu = object(self)
 
     (* Let's hardcode the menu before doing it properly *)
 
-    (* Horrible to load it twice! *)
-    let texture_library = TextureLibrary.create () in
-    TextureLibrary.load_directory texture_library "resources/textures/" ;
-
     let draw_texture name position =
-      let texture = TextureLibrary.get_texture texture_library name in
-      let (sx,sy) =  foi2D texture#default_size in
-      let origin = (sx/.2.,sy/.2.) in
-      texture#draw ~target:(window :> render_target) ~origin
-        ~position()
+      Render.draw_txr window name position 0.
     in
 
     let (w,h) = foi2D window#get_size in
