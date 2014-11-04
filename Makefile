@@ -66,11 +66,12 @@ network:
 	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
 
 
+#variable destdir is useful for distcheck and more generally if you want to change the directory for installation.
 install:
-	install -d $(bindir)
-	install -m 0755 $(output_interface) $(bindir)
-	install -m 0755 $(output_engine) $(bindir)
-	install -m 0755 $(output_network) $(bindir)
+	install -d $(DESTDIR)$(bindir)
+	install -m 0755 $(output_interface) $(DESTDIR)$(bindir)
+	install -m 0755 $(output_engine) $(DESTDIR)$(bindir)
+	install -m 0755 $(output_network) $(DESTDIR)$(bindir)
 
 uninstall:
 	-rm $(bindir)/$(output_interface)
@@ -80,6 +81,22 @@ uninstall:
 
 
 dist: $(distdir).tar.gz
+
+distcheck: $(distdir).tar.gz
+	gzip -cd $(distdir).tar.gz | tar xvf -
+	cd $(distdir) && $(MAKE) all
+	cd $(distdir) && $(MAKE) check
+	cd $(distdir) && $(MAKE) DESTDIR=$${PWD}/_inst install
+	cd $(distdir) && $(MAKE) DESTDIR=$${PWD}/_inst uninstall
+	#check if uninstall works
+	@remaining="`find $${PWD}/$(distdir)/_inst -type f | wc -l`"; \
+	if test "$${remainning}" -ne 0; then \
+		echo "*** $${remaining} file(s) remaining in temporary install directory!"; \
+		exit 1; \
+	fi
+	cd $(distdir) && $(MAKE) clean
+	rm -rf  $(distdir)
+	@echo "*** Package $(distdir).tar.gz is ready for distribution"
 
 #option h is for deference symlinks
 $(distdir).tar.gz: $(distdir)
@@ -98,12 +115,12 @@ $(distdir): FORCE
 	cp Makefile $(distdir)
 	cp README.md $(distdir)
 	cp configure $(distdir)
-	cp $(common_dir)/*.ml $(distdir)/$(common_dir)
+	cp $(common_dir)/*.ml? $(distdir)/$(common_dir)
 	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
-	cp $(engine_dir)/*.ml $(distdir)/$(engine_dir)
-	cp $(interface_dir)/*.ml $(distdir)/$(interface_dir)
-	cp $(gui_dir)/*.ml $(distdir)/$(gui_dir)
-	-cp $(network_dir)/*.ml $(distdir)/$(network_dir)
+	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
+	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
+	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
+	-cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 FORCE:
