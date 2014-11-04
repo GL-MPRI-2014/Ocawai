@@ -54,41 +54,6 @@ class main_menu = object(self)
     draw_texture "quit" (w /. 2. -. 130., h /. 2. +. 230.);
     draw_texture "settings" (w /. 2. +. 100., h /.2. +. 220.);
 
-    (* let text : text = new text
-      ~string:"PGL"
-      ~font
-      ~character_size:200
-      ~color:Color.white
-      ()
-    in
-    let (w,h) = window#get_size in
-    let (w,h) = float_of_int w, float_of_int h in
-    let text_width = text#get_global_bounds.width in
-    text#set_position ((w -. text_width) /. 2.) (150.);
-    window#draw text ;
-
-    let text : text = new text
-      ~string:"Now with rivers !"
-      ~font:splash_font
-      ~character_size:30
-      ~color:Color.yellow
-      ~scale:(splash_size, splash_size)
-      ()
-    in
-    let tbounds = text#get_global_bounds in
-    text#set_origin (tbounds.width /. 2.) (tbounds.height /. 2.);
-    text#set_position ((w +. text_width) /. 2. -. 80.) 330.;
-    text#set_rotation (-20.);
-    window#draw text;
-
-    let color = Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)) in
-    let (w,h) = window#get_size in
-    let (w,h) = float_of_int w, float_of_int h in
-
-    rect_print
-      window "Press any key to continue." font color (Pix 60) (Pix 10) Center
-      { left = 0. ; top = h -. 200. ; width = w ; height = 100. }; *)
-
     window#display
 
   initializer
