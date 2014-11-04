@@ -8,6 +8,7 @@ ressources_dir=$(root_src)/ressources
 engine_src=$(root_src)/engine
 common_src=$(root_src)/common
 interface_src=$(root_src)/interface
+gui_src=$(interface_src)/gui
 network_src=$(root_src)/Reseaux
 
 sources = $(engine_src) $(common_src) $(interface_src) $(network_src)
@@ -44,7 +45,7 @@ files_atd_mli := $(files_atd_ml:.ml=.mli)
 
 
 interface: $(files_atd_ml) 
-	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface)
+	ocamlbuild -use-ocamlfind -Is $(common_src),$(interface_src),$(gui_src),$(engine_src) -package $(interface_dependencies) $(output_interface)
 
 engine :  $(file_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(engine_src),$(common_src) -package $(engine_dependencies) $(output_engine)
