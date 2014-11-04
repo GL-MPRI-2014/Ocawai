@@ -49,7 +49,8 @@ output_network = server.native
 
 
 #get every source file of the project
-files := $(foreach dir, $(dirs), $(wildcard $(dirs)/*.ml*))
+find_files = $(wildcard $(dir)/*.ml*)
+files := $(foreach dir,$(dirs),$(find_files))
 
 
 
@@ -74,9 +75,6 @@ find_files_atd = $(wildcard src/common/*.atd)
 files_atd := $(foreach dir,$(dirs),$(find_files_atd))
 files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
 files_atd_mli := $(files_atd_ml:.ml=.mli)
-
-test:
-	echo $(files_atd_ml)
 
 all: interface engine network
 
