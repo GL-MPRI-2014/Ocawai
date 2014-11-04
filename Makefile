@@ -9,7 +9,6 @@ common_src=common
 interface_src=interface
 network_src=Reseaux
 
-
 #go in sub directories
 all clean engine interface serveur:
 	cd src && $(MAKE) $@
