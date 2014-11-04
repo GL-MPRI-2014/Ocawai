@@ -30,7 +30,7 @@ engine_dir=$(src_root)/engine
 common_dir=$(src_root)/common
 interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
-network_dir=$(src_root)/Reseaux
+network_dir=$(src_root)/network
 
 dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir)
 
@@ -45,7 +45,7 @@ network_libraries = unix
 
 output_interface = main.native
 output_engine = main_engine.native
-output_network = Server.native
+output_network = server.native
 
 
 #get every source file of the project
