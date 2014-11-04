@@ -4,7 +4,7 @@ tarname = $(package)
 distdir = $(tarname)-$(version)
 
 src_root=src
-ressources_dir=$(src_root)/ressources
+resources_dir=resources
 engine_dir=$(src_root)/engine
 common_dir=$(src_root)/common
 interface_dir=$(src_root)/interface
@@ -69,11 +69,12 @@ $(distdir).tar.gz: $(distdir)
 #curly braces do not work !			
 $(distdir): FORCE
 	mkdir -p $(distdir)/src
-	mkdir $(distdir)/$(common_src)
-	mkdir $(distdir)/$(engine_src)
-	mkdir $(distdir)/$(interface_src)
-	mkdir $(distdir)/$(network_src)
-	mkdir $(distdir)/$(ressources_dir)
+	mkdir $(distdir)/$(common_dir)
+	mkdir $(distdir)/$(engine_dir)
+	mkdir $(distdir)/$(interface_dir)
+	mkdir $(distdir)/$(gui_dir)
+	mkdir $(distdir)/$(network_dir)
+	mkdir $(distdir)/$(resources_dir)
 	cp Makefile $(distdir)
 	cp README.md $(distdir)
 	cp configure $(distdir)
@@ -83,7 +84,7 @@ $(distdir): FORCE
 	cp $(interface_dir)/*.ml $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml $(distdir)/$(gui_dir)
 	-cp $(network_dir)/*.ml $(distdir)/$(network_dir)
-	cp $(ressources_dir)/* $(distdir)/$(ressources_dir)
+	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 FORCE:
 	-rm $(distdir).tar.gz > /dev/null 2>&1
