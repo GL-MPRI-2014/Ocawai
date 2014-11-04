@@ -10,21 +10,27 @@ Projet de Génie Logiciel du MPRI, année 2014-2015
 *Il s'agit bien sûr d'une version de démo et tout sera potentiellement jeté
 en ce qui concerne le fonctionnement*
 
+Depuis le menu principal, il suffit d'appuyer sur **espace** pour lancer le
+jeu.
+
 * **F** : Mettre l'application en plein-écran
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
-* **flèches** : déplacer la caméra
-* **espace** : entrer en/sortir du mode déplacement d'unité;
-  permet aussi d'afficher le menu dans le cas où aucune unité n'est
-  sélectionnable (et une fois dans le menu, permet d'effectuer les actions
-  affichées -- bien sûr rien ne se passe pour le moment)
+* **touches fléchées** : Déplacer la caméra
+* **espace** : Entrer/sortir du mode déplacement d'unité
+* **entrée** : Affiche le menu (*forfeit* permet de revenir au menu
+  principal)
+* **A** : Dézoomer
+* **Z** : Zoomer
+* **M** : Zoome au minimum/Rétablit le zoom
+* **0** : Réinitialiser le zoom
 
 
 # Compilation
 
-* `make interface` : compiler l'interface graphique
-* `make run` : compiler l'interface et la lancer
-* `make doc` : compile la documentation
+* `make interface` : Compiler l'interface graphique
+* `make run` : Compiler l'interface et la lancer
+* `make doc` : Compile la documentation
 
 # Documentation
 

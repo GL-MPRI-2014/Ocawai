@@ -55,17 +55,15 @@ class sliced_texture filename ~upcut ~downcut ~rightcut ~leftcut =
     let ffst = fun s -> float_of_int (fst s)  in 
     let fsnd = fun s -> float_of_int (snd s)  in 
     let size = iof2D size in
-    let position = iof2D position in
+    let position = iof2D position -- (rp sl_texture.center) in
 
     let scalew = (fst scale) *. 
-      (ffst (size -- (rs sl_texture.up_right) -- 
-      (rs sl_texture.up_left))) /. (ffst (rs sl_texture.up))   in 
+      (ffst size) /. (ffst (rs sl_texture.up))   in 
     let scaleh = (snd scale) *.
-      (fsnd (size -- (rs sl_texture.up_right) -- 
-      (rs sl_texture.up_left))) /. (fsnd (rs sl_texture.left)) in 
+      (fsnd size) /. (fsnd (rs sl_texture.left)) in 
 
-    let dborder = snd size - (snd (rs sl_texture.down))  in 
-    let rborder = fst size - (fst (rs sl_texture.right)) in
+    let dborder = snd (size ++ (rp sl_texture.center)) in 
+    let rborder = fst (size ++ (rp sl_texture.center)) in
     let lborder = fst (rp sl_texture.down) in 
     let uborder = snd (rp sl_texture.right) in 
 

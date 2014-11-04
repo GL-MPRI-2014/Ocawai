@@ -18,3 +18,13 @@ val reach : t -> Position.t -> t
 
 (** @return an [Action.movement] representing the same path. *)
 val get_move : t -> Action.movement
+
+(** @ operator on paths *)
+val cat : t -> t -> t
+
+(** @return the movement cost of a path, not counting the initial position.
+    The path must be possible for the given movement type. *)
+val cost : Unit.movement -> Battlefield.t -> t -> int
+
+(** [dijkstra m pos1 Unit.Walk pos2] return [Some cost * path] for going to pos2 from pos1, or [None] if pos2 is not reachable from pos1 *)
+val dijkstra : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option

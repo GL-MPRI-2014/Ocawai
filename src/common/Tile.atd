@@ -3,7 +3,7 @@ type t = {
   name: string;
   ~walk_cost<ocaml default="-1">: int;
   ~roll_cost<ocaml default="-1">: int;
-  ~tracks_cost<ocaml default="-1">: int;
+  ~tread_cost<ocaml default="-1">: int;
   ~swim_cost<ocaml default="-1">: int;
   ~fly_cost<ocaml default="-1">: int;
   ~density<ocaml default="0">: int

@@ -2,7 +2,8 @@ type interpolator = <
   delete : unit;
   pause  : unit;
   reset  : unit;
-  run    : unit
+  run    : unit;
+  dead   : bool
 >
 
 let ip_list = ref []
@@ -13,19 +14,27 @@ class interpolator_class func = object(self)
 
   val mutable origin = Unix.gettimeofday ()
 
+  val mutable last_time = Unix.gettimeofday ()
+
   val mutable running = true
 
   val mutable id = !identifier
+
+  val mutable dead = false
 
   initializer
     incr identifier
 
   method update t = 
-    if running then func (t -. origin)
+    if running then begin
+      func (t -. origin) (t -. last_time);
+      last_time <- t
+    end
 
   method id = id
 
   method delete = 
+    dead <- true;
     let rec aux = function
       |[] -> []
       |t::q -> 
@@ -39,6 +48,8 @@ class interpolator_class func = object(self)
 
   method run = running <- true
 
+  method dead = dead
+
 end
 
 
@@ -47,8 +58,10 @@ class timed_interpolator func lifespan = object(self)
   inherit interpolator_class func as super
 
   method update t = 
-    if t -. origin > lifespan then self#delete
-    else super#update t
+    if t -. origin > lifespan then begin
+      super#update (origin +. lifespan);
+      self#delete
+    end else super#update t
 
 end
 
@@ -60,6 +73,13 @@ let update () =
 let new_ip_from_fun f = 
   let ip = new interpolator_class f in
   ip_list := ip :: !ip_list; 
+  (ip :> interpolator)
+
+let new_sine_ip set spe amp med = 
+  let ip = new interpolator_class 
+    (function t -> function dt -> set (amp *. (sin (spe *. t)) +. med))
+  in
+  ip_list := ip :: !ip_list;
   (ip :> interpolator)
 
 let new_ip_with_timeout f t = 
