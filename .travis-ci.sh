@@ -22,7 +22,7 @@ opam install ${OPAM_DEPENDS}
 make interface
 make engine
 make doc
-make test
+make check
 make dist
 make distcheck
 make clean
