@@ -3,6 +3,11 @@ version = 0.1
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
+prefix = /usr/local
+exec_prefix = $(prefix)
+bindir = $(exec_prefix)/bin
+
+
 src_root=src
 resources_dir=resources
 engine_dir=$(src_root)/engine
@@ -18,6 +23,7 @@ interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir)
 network_src=$(network_dir)
 
 common_dependencies = atdgen
+engine_dependencies = $(common_dependencies)
 interface_dependencies = ocsfml.graphics,$(common_dependencies)
 network_libraries = unix
 
@@ -48,15 +54,29 @@ files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
 #useless ?
 files_atd_mli := $(files_atd_ml:.ml=.mli)
 
+all: interface engine network
 
 interface: $(files_atd_ml) 
 	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface)
 
-engine :  $(file_atd_ml)
+engine:  $(file_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 
-network :
+network:
 	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
+
+
+install:
+	install -d $(bindir)
+	install -m 0755 $(output_interface) $(bindir)
+	install -m 0755 $(output_engine) $(bindir)
+	install -m 0755 $(output_network) $(bindir)
+
+uninstall:
+	-rm $(bindir)/$(output_interface)
+	-rm $(bindir)/$(output_engine)
+	-rm $(bindir)/$(output_network)
+
 
 
 dist: $(distdir).tar.gz
