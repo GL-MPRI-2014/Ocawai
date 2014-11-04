@@ -3,17 +3,22 @@ version = 0.1
 tarname = $(package)
 distdir = $(tarname)-$(version)
 
-root_src=src
-ressources_dir=$(root_src)/ressources
-engine_src=$(root_src)/engine
-common_src=$(root_src)/common
-interface_src=$(root_src)/interface
-gui_src=$(interface_src)/gui
-network_src=$(root_src)/Reseaux
+src_root=src
+ressources_dir=$(src_root)/ressources
+engine_dir=$(src_root)/engine
+common_dir=$(src_root)/common
+interface_dir=$(src_root)/interface
+gui_dir=$(interface_dir)/gui
+network_dir=$(src_root)/Reseaux
 
-sources = $(engine_src) $(common_src) $(interface_src) $(network_src)
-engine_dependencies = atdgen
-interface_dependencies = ocsfml.graphics
+dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir)
+
+engine_src=$(engine_dir),$(common_dir)
+interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir)
+network_src=$(network_dir)
+
+common_dependencies = atdgen
+interface_dependencies = ocsfml.graphics,$(common_dependencies)
 network_libraries = unix
 
 output_interface = main.native
@@ -45,10 +50,10 @@ files_atd_mli := $(files_atd_ml:.ml=.mli)
 
 
 interface: $(files_atd_ml) 
-	ocamlbuild -use-ocamlfind -Is $(common_src),$(interface_src),$(gui_src),$(engine_src) -package $(interface_dependencies) $(output_interface)
+	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface)
 
 engine :  $(file_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(engine_src),$(common_src) -package $(engine_dependencies) $(output_engine)
+	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 
 network :
 	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
@@ -72,11 +77,12 @@ $(distdir): FORCE
 	cp Makefile $(distdir)
 	cp README.md $(distdir)
 	cp configure $(distdir)
-	cp $(common_src)/*.ml $(distdir)/$(common_src)
-	cp $(common_src)/*.atd $(distdir)/$(common_src)
-	cp $(engine_src)/*.ml $(distdir)/$(engine_src)
-	cp $(interface_src)/*.ml $(distdir)/$(interface_src)
-	-cp $(network_src)/*.ml $(distdir)/$(network_src)
+	cp $(common_dir)/*.ml $(distdir)/$(common_dir)
+	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
+	cp $(engine_dir)/*.ml $(distdir)/$(engine_dir)
+	cp $(interface_dir)/*.ml $(distdir)/$(interface_dir)
+	cp $(gui_dir)/*.ml $(distdir)/$(gui_dir)
+	-cp $(network_dir)/*.ml $(distdir)/$(network_dir)
 	cp $(ressources_dir)/* $(distdir)/$(ressources_dir)
 
 FORCE:
