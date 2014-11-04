@@ -37,9 +37,10 @@ class main_menu = object(self)
 
     Interpolators.update ();
 
-    window#clear ();
+    let color = Color.rgb 221 224 234 in
+    window#clear ~color ();
 
-    let text : text = new text
+    (* let text : text = new text
       ~string:"PGL"
       ~font
       ~character_size:200
@@ -72,7 +73,7 @@ class main_menu = object(self)
 
     rect_print
       window "Press any key to continue." font color (Pix 60) (Pix 10) Center
-      { left = 0. ; top = h -. 200. ; width = w ; height = 100. };
+      { left = 0. ; top = h -. 200. ; width = w ; height = 100. }; *)
 
     window#display
 
