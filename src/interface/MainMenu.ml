@@ -40,6 +40,28 @@ class main_menu = object(self)
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
 
+    (* Let's hardcode the menu before doing it properly *)
+
+    (* Horrible to load it twice! *)
+    let texture_library = TextureLibrary.create () in
+    TextureLibrary.load_directory texture_library "resources/textures/" ;
+
+    let draw_texture name position =
+      let texture = TextureLibrary.get_texture texture_library name in
+      let (sx,sy) =  foi2D texture#default_size in
+      let origin = (sx/.2.,sy/.2.) in
+      texture#draw ~target:(window :> render_target) ~origin
+        ~position()
+    in
+
+    let (w,h) = foi2D window#get_size in
+
+    draw_texture "title" (w/.2., h /. 2. -. 250.);
+    draw_texture "gameon_hover" (w/.2., h /. 2. +. 30.);
+    draw_texture "gameon" (w /. 2., h /. 2. +. 30.);
+    draw_texture "quit" (w /. 2. -. 130., h /. 2. +. 230.);
+    draw_texture "settings" (w /. 2. +. 100., h /.2. +. 220.);
+
     (* let text : text = new text
       ~string:"PGL"
       ~font
