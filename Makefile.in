@@ -49,7 +49,7 @@ output_network = server.native
 
 
 #get every source file of the project
-files := $(foreach dir, $(dirs), $(wildcard $(dir)/*.ml*))
+files := $(foreach dir, $(dirs), $(wildcard $(dirs)/*.ml*))
 
 
 
@@ -68,15 +68,15 @@ files := $(foreach dir, $(dirs), $(wildcard $(dir)/*.ml*))
 #  get all the atd files in the project   #
 ###########################################
 
-find_files_atd = $(wildcard $(sources)/*.atd)
+#temporary solution : find a way toreplace src/common
+find_files_atd = $(wildcard src/common/*.atd)
 
-files_atd := $(foreach dir,$(sources),$(find_files_atd))
+files_atd := $(foreach dir,$(dirs),$(find_files_atd))
 files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
-
-
-
-#useless ?
 files_atd_mli := $(files_atd_ml:.ml=.mli)
+
+test:
+	echo $(files_atd_ml)
 
 all: interface engine network
 
@@ -180,8 +180,8 @@ doc: interface engine
 clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
-	rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
-	rmdir doc 
+	-rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
+	-rmdir doc 
 	rm -f documentation.html
 
 check:
