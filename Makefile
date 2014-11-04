@@ -68,10 +68,10 @@ network:
 
 #variable destdir is useful for distcheck and more generally if you want to change the directory for installation.
 install:
-	install -d $(DESTDIR)$(bindir)
-	install -m 0755 $(output_interface) $(DESTDIR)$(bindir)
-	install -m 0755 $(output_engine) $(DESTDIR)$(bindir)
-	install -m 0755 $(output_network) $(DESTDIR)$(bindir)
+	install -d "$(DESTDIR)$(bindir)"
+	install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
+	install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
+	install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 
 uninstall:
 	-rm $(bindir)/$(output_interface)
@@ -84,10 +84,12 @@ dist: $(distdir).tar.gz
 
 distcheck: $(distdir).tar.gz
 	gzip -cd $(distdir).tar.gz | tar xvf -
-	cd $(distdir) && $(MAKE) all
+	cd $(distdir) && $(MAKE) network
+	cd $(distdir) && $(MAKE) engine
+	cd $(distdir) && $(MAKE) interface
 	cd $(distdir) && $(MAKE) check
-	cd $(distdir) && $(MAKE) DESTDIR=$${PWD}/_inst install
-	cd $(distdir) && $(MAKE) DESTDIR=$${PWD}/_inst uninstall
+	cd $(distdir) && $(MAKE) install DESTDIR="$${PWD}/_inst"
+	cd $(distdir) && $(MAKE) uninstall DESTDIR="$${PWD}/_inst"
 	#check if uninstall works
 	@remaining="`find $${PWD}/$(distdir)/_inst -type f | wc -l`"; \
 	if test "$${remainning}" -ne 0; then \
@@ -115,7 +117,7 @@ $(distdir): FORCE
 	cp Makefile $(distdir)
 	cp README.md $(distdir)
 	cp configure $(distdir)
-	cp $(common_dir)/*.ml? $(distdir)/$(common_dir)
+	cp $(common_dir)/*.ml* $(distdir)/$(common_dir)
 	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
