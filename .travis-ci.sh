@@ -18,8 +18,11 @@ export OPAMYES=1
 opam init 
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
+./configure
 make interface
 make engine
 make doc
 make test
+make dist
+make distcheck
 make clean
