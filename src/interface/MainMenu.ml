@@ -16,6 +16,8 @@ class main_menu = object(self)
 
   val mutable splash_size = 1.
 
+  val mutable screen = new Home.screen [] []
+
   method private set_alpha a =
     text_alpha <- a
 
@@ -40,19 +42,7 @@ class main_menu = object(self)
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
 
-    (* Let's hardcode the menu before doing it properly *)
-
-    let draw_texture name position =
-      Render.draw_txr window name position 0.
-    in
-
-    let (w,h) = foi2D window#get_size in
-
-    draw_texture "title" (w/.2., h /. 2. -. 250.);
-    draw_texture "gameon_hover" (w/.2., h /. 2. +. 30.);
-    draw_texture "gameon" (w /. 2., h /. 2. +. 30.);
-    draw_texture "quit" (w /. 2. -. 130., h /. 2. +. 230.);
-    draw_texture "settings" (w /. 2. +. 100., h /.2. +. 220.);
+    screen#draw window;
 
     window#display
 
@@ -62,9 +52,24 @@ class main_menu = object(self)
     then failwith "Couldn't load the font here";
     if not (splash_font#load_from_file "resources/fonts/AdvoCut.ttf")
     then failwith "Couldn't load the font here";
-    ignore(Interpolators.new_sine_ip
+    (* ignore(Interpolators.new_sine_ip
       self#set_alpha 2. 0.4 0.6);
     ignore(Interpolators.new_sine_ip
-      self#set_splash_size 1.8 0.05 1.)
+      self#set_splash_size 1.8 0.05 1.) *)
+    (* TODO handle resizing with that too ! *)
+    let window = manager#window in
+    let (w,h) = foi2D window#get_size in
+    screen <- new Home.screen
+      [new Home.item "title" (w/.2., h /. 2. -. 250.)]
+      [
+        new Home.actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
+          (fun () -> Printf.printf "gameon!\n") ;
+        new Home.actionnable "quit" "quit_hover"
+          (w /. 2. -. 130., h /. 2. +. 230.)
+          (fun () -> Printf.printf "quit\n") ;
+        new Home.actionnable "settings" "settings_hover"
+          (w /. 2. +. 100., h /.2. +. 220.)
+          (fun () -> Printf.printf "settings\n")
+      ]
 
 end

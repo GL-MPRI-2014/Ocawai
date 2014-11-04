@@ -11,7 +11,7 @@ let filter_positions map p =
           (Position.create (Battlefield.size map))
           (Position.create (1,1))))
 
-let draw_txr (target : #OcsfmlGraphics.render_target)
+let draw_txr (target : OcsfmlGraphics.render_window)
   name position rotation =
     let texture = TextureLibrary.get_texture texture_library name in
     let (sx,sy) =  foi2D texture#default_size in

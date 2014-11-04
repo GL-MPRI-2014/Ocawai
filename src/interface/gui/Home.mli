@@ -1,18 +1,25 @@
 (** Home screen and menus (before game) *)
 
-(** A screen item *)
-class item : object
+(* TODO inherit from BaseMixins *)
 
-  method draw : OcsfmlGraphics.render_target -> unit
+(** A screen item *)
+class item : string -> (float * float) -> object
+
+  method draw : OcsfmlGraphics.render_window -> unit
 
 end
 
 (** An actionnable item *)
-class actionnable : (unit -> unit) -> object
+class actionnable : string -> string -> (float*float) -> (unit -> unit) ->
+object
 
   inherit item
 
   method action : unit
+
+  method set_selected : bool -> unit
+
+  method draw : OcsfmlGraphics.render_window -> unit
 
 end
 
@@ -20,6 +27,6 @@ end
   * It has the particularity it handles selection with position *)
 class screen : item list -> actionnable list -> object
 
-  method draw : OcsfmlGraphics.render_target -> unit
+  method draw : OcsfmlGraphics.render_window -> unit
 
 end
