@@ -28,9 +28,16 @@ jeu.
 
 # Compilation
 
+* `./configure` : Générer le makefile si les dépendances sont satisfaites
 * `make interface` : Compiler l'interface graphique
-* `make run` : Compiler l'interface et la lancer
-* `make doc` : Compile la documentation
+* `make engine` : Compiler le moteur
+* `make network` : Compiler la partie réseaux
+* `make doc` : Compiler la documentation
+* `make all` : Compiler l'interface, le moteur et la partie réseaux
+
+# Distribuer le projet
+
+* `make dist` : Créer une archive **tar.gz** du projet
 
 # Documentation
 
