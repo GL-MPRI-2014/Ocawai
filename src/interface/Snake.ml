@@ -43,16 +43,14 @@ class state = object(self)
     let act_time = Unix.gettimeofday () in
     if act_time -. last_event >= 0.1 then OcsfmlWindow.(
       last_event <- act_time;
-      if Keyboard.is_key_pressed KeyCode.Right then
-        self#move (1,0)
-      else if Keyboard.is_key_pressed KeyCode.Left then
-        self#move (-1,0)
-      else if Keyboard.is_key_pressed KeyCode.Up then
-        self#move (0,-1)
-      else if Keyboard.is_key_pressed KeyCode.Down then
-        self#move (0,1)
-      else
-        self#move last_dir
+      let diff = if Keyboard.is_key_pressed KeyCode.Right then (1,0)
+        else if Keyboard.is_key_pressed KeyCode.Left then (-1,0)
+        else if Keyboard.is_key_pressed KeyCode.Up then (0,-1)
+        else if Keyboard.is_key_pressed KeyCode.Down then (0,1)
+        else last_dir
+      in
+      if add2D diff last_dir = (0,0) then self#move last_dir
+      else self#move diff
     )
 
   method private topos pos =
