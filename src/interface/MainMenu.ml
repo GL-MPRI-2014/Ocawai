@@ -10,6 +10,43 @@ class main_menu = object(self)
 
   val mutable screen = new Home.screen [] []
 
+  val key_seq = [
+    OcsfmlWindow.KeyCode.Up;
+    OcsfmlWindow.KeyCode.Up;
+    OcsfmlWindow.KeyCode.Down;
+    OcsfmlWindow.KeyCode.Down;
+    OcsfmlWindow.KeyCode.Left;
+    OcsfmlWindow.KeyCode.Right;
+    OcsfmlWindow.KeyCode.Left;
+    OcsfmlWindow.KeyCode.Right;
+    OcsfmlWindow.KeyCode.B;
+    OcsfmlWindow.KeyCode.A
+  ]
+
+  val mutable remaining_keys = [
+    OcsfmlWindow.KeyCode.Up;
+    OcsfmlWindow.KeyCode.Up;
+    OcsfmlWindow.KeyCode.Down;
+    OcsfmlWindow.KeyCode.Down;
+    OcsfmlWindow.KeyCode.Left;
+    OcsfmlWindow.KeyCode.Right;
+    OcsfmlWindow.KeyCode.Left;
+    OcsfmlWindow.KeyCode.Right;
+    OcsfmlWindow.KeyCode.B;
+    OcsfmlWindow.KeyCode.A
+  ]
+
+  method private handle_keys e =
+    match remaining_keys with
+    | key :: r -> begin
+        OcsfmlWindow.Event.(match e with
+        | KeyPressed { code = k ; _ } when k = key -> remaining_keys <- r
+        | KeyPressed _ -> remaining_keys <- key_seq
+        | _ -> ())
+      end
+    | [] -> (new Snake.state :> State.state) |> manager#push
+
+
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in
     screen <- new Home.screen
@@ -26,6 +63,8 @@ class main_menu = object(self)
       ]
 
   method handle_event e =
+
+    self#handle_keys e;
 
     OcsfmlWindow.Event.(
       match e with
