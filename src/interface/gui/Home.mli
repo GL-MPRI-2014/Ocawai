@@ -2,7 +2,8 @@
 
 (* TODO inherit from BaseMixins *)
 
-(** A screen item *)
+(** A screen item
+  * [position] should be given wrt to the center of the texture *)
 class item : string -> (float * float) -> object
 
   method draw : OcsfmlGraphics.render_window -> unit
@@ -28,7 +29,8 @@ object
 end
 
 (** A screen (simply a menu)
-  * It has the particularity it handles selection with position *)
+  * It has the particularity it handles selection with position.
+  * TODO: Handle intro; outro; multiple textures and interpolators *)
 class screen : item list -> actionnable list -> object
 
   method draw : OcsfmlGraphics.render_window -> unit
