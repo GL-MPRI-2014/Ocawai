@@ -109,6 +109,7 @@ class state = object(self)
               done;
               snake <- Path.init (Position.create (0,0));
               current_pos <- Position.create (0,0);
+              last_dir <- (1,0);
               running <- true
             end
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
