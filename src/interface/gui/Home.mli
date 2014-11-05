@@ -7,6 +7,10 @@ class item : string -> (float * float) -> object
 
   method draw : OcsfmlGraphics.render_window -> unit
 
+  method position : float * float
+  method x : float
+  method y : float
+
 end
 
 (** An actionnable item *)
@@ -28,5 +32,10 @@ end
 class screen : item list -> actionnable list -> object
 
   method draw : OcsfmlGraphics.render_window -> unit
+
+  method left : unit
+  method right : unit
+  method up : unit
+  method down : unit
 
 end

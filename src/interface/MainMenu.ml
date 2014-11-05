@@ -30,7 +30,7 @@ class main_menu = object(self)
       [new Home.item "title" (w/.2., h /. 2. -. 250.)]
       [
         new Home.actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
-          (fun () -> Printf.printf "gameon!\n") ;
+          (fun () -> (new Game.game :> State.state) |> manager#push) ;
         new Home.actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> Printf.printf "quit\n") ;
@@ -44,8 +44,14 @@ class main_menu = object(self)
     OcsfmlWindow.Event.(
       match e with
         | Resized { width = w ; height = h } -> self#set_screen w h
-        | KeyPressed { code = _ ; _ } ->
-            (new Game.game :> State.state) |> manager#push
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            screen#left
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            screen#right
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            screen#up
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            screen#down
         | _ -> ()
     )
 
