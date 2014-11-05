@@ -49,17 +49,26 @@ class screen items actionnables = object(self)
     and y = a#y -. b#y in
     int_of_float (x *. x +. y *. y)
 
-  method private move p = selected >? fun s ->
+  method private weight horizontal s a =
+    if horizontal then
+      self#sqdist a s * (abs (int_of_float (a#y -. s#y)))
+    else
+      self#sqdist a s * (abs (int_of_float (a#x -. s#x)))
+
+  method private compare h s a b =
+    (self#weight h s a - self#weight h s b)
+
+  method private move p h = selected >? fun s ->
     List.find_all (fun a -> a <> s && p a s) actionnables
-    |> List.sort (fun a b -> self#sqdist a s - self#sqdist b s)
+    |> List.sort (self#compare h s)
     |> function
         | a :: _ -> self#select a
         | _ -> ()
 
-  method left = self#move (fun a s -> a#x <= s#x)
-  method right = self#move (fun a s -> a#x >= s#x)
-  method up = self#move (fun a s -> a#y <= s#y)
-  method down = self#move (fun a s -> a#y >= s#y)
+  method left = self#move (fun a s -> a#x <= s#x) true
+  method right = self#move (fun a s -> a#x >= s#x) true
+  method up = self#move (fun a s -> a#y <= s#y) false
+  method down = self#move (fun a s -> a#y >= s#y) false
 
   initializer
     match actionnables with
