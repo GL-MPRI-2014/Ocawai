@@ -41,6 +41,9 @@ class screen items actionnables = object(self)
     List.iter (fun i -> i#draw target) items ;
     List.iter (fun a -> a#draw target) actionnables
 
+  method action =
+    selected >? fun o -> o#action
+
   method private sqdist a b =
     let x = a#x -. b#x
     and y = a#y -. b#y in

@@ -33,6 +33,8 @@ class screen : item list -> actionnable list -> object
 
   method draw : OcsfmlGraphics.render_window -> unit
 
+  method action : unit
+
   method left : unit
   method right : unit
   method up : unit

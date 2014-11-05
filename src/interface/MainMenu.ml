@@ -52,6 +52,8 @@ class main_menu = object(self)
             screen#up
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
             screen#down
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Return ; _ } ->
+            screen#action
         | _ -> ()
     )
 
