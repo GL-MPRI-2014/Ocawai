@@ -81,7 +81,7 @@ all: interface engine network
 interface: $(files_atd_ml) 
 	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface)
 
-engine:  $(file_atd_ml)
+engine:  $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 
 network:
@@ -129,7 +129,7 @@ $(distdir): FORCE
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
-	-cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
+	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 distcheck: $(distdir).tar.gz
