@@ -8,6 +8,8 @@ class state = object(self)
 
   inherit State.state as super
 
+  val font = new font `None
+
   val map = Array.make_matrix 16 10 false
 
   val mutable running = true
@@ -94,7 +96,25 @@ class state = object(self)
         aux start (next :: r)
       | [] -> ()
 
-  method handle_event e = ()
+  method handle_event e =
+
+    OcsfmlWindow.Event.(
+      match e with
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
+            if not running then begin
+              for i = 0 to 15 do
+                for j = 0 to 9 do
+                  map.(i).(j) <- false
+                done
+              done;
+              snake <- Path.init (Position.create (0,0));
+              current_pos <- Position.create (0,0);
+              running <- true
+            end
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
+            manager#pop
+        | _ -> ()
+    )
 
   method render window =
 
@@ -116,13 +136,24 @@ class state = object(self)
       ()
     |> window#draw;
 
-    if running then self#handle_keys;
-
     self#draw_path window (Path.get_move snake);
+
+    if running then
+      self#handle_keys
+    else begin
+      rect_print
+        window "GAME OVER" font Color.white (Pix 120) (Pix 10) Center
+        { left = 0. ; top = h /. 2. -. 100. ; width = w ; height = 100. };
+      rect_print
+        window "Press space to continue, q to quit."
+        font Color.white (Pix 50) (Pix 10) Center
+        { left = 0. ; top = h /. 2. +. 185. ; width = w ; height = 100. };
+    end;
 
     window#display
 
   initializer
-    ()
+    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
+    then failwith "Couldn't load the font here"
 
 end

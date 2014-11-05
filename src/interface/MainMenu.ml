@@ -44,7 +44,9 @@ class main_menu = object(self)
         | KeyPressed _ -> remaining_keys <- key_seq
         | _ -> ())
       end
-    | [] -> (new Snake.state :> State.state) |> manager#push
+    | [] ->
+        (new Snake.state :> State.state) |> manager#push ;
+        remaining_keys <-key_seq
 
 
   method private set_screen w h =
