@@ -1,10 +1,10 @@
-INTERFACE_SRC = src/common,src/interface,src/interface/gui
+INTERFACE_SRC = src/common,src/interface,src/interface/gui,src/music
 ENGINE_SRC = src/engine,src/common
 PACKAGES = ocsfml.graphics,atdgen
 
 # We will later need to add engine, but while it is not compiled we cannot make
 # the corresponding documentation
-dirs := src/common src/interface src/interface/gui
+dirs := src/common src/interface src/interface/gui src/music
 find_files = $(wildcard $(dir)/*.ml*)
 files := $(foreach dir,$(dirs),$(find_files))
 
