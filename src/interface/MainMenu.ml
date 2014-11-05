@@ -8,21 +8,7 @@ class main_menu = object(self)
 
   inherit State.state as super
 
-  val font = new font `None
-
-  val splash_font = new font `None
-
-  val mutable text_alpha = 1.
-
-  val mutable splash_size = 1.
-
   val mutable screen = new Home.screen [] []
-
-  method private set_alpha a =
-    text_alpha <- a
-
-  method private set_splash_size s =
-    splash_size <- s
 
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in
@@ -33,7 +19,7 @@ class main_menu = object(self)
           (fun () -> (new Game.game :> State.state) |> manager#push) ;
         new Home.actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
-          (fun () -> Printf.printf "quit\n") ;
+          (fun () -> manager#window#close) ;
         new Home.actionnable "settings" "settings_hover"
           (w /. 2. +. 100., h /.2. +. 220.)
           (fun () -> Printf.printf "settings\n")
@@ -71,15 +57,6 @@ class main_menu = object(self)
     window#display
 
   initializer
-
-    if not (font#load_from_file "resources/fonts/Roboto-Regular.ttf")
-    then failwith "Couldn't load the font here";
-    if not (splash_font#load_from_file "resources/fonts/AdvoCut.ttf")
-    then failwith "Couldn't load the font here";
-    (* ignore(Interpolators.new_sine_ip
-      self#set_alpha 2. 0.4 0.6);
-    ignore(Interpolators.new_sine_ip
-      self#set_splash_size 1.8 0.05 1.) *)
     let window = manager#window in
     let (w,h) = window#get_size in
     self#set_screen w h
