@@ -10,31 +10,31 @@ class main_menu = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val key_seq = [
-    OcsfmlWindow.KeyCode.Up;
-    OcsfmlWindow.KeyCode.Up;
-    OcsfmlWindow.KeyCode.Down;
-    OcsfmlWindow.KeyCode.Down;
-    OcsfmlWindow.KeyCode.Left;
-    OcsfmlWindow.KeyCode.Right;
-    OcsfmlWindow.KeyCode.Left;
-    OcsfmlWindow.KeyCode.Right;
-    OcsfmlWindow.KeyCode.B;
-    OcsfmlWindow.KeyCode.A
-  ]
+  val key_seq = OcsfmlWindow.KeyCode.([
+    Up;
+    Up;
+    Down;
+    Down;
+    Left;
+    Right;
+    Left;
+    Right;
+    B;
+    A
+  ])
 
-  val mutable remaining_keys = [
-    OcsfmlWindow.KeyCode.Up;
-    OcsfmlWindow.KeyCode.Up;
-    OcsfmlWindow.KeyCode.Down;
-    OcsfmlWindow.KeyCode.Down;
-    OcsfmlWindow.KeyCode.Left;
-    OcsfmlWindow.KeyCode.Right;
-    OcsfmlWindow.KeyCode.Left;
-    OcsfmlWindow.KeyCode.Right;
-    OcsfmlWindow.KeyCode.B;
-    OcsfmlWindow.KeyCode.A
-  ]
+  val mutable remaining_keys = OcsfmlWindow.KeyCode.([
+    Up;
+    Up;
+    Down;
+    Down;
+    Left;
+    Right;
+    Left;
+    Right;
+    B;
+    A
+  ])
 
   method private handle_keys e =
     match remaining_keys with
