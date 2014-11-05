@@ -26,7 +26,7 @@ class item icon text (action : unit -> unit) = object(self)
     texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
     (* Then draw the text *)
     rect_print
-      target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
+      target text my_font Color.black (Pix (snd size - 3)) (Pix 2) Left {
         left = fst position +. tex_size_x ;
         top = snd position ;
         width = selfx -. tex_size_x ;
@@ -83,7 +83,7 @@ end
 class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
   ~callback ~m_theme = object(self)
 
-  inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback 
+  inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback
     ~m_theme
 
   initializer
@@ -94,7 +94,8 @@ class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
 end
 
 (* TODO : label arguments *)
-class menu pos width i_height keycode m_theme bar_height bar_icon = object(self)
+class menu pos width i_height keycode m_theme bar_height bar_icon bar_text =
+object(self)
 
   inherit [item] evq_container as super
 
@@ -116,6 +117,8 @@ class menu pos width i_height keycode m_theme bar_height bar_icon = object(self)
 
   val mutable toolbar_icon = bar_icon
 
+  val mutable toolbar_text = bar_text
+
   method draw target lib = if self#active then begin
     toolbar#draw target lib;
     new rectangle_shape ~fill_color:theme.Theme.default_color
@@ -123,10 +126,10 @@ class menu pos width i_height keycode m_theme bar_height bar_icon = object(self)
     |> target#draw;
     let (posx, posy) = self#position in
     new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
-      ~size:(foi2D (width, item_height)) 
+      ~size:(foi2D (width, item_height))
       ~position:(foi2D (posx, posy + self#selected * item_height)) ()
     |> target#draw;
-    List.iter (fun w -> w#draw target lib) self#children end 
+    List.iter (fun w -> w#draw target lib) self#children end
 
   method add_child w =
     super#add_child w;

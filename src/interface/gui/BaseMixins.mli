@@ -57,6 +57,8 @@ class virtual has_toolbar : object
 
   val virtual mutable toolbar_icon : string
 
+  val virtual mutable toolbar_text : string
+
   method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
 
 end
