@@ -10,30 +10,30 @@
 *)
 
 type time
-type 'a event
-type 'a t
+type event
+type t
 
 (** {2 Base DLists} *)
 
 (**
    Delay to sync various tiles
 *)
-val sync : time -> 'a t
+val sync : time -> t
 
 (**
    Neutral element for the Tiled product
 *)
-val zero : 'a t
+val zero : t
 
 (**
    Compares t to zero
 *)
-val isZero : 'a t -> bool
+val isZero : t -> bool
 
 (**
    Encapsulate an event into a singleton, that is a single element list
 *)
-val return : 'a event -> 'a t
+val return : event -> t
 
 (** {2 DList operators} *)
 
@@ -44,18 +44,18 @@ val return : 'a event -> 'a t
     Eventually this infix operator should be modified, we wanted ::: but somehow
     this is not possible ...
 *)
-val (/::/) : 'a t -> 'a t -> 'a t
+val (/::/) : t -> t -> t
 
 (** {2 Normalization functions} *)
 
 (**
    @return [(head, tail)] of the input [tile] with respect to the time
 *)
-val headTail : 'a t -> 'a t * 'a t
+val headTail : t -> t * t
 
 (** {2 Testing functions} *) 
 
 (**
    @return the tile containing all events in the [event list] in sequence
 *)
-val fromList : ('a event) list -> 'a t
+val fromList : event list -> t
