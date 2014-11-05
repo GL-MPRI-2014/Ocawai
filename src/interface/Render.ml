@@ -19,30 +19,16 @@ let draw_txr (target : OcsfmlGraphics.render_window)
     texture#draw ~target:(target :> render_target) ~origin
       ~position ~rotation ()
 
-let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
+let draw_texture (target : #OcsfmlGraphics.render_target)
+      ?offset:(offset = (0.,0.)) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
   let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
-  let position = foi2D (camera#project pos) in
-  let rotation = rot in
-  texture#draw ~target:(target :> render_target) ~origin
-    ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
-
-(* Ugly but temporary *)
-let draw_texture_2 (target : #OcsfmlGraphics.render_target) camera pos rot name =
-  let texture = TextureLibrary.get_texture texture_library name in
-  let (sx,sy) =  foi2D texture#default_size in
-  let origin = (sx/.2.,sy/.2.) in
-  let position = addf2D (foi2D (camera#project pos)) (0., 25. *. camera#zoom) in
-  let rotation = rot in
-  texture#draw ~target:(target :> render_target) ~origin
-    ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
-
-let draw_texture_3 (target : #OcsfmlGraphics.render_target) camera pos rot name =
-  let texture = TextureLibrary.get_texture texture_library name in
-  let (sx,sy) =  foi2D texture#default_size in
-  let origin = (sx/.2.,sy/.2.) in
-  let position = addf2D (foi2D (camera#project pos)) (25. *. camera#zoom, 0.) in
+  let (ox,oy) = offset in
+  let position = addf2D
+    (foi2D (camera#project pos))
+    (ox *. camera#zoom, oy *. camera#zoom)
+  in
   let rotation = rot in
   texture#draw ~target:(target :> render_target) ~origin
     ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
@@ -53,6 +39,9 @@ let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
   draw_texture target camera pos 0. texture_name
 
 let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile map =
+  (* Utility *)
+  let draw_v = draw_texture ~offset:(0.,25.) in
+  let draw_h = draw_texture ~offset:(25.,0.) in
   let texture_name = Tile.get_name tile in
   (* Hardcode for testing *)
   (* Let's draw the junction *)
@@ -65,17 +54,17 @@ let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile map =
   begin
     let upname = Tile.get_name (Battlefield.get_tile map up) in
     if texture_name = "water" && is_ground upname then
-      draw_texture_2 target camera up 0. "ground_water_v"
+      draw_v target camera up 0. "ground_water_v"
     else if is_ground texture_name && upname = "water" then
-      draw_texture_2 target camera up 0. "water_ground_v"
+      draw_v target camera up 0. "water_ground_v"
   end ;
   if filter_positions map left then
   begin
     let leftname = Tile.get_name (Battlefield.get_tile map left) in
     if texture_name = "water" && is_ground leftname then
-      draw_texture_3 target camera left 180. "water_ground_h"
+      draw_h target camera left 180. "water_ground_h"
     else if is_ground texture_name && leftname = "water" then
-      draw_texture_3 target camera left 0. "water_ground_h"
+      draw_h target camera left 0. "water_ground_h"
   end
 
 
