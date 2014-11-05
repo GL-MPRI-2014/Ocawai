@@ -114,7 +114,8 @@ let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera
   let texture = TextureLibrary.get_texture texture_library "cursor" in
   let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
-  let position = foi2D (camera#project camera#cursor#position) in
+  let position = subf2D (foi2D (camera#project camera#cursor#position))
+                 camera#cursor#offset in
   let scale = camera#cursor#scale *. camera#zoom in
   texture#draw ~target:(target :> render_target)
     ~position ~origin ~scale:(scale, scale) ()
