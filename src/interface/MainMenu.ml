@@ -8,26 +8,38 @@ class main_menu = object(self)
 
   inherit State.state as super
 
-  val font = new font `None
+  val mutable screen = new Home.screen [] []
 
-  val splash_font = new font `None
-
-  val mutable text_alpha = 1.
-
-  val mutable splash_size = 1.
-
-  method private set_alpha a =
-    text_alpha <- a
-
-  method private set_splash_size s =
-    splash_size <- s
+  method private set_screen w h =
+    let (w,h) = foi2D (w,h) in
+    screen <- new Home.screen
+      [new Home.item "title" (w/.2., h /. 2. -. 250.)]
+      [
+        new Home.actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
+          (fun () -> (new Game.game :> State.state) |> manager#push) ;
+        new Home.actionnable "quit" "quit_hover"
+          (w /. 2. -. 130., h /. 2. +. 230.)
+          (fun () -> manager#window#close) ;
+        new Home.actionnable "settings" "settings_hover"
+          (w /. 2. +. 100., h /.2. +. 220.)
+          (fun () -> Printf.printf "settings\n")
+      ]
 
   method handle_event e =
 
     OcsfmlWindow.Event.(
       match e with
-        | KeyPressed { code = _ ; _ } ->
-            (new Game.game :> State.state) |> manager#push
+        | Resized { width = w ; height = h } -> self#set_screen w h
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            screen#left
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            screen#right
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            screen#up
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            screen#down
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Return ; _ } ->
+            screen#action
         | _ -> ()
     )
 
@@ -37,54 +49,16 @@ class main_menu = object(self)
 
     Interpolators.update ();
 
-    window#clear ();
+    let color = Color.rgb 221 224 234 in
+    window#clear ~color ();
 
-    let text : text = new text
-      ~string:"PGL"
-      ~font
-      ~character_size:200
-      ~color:Color.white
-      ()
-    in
-    let (w,h) = window#get_size in
-    let (w,h) = float_of_int w, float_of_int h in
-    let text_width = text#get_global_bounds.width in
-    text#set_position ((w -. text_width) /. 2.) (150.);
-    window#draw text ;
-
-    let text : text = new text
-      ~string:"Now with rivers !"
-      ~font:splash_font
-      ~character_size:30
-      ~color:Color.yellow
-      ~scale:(splash_size, splash_size)
-      ()
-    in
-    let tbounds = text#get_global_bounds in
-    text#set_origin (tbounds.width /. 2.) (tbounds.height /. 2.);
-    text#set_position ((w +. text_width) /. 2. -. 80.) 330.;
-    text#set_rotation (-20.);
-    window#draw text;
-
-    let color = Color.rgba 255 255 255 (int_of_float (255. *. text_alpha)) in
-    let (w,h) = window#get_size in
-    let (w,h) = float_of_int w, float_of_int h in
-
-    rect_print
-      window "Press any key to continue." font color (Pix 60) (Pix 10) Center
-      { left = 0. ; top = h -. 200. ; width = w ; height = 100. };
+    screen#draw window;
 
     window#display
 
   initializer
-
-    if not (font#load_from_file "resources/fonts/Roboto-Regular.ttf")
-    then failwith "Couldn't load the font here";
-    if not (splash_font#load_from_file "resources/fonts/AdvoCut.ttf")
-    then failwith "Couldn't load the font here";
-    ignore(Interpolators.new_sine_ip
-      self#set_alpha 2. 0.4 0.6);
-    ignore(Interpolators.new_sine_ip
-      self#set_splash_size 1.8 0.05 1.)
+    let window = manager#window in
+    let (w,h) = window#get_size in
+    self#set_screen w h
 
 end
