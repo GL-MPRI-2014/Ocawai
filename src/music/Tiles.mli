@@ -6,51 +6,51 @@
    @author "Theis Bazin" @author "Mathias Sable Meyer"
 *)
 
-type t
 type time
-type event
+type 'a event
+type 'a t
 
 (** {2 Base tiles} *)
 
 (**
    Neutral element for (%).
 *)
-val zero : t
+val zero : 'a t
 
 (**
-   Compares t to zero
+   Compares 'a t to zero
 *)
-val isZero : t -> bool
+val isZero : 'a t -> bool
 
 (**
    Basic syncing plumbing
 *)
-val delay : time -> t
+val delay : time -> 'a t
 
 (**
    @return an {i idempotent} tile holding [event]
 *)
-val make : event -> t
+val make : 'a event -> 'a t
 
 (** {2 Tile operators} *)
 
 (**
    Tiled product. An inverse semi-groupe operator.
 *)
-val (%) : t -> t -> t
+val (%) : 'a t -> 'a t -> 'a t
 
 (**
    @return [t'] holding the same events as [t]
    only with [Pre t'] = [Pos t'] = [Pre t]
 *)
-val reset : t -> t
+val reset : 'a t -> 'a t
 
 
 (**
    @return [t'] holding the same events as [t]
    only with [Pos t'] = [Pre t'] = [Pos t]
 *)
-val coreset : t -> t
+val coreset : 'a t -> 'a t
 
 (**
    @return [t'] holding the same events as [t]
@@ -58,19 +58,19 @@ val coreset : t -> t
    [Pos t'] = [Pre t] and
    [Pre t'] = [Pos t]
 *)
-val coreset : t -> t
+val inverse : 'a t -> 'a t
 
 (**
    @return a tile holding both input tiles
    {i starting} together
 *)
-val fork : t -> t -> t
+val fork : 'a t -> 'a t -> 'a t
 
 (**
    @return a tile holding both input tiles
    {i ending} together
 *)
-val join : t -> t -> t
+val join : 'a t -> 'a t -> 'a t
 
 (** {2 Normalization functions} *)
 
@@ -82,12 +82,12 @@ val join : t -> t -> t
 
    The following relation holds : [t = head % tail]
 *)
-val headTail : t -> t * t
+val headTail : 'a t -> 'a t * 'a t
 
 (**
    @return a fully normalized tile
    Iterates [headTail].
 *)
-val normalize : t -> t
+val normalize : 'a t -> 'a t
 
 

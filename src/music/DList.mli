@@ -10,51 +10,52 @@
 *)
 
 type time
-type event
-type t
+type 'a event
+type 'a t
 
 (** {2 Base DLists} *)
 
 (**
    Delay to sync various tiles
 *)
-val sync : time -> t
+val sync : time -> 'a t
 
 (**
    Neutral element for the Tiled product
 *)
-val zero : t
+val zero : 'a t
 
 (**
    Compares t to zero
 *)
-val isZero : t -> bool
+val isZero : 'a t -> bool
 
 (**
    Encapsulate an event into a singleton, that is a single element list
 *)
-val return : event -> t
+val return : 'a event -> 'a t
 
 (** {2 DList operators} *)
 
 (**
    Infix operation for concatenation
-   
-   Eventually this infix operator should be modified, we wanted ::: but somehow
-   this is not possible ...
 *)
-val (/::/) : t -> t -> t
+(*  
+    Eventually this infix operator should be modified, we wanted ::: but somehow
+    this is not possible ...
+*)
+val (/::/) : 'a t -> 'a t -> 'a t
 
 (** {2 Normalization functions} *)
 
 (**
-   Split the abstract tree and yields its head and tail with respect to the time
+   @return [(head, tail)] of the input [tile] with respect to the time
 *)
-val headTail : t -> t * t
+val headTail : 'a t -> 'a t * 'a t
 
 (** {2 Testing functions} *) 
 
 (**
-   Builds the tile containing all events in the list in sequence
+   @return the tile containing all events in the [event list] in sequence
 *)
-val fromList : event list -> t
+val fromList : ('a event) list -> 'a t
