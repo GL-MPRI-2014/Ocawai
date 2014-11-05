@@ -17,7 +17,12 @@ let load_texture lib path =
   let ext  = String.sub path (i+1) (String.length path - i - 1) in
   if ext = "png" then begin 
     let tex = new basic_texture path in
-    print_endline ("Texture " ^ name ^ " ... stored");
+    print_endline ("  [\027[32mstored\027[0m] " ^ name);
+    Hashtbl.add lib name tex
+  end else if ext = "slc" then begin
+    let tex = new sliced_texture path ~upcut:10 ~downcut:40 
+      ~rightcut:40 ~leftcut:10 in
+    print_endline ("  [\027[32mstored\027[0m] " ^ name);
     Hashtbl.add lib name tex
   end
 
@@ -31,8 +36,10 @@ let rec load_recursively lib prefix path =
 
 
 let load_directory lib dir = 
+  print_endline "Loading textures :";
   let children = Sys.readdir dir in 
-  Array.iter (load_recursively lib dir) children
+  Array.iter (load_recursively lib dir) children;
+  print_endline "All textures loaded"
 
 
 let get_texture lib name = 

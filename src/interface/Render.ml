@@ -4,18 +4,68 @@ open Utils
 let texture_library = TextureLibrary.create ()
 let font = new font `None
 
-let draw_texture (target : #OcsfmlGraphics.render_target) camera pos rot name =
+let filter_positions map p =
+  not (Position.out_of_bounds p
+        (Position.create (0,0))
+        (Position.diff
+          (Position.create (Battlefield.size map))
+          (Position.create (1,1))))
+
+let draw_txr (target : OcsfmlGraphics.render_window)
+  name position rotation =
+    let texture = TextureLibrary.get_texture texture_library name in
+    let (sx,sy) =  foi2D texture#default_size in
+    let origin = (sx/.2.,sy/.2.) in
+    texture#draw ~target:(target :> render_target) ~origin
+      ~position ~rotation ()
+
+let draw_texture (target : #OcsfmlGraphics.render_target)
+      ?offset:(offset = (0.,0.)) camera pos rot name =
   let texture = TextureLibrary.get_texture texture_library name in
   let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
-  let position = foi2D (camera#project pos) in
+  let (ox,oy) = offset in
+  let position = addf2D
+    (foi2D (camera#project pos))
+    (ox *. camera#zoom, oy *. camera#zoom)
+  in
   let rotation = rot in
-  texture#draw ~target:(target :> render_target) ~origin ~position ~rotation ()
+  texture#draw ~target:(target :> render_target) ~origin
+    ~scale:(camera#zoom, camera#zoom) ~position ~rotation ()
 
 
 let render_tile (target : #OcsfmlGraphics.render_target) camera pos tile =
   let texture_name = Tile.get_name tile in
   draw_texture target camera pos 0. texture_name
+
+let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile map =
+  (* Utility *)
+  let draw_v = draw_texture ~offset:(0.,25.) in
+  let draw_h = draw_texture ~offset:(25.,0.) in
+  let texture_name = Tile.get_name tile in
+  (* Hardcode for testing *)
+  (* Let's draw the junction *)
+  let up = Position.up pos in
+  let left = Position.left pos in
+  let is_ground name =
+    name = "plain" || name = "forest" || name = "mountain"
+  in
+  if filter_positions map up then
+  begin
+    let upname = Tile.get_name (Battlefield.get_tile map up) in
+    if texture_name = "water" && is_ground upname then
+      draw_v target camera up 0. "ground_water_v"
+    else if is_ground texture_name && upname = "water" then
+      draw_v target camera up 0. "water_ground_v"
+  end ;
+  if filter_positions map left then
+  begin
+    let leftname = Tile.get_name (Battlefield.get_tile map left) in
+    if texture_name = "water" && is_ground leftname then
+      draw_h target camera left 180. "water_ground_h"
+    else if is_ground texture_name && leftname = "water" then
+      draw_h target camera left 0. "water_ground_h"
+  end
 
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
@@ -24,14 +74,15 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
   let texture = TextureLibrary.get_texture texture_library "highlight" in
   let (sx, sy) = foi2D texture#default_size in
   let origin = (sx /. 2., sy /. 2.) in
-  texture#draw ~target:(target :> render_target) ~position ~origin 
-    ~color:base_color ~blend_mode:BlendAdd ()
+  texture#draw ~target:(target :> render_target) ~position ~origin
+    ~color:base_color ~scale:(camera#zoom, camera#zoom) ~blend_mode:BlendAdd ()
 
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
                (map : Battlefield.t) =
   List.iter
-    (fun p -> render_tile target camera p (Battlefield.get_tile map p))
+    (fun p -> render_tile target camera p (Battlefield.get_tile map p) ;
+      render_joint target camera p (Battlefield.get_tile map p) map)
     (Position.square camera#top_left camera#bottom_right)
 
 
@@ -78,16 +129,17 @@ let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
 
 
 (* This is almost garbage *)
-let draw_range (target : #OcsfmlGraphics.render_target) camera my_unit =
-  let move_range = Position.filled_circle
-      (my_unit#position)
-      (my_unit#move_range)
+let draw_range (target : #OcsfmlGraphics.render_target) camera map my_unit =
+  let move_range =
+      List.filter (filter_positions map)
+      (Position.filled_circle (my_unit#position) (my_unit#move_range))
   in
   let attack_range = ref [] in
   for i = 1 to my_unit#attack_range do
     attack_range := !attack_range @
       (Position.neighbours (!attack_range @ move_range))
   done;
+  attack_range := List.filter (filter_positions map) !attack_range;
   List.iter (highlight_tile target camera (Color.rgb 255 255 100)) move_range;
   List.iter (highlight_tile target camera (Color.rgb 255 50 50)) !attack_range
 
@@ -97,9 +149,10 @@ let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera
   let texture = TextureLibrary.get_texture texture_library "cursor" in
   let (sx,sy) =  foi2D texture#default_size in
   let origin = (sx/.2.,sy/.2.) in
-  let position = foi2D (camera#project camera#cursor#position) in
-  let scale = camera#cursor#scale in
-  texture#draw ~target:(target :> render_target) 
+  let position = subf2D (foi2D (camera#project camera#cursor#position))
+                 camera#cursor#offset in
+  let scale = camera#cursor#scale *. camera#zoom in
+  texture#draw ~target:(target :> render_target)
     ~position ~origin ~scale:(scale, scale) ()
 
 
@@ -122,20 +175,20 @@ let draw_hud (target : #OcsfmlGraphics.render_target) =
   target#draw text
 
 
-let render_game (target : #OcsfmlGraphics.render_target) 
+let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager =
+  ui_manager#draw (target :> render_target) texture_library
+
+
+let render_game (target : #OcsfmlGraphics.render_target)
   (data : ClientData.client_data) =
   render_map target data#camera data#map;
-  data#selected >? draw_range target data#camera;
+  data#selected >? draw_range target data#camera data#map;
   draw_path target data#camera data#current_move;
   draw_cursor target data#camera;
   List.iter (draw_unit target data#camera) data#units;
   FPS.display target
 
-let render_widget (target : #OcsfmlGraphics.render_target) 
-  (widget : #Widget.widget) = 
-  widget#draw (target :> render_target) texture_library
-
-let () =
+let load_ressources () =
   TextureLibrary.load_directory texture_library "resources/textures/" ;
   if not (font#load_from_file "resources/fonts/Roboto-Regular.ttf")
   then failwith "Couldn't load the font"

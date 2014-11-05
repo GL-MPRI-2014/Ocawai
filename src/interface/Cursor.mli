@@ -23,4 +23,10 @@ class cursor : position:Position.t -> object
   (** Interpolation (do not interfere) *)
   method scale : float
 
+  (** Interpolation *)
+  method offset : float * float
+
+  (** Interpolation *)
+  method set_offset : float * float -> unit
+
 end

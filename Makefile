@@ -10,6 +10,8 @@ files := $(foreach dir,$(dirs),$(find_files))
 
 OUTPUT = main.native
 
+OUTPUT_ENGINE = main_engine.native
+
 find_files_atd = $(wildcard $(dir)/*.atd)
 
 files_atd := $(foreach dir,$(dirs),$(find_files_atd))
@@ -28,13 +30,13 @@ interface: $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT)
 
 engine : $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT)
+	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT_ENGINE)
 
 run: interface
 	./$(OUTPUT)
 
 eng: engine
-	./$(OUTPUT)
+	./$(OUTPUT_ENGINE)
 
 # For now, we cannot handle engine
 doc : interface
@@ -50,9 +52,7 @@ clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
 	rm -f documentation/*.html documentation/*.css
-	printf "#!/bin/bash\n\n[ -d ./documentation ] && rmdir -- ./documentation" >> cleanDoc.sh
-	bash cleanDoc.sh || true
-	rm -f -- cleanDoc.sh
+	rmdir documentation 2>/dev/null || true
 	rm -f documentation.html
 
 test:

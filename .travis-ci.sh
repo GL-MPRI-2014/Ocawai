@@ -7,8 +7,8 @@ OPAM_DEPENDS="ocamlfind ocsfml atdgen"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev"
 COMPILER_DEPENDS="g++ binutils make"
 
-echo "yes" | sudo add-apt-repository ppa:avsm/ocaml42+opam12
-echo "yes" | sudo add-apt-repository ppa:sonkun/sfml-development
+sudo add-apt-repository -y ppa:avsm/ocaml42+opam12
+sudo add-apt-repository -y ppa:sonkun/sfml-development
 
 sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam \
