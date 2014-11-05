@@ -16,7 +16,7 @@ let player_vision (player : Player.t) (bf : Battlefield.t) : Position.t list =
   remove_double l
 
 
-let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
+let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos path =
   if mvt_point < 0 then failwith "dfs: mvt_point < 0";
   let neighbour_unsafe =
     [Position.left pos; Position.up pos; Position.right pos; Position.down pos]
@@ -42,8 +42,9 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h pos path =
       )
     then (
       Hashtbl.add h pos newpath;
+      l := pos::(!l);
       let mvt_point = mvt_point - cost in
-      dfs bf player mvt_point mvt_type visible_pos unit_pos h pos newpath
+      dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos newpath
     )
   in
   List.iter visit neighbour
@@ -61,9 +62,10 @@ let accessible_positions unit player player_list bf =
     )
     player_list;
   let h = Hashtbl.create 50 in
+  let l = ref [unit#position] in
   let path_init = Path.init unit#position in
   Hashtbl.add h unit#position path_init;
-  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h
+  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h l
     unit#position path_init;
-  h
+  (!l,h)
 
