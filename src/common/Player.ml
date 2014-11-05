@@ -12,4 +12,4 @@ end
 
 type t = player
 
-let create_player = new player [] [] 
+let create_player () = new player [] [] 

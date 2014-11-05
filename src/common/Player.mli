@@ -8,4 +8,4 @@ type t = <
   get_next_action : Action.t
 >
 
-val create_player : t
+val create_player : unit -> t
