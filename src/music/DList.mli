@@ -56,6 +56,11 @@ val headTail : t -> t * t
 (** {2 Testing functions} *) 
 
 (**
+   @return the tile containing all events in the [event list] as a chord
+*)
+val fromList_chord : event list -> t
+
+(**
    @return the tile containing all events in the [event list] in sequence
 *)
-val fromList : event list -> t
+val fromList_sequence : event list -> t
