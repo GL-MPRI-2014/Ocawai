@@ -13,51 +13,55 @@ let neighbors m pos =
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
 
-let rec count f = function
-|p::q when f p -> 1 + (count f q)
-|p::q -> count f q
-|[] -> 0
+let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
+
+(* functions working with densities *)
+(* compute the total density of a list of tiles *)
+let total_density tiles =
+  List.fold_left (+) 0 (List.map Tile.get_density tiles)
+
+(* return a random tile with regards to densities *)
+let get_tile_with_density total tiles =
+  let d = (Random.int total) + 1 in
+  let rec nth_dens n = function
+  | p::q when Tile.get_density p < n -> nth_dens (n - Tile.get_density p) q
+  | p::q -> p
+  | _ -> assert false
+  in
+  nth_dens d tiles
+
+(* others useful functions *)
+(* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
+let contiguite m pos =
+  let name = Tile.get_name (Battlefield.get_tile m pos) in
+  let nei = neighbors m pos in
+  float_of_int (count (fun t -> Tile.get_name t = name) nei) /. float_of_int (List.length nei)
+
 
 let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
   Random.self_init();
+  let tiles = Tile.create_list_from_config () in
+  let get_tile_with_density () =
+    let total = total_density tiles in
+    get_tile_with_density total tiles in
+  let m = Battlefield.create width height (List.hd tiles) in
 
-  let ti_list = Ag_util.Json.from_file Tile_j.read_t_list "resources/config/tiles.json" in
-  let tiles = List.map (fun ti -> Tile.tile_t_to_t ti) ti_list in (*liste des tiles*)
-  let tile a = List.find (fun ti -> Tile.get_name ti = a) tiles in
-  let m = Battlefield.create width height (tile "plain") in
-  let total_density =
-    let rec sum = function
-    | p::q -> Tile.get_density p + sum q
-    | [] -> 0
-    in sum tiles
-  in
-  let rec nth_dens n = function
-  | p::q when Tile.get_density p < n -> nth_dens (n - Tile.get_density p) q
-  | p::q when Tile.get_density p >= n -> p
-  | _ -> failwith("FieldGenerator.swap_gen : failure nth_dens")
-  in
-  (*remplir aleatoirement la map, en tenant compte des densites*)
-  Battlefield.tile_iteri (fun p t ->let r = Random.int total_density +1 in Battlefield.set_tile m p (nth_dens r tiles)) m;
-
-  (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
-  let contiguite pos =
-    let tpos = Battlefield.get_tile m pos in
-    let nei = neighbors m pos in
-    (float_of_int (count (fun t -> Tile.get_name t = Tile.get_name tpos) nei) /. float_of_int (List.length nei))
-  in
+  (* fill the map with regards to densities *)
+  Battlefield.tile_iteri (fun p _ -> Battlefield.set_tile m p (get_tile_with_density ())) m;
 
   let swap pos1 pos2 =
     let t1 = Battlefield.get_tile m pos1 in
-      Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
-      Battlefield.set_tile m pos2 t1
+    Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
+    Battlefield.set_tile m pos2 t1
   in
+
   (* on prends 2 positions random, on les swap si ca augmente la contiguite, et on itere*)
   for i = 0 to 50 * width * height (* arbitraire *) do
     let pos1 = create (Random.int width , Random.int height) in
     let pos2 = create (Random.int width , Random.int height) in
-    let previous = contiguite pos1 +. contiguite pos2 in
+    let previous = contiguite m pos1 +. contiguite m pos2 in
     swap pos1 pos2;
-    if previous > contiguite pos1 +. contiguite pos2 then
+    if previous > contiguite m pos1 +. contiguite m pos2 then
       swap pos1 pos2;
   done;
   m
@@ -115,25 +119,19 @@ let init_placement m nbplayers = (* séparé de placement pour ne pas le recalcu
 (* place nbplayers sur la map m *)
 let placement m nbplayers legit_spawns =
   let (width,height) = Battlefield.size m in
-  let shuffle l =
-    let nd = List.map (fun c -> (Random.bits (), c)) l in
-    let sond = List.sort compare nd in
-    List.map snd sond
-  in
   let rec behead = function
   | 0,_ -> []
   | n,[] -> raise NotEnoughSpawns
   | n,p::q -> p::(behead (n-1,q))
   in
-  let dist pos1 pos2 = let (x1,y1) = topair pos1 in let (x2,y2) = topair pos2 in (abs (x2-x1)) + (abs (y2-y1)) in
   (* vaut true ssi p est a une certaine distance de toutes les positions dans une liste*)
   let rec test_dist_spawns p = function
     | [] -> true
-    | p1::q -> (dist p p1 > (90*width + 90*height)/(100*nbplayers)) && test_dist_spawns p q
+    | p1::q -> (Position.dist p p1 > (90*width + 90*height)/(100*nbplayers)) && test_dist_spawns p q
   in
   let filtered_pos = ref [] in
-  List.iter (fun pos -> if test_dist_spawns pos !filtered_pos then filtered_pos := pos :: !filtered_pos) (shuffle legit_spawns);
-  let poslist = behead (nbplayers, shuffle !filtered_pos) in
+  List.iter (fun pos -> if test_dist_spawns pos !filtered_pos then filtered_pos := pos :: !filtered_pos) (Utils.shuffle legit_spawns);
+  let poslist = behead (nbplayers, Utils.shuffle !filtered_pos) in
   (* check la connexite de l'ensemble de spawns selectionnés *)
   test_path (m,(),poslist);
 

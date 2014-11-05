@@ -55,11 +55,6 @@ let dijkstra m pos move_type =
             | _ , None -> min_dist a q
             | Some c , Some d -> min_dist (if c <= d then a else a0) q 
   in
-  let shuffle l =
-    let nd = List.map (fun c -> (Random.bits (), c)) l in
-    let sond = List.sort compare nd in
-    List.map snd sond
-  in
 
   (* liste des sommets non parcourus *)
   let li = ref [] in 
@@ -85,7 +80,7 @@ let dijkstra m pos move_type =
             end
           in
           List.iter (fun v -> let open Utils in (cost v) >? (shorter_path v)) 
-                    ( List.filter (Battlefield.in_range m) (shuffle [Position.up u; Position.down u; Position.left u; Position.right u]) );
+                    ( List.filter (Battlefield.in_range m) (Utils.shuffle [Position.up u; Position.down u; Position.left u; Position.right u]) );
   done;
   (* construit le chemin jusqu'à pos en remontant  prev *)
   let rec rev_path = function

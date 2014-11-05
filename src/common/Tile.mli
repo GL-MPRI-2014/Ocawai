@@ -20,11 +20,15 @@ val movement_cost : t -> Unit.movement -> int
 (** Takes a unit and return a tile cost. *)
 val tile_cost : t -> Unit.t -> int
 
-(** conversion from parsed format from json config files *)
-val tile_t_to_t : Tile_t.t -> t
-
 (** Create a tile based on a json file containing a tile list*)
 val create_from_file : string -> string -> t
 
 (** Create a tile based on the tiles config file *)
 val create_from_config : string -> t
+
+(** Return the list of tiles *)
+val create_list_from_file : string -> t list
+
+(** Return the list of tiles based on the tiles config file *)
+val create_list_from_config : unit -> t list
+
