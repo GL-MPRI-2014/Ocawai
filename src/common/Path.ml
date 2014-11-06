@@ -87,10 +87,10 @@ let dijkstra m pos move_type =
     | None -> []
     | Some prev_pos -> prev_pos::(rev_path (access prev prev_pos))
   in
-  (fun tar ->  
-      match access dist tar with
+  (fun pos2 ->  
+      match access dist pos2 with
       | None -> None
-      | Some dab -> Some (dab , List.rev ( rev_path (Some tar) ) ) 
+      | Some dab -> Some (dab , List.rev ( rev_path (Some pos2) ) ) 
   )
 
 

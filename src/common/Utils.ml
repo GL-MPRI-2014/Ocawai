@@ -24,8 +24,8 @@ let shuffle l =
 
 module type PrioQueue =
     sig
-      type priority = int         (* still concrete *)
-      type 'a queue               (* now abstract *)
+      type priority = int
+      type 'a queue
       val empty : 'a queue
       val insert : 'a queue -> int -> 'a -> 'a queue
       val extract : 'a queue -> int * 'a * 'a queue
@@ -39,14 +39,14 @@ module PriorityQueue : PrioQueue =
       let empty = Empty
       let rec insert queue prio elt =
         match queue with
-          Empty -> Node(prio, elt, Empty, Empty)
+        | Empty -> Node(prio, elt, Empty, Empty)
         | Node(p, e, left, right) ->
             if prio <= p
             then Node(prio, elt, insert right p e, left)
             else Node(p, e, insert right prio elt, left)
       exception Queue_is_empty
       let rec remove_top = function
-          Empty -> raise Queue_is_empty
+        | Empty -> raise Queue_is_empty
         | Node(prio, elt, left, Empty) -> left
         | Node(prio, elt, Empty, right) -> right
         | Node(prio, elt, (Node(lprio, lelt, _, _) as left),
