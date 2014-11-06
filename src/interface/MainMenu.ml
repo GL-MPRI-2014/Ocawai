@@ -112,8 +112,10 @@ class main_menu = object(self)
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
 
-    new sprite ~texture:bg_texture ~scale:(1.5,1.5) 
-      ~position:(Utils.subf2D (0.,0.) bg_offset) ()
+    let (w,h) = Utils.foi2D window#get_size in 
+    let (tw,th) = Utils.foi2D bg_texture#get_size in 
+    new sprite ~texture:bg_texture ~scale:(w *. 1.5 /. tw, h *. 1.5 /. th) 
+      ~position:(subf2D (0.,0.) bg_offset) ()
     |> window#draw;
 
     screen#draw window;
