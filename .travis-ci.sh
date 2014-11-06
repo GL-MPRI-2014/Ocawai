@@ -3,7 +3,8 @@
 # Here are the various libs that will be required. They will be installed
 # either with opam or with the system manager.
 
-OPAM_DEPENDS="ocamlfind ocsfml atdgen pulseaudio"
+
+OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
 
@@ -18,8 +19,12 @@ export OPAMYES=1
 opam init 
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
+./configure
 make interface
 make engine
 make doc
-make test
+make check
+make clean
+make dist
+make distcheck
 make clean
