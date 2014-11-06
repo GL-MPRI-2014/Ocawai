@@ -1,6 +1,6 @@
 INTERFACE_SRC = src/common,src/interface,src/interface/gui,src/music,src/music/tools
 ENGINE_SRC = src/engine,src/common
-PACKAGES = bigarray,ocsfml.graphics,atdgen,pulseaudio,threads,num
+PACKAGES = bigarray,ocsfml.graphics,atdgen,mm,pulseaudio,threads,num
 TAGS = thread
 
 # We will later need to add engine, but while it is not compiled we cannot make
@@ -28,7 +28,7 @@ default: interface
 	atdgen -j $<
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind src/music/tools/audio_c.o -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT) -lflags src/music/tools/audio_c.o -tag $(TAGS)
+	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT) -tag $(TAGS)
 
 engine : $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT_ENGINE) -tag $(TAGS)
