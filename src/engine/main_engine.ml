@@ -62,7 +62,6 @@ let init_players list_armies =
 	let armies = ref list_armies in 
 	let players = Array.make (List.length list_armies) (Player.create_player ()) in
 	for i=0 to ((List.length list_armies) -1) do
-    print_endline "";  
   	players.(i)#set_army (List.hd !armies);
     armies := (List.tl !armies);
   done;
@@ -74,15 +73,16 @@ let rec init_current_player players_number =
   if players_number = 0 then 
 		[0]
 	else
-	  players_number::(init_current_player (players_number -1) )
+	  (players_number-1)::(init_current_player (players_number -1) )
 
 let () =
 begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in  
   let init_field = new FieldGenerator.t map_width map_height players_number 10 5 in
  (* djikstra_test init_field; *)
-  let players = init_players (init_field#armies) and current_player = ref (init_current_player players_number) and gameover = false in
-  while not gameover do
+  let players = init_players (init_field#armies) and current_player = ref (init_current_player players_number) and gameover = ref false in
+  while not !gameover do
+
   let next_wanted_action =  players.( List.hd !current_player )#get_next_action in
     (* TODO *)
     (* 1)  A partir de l'action voulu par le joueur, calculé l'action réellement possible *)
@@ -92,7 +92,7 @@ begin
     (* Cas spécial : si une unité meurt, vérifier qu'elle n'était pas la dernière du joueur. 
 		Si c'est le cas, current_player := List.tl !current_player 
     Sinon, il suffit de passer au joueur suivant avec current_player := List.tl !current_player @ [List.hd !current_player] *)
-    gameover = true;
+    gameover := true;
 	done;
 
 end
