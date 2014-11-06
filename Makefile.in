@@ -42,8 +42,8 @@ network_src=$(network_dir)
 
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-music_dependencies = mm,pulseaudio,threads,num
-interface_dependencies = ocsfml.graphics,$(common_dependencies),$(music_dependencies)
+music_dependencies = bigarray,mm,pulseaudio,threads,num
+interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
 network_libraries = unix
 
 interface_tags = thread
@@ -124,6 +124,8 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(gui_dir)
 	mkdir $(distdir)/$(network_dir)
 	mkdir $(distdir)/$(resources_dir)
+	mkdir $(distdir)/$(music_dir)
+	mkdir $(distdir)/$(music_tools_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
 	cp configure.ac $(distdir)
@@ -134,6 +136,8 @@ $(distdir): FORCE
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
+	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
+	cp $(music_tools_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
