@@ -158,10 +158,9 @@ let placement m nbplayers legit_spawns =
     !army
   in
   let rec placement_armies = function
-  | 0 -> ([[]]:Unit.t list list) (* a remplacer par ([]:Unit.t list list) pour separer les armees *)
+  | 0 -> ([]:Unit.t list list)
   | n when n > 0 -> let others = placement_armies (n-1) in
-                    [(place_army_around (List.nth poslist (n-1)))@(List.hd others)]
-                    (* fusionne toutes les armes au player 1, a remplacer par (place_army_around (List.nth poslist (n-1)))::others *)
+                    (place_army_around (List.nth poslist (n-1)))::others
   | _ -> failwith("generate : nbplayer < 0")
   in
   (placement_armies nbplayers, poslist)
