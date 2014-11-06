@@ -1,4 +1,7 @@
-type cursor_state = Idle | Displace of Unit.t | Action of Unit.t * Position.t
+type cursor_state = 
+    Idle 
+  | Displace of Battlefield.t * Unit.t * Logics.accessibles
+  | Action of Unit.t * Position.t
 
 class cursor ~position = object(self)
 
@@ -16,7 +19,16 @@ class cursor ~position = object(self)
   method set_position pos =
     current_position <- pos ;
     match state with
-    |Displace(_) -> path <- Path.reach path pos
+    |Displace(map,u,(range,table)) -> 
+        if List.mem pos range then begin
+          let p' = 
+            try Path.reach path pos 
+            with Path.Path_exception _ -> Hashtbl.find table pos
+          in
+          if Path.cost u#movement_type map p' > u#move_range then
+            path <- Hashtbl.find table pos
+          else path <- p'
+        end
     | _ -> ()
 
   method position =

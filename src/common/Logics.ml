@@ -1,3 +1,5 @@
+type accessibles = Position.t list * (Position.t, Path.t) Hashtbl.t
+
 let unit_vision (unit : Unit.t) (bf : Battlefield.t) : Position.t list =
   let l = Position.filled_circle (unit#position) (unit#vision_range) in
   List.filter (Battlefield.in_range bf) l

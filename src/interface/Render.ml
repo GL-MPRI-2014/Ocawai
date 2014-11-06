@@ -134,12 +134,8 @@ let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
 let draw_range (target : #OcsfmlGraphics.render_target) camera map =
   match camera#cursor#get_state with
   |Cursor.Idle -> ()
-  |Cursor.Displace(my_unit) -> begin
-    let move_range =
-      List.filter (filter_positions map)
-      (Position.filled_circle my_unit#position my_unit#move_range)
-    in
-    List.iter (highlight_tile target camera (Color.rgba 255 255 100 150)) move_range
+  |Cursor.Displace(_,_,(range,_)) -> begin
+    List.iter (highlight_tile target camera (Color.rgba 255 255 100 150)) range
   end
   |Cursor.Action(my_unit, pos) -> begin
     let attack_range = 
@@ -190,7 +186,8 @@ let render_game (target : #OcsfmlGraphics.render_target)
   draw_range target data#camera data#map;
   draw_path target data#camera data#current_move;
   draw_cursor target data#camera;
-  List.iter (draw_unit target data#camera) data#units;
+  List.iter (fun p -> List.iter (draw_unit target data#camera) p#get_army)
+    data#players;
   FPS.display target
 
 let load_ressources () =
