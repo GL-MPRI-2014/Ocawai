@@ -1,6 +1,6 @@
 INTERFACE_SRC = src/common,src/interface,src/interface/gui,src/music,src/music/tools
 ENGINE_SRC = src/engine,src/common
-PACKAGES = ocsfml.graphics,atdgen,pulseaudio,threads
+PACKAGES = bigarray,ocsfml.graphics,atdgen,pulseaudio,threads
 
 # We will later need to add engine, but while it is not compiled we cannot make
 # the corresponding documentation

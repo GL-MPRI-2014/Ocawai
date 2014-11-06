@@ -3,7 +3,7 @@
 # Here are the various libs that will be required. They will be installed
 # either with opam or with the system manager.
 
-OPAM_DEPENDS="ocamlfind ocsfml atdgen"
+OPAM_DEPENDS="ocamlfind ocsfml atdgen pulseaudio"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev"
 COMPILER_DEPENDS="g++ binutils make"
 
