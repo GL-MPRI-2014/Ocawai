@@ -23,3 +23,6 @@ val sub2D : (int * int) -> (int * int) -> (int * int)
 
 (** [opt >? f] applies [f] to [s] if [opt = Some(s)] otherwise returns [()] *)
 val (>?) : 'a option -> ('a  -> unit) -> unit
+
+(** [shuffle l] return a new list with elements reorganized randomly *)
+val shuffle : 'a list -> 'a list

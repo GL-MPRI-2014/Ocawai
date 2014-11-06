@@ -4,6 +4,7 @@ class cursor ~position = object(self)
   val mutable moving = false
   val mutable path = Path.empty
   val mutable scale = 1.
+  val mutable offset = (0.,0.)
 
   initializer
     (* Let's interpolate that ! *)
@@ -33,4 +34,8 @@ class cursor ~position = object(self)
     Path.get_move path
 
   method scale = scale
+
+  method set_offset o = offset <- o
+
+  method offset = offset
 end

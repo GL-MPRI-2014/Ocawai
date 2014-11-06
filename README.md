@@ -10,8 +10,8 @@ Projet de Génie Logiciel du MPRI, année 2014-2015
 *Il s'agit bien sûr d'une version de démo et tout sera potentiellement jeté
 en ce qui concerne le fonctionnement*
 
-Depuis le menu principal, il suffit d'appuyer sur **espace** pour lancer le
-jeu.
+Depuis le menu principal, il suffit d'appuyer sur **entrée** après avoir
+sélectionné **game on!** pour lancer le jeu.
 
 * **F** : Mettre l'application en plein-écran
 * **esc** : Repasser en mode fenêtre

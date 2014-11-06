@@ -1,5 +1,10 @@
 (** Rendering module *)
 
+(** Draw a [texture] in screen coordinates (from the local library).
+  * Usage: [draw_txr target name position rotation]*)
+val draw_txr : OcsfmlGraphics.render_window -> string ->
+  (float * float) -> float-> unit
+
 (** Draw the Head-User-Display *)
 val draw_hud : #OcsfmlGraphics.render_target -> unit
 

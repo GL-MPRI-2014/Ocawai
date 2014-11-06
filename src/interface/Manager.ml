@@ -8,7 +8,8 @@ let manager = object(self)
       ~style: [OcsfmlWindow.Window.Fullscreen]
 
   initializer
-    Render.load_ressources ()
+    Render.load_ressources ();
+    window#set_key_repeat_enabled false
 
   method window : OcsfmlGraphics.render_window = window
 

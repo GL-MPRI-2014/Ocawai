@@ -62,6 +62,33 @@ class game = object(self)
       ~map:(generator#field)
       ~units:(List.nth (generator#armies) num))
 
+  val mutable last_event = 0.
+  val mutable dir_key_pressed = false
+  method private keyboard_events = 
+    let act_time = Unix.gettimeofday () in 
+    if act_time -. last_event >= 0.05 then OcsfmlWindow.(
+      last_event <- act_time;
+      if Keyboard.is_key_pressed KeyCode.Right ||
+         Keyboard.is_key_pressed KeyCode.Left  ||
+         Keyboard.is_key_pressed KeyCode.Up    ||
+         Keyboard.is_key_pressed KeyCode.Down  then
+          dir_key_pressed <- true
+      else
+          dir_key_pressed <- false;
+      if Keyboard.is_key_pressed KeyCode.Right then
+        camera#move (1,0);
+      if Keyboard.is_key_pressed KeyCode.Left then
+        camera#move (-1,0);
+      if Keyboard.is_key_pressed KeyCode.Up then
+        camera#move (0,-1);
+      if Keyboard.is_key_pressed KeyCode.Down then
+        camera#move (0,1);
+      if Keyboard.is_key_pressed KeyCode.Z then
+        camera#set_zoom (camera#zoom *. 1.1);
+      if Keyboard.is_key_pressed KeyCode.A then
+        camera#set_zoom (camera#zoom *. 0.90909)
+    )
+
   method handle_event e =
     (* Ugly *)
     let cdata = match cdata with
@@ -71,26 +98,28 @@ class game = object(self)
 
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            camera#move (1,0)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            camera#move (0,1)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            camera#move (-1,0)
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            camera#move (0,-1)
-
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
             camera#set_position (Position.create (80,80))
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Z ; _ } ->
-            camera#set_zoom (camera#zoom *. 1.1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
+            camera#move (-1,0);
+            if not dir_key_pressed then 
+              last_event <- Unix.gettimeofday() +. 0.2
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.A ; _ } ->
-            camera#set_zoom (camera#zoom *. 0.90909)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up; _ } ->
+            camera#move (0,-1);
+            if not dir_key_pressed then 
+              last_event <- Unix.gettimeofday() +. 0.2
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right; _ } ->
+            camera#move (1,0);
+            if not dir_key_pressed then 
+              last_event <- Unix.gettimeofday() +. 0.2
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down; _ } ->
+            camera#move (0,1);
+            if not dir_key_pressed then 
+              last_event <- Unix.gettimeofday() +. 0.2
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Num0 ; _ } ->
             camera#set_zoom 1.
@@ -118,7 +147,7 @@ class game = object(self)
       end)
 
   method render window =
-
+    self#keyboard_events;
     super#render window ;
     Interpolators.update () ;
     window#clear ();
