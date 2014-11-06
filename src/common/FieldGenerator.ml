@@ -40,7 +40,8 @@ let contiguite m pos =
 
 let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
   Random.self_init();
-  let tiles = Tile.create_list_from_config () in
+  let tiles_all = Tile.create_list_from_config () in
+  let tiles = List.filter (fun a -> Tile.get_structure a = `Block) tiles_all in
   let get_tile_with_density () =
     let total = total_density tiles in
     get_tile_with_density total tiles in

@@ -2,11 +2,16 @@
 
 type t
 
+type structure = [ `Block | `Road | `Border of string ]
+
 (** [get_name tile] returns the name of the tile *)
 val get_name : t -> string
 
 (** [get_density tile] return the generation factor used by FieldGenerator *)
 val get_density : t -> int
+
+(** [get_density tile] return the structure type *)
+val get_structure : t -> structure
 
 (** Check if a tile is traversable by a given type of movement *)
 val traversable_m : t -> Unit.movement -> bool

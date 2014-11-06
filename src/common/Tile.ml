@@ -1,4 +1,6 @@
 
+type structure = [ `Block | `Road | `Border of string ]
+
 type t = {
   name: string;
   walk_cost: int;
@@ -6,12 +8,15 @@ type t = {
   tread_cost: int;
   swim_cost: int;
   fly_cost: int;
-  density: int
+  density: int;
+  structure: structure
 }
 
 let get_name tile = tile.name
 
 let get_density tile = tile.density
+
+let get_structure tile = tile.structure
 
 let traversable_m tile movement =
   let open Unit in
@@ -52,7 +57,8 @@ let tile_t_to_t ti =
     tread_cost = ti.Tile_t.tread_cost;
     swim_cost = ti.Tile_t.swim_cost;
     fly_cost = ti.Tile_t.fly_cost;
-    density = ti.Tile_t.density
+    density = ti.Tile_t.density;
+    structure = ti.Tile_t.structure
   }
 
 let create_list_from_file file =
