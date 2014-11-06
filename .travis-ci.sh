@@ -19,6 +19,7 @@ export OPAMYES=1
 opam init 
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
+aclocal -I m4
 autoreconf configure.ac
 ./configure
 make interface
