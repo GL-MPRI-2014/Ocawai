@@ -1,10 +1,10 @@
-INTERFACE_SRC = src/common,src/interface,src/interface/gui
+INTERFACE_SRC = src/common,src/interface,src/interface/gui,src/music,src/music/tools
 ENGINE_SRC = src/engine,src/common
-PACKAGES = ocsfml.graphics,atdgen
+PACKAGES = ocsfml.graphics,atdgen,pulseaudio,threads
 
 # We will later need to add engine, but while it is not compiled we cannot make
 # the corresponding documentation
-dirs := src/common src/interface src/interface/gui
+dirs := src/common src/interface src/interface/gui src/music src/music/tools
 find_files = $(wildcard $(dir)/*.ml*)
 files := $(foreach dir,$(dirs),$(find_files))
 
@@ -27,7 +27,7 @@ default: interface
 	atdgen -j $<
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT)
+	ocamlbuild -use-ocamlfind -tag thread src/music/tools/audio_c.o -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT) -lflags src/music/tools/audio_c.o
 
 engine : $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT_ENGINE)

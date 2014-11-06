@@ -153,6 +153,7 @@ class state = object(self)
 
   initializer
     if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here"
+    then failwith "Couldn't load the font here";
+    ignore (Thread.create Midi_player.play_midi_file "src/music/tetris.mid")
 
 end
