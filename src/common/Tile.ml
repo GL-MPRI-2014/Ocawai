@@ -1,16 +1,8 @@
+open Tile_t
 
 type structure = [ `Block | `Road | `Border of string ]
 
-type t = {
-  name: string;
-  walk_cost: int;
-  roll_cost: int;
-  tread_cost: int;
-  swim_cost: int;
-  fly_cost: int;
-  density: int;
-  structure: structure
-}
+type t = Tile_t.t
 
 let get_name tile = tile.name
 
@@ -49,20 +41,8 @@ let movement_cost tile movement =
 
 let tile_cost tile soldier = movement_cost tile soldier#movement_type
 
-let tile_t_to_t ti =
-  {
-    name = ti.Tile_t.name;
-    walk_cost = ti.Tile_t.walk_cost;
-    roll_cost = ti.Tile_t.roll_cost;
-    tread_cost = ti.Tile_t.tread_cost;
-    swim_cost = ti.Tile_t.swim_cost;
-    fly_cost = ti.Tile_t.fly_cost;
-    density = ti.Tile_t.density;
-    structure = ti.Tile_t.structure
-  }
-
 let create_list_from_file file =
-  List.map tile_t_to_t (Ag_util.Json.from_file Tile_j.read_t_list file)
+  Ag_util.Json.from_file Tile_j.read_t_list file
   (*TODO : cache ? *)
 
 let create_from_file name file =
