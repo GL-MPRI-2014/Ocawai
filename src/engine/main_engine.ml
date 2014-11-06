@@ -80,13 +80,14 @@ begin
  (* djikstra_test init_field; *)
   let players = init_players (init_field#armies) and current_player = ref (init_current_player players_number) and gameover = ref false in
   while not !gameover do
-		let player_turn_end = false and has_played = [] in
-		while not (player_turn_end) do
+		let player_turn_end =  ref false and has_played = [] in
+		while not (!player_turn_end) do
 			let next_wanted_action =  players.( List.hd !current_player )#get_next_action in
 			player_turn_end := ((snd next_wanted_action) = Action.Wait);
 
-			let action = Logic.try_next_action players (List.hd current_player) next_wanted_action in
+			(*let action = Logics.try_next_action players (List.hd current_player) next_wanted_action in *)
      (* apply_action *)
+      ()
 		done;
 	done;
 end
