@@ -19,6 +19,7 @@ export OPAMYES=1
 opam init 
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
+autoreconf configure.ac
 ./configure
 make interface
 make engine
