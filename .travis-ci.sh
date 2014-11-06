@@ -4,7 +4,7 @@
 # either with opam or with the system manager.
 
 OPAM_DEPENDS="ocamlfind ocsfml atdgen pulseaudio"
-LIB_DEPENDS="libboost-all-dev cmake libsfml-dev"
+LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio"
 COMPILER_DEPENDS="g++ binutils make"
 
 sudo add-apt-repository -y ppa:avsm/ocaml42+opam12
