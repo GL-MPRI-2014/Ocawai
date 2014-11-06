@@ -49,9 +49,9 @@ val circle : t -> int -> t list
 (** Same as circle, but returns the ball *)
 val filled_circle : t -> int -> t list
 
-(** [neighbours l] returns the list containing the neighbours of the positions
-  * of [l], without duplicates *)
-val neighbours : t list -> t list
+(** [range center minr maxr] returns the positions at distance d of [center]
+  * such that minr <= d <= maxr *)
+val range : t -> int -> int -> t list
 
 (** [project p c i] returns the couple corresponding to (p - c) * i *)
 val project : t -> t -> int -> (int * int)

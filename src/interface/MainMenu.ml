@@ -10,6 +10,10 @@ class main_menu = object(self)
 
   val mutable screen = new Home.screen [] []
 
+  val bg_texture = new texture (`File "resources/textures/gui/capture.png")
+  val mutable bg_offset = (0.,0.)
+  val mutable bg_dir = (0.,0.)
+
   val key_seq = OcsfmlWindow.KeyCode.([
     Up;
     Up;
@@ -35,6 +39,19 @@ class main_menu = object(self)
     B;
     A
   ])
+
+  method private update_offset = 
+    bg_offset <- Utils.addf2D bg_offset bg_dir;
+    let ox, oy = bg_offset in 
+    if ox <= 0. && oy <= 0. then 
+      bg_dir <- (0.07, 0.)
+    else if ox >= 200. && oy <= 0. then 
+      bg_dir <- (0., 0.07)
+    else if ox >= 200. && oy >= 200. then
+      bg_dir <- (-0.07, 0.)
+    else if ox <= 0. && oy >= 200. then
+      bg_dir <- (0., -0.07)
+
 
   method private handle_keys e =
     match remaining_keys with
@@ -90,8 +107,14 @@ class main_menu = object(self)
 
     Interpolators.update ();
 
+    self#update_offset;
+
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
+
+    new sprite ~texture:bg_texture ~scale:(1.5,1.5) 
+      ~position:(Utils.subf2D (0.,0.) bg_offset) ()
+    |> window#draw;
 
     screen#draw window;
 
