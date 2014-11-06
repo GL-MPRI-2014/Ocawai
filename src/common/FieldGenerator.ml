@@ -13,6 +13,14 @@ let neighbors m pos =
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
 
+let neighbours m lpos =
+  List.fold_left (fun l pos -> 
+    l @ 
+    (List.filter (Battlefield.in_range m)
+      [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
+  )) [] lpos
+    
+
 let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
 
 (* functions working with densities *)
@@ -145,7 +153,7 @@ let placement m nbplayers legit_spawns =
                     let ne = List.filter (fun p ->
                                             Battlefield.in_range m p
                                              && (Tile.traversable_m (Battlefield.get_tile m p) Unit.Walk)
-                                          ) (neighbours !army_pos) in
+                                          ) (neighbours m !army_pos) in
                     if ne = [] then raise NotEnoughPlace else
                     let r = Random.int (List.length ne) in
                     let pos = List.nth ne r in

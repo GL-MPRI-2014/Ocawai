@@ -127,22 +127,13 @@ class game = object(self)
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
-            begin
-              match cdata#selected with
-              | Some u ->
-                  cdata#unselect;
-                  cdata#camera#cursor#stop_moving
-              | None ->
-                  begin match cdata#unit_at_position
-                    cdata#camera#cursor#position with
-                    | Some u ->
-                        cdata#select_unit u;
-                        cdata#camera#cursor#set_moving
-                    | None -> ()
-                  end
-            end
-
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+              let cursor = cdata#camera#cursor in
+              match cursor#get_state with
+              |Idle -> cdata#unit_at_position cursor#position >?
+                (fun u -> cursor#set_state (Displace u))
+              |Displace(u) -> cursor#set_state (Action (u,cursor#position))
+              |Action(p,u) -> cursor#set_state Idle)
           | _ -> ()
       end)
 

@@ -70,12 +70,15 @@ let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile map =
 
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
+  let (r,g,b,a) = Color.(base_color.r, base_color.g, base_color.b, float_of_int (base_color.a)) in
+  let multiplier = sin (Unix.gettimeofday () *. 2.) +. 2. in 
+  let alpha = int_of_float ((multiplier /. 3.) *. a) in 
   let position = foi2D (camera#project pos) in
   let texture = TextureLibrary.get_texture texture_library "highlight" in
   let (sx, sy) = foi2D texture#default_size in
   let origin = (sx /. 2., sy /. 2.) in
   texture#draw ~target:(target :> render_target) ~position ~origin
-    ~color:base_color ~scale:(camera#zoom, camera#zoom) ~blend_mode:BlendAdd ()
+    ~color:(Color.rgba r g b alpha) ~scale:(camera#zoom, camera#zoom) ~blend_mode:BlendAdd ()
 
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
@@ -128,21 +131,23 @@ let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
       0. (my_unit#name)
 
 
-(* This is almost garbage *)
-let draw_range (target : #OcsfmlGraphics.render_target) camera map my_unit =
-  let move_range =
+let draw_range (target : #OcsfmlGraphics.render_target) camera map =
+  match camera#cursor#get_state with
+  |Cursor.Idle -> ()
+  |Cursor.Displace(my_unit) -> begin
+    let move_range =
       List.filter (filter_positions map)
-      (Position.filled_circle (my_unit#position) (my_unit#move_range))
-  in
-  let attack_range = ref [] in
-  for i = 1 to my_unit#attack_range do
-    attack_range := !attack_range @
-      (Position.neighbours (!attack_range @ move_range))
-  done;
-  attack_range := List.filter (filter_positions map) !attack_range;
-  List.iter (highlight_tile target camera (Color.rgb 255 255 100)) move_range;
-  List.iter (highlight_tile target camera (Color.rgb 255 50 50)) !attack_range
-
+      (Position.filled_circle my_unit#position my_unit#move_range)
+    in
+    List.iter (highlight_tile target camera (Color.rgba 255 255 100 150)) move_range
+  end
+  |Cursor.Action(my_unit, pos) -> begin
+    let attack_range = 
+      List.filter (filter_positions map)
+      (Position.range pos 1 my_unit#attack_range)
+    in
+    List.iter (highlight_tile target camera (Color.rgba 255 50 50 255)) attack_range
+  end
 
 (* Draw the cursor *)
 let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera) =
@@ -182,7 +187,7 @@ let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager =
 let render_game (target : #OcsfmlGraphics.render_target)
   (data : ClientData.client_data) =
   render_map target data#camera data#map;
-  data#selected >? draw_range target data#camera data#map;
+  draw_range target data#camera data#map;
   draw_path target data#camera data#current_move;
   draw_cursor target data#camera;
   List.iter (draw_unit target data#camera) data#units;

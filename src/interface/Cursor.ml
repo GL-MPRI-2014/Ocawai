@@ -1,7 +1,9 @@
+type cursor_state = Idle | Displace of Unit.t | Action of Unit.t * Position.t
+
 class cursor ~position = object(self)
 
   val mutable current_position : Position.t = position
-  val mutable moving = false
+  val mutable state = Idle
   val mutable path = Path.empty
   val mutable scale = 1.
   val mutable offset = (0.,0.)
@@ -13,22 +15,21 @@ class cursor ~position = object(self)
 
   method set_position pos =
     current_position <- pos ;
-    if moving then path <- Path.reach path pos
+    match state with
+    |Displace(_) -> path <- Path.reach path pos
+    | _ -> ()
 
   method position =
     current_position
 
-  method set_moving =
-    moving <- true ;
-    path <- Path.init current_position
+  method set_state s =
+    state <- s;
+    match state with 
+    |Displace(_) -> path <- Path.init current_position
+    |Idle -> path <- Path.empty
+    | _ -> ()
 
-  method stop_moving =
-    moving <- false ;
-    path <- Path.empty
-
-  method toggle_moving =
-    if moving then self#stop_moving
-    else self#set_moving
+  method get_state  = state
 
   method get_move =
     Path.get_move path
