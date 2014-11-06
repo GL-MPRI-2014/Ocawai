@@ -1,5 +1,5 @@
 (**
-   Tiles module
+   TPTM module
 *)
 
 open Music

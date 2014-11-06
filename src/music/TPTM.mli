@@ -1,5 +1,5 @@
 (**
-   Tiles module, defines the high-level functions
+   TPTM module, defines the high-level functions
    used to create and handle TPTM.
    
    Based on work by P. Hudak, D. Janin and T. Bazin.
