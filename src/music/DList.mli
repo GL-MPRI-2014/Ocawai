@@ -9,8 +9,6 @@
    @author "Theis Bazin" @author "Mathias Sable Meyer"
 *)
 
-type time
-type event
 type t
 
 (** {2 Base DLists} *)
@@ -18,7 +16,7 @@ type t
 (**
    Delay to sync various tiles
 *)
-val sync : time -> t
+val sync : Time.t -> t
 
 (**
    Neutral element for the Tiled product
@@ -33,7 +31,12 @@ val isZero : t -> bool
 (**
    Encapsulate an event into a singleton, that is a single element list
 *)
-val return : event -> t
+val return : Music.event -> t
+
+(**
+   @return the duration of the tile
+*)
+val getDur : t -> Time.t
 
 (** {2 DList operators} *)
 
@@ -56,11 +59,11 @@ val headTail : t -> t * t
 (** {2 Testing functions} *) 
 
 (**
-   @return the tile containing all events in the [event list] as a chord
+   @return the tile containing all events in the [Music.event list] as a chord
 *)
-val fromList_chord : event list -> t
+val fromList_parallel : Music.event list -> t
 
 (**
-   @return the tile containing all events in the [event list] in sequence
+   @return the tile containing all events in the [Music.event list] in sequence
 *)
-val fromList_sequence : event list -> t
+val fromList_sequence : Music.event list -> t
