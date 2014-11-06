@@ -55,3 +55,7 @@ val neighbours : t list -> t list
 
 (** [project p c i] returns the couple corresponding to (p - c) * i *)
 val project : t -> t -> int -> (int * int)
+
+(**  [dist a b] returns the Manhattan distance between a and b *)
+val dist : t -> t -> int
+
