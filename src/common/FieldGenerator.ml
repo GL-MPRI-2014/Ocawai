@@ -1,4 +1,5 @@
 open Position
+open UnionFind
 
 exception NotEnoughSpawns
 exception NotEnoughPlace
