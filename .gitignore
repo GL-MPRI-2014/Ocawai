@@ -52,4 +52,12 @@ Temporary Items
 
 ### Build ###
 _build
-main.native
+*.native
+documentation.html
+documentation
+
+# ATD files
+*_j.ml
+*_j.mli
+*_t.ml
+*_t.mli

@@ -1,26 +1,23 @@
-(* Unit interface (draft) *)
+(** Unit interface *)
 
-type t
+type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
 
-type movement = Walk | Swim | Fly | Amphibious
+type t = <
+  name : string;
+  position : Position.t;
+  move : Position.t -> unit;
+  movement_type : movement;
+  vision_range : int;
+  attack_range : int;
+  move_range : int;
+  spawn_number : int
+>
 
-(* Returns the texture associated to the given unit *)
-val get_name : t -> string
+(** conversion from parsed format from json config files *)
+val create_from_unit_t : Unit_t.t -> Position.t ->t
 
-val get_position : t -> Position.t
+(** Create a unit based on a json file containing a unit list*)
+val create_from_file : string -> string -> Position.t -> t
 
-(* Returns the type of movement of the given unit *)
-val movement_type : t -> movement
-
-val vision_range : t -> int
-
-val attack_range : t -> int
-
-val move_range : t -> int
-
-(* We can also store position in a Unit if necessary
- * (maybe redundant with Map) *)
-(* val position : t -> int * int *)
-
-(** Create a unit from the XML file  *)
-val create_from_file : string -> string -> t
+(** Create a unit based on the the units config file *)
+val create_from_config : string -> Position.t -> t

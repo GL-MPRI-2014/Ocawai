@@ -1,31 +1,27 @@
-(** This file is not meant to be pushed on master.                           **)
-(** It is only built for testing purpose while the real one is not ready.    **)
 
 type t = Tile.t array array
 
-let get_tile map pos =
+let create =
+  Array.make_matrix
+
+let get_tile m pos =
   let (x,y) = Position.topair pos in
-  map.(x).(y)
+  m.(x).(y)
 
-let set_tile map pos tile =
+let set_tile m pos tile =
   let (x,y) = Position.topair pos in
-  map.(x).(y) <- tile
+  m.(x).(y) <- tile
 
-let tile_iter f map =
-  Array.iter (Array.iter f) map
+let tile_iter f m =
+  Array.iter (Array.iter f) m
 
-let tile_iteri f map =
-  Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) map
+let tile_iteri f m =
+  Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) m
 
-let dummy_map () =
-  let m = Array.make_matrix 10 10 (Tile.create_from_file "water" "") in
-  m.(4).(4) <- Tile.create_from_file "forest" "";
-  m.(5).(4) <- Tile.create_from_file "plain" "";
-  m.(3).(4) <- Tile.create_from_file "plain" "";
-  m.(4).(3) <- Tile.create_from_file "plain" "";
-  m.(4).(5) <- Tile.create_from_file "plain" "";
-  m.(5).(5) <- Tile.create_from_file "concrete" "";
-  m.(3).(3) <- Tile.create_from_file "concrete" "";
-  m.(3).(5) <- Tile.create_from_file "concrete" "";
-  m.(5).(3) <- Tile.create_from_file "concrete" "";
-  m
+let size m = (Array.length m,Array.length m.(0))
+
+let in_range (bf : t) (pos : Position.t) : bool =
+  let pmin = Position.create (0,0) in
+  let pmax = Position.create (let w,h = size bf in w-1,h-1) in
+  not (Position.out_of_bounds pos pmin pmax)
+

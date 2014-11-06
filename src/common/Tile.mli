@@ -1,20 +1,34 @@
-(* Tile interface (draft) *)
+(** Tile interface *)
 
 type t
 
-(** texture_name tile returns the name of the texture associated to tile *)
+(** [get_name tile] returns the name of the tile *)
 val get_name : t -> string
 
-(** Those three functions check if a tile is traversable by a given type of
-  * unit. *)
-val walkable : t -> bool
+(** [get_density tile] return the generation factor used by FieldGenerator *)
+val get_density : t -> int
 
-val navigable : t -> bool
+(** Check if a tile is traversable by a given type of movement *)
+val traversable_m : t -> Unit.movement -> bool
 
-val flyable : t -> bool
+(** Check if a tile is traversable by a given unit *)
+val traversable : t -> Unit.t -> bool
 
-(** Takes a movement type and return a tile cost. Min(Walk,Swim) if Amphibious *)
+(** Takes a movement type and return a tile cost. *)
 val movement_cost : t -> Unit.movement -> int
 
-(** Create a tile from the XML file  *)
+(** Takes a unit and return a tile cost. *)
+val tile_cost : t -> Unit.t -> int
+
+(** Create a tile based on a json file containing a tile list*)
 val create_from_file : string -> string -> t
+
+(** Create a tile based on the tiles config file *)
+val create_from_config : string -> t
+
+(** Return the list of tiles *)
+val create_list_from_file : string -> t list
+
+(** Return the list of tiles based on the tiles config file *)
+val create_list_from_config : unit -> t list
+

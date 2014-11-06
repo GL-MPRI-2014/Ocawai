@@ -8,13 +8,16 @@ let clamp (a,b) (mina,minb) (maxa, maxb) =
   let clamp_aux x minx maxx = max (min x maxx) minx in
   (clamp_aux a mina maxa, clamp_aux b minb maxb)
 
+let out_of_bounds p minp maxp = 
+  clamp p minp maxp <> p
+
 let left (a,b) = (a-1,b)
 
 let right (a,b) = (a+1,b)
 
-let down (a,b) = (a,b-1)
+let down (a,b) = (a,b+1)
 
-let up (a,b) = (a,b+1)
+let up (a,b) = (a,b-1)
 
 let add (a,b) (a',b') = (a + a', b + b')
 
@@ -46,8 +49,8 @@ let neighbours l =
   (* add an element to a list without duplication *)
   let rec add_elt elt = function
     |[] -> [elt]
-    |t::q when t = elt -> l 
-    |t::q when t > elt -> elt::l
+    |t::q when t = elt -> t::q 
+    |t::q when t > elt -> elt::t::q
     |t::q -> t::(add_elt elt q)
   in 
   (* check if an element is in a list *)
@@ -69,3 +72,8 @@ let neighbours l =
 let project p c i = 
   let (a,b) = diff p c in
   (a * i, b * i)
+
+
+let dist (x1,y1) (x2,y2) =
+  (abs (x2-x1)) + (abs (y2-y1)) 
+

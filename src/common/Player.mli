@@ -1,11 +1,11 @@
-type t
 
-val get_army : t -> Unit.t list
+type t = <
+  get_army : Unit.t list;
+  set_army : Unit.t list -> unit;
+  add_unit : Unit.t -> unit;
+  get_buildings : Building.t list;
+  add_building : Building.t -> unit;
+  get_next_action : Action.t
+>
 
-val add_unit : t -> Unit.t -> unit
-
-val get_buildings : t -> Building.t list
-
-val add_building : t -> Building.t -> unit
-
-val get_next_action : t -> (Action.movement * Action.action)
+val create_player : unit -> t

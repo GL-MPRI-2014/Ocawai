@@ -1,13 +1,12 @@
-(* Building interface (draft) *)
+(** Building interface (draft) *)
 
-type t
+class building :
+object
+  method get_name : string
+  method get_producible : Unit.t list
+  (* method get_income : Resource.t *) (* Resource à implanter *)
+  method get_position : Position.t
+end
 
-val get_name : t -> string
+type t = building
 
-(* List of Units a Building is able to produce *)
-val get_producible : t -> Unit.t list
-
-(* Income of a given building *)
-val get_income : t -> Resource.t
-
-val get_position : t -> Position.t

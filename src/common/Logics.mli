@@ -1,0 +1,12 @@
+(** Some useful functions related to the game's logic *)
+
+(** Returns the list of positions that a given unit can see *)
+val unit_vision : Unit.t -> Battlefield.t -> Position.t list
+
+(** Returns the list of all positions that a given player can see *)
+val player_vision : Player.t -> Battlefield.t -> Position.t list
+
+(** For a given unit, returns the list of accessible positions and the 
+    hashtable where the keys are the accessible positions and the entry 
+    is a shortest path to this position *)
+val accessible_positions : Unit.t -> Player.t -> Player.t list -> Battlefield.t -> Position.t list * (Position.t, Path.t) Hashtbl.t
