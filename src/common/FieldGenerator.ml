@@ -13,6 +13,9 @@ let neighbors m pos =
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
 
+let neighbours poslist =
+  List.fold_left (fun l pos -> left pos::up pos::down pos::right pos::l ) [] poslist
+
 let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
 
 (* functions working with densities *)
