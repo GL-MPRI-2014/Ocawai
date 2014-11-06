@@ -28,12 +28,18 @@ sélectionné **game on!** pour lancer le jeu.
 
 # Compilation
 
+Si c'est la première fois que vous générer le projet, lancer la commande `aclocal -I m4`.
+
+
+* `autoreconf configure.ac` : Générer le fichier *configure*
 * `./configure` : Générer le makefile si les dépendances sont satisfaites
 * `make interface` : Compiler l'interface graphique
 * `make engine` : Compiler le moteur
 * `make network` : Compiler la partie réseaux
 * `make doc` : Compiler la documentation
 * `make all` : Compiler l'interface, le moteur et la partie réseaux
+
+Si vous faites une modification dans le Makefile.in (et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile` pour le mettre à jour.
 
 # Distribuer le projet
 
