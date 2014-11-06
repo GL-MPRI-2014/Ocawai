@@ -7,8 +7,6 @@
 *)
 
 type t
-type time
-type event
 
 (** {2 Base tiles} *)
 
@@ -25,12 +23,12 @@ val isZero : t -> bool
 (**
    Basic syncing plumbing
 *)
-val delay : time -> t
+val delay : Time.t -> t
 
 (**
    @return an {i idempotent} tile holding [event]
 *)
-val make : event -> t
+val make : Music.event -> t
 
 (** {2 Tile operators} *)
 
@@ -45,7 +43,6 @@ val (%) : t -> t -> t
 *)
 val reset : t -> t
 
-
 (**
    @return [t'] holding the same events as [t]
    only with [Pos t'] = [Pre t'] = [Pos t]
@@ -58,7 +55,7 @@ val coreset : t -> t
    [Pos t'] = [Pre t] and
    [Pre t'] = [Pos t]
 *)
-val coreset : t -> t
+val inverse : t -> t
 
 (**
    @return a tile holding both input tiles
