@@ -1,6 +1,7 @@
 INTERFACE_SRC = src/common,src/interface,src/interface/gui,src/music,src/music/tools
 ENGINE_SRC = src/engine,src/common
-PACKAGES = bigarray,ocsfml.graphics,atdgen,pulseaudio,threads
+PACKAGES = bigarray,ocsfml.graphics,atdgen,pulseaudio,threads,num
+TAGS = thread
 
 # We will later need to add engine, but while it is not compiled we cannot make
 # the corresponding documentation
@@ -27,10 +28,10 @@ default: interface
 	atdgen -j $<
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -tag thread src/music/tools/audio_c.o -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT) -lflags src/music/tools/audio_c.o
+	ocamlbuild -use-ocamlfind src/music/tools/audio_c.o -Is $(INTERFACE_SRC) -package $(PACKAGES) $(OUTPUT) -lflags src/music/tools/audio_c.o -tag $(TAGS)
 
 engine : $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT_ENGINE)
+	ocamlbuild -use-ocamlfind -Is $(ENGINE_SRC) -package $(PACKAGES) $(OUTPUT_ENGINE) -tag $(TAGS)
 
 run: interface
 	./$(OUTPUT)
@@ -42,8 +43,9 @@ eng: engine
 doc : interface
 	mkdir -p documentation
 	ocamlfind ocamldoc -stars -package $(PACKAGES) -d documentation \
-	-t "Projet Genie Logiciel MPRI 2014" \
+	-t "Projet Genie Logiciel MPRI 2014" -I +threads \
 	-I _build/src/common -I _build/src/interface -I _build/src/interface/gui \
+	-I _build/src/music -I _build/src/music/tools \
 	-I _build/src/engine -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s documentation/index.html documentation.html
