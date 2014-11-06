@@ -14,7 +14,8 @@
     "roll_cost": -1,
     "tread_cost": -1,
     "swim_cost": 1,
-    "fly_cost": 1
+    "fly_cost": 1,
+    "structure": "Road"
   },
   {
     "name": "plain",
@@ -32,6 +33,15 @@
     "tread_cost": 15,
     "swim_cost": -1,
     "fly_cost": 1
+  },
+  {
+    "name": "beach",
+    "walk_cost": 2,
+    "roll_cost": 10,
+    "tread_cost": 15,
+    "swim_cost": 1,
+    "fly_cost": 1,
+    "type": "Border \"water\""
   },
   {
     "name": "forest",
@@ -56,7 +66,8 @@
     "roll_cost": 1,
     "tread_cost": 1,
     "swim_cost": -1,
-    "fly_cost": 1
+    "fly_cost": 1,
+    "structure": "Road"
   },
   {
     "name": "mountain",
