@@ -23,6 +23,7 @@ make interface
 make engine
 make doc
 make check
+make clean
 make dist
 make distcheck
 make clean
