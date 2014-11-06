@@ -6,8 +6,6 @@
    @author "Theis Bazin" @author "Mathias Sable Meyer"
 *)
 
-type time
-type event
 type t
 
 (** {2 Base tiles} *)
@@ -25,12 +23,12 @@ val isZero : t -> bool
 (**
    Basic syncing plumbing
 *)
-val delay : time -> t
+val delay : Time.t -> t
 
 (**
    @return an {i idempotent} tile holding [event]
 *)
-val make : event -> t
+val make : Music.event -> t
 
 (** {2 Tile operators} *)
 
@@ -44,7 +42,6 @@ val (%) : t -> t -> t
    only with [Pre t'] = [Pos t'] = [Pre t]
 *)
 val reset : t -> t
-
 
 (**
    @return [t'] holding the same events as [t]
