@@ -31,17 +31,22 @@ common_dir=$(src_root)/common
 interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
+music_dir=$(src_root)/music
+music_tools_dir=$(music_dir)/tools
 
-dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir)
+dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir) $(music_tools_dir)
 
 engine_src=$(engine_dir),$(common_dir)
-interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir)
+interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
 network_src=$(network_dir)
 
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-interface_dependencies = ocsfml.graphics,$(common_dependencies)
+music_dependencies = mm,pulseaudio,threads,num
+interface_dependencies = ocsfml.graphics,$(common_dependencies),$(music_dependencies)
 network_libraries = unix
+
+interface_tags = thread
 
 output_interface = main.native
 output_engine = main_engine.native
@@ -79,7 +84,7 @@ files_atd_mli := $(files_atd_ml:.ml=.mli)
 all: interface engine network
 
 interface: $(files_atd_ml) 
-	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface)
+	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
 
 engine:  $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)

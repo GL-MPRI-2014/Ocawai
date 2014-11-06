@@ -586,6 +586,10 @@ PACKAGE_URL=''
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+OCAML_PKG_threads
+OCAML_PKG_num
+OCAML_PKG_pulseaudio
+OCAML_PKG_mm
 OCAML_PKG_atdgen
 OCAML_PKG_ocsfml
 OCAMLFIND
@@ -4425,6 +4429,7 @@ if test "$OCAMLFIND" = "no"; then
    as_fn_error $? "You must install Ocaml findlib (the ocamlfindlib command)" "$LINENO" 5
 fi
 
+#for interface
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OCaml findlib package ocsfml" >&5
 $as_echo_n "checking for OCaml findlib package ocsfml... " >&6; }
@@ -4453,6 +4458,8 @@ if test "$OCAML_PKG_ocsfml" = "no"; then
    as_fn_error $? "Please install OCaml findlib module 'ocsfml'." "$LINENO" 5
 fi
 
+#for interface and engine
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OCaml findlib package atdgen" >&5
 $as_echo_n "checking for OCaml findlib package atdgen... " >&6; }
 
@@ -4478,6 +4485,123 @@ $as_echo "not found" >&6; }
 
 if test "$OCAML_PKG_atdgen" = "no"; then
    as_fn_error $? "Please install OCaml findlib module 'atdgen'." "$LINENO" 5
+fi
+
+
+#for interface (music dependencies)
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OCaml findlib package mm" >&5
+$as_echo_n "checking for OCaml findlib package mm... " >&6; }
+
+  unset found
+  unset pkg
+  found=no
+  for pkg in mm  ; do
+    if $OCAMLFIND query $pkg >/dev/null 2>/dev/null; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      OCAML_PKG_mm=$pkg
+      found=yes
+      break
+    fi
+  done
+  if test "$found" = "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+    OCAML_PKG_mm=no
+  fi
+
+
+
+if test "$OCAML_PKG_mm" = "no"; then
+   as_fn_error $? "Please install OCaml findlib module 'mm'." "$LINENO" 5
+fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OCaml findlib package pulseaudio" >&5
+$as_echo_n "checking for OCaml findlib package pulseaudio... " >&6; }
+
+  unset found
+  unset pkg
+  found=no
+  for pkg in pulseaudio  ; do
+    if $OCAMLFIND query $pkg >/dev/null 2>/dev/null; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      OCAML_PKG_pulseaudio=$pkg
+      found=yes
+      break
+    fi
+  done
+  if test "$found" = "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+    OCAML_PKG_pulseaudio=no
+  fi
+
+
+
+if test "$OCAML_PKG_pulseaudio" = "no"; then
+   as_fn_error $? "Please install OCaml findlib module 'pulseaudio'." "$LINENO" 5
+fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OCaml findlib package num" >&5
+$as_echo_n "checking for OCaml findlib package num... " >&6; }
+
+  unset found
+  unset pkg
+  found=no
+  for pkg in num  ; do
+    if $OCAMLFIND query $pkg >/dev/null 2>/dev/null; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      OCAML_PKG_num=$pkg
+      found=yes
+      break
+    fi
+  done
+  if test "$found" = "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+    OCAML_PKG_num=no
+  fi
+
+
+
+if test "$OCAML_PKG_num" = "no"; then
+   as_fn_error $? "Please install OCaml findlib module 'num'." "$LINENO" 5
+fi
+
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OCaml findlib package threads" >&5
+$as_echo_n "checking for OCaml findlib package threads... " >&6; }
+
+  unset found
+  unset pkg
+  found=no
+  for pkg in threads  ; do
+    if $OCAMLFIND query $pkg >/dev/null 2>/dev/null; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      OCAML_PKG_threads=$pkg
+      found=yes
+      break
+    fi
+  done
+  if test "$found" = "no" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: not found" >&5
+$as_echo "not found" >&6; }
+    OCAML_PKG_threads=no
+  fi
+
+
+
+if test "$OCAML_PKG_threads" = "no"; then
+   as_fn_error $? "Please install OCaml findlib module 'threads'." "$LINENO" 5
 fi
 
 ac_config_files="$ac_config_files Makefile"
