@@ -67,8 +67,6 @@ let init_players list_armies =
   done;
   players
 
-
-
 let rec init_current_player players_number = 
   if players_number = 0 then 
 		[0]
@@ -82,17 +80,13 @@ begin
  (* djikstra_test init_field; *)
   let players = init_players (init_field#armies) and current_player = ref (init_current_player players_number) and gameover = ref false in
   while not !gameover do
+		let player_turn_end = false and has_played = [] in
+		while not (player_turn_end) do
+			let next_wanted_action =  players.( List.hd !current_player )#get_next_action in
+			player_turn_end := ((snd next_wanted_action) = Action.Wait);
 
-  let next_wanted_action =  players.( List.hd !current_player )#get_next_action in
-    (* TODO *)
-    (* 1)  A partir de l'action voulu par le joueur, calculé l'action réellement possible *)
-    (* 2) Appliquer l'action. *)
-    (* 3) Transmettre les modifications aux joueurs *)
-
-    (* Cas spécial : si une unité meurt, vérifier qu'elle n'était pas la dernière du joueur. 
-		Si c'est le cas, current_player := List.tl !current_player 
-    Sinon, il suffit de passer au joueur suivant avec current_player := List.tl !current_player @ [List.hd !current_player] *)
-    gameover := true;
+			let action = Logic.try_next_action players (List.hd current_player) next_wanted_action in
+     (* apply_action *)
+		done;
 	done;
-
 end
