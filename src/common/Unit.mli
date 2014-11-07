@@ -2,6 +2,7 @@
 
 type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
 
+(** Unit type *)
 type t = <
   name : string;
   position : Position.t;
@@ -13,6 +14,20 @@ type t = <
   move_range : int;
   spawn_number : int
 >
+
+(** Type for units without a position *)
+type unbound_t = <
+  name : string;
+  movement_type : movement;
+  vision_range : int;
+  min_attack_range : int;
+  attack_range : int;
+  move_range : int;
+  spawn_number : int
+>
+
+(** Create a unit from a unbound unit and a position *)
+val bind : unbound_t -> Position.t -> t
 
 (** conversion from parsed format from json config files *)
 val create_from_unit_t : Unit_t.t -> Position.t ->t
