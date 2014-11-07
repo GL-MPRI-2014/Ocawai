@@ -8,7 +8,6 @@
  *)
 
 
-
 (**
  * This function create a listening socket
  * @param port Listening port
@@ -20,7 +19,7 @@ let create_listener port =
     Unix.setsockopt fd_listen Unix.SO_REUSEADDR true;
     Unix.bind fd_listen (Unix.ADDR_INET (Unix.inet_addr_any, port));
     Unix.listen fd_listen 16;
-    Unix.set_nonblock fd_listen;
+    (*Unix.set_nonblock fd_listen;*)
     fd_listen
   with
     | Unix.Unix_error (Unix.EADDRINUSE, _, _) ->
@@ -33,24 +32,25 @@ let create_listener port =
  * @param n Expected number of clients
  * @return List of clients socket
  *)
+(*
 let connexions port n =
   let fd_listen = create_listener port in
   let rec connexions' n list =
-    if List.length list = n then
+    if n = 0 then
       list
     else
       begin
 	let (client, _) = Unix.accept fd_listen in
-	connexions' (n+1) (client::list)
+	connexions' (n-1) (client::list)
       end
   in
   let list = connexions' n [] in
   Unix.close (fd_listen);
   list
-
+*)
 
 exception Break
-let break () = raise Break
+let break s = raise Break
 
 
 (**
@@ -62,7 +62,7 @@ let break () = raise Break
  *)
 let connexions port timeout =
   let fd_listen = create_listener port in
-  let handle = Sys.signal sigalrm (Signal_handle (fun s -> ())) in
+  let handle = Sys.signal Sys.sigalrm (Sys.Signal_handle break) in
   let _ = Unix.alarm timeout in
   let rec connexions' list =
     try 
@@ -75,10 +75,10 @@ let connexions port timeout =
       list
   in
   let list = connexions' [] in
-  let _ = Sys.signal sigalrm handle in
+  let _ = Sys.signal Sys.sigalrm handle in
   Unix.close (fd_listen);
   list
-      
+
 
 (**
  * This function is blocking off version of [read].
