@@ -1,15 +1,14 @@
 # @configure_input@
 
+# TODO :
+# * make doc generate some warning (since the merge of music). Why ? Fix the issue
+# * the targets dist and doc are not *generic*.
 
 #variable from configure
 package = @PACKAGE_NAME@
 version = @PACKAGE_VERSION@
 tarname = @PACKAGE_TARNAME@
 distdir = $(tarname)-$(version)
-
-#prefix = /usr/local
-#exec_prefix = $(prefix)
-#bindir = $(exec_prefix)/bin
 
 prefix = @prefix@
 exec_prefix = @exec_prefix@
@@ -23,7 +22,9 @@ bindir = @bindir@
 #srcdir = @srcdir@
 #VPATH = @srcdir@
 
+#where are located files
 src_root=src
+
 resources_dir=resources
 documentation_dir=doc
 engine_dir=$(src_root)/engine
@@ -36,24 +37,31 @@ music_tools_dir=$(music_dir)/tools
 
 dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir) $(music_tools_dir)
 
+#for each target, the directories concerned for ocamlbuild
 engine_src=$(engine_dir),$(common_dir)
 interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
 network_src=$(network_dir)
 
+#dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
 music_dependencies = bigarray,mm,pulseaudio,threads,num
+
+#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
 network_libraries = unix
 
+#tags needed for each target
 interface_tags = thread
 
+#name of the target for ocamlbuild
 output_interface = main.native
 output_engine = main_engine.native
 output_network = server.native
 
 
 #get every source file of the project
+#needed for the target doc
 find_files = $(wildcard $(dir)/*.ml*)
 files := $(foreach dir,$(dirs),$(find_files))
 
@@ -75,7 +83,7 @@ files := $(foreach dir,$(dirs),$(find_files))
 ###########################################
 
 #temporary solution : find a way toreplace src/common
-find_files_atd = $(wildcard src/common/*.atd)
+find_files_atd = $(wildcard $(dir)/*.atd)
 
 files_atd := $(foreach dir,$(dirs),$(find_files_atd))
 files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
@@ -93,7 +101,7 @@ network:
 	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
 
 
-#variable destdir is useful for distcheck and more generally if you want to change the directory for installation.
+#variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
 	install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
@@ -115,7 +123,7 @@ $(distdir).tar.gz: $(distdir)
 	tar chf - $(distdir) | gzip -9 -c > $@
 	rm -rf $(distdir)
 
-#curly braces do not work !			
+#create the archive
 $(distdir): FORCE
 	mkdir -p $(distdir)/src
 	mkdir $(distdir)/$(common_dir)
@@ -141,6 +149,7 @@ $(distdir): FORCE
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
+#check that distdir create a correct archive
 distcheck: $(distdir).tar.gz
 	gzip -cd $(distdir).tar.gz | tar xvf -
 	cd $(distdir) && ./configure
@@ -160,6 +169,7 @@ distcheck: $(distdir).tar.gz
 	rm -rf  $(distdir)
 	@echo "*** Package $(distdir).tar.gz is ready for distribution"
 
+#if an old archive is already there. Delete it to make a new one
 FORCE:
 	-rm $(distdir).tar.gz > /dev/null 2>&1
 	-rm -rf $(distdir) > /dev/null 2>&1
@@ -172,6 +182,8 @@ Makefile: Makefile.in config.status
 config.status: configure
 	./config.status --recheck
 
+
+#Generate documentation
 doc: interface engine
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
@@ -181,6 +193,7 @@ doc: interface engine
 	-I _build/$(music_tools_dir) -I +threads -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
+
 
 clean:
 	ocamlbuild -clean
