@@ -21,7 +21,7 @@ fi
 
 AC_PROG_FINDLIB
 if test "$OCAMLFIND" = "no"; then
-   AC_MSG_ERROR([You must install Ocaml findlib (the ocamlfindlib command)])
+   AC_MSG_ERROR([You must install Ocaml findlib])
 fi
 
 #for interface
