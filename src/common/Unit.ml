@@ -3,7 +3,7 @@
 type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
 
 class soldier (s : string) (p : Position.t) (m : movement)
-  (v :int) (a : int) (r : int) (sp : int) =
+  (v :int) (min_a : int) (a : int) (r : int) (sp : int) =
 object (self)
   val name = s
   val mutable pos = p
@@ -12,6 +12,7 @@ object (self)
   method move newpos = pos<-newpos
   method movement_type = m
   method vision_range = v
+  method min_attack_range = min_a
   method attack_range = a
   method move_range = r
   method spawn_number = sp
@@ -29,7 +30,7 @@ let create_from_unit_t u pos = new soldier (u.Unit_t.name) pos (match (u.Unit_t.
                                                   | "amphibious_roll" -> Amphibious_Roll
                                                   | "amphibious_tread" -> Amphibious_Tread
                                                   | a -> failwith("unit_t_to_t : "^a^" is not a movement\n")
-) (u.Unit_t.vision_range) (u.Unit_t.attack_range) (u.Unit_t.move_range) (u.Unit_t.spawn_number)
+) (u.Unit_t.vision_range) (1 (*min_attack_range*)) (u.Unit_t.attack_range) (u.Unit_t.move_range) (u.Unit_t.spawn_number)
 
 let create_from_file s1 s2 pos =
   let ui =List.find

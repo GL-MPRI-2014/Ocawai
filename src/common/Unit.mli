@@ -8,6 +8,7 @@ type t = <
   move : Position.t -> unit;
   movement_type : movement;
   vision_range : int;
+  min_attack_range : int;
   attack_range : int;
   move_range : int;
   spawn_number : int
