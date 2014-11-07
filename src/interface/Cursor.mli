@@ -1,5 +1,10 @@
-(** This class represents the cursor on the map *)
 
+(** This is the status of the cursor *)
+type cursor_state = Idle 
+  | Displace of Battlefield.t * Unit.t * Logics.accessibles
+  | Action of Unit.t * Position.t
+
+(** This class represents the cursor on the map *)
 class cursor : position:Position.t -> object
 
   (** Sets the position of the cursor *)
@@ -8,14 +13,11 @@ class cursor : position:Position.t -> object
   (** @return the position of the cursor *)
   method position : Position.t
 
-  (** Initiate movement recording *)
-  method set_moving : unit
+  (** Sets the cursor state *)
+  method set_state : cursor_state -> unit
 
-  (** Stop movement recording *)
-  method stop_moving : unit
-
-  (** Same as [set_moving] or [stop_moving] depending on what is active *)
-  method toggle_moving :  unit
+  (** Get the cursor state *)
+  method get_state : cursor_state
 
   (** Get the current movement (useful only if movement is beeing recorded) *)
   method get_move : Action.movement

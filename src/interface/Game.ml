@@ -19,11 +19,11 @@ class game = object(self)
     ~w:manager#window#get_width ~h:manager#window#get_height
     ~maxpos:(Position.create (99,99))
 
-  val num = 0
-
-  (* val cdata = new ClientData.client_data ~camera
+  (*val cdata = new ClientData.client_data ~camera
     ~map:(generator#field)
-    ~units:(List.nth (generator#armies) num) *)
+    ~players:(List.map (fun a -> 
+      let p = Player.create_player () in 
+      p#set_army a) generator#armies)*)
 
   val mutable cdata : ClientData.client_data option = None
 
@@ -60,7 +60,9 @@ class game = object(self)
     self#create_ui;
     cdata <-Some (new ClientData.client_data ~camera
       ~map:(generator#field)
-      ~units:(List.nth (generator#armies) num))
+      ~players:(List.map (fun a -> 
+        let p = Player.create_player () in 
+        p#set_army a; p) generator#armies))
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
@@ -127,22 +129,22 @@ class game = object(self)
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } ->
-            begin
-              match cdata#selected with
-              | Some u ->
-                  cdata#unselect;
-                  cdata#camera#cursor#stop_moving
-              | None ->
-                  begin match cdata#unit_at_position
-                    cdata#camera#cursor#position with
-                    | Some u ->
-                        cdata#select_unit u;
-                        cdata#camera#cursor#set_moving
-                    | None -> ()
-                  end
-            end
-
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+              let cursor = cdata#camera#cursor in
+              match cursor#get_state with
+              |Idle -> cdata#unit_at_position cursor#position >?
+                (fun u -> cursor#set_state (Displace (cdata#map, u, 
+                  Logics.accessible_positions u 
+                    (cdata#player_of u)
+                     cdata#players
+                     cdata#map))
+                )
+              |Displace(_,u,(r,_)) -> 
+                  if List.mem cursor#position r then 
+                    cursor#set_state (Action (u,cursor#position))
+                  else
+                    cursor#set_state Idle
+              |Action(p,u) -> cursor#set_state Idle)
           | _ -> ()
       end)
 

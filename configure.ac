@@ -1,4 +1,4 @@
-AC_PREREQ([2.69])
+AC_PREREQ([2.68])
 AC_INIT([projet_GL_2014_2015], [V0.1], [ens-info-genielog@lists.crans.org])
 
 # Checks for programs.

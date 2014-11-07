@@ -1,23 +1,12 @@
 class client_data ~(map:Battlefield.t) ~(camera:Camera.camera)
-  ~(units:Unit.t list) = object
-
-  val mutable selected_unit : Unit.t option = None
+  ~(players:Player.t list)= object
 
   method map = map
 
   method camera = camera
 
   (* Will be useful later *)
-  (* method players : Player.t list *)
-
-  (* Will be deleted later *)
-  method units = units
-
-  method select_unit u = selected_unit <- Some u
-
-  method unselect = selected_unit <- None
-
-  method selected = selected_unit
+  method players = players
 
   (* method current_move = current_move *)
   method current_move = camera#cursor#get_move
@@ -27,6 +16,25 @@ class client_data ~(map:Battlefield.t) ~(camera:Camera.camera)
       |[] -> None
       |t::q when t#position = p -> Some(t)
       |t::q -> aux q
-    in aux units
+    in 
+    let rec aux_player = function 
+      |[] -> None
+      |t::q -> begin
+          match aux t#get_army with 
+          |None -> aux_player q
+          |Some(s) -> Some(s)
+      end
+    in aux_player players
+
+  method player_of u = 
+    let rec aux = function
+      |[] -> false
+      |t::q -> t = u || aux q
+    in 
+    let rec iter_player = function
+      |[] -> assert false
+      |t::q -> if aux t#get_army then t else iter_player q
+    in 
+    iter_player players
 
 end
