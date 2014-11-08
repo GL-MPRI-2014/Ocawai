@@ -243,3 +243,13 @@ Si une unité attaque au corps à corps une autre unité capable de répondre, u
 
 ### Tir
 Si une unité attaque à distance, l'unité attaquée ne peut pas lui répondre (pour des raisons d'informations et de temps de calcul balistique). Dans ce cas, l'attaque ne se fait que dans un sens.
+
+Déroulement d'une partie
+------------------------
+
+Tout d'abord, les joueurs sont ordonnés (soit aléatoirement, soit d'un commun accord). Une partie se déroule alors comme suit :
+- le premier joueur effectue toutes les actions qu'il désire : créations d'unités, déplacements, attaques;
+- quand il ne peut ou ne veut plus rien faire, il passe la main au joueur suivant en sélectionnant "Fin du tour";
+- chaque joueur agit ainsi dans l'ordre défini en début de partie, et en revenant au premier joueur après que tous aient terminé.
+La vision du terrain à travers le brouillard de guerre est actualisée à la fin de chaque déplacement d'unité.
+Les joueurs commencent avec des bâtiments (selon la carte choisie) et une somme égale à 3 tours passés avec la possession de ces bâtiments.
