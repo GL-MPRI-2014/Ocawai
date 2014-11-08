@@ -63,5 +63,12 @@ if test "$OCAML_PKG_threads" = "no"; then
    AC_MSG_ERROR([Please install OCaml findlib module 'threads'.])
 fi
 
+##dependency for the tests
+
+AC_CHECK_OCAML_PKG([ounit])
+if test "$OCAML_PKG_ounit" = "no"; then
+   AC_MSG_ERROR([Please install OCaml findlib module 'ounit'.])
+fi
+
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
