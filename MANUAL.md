@@ -213,14 +213,33 @@ Déplacements
 ------------
 
 ### Fondamentaux
+Normalement, le tour d'une unité est constitué d'une phase de déplacement, suivie d'une phase d'action qui est en général l'attaque d'une autre unité ou la prise d'un bâtiment. Chaque unité a un type de mouvement :
+* Walk : Infanterie, Bazooka, Artillerie
+* Tread : Tank, DCA
+* Roll : Recon, VTB, Lance-missiles
+* Float : Toutes les unités maritimes
+* Fly : Toutes les unités aériennes
 
 ### Intéraction avec le terrain
+Le terrain est connu et visible de tous, indépendamment du brouillard de guerre. Les unités savent donc jusqu'où elles pourront aller si elle ne croisent pas d'unités adverses. Prairie/route/sable/forêt/montagne.
+* Walk : 100/100/60/80/70
+* Tread : 100/100/90/80/60
+* Roll : 100/110/80/80/80
+* Float : 100% en eau profonde, 75% en eau peu profonde. (Toutes les unités maritimes)
+* Fly : Indépendant du terrain.
+Depuis l'extérieur, on ne peux pas voir dans les montagnes ni dans les forêts (modèle simplifié pour pas trop gêner l'implantation, mais si vous sentez de faire plus compliqué, feel free).
 
 ### Intéraction avec les autres unités
+La vision d'une unité étant souvent plus petite que sa portée de déplacement, il se peut qu'elle croise une unité ennemie depuis sont brouillard de guerre initial. Dans ce cas, elle est interrompue dans son déplacement à l'endroit où elle a rencontré cette unité, et ne peux plus faire aucune action jusqu'à la fin du tour.
 
 Actions
 -------
 
-### Combat
-
 ### Création
+On peut créer une unité à condition de pouvoir payer les ressources nécessaires. Elle apparaît alors sur son bâtiment parent mais ne peux rien faire jusqu'à la fin du tour. En particulier, chaque bâtiment ne peut créer qu'une unité par tour (sauf pouvoir spécial ?). Une unité placée sur un bâtiment du même type que son parent regagnera 50% de sa vie à chaque tour.
+
+### Combat
+Si une unité attaque au corps à corps une autre unité capable de répondre, un combat s'engage. Si l'unité attaquée survit, elle aura rendu en moyenne 50% de ce qu'elle aurait infligé si elle avait été l'attaquante. Si elle meure, on suppose qu'elle a eu le temps de faire moins de dégâts. Elle ne rendra alors que 25% des dégâts normaux (sauf pouvoir spécial d'un général japonais ?).
+
+### Tir
+Si une unité attaque à distance, l'unité attaquée ne peut pas lui répondre (pour des raisons d'informations et de temps de calcul balistique). Dans ce cas, l'attaque ne se fait que dans un sens.
