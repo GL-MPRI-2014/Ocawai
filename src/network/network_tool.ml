@@ -15,16 +15,17 @@
  *)
 let create_listener port = 
   let fd_listen = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+  Unix.setsockopt fd_listen Unix.SO_REUSEADDR true;
   try
-    Unix.setsockopt fd_listen Unix.SO_REUSEADDR true;
     Unix.bind fd_listen (Unix.ADDR_INET (Unix.inet_addr_any, port));
     Unix.listen fd_listen 16;
     (*Unix.set_nonblock fd_listen;*)
     fd_listen
   with
     | Unix.Unix_error (Unix.EADDRINUSE, _, _) ->
+      Unix.close fd_listen
         failwith "port already in use"
-
+	
 (**
  * This function initializes the connection with
  * list of clients connected sockets
@@ -33,7 +34,7 @@ let create_listener port =
  * @return List of clients socket
  *)
 (*
-let connexions port n =
+let open_n_connexions port n =
   let fd_listen = create_listener port in
   let rec connexions' n list =
     if n = 0 then
@@ -60,7 +61,7 @@ let break s = raise Break
  * @param timeout Waiting time
  * @return List of clients socket
  *)
-let connexions port timeout =
+let open_connexions_timeout port timeout =
   let fd_listen = create_listener port in
   let handle = Sys.signal Sys.sigalrm (Sys.Signal_handle break) in
   let _ = Unix.alarm timeout in
