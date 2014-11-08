@@ -5,42 +5,47 @@ Unités
 ------
 
 Déplacement : prairie/route/sable/forêt/montagne/eau peu profonde/eau profonde
-Attaque : contre armure légère/moyenne/lourde (en % des dégats de base de l'unité). Ne dépend pas du terrain. Au corps-à-corps si non précisé.
-Portée : minimale/maximale
+Attaque : contre armure légère/moyenne/lourde (en % des dégats de base de l'unité). Ne dépend pas du terrain.
+Portée : minimale-maximale
 Carburant : Les unités aériennes consomment 1 de carburant par tour hors base/porte avion.
 
 ### Infanterie
 
 Description : Unité de base à pied, armée d'un fusil d'assault classique.
 Déplacement : 4
-Attaque : 100/70/40
+Vision : 3
+Attaque : 100/70/40 (portée : 1-1)
 Armure : Légère
 
 ### Bazooka
 
 Description : Unité de base à pied, armée d'un bazooka.
 Déplacement : 4
-Attaque : 80/80/100
+Vision : 3
+Attaque : 80/80/100 (portée : 1-1)
 Armure : Légère
 
 ### Tank
 
 Description : Unité motorisée lourde.
 Déplacement : 3
-Attaque : 80/100/80
+Vision : 3
+Attaque : 80/100/80 (portée : 1-1)
 Armure : Lourde
 
 ### Recon
 
 Description : Unité motorisée légère et mobile de reconnaissance.
 Déplacement : 8
-Attaque : 100/70/40
+Vision : 6
+Attaque : 100/70/40 (portée : 1-1)
 Armure : Moyenne
 
 ### VTB
 
 Description : Véhicule de transport blindé.
 Déplacement : 7
+Vision : 4
 Attaque : -/-/-
 Armure : Lourde
 
@@ -48,13 +53,15 @@ Armure : Lourde
 
 Description : Unité motorisée de défense anti-aérienne, également forte contre l'infanterie.
 Déplacement : 6
-Attaque : 100/80/50 (sol/air)
+Vision : 4
+Attaque : 100/80/50 (sol/air) (portée : 1-1)
 Armure : Moyenne
 
 ### Artillerie
 
 Description : Unité motorisée d'attaque terrestre anti-blindé de courte portée.
 Déplacement : 3
+Vision : 4
 Attaque : 70/80/100 (sol) (portée : 2-3)
 Armure : Moyenne
 
@@ -62,6 +69,7 @@ Armure : Moyenne
 
 Description : Unité motorisée d'attaque terrestre puissante de longue portée.
 Déplacement : 4
+Vision : 6
 Attaque : 70/80/100 (sol) (portée : 3-6)
 Armure : Moyenne
 
@@ -69,30 +77,34 @@ Armure : Moyenne
 
 Description : Unité aérienne d'attaque au sol.
 Déplacement : 7
+Vision : 5
 Carburant : 6
-Attaque : 100/80/60 (sol) 50/40/30 (air)
+Attaque : 100/80/60 (sol) 50/40/30 (air) (portée : 1-1)
 Armure : Moyenne
 
 ### Bombardier
 
 Description : Unité aérienne d'attaque lourde au sol.
 Déplacement : 6
+Vision : 4
 Carburant : 7
-Attaque : 80/90/100 (sol)
+Attaque : 80/90/100 (sol) (portée : 1-1)
 Armure : Moyenne
 
 ### Chasseur
 
 Description : Unité de contrôle de l'espace aérien.
 Déplacement : 8
+Vision : 5
 Carburant : 5
-Attaque : 90/100/90 (air)
+Attaque : 90/100/90 (air) (portée : 1-1)
 Armure : Moyenne
 
 ### ULM
 
 Description : Ultra léger motorisé peu coûteux.
 Déplacement : 7
+Vision : 4
 Carburant : 12
 Attaque : -/-/-
 Armure : Légère
@@ -101,13 +113,15 @@ Armure : Légère
 
 Description : Bâtiment submersible.
 Déplacement : 6
-Attaque : 80/90/100 (eau)
+Vision : 3
+Attaque : 80/90/100 (eau) (portée : 1-1)
 Armure : Moyenne
 
 ### Barge
 
 Description : Unité de transport de troupes.
 Déplacement : 8
+Vision : 4
 Attaque : -/-/-
 Armure : Moyenne
 
@@ -115,21 +129,24 @@ Armure : Moyenne
 
 Description : Bâtiment de guerre maritime.
 Déplacement : 7
-Attaque : 100/90/70 (eau/air)
+Vision : 5
+Attaque : 100/90/70 (eau/air) (portée : 1-1)
 Armure : Moyenne
 
 ### Cuirassé
 
 Description : Bâtiment de guerre maritime de classe supérieure.
 Déplacement : 6
-Attaque : 80/90/100 (eau/sol)
+Vision : 5
+Attaque : 80/90/100 (eau/sol) (portée : 1-1)
 Armure : Lourde
 
 ### Porte-avion
 
 Description : Base aérienne mobile.
 Déplacement : 5
-Attaque : 100/90/70 (eau/air)
+Vision : 6
+Attaque : 100/90/70 (eau/air) (portée : 1-1)
 Armure : Lourde
 
 Bâtiments
