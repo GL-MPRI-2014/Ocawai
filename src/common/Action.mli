@@ -13,7 +13,10 @@ type action =
 
 type t = movement * action
 
-type logic_player
+type logic_player = <
+  get_army : Unit.t list;
+  get_buildings : Building.t list
+>
 
 (** Exception raised if the unit moving does not exist or does not belong
     to the player *)
