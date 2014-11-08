@@ -35,15 +35,19 @@ let manager = object(self)
               window#close
 
           | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
+              window#close;
               window#create
                 (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-                "Flower Wars"
+                "Flower Wars";
+              window#set_key_repeat_enabled false
 
           | KeyPressed { code = OcsfmlWindow.KeyCode.F ; _ } ->
-              window#create
+              window#close;
+              window#create 
                 ~style: [OcsfmlWindow.Window.Fullscreen]
                 (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-                "Flower Wars"
+                "Flower Wars";
+              window#set_key_repeat_enabled false
 
           | Resized _ ->
 
