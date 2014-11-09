@@ -16,6 +16,13 @@ let manager = object(self)
   method push (state : State.state) =
     states <- state :: states
 
+  method push_load (state : State.state) (build : unit -> State.state) =
+    self#push state ;
+    let _ =
+      Thread.create (fun () -> let s = build () in self#pop ; self#push s) ()
+    in ()
+
+
   method pop =
     self#current#destroy;
     states <- List.tl states
@@ -43,7 +50,7 @@ let manager = object(self)
 
           | KeyPressed { code = OcsfmlWindow.KeyCode.F ; _ } ->
               window#close;
-              window#create 
+              window#create
                 ~style: [OcsfmlWindow.Window.Fullscreen]
                 (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
                 "Flower Wars";
