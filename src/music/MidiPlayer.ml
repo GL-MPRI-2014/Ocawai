@@ -1,4 +1,4 @@
-let play_midi_file fname =
+let play_midi_file fname run =
   let f = new MIDI.IO.Reader.of_file fname in
   let channels = 2 in
   let sample_rate = 44100 in
@@ -12,7 +12,7 @@ let play_midi_file fname =
   let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:0.5 () in
   let r = ref (-1) in
   Sys.set_signal Sys.sigint (Sys.Signal_handle (fun _ -> exit 1));
-  while !r <> 0 do
+  while !r <> 0 && !run do
     r := f#read sample_rate mbuf 0 blen;
     MIDI.Multitrack.clear ~channel:9 mbuf 0 blen;
     synth#play mbuf 0 buf 0 blen;

@@ -17,6 +17,7 @@ let manager = object(self)
     states <- state :: states
 
   method pop =
+    self#current#destroy;
     states <- List.tl states
 
   method current = List.hd states
