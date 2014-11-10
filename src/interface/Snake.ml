@@ -15,7 +15,7 @@ class state = object(self)
   val mutable running = true
 
   val mutable current_pos = Position.create (0,0)
-  val mutable snake = Path.init (Position.create (0,0))
+  val mutable snake = [Position.create (0,0)]
   val mutable last_dir = (1,0)
 
   val tl = Position.create (0,0)
@@ -36,7 +36,14 @@ class state = object(self)
       else begin
         map.(x).(y) <- true;
         last_dir <- diff;
-        snake <- Path.reach snake current_pos
+        snake <- current_pos :: snake;
+        if List.length snake = 10 then
+        begin
+          let rs = List.rev snake in
+          let (x,y) = Position.topair (List.hd rs) in
+          map.(x).(y) <- false;
+          snake <- List.rev (List.tl rs)
+        end
       end
     end
 
@@ -108,7 +115,7 @@ class state = object(self)
                   map.(i).(j) <- false
                 done
               done;
-              snake <- Path.init (Position.create (0,0));
+              snake <- [Position.create (0,0)];
               current_pos <- Position.create (0,0);
               last_dir <- (1,0);
               running <- true
@@ -138,7 +145,7 @@ class state = object(self)
       ()
     |> window#draw;
 
-    self#draw_path window (Path.get_move snake);
+    self#draw_path window (List.rev snake);
 
     if running then
       self#handle_keys
