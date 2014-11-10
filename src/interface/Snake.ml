@@ -11,12 +11,14 @@ class state = object(self)
   val font = new font `None
 
   val map = Array.make_matrix 16 10 false
+  val goods = Array.make_matrix 16 10 false
 
   val mutable running = true
 
   val mutable current_pos = Position.create (0,0)
   val mutable snake = [Position.create (0,0)]
   val mutable last_dir = (1,0)
+  val mutable size = 5
 
   val tl = Position.create (0,0)
   val br = Position.create (15,9)
@@ -36,8 +38,12 @@ class state = object(self)
       else begin
         map.(x).(y) <- true;
         last_dir <- diff;
+        if goods.(x).(y) then begin
+          size <- size + 1;
+          goods.(x).(y) <- false
+        end;
         snake <- current_pos :: snake;
-        if List.length snake = 10 then
+        if List.length snake = (size + 1) then
         begin
           let rs = List.rev snake in
           let (x,y) = Position.topair (List.hd rs) in
@@ -60,7 +66,14 @@ class state = object(self)
         else last_dir
       in
       if add2D diff last_dir = (0,0) then self#move last_dir
-      else self#move diff
+      else self#move diff;
+      let p = Random.int 100 in
+      if p >= 95 then
+      begin
+        let x = Random.int 16
+        and y = Random.int 10 in
+        if not map.(x).(y) then goods.(x).(y) <- true
+      end
     )
 
   method private topos pos =
@@ -112,12 +125,14 @@ class state = object(self)
             if not running then begin
               for i = 0 to 15 do
                 for j = 0 to 9 do
-                  map.(i).(j) <- false
+                  map.(i).(j) <- false;
+                  goods.(i).(j) <- false;
                 done
               done;
               snake <- [Position.create (0,0)];
               current_pos <- Position.create (0,0);
               last_dir <- (1,0);
+              size <- 5;
               running <- true
             end
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
@@ -147,6 +162,15 @@ class state = object(self)
 
     self#draw_path window (List.rev snake);
 
+    (* Drawing candies *)
+    for x = 0 to 15 do
+      for y = 0 to 9 do
+        if goods.(x).(y) then
+          let pos = self#topos (Position.create (x,y)) in
+          Render.draw_txr window "infantry" pos (Random.float 360.)
+      done
+    done;
+
     if running then
       self#handle_keys
     else begin
@@ -164,6 +188,7 @@ class state = object(self)
   initializer
     if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
     then failwith "Couldn't load the font here";
+    Random.self_init ();
     musicThread <- Some (Thread.create (MidiPlayer.play_midi_file "resources/music/tetris.mid") runMusic)
 
   method destroy =
