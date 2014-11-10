@@ -57,7 +57,6 @@ let tile_t_to_t ti =
 
 let create_list_from_file file =
   List.map tile_t_to_t (Ag_util.Json.from_file Tile_j.read_t_list file)
-  (*TODO : cache ? *)
 
 let create_from_file name file =
   let tiles = create_list_from_file file in
