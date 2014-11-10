@@ -20,3 +20,8 @@ let compare = compare_num
 let min = min_num
 
 let max = max_num
+
+let printf : Format.formatter -> t -> unit = fun fmt ->
+  function
+  | num ->
+    Format.fprintf fmt "@[%s@]" (Num.string_of_num num)

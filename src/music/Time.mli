@@ -34,3 +34,9 @@ val min : t -> t -> t
 
 (** Return the greater of the two arguments. *)
 val max : t -> t -> t
+
+(** {2 Testing functions} *)
+
+(** {3 Pretty-printing} *)
+
+val printf : Format.formatter -> t -> unit

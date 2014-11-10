@@ -23,3 +23,13 @@ type event = param t
    @return the length of an event
 *)
 val getDur : 'a t -> Time.t
+
+(** {2 Testing functions} *)
+
+(** {3 Pretty-printing} *)
+
+(**
+   Pretty prints the input [t] and outputs to the channel
+   defined by the [Format.formatter]
+*)
+val printf : Format.formatter -> event -> unit
