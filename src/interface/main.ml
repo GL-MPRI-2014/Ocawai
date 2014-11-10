@@ -5,6 +5,7 @@ open TPTM
 (* Helps compiling doc -- to be removed ! *)
 open Logics
 open Theme
+open Settings
 
 let () = begin
 
