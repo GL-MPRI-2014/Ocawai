@@ -7,7 +7,7 @@ exception InvalidPlacement
 exception NoPath
 exception UnitsSpawnFail
 
-(*renvoie la liste des 8 voisins d'une case, <> neighbours de Position, qui ne renvoie pas les diagonales *)
+(*renvoie la liste des 8 voisins d'une case, <> neighbours *)
 let neighbors m pos =
   List.map (Battlefield.get_tile m)
     (List.filter (Battlefield.in_range m)
@@ -163,11 +163,11 @@ let placement m nbplayers legit_spawns =
 
   (* positionne une armée autours de la position spawn*)
   let place_army_around spawn =
-    let ui_list = Ag_util.Json.from_file Unit_j.read_t_list "resources/config/units.json" in
-    let army = ref [Unit.create_from_config "general" spawn] in
+    let unbound_list = Unit.create_list_from_config() in
+    let army = ref [Unit.bind (Unit.create_from_config "general") spawn] in
     let army_pos = ref [spawn] in
     List.iter (fun ui ->
-                  for i = 0 to ui.Unit_t.spawn_number - 1 do
+                  for i = 0 to ui#spawn_number - 1 do
                     let ne = List.filter (fun p ->
                                             Battlefield.in_range m p
                                              && (Tile.traversable_m (Battlefield.get_tile m p) Unit.Walk)
@@ -176,11 +176,11 @@ let placement m nbplayers legit_spawns =
                     let r = Random.int (List.length ne) in
                     let pos = List.nth ne r in
                     begin
-                      army := (Unit.create_from_unit_t ui pos) :: !army;
+                      army := (Unit.bind ui pos) :: !army;
                       army_pos := pos :: !army_pos;
                     end
                   done;
-            ) ui_list;
+            ) unbound_list;
     !army
   in
   let rec placement_armies = function

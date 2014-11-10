@@ -45,29 +45,12 @@ let rec filled_circle c = function
   | 0 -> [c]  
   | r -> (circle c r) @ (filled_circle c (r-1))
 
-let neighbours l = 
-  (* add an element to a list without duplication *)
-  let rec add_elt elt = function
-    |[] -> [elt]
-    |t::q when t = elt -> t::q 
-    |t::q when t > elt -> elt::t::q
-    |t::q -> t::(add_elt elt q)
-  in 
-  (* check if an element is in a list *)
-  let rec is_in elt = function
-    |[] -> false
-    |t::q  -> t = elt || is_in elt q
-  in
-  let rec neigh_aux = function
-    |[] -> []
-    |t::q -> 
-      neigh_aux q 
-      |> add_elt (up t) 
-      |> add_elt (right t)
-      |> add_elt (down t)
-      |> add_elt (left t)
-  in 
-  List.filter (fun e -> not (is_in e l)) (neigh_aux l)
+let range center minr maxr = 
+  let sq = filled_circle center maxr in 
+  List.filter (fun p -> 
+    let (dx, dy) = diff p center in
+    let dist = abs dx + abs dy in
+    dist >= minr) sq
       
 let project p c i = 
   let (a,b) = diff p c in
