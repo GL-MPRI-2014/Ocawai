@@ -1,3 +1,5 @@
+type accessibles = Position.t list * (Position.t, Path.t) Hashtbl.t
+
 let unit_vision (unit : Unit.t) (bf : Battlefield.t) : Position.t list =
   let l = Position.filled_circle (unit#position) (unit#vision_range) in
   List.filter (Battlefield.in_range bf) l
@@ -41,8 +43,8 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos path =
 	  || snd (Hashtbl.find unit_pos pos) = player
       )
     then (
-      Hashtbl.add h pos newpath;
-      l := pos::(!l);
+      if not (Hashtbl.mem h pos) then l := pos::(!l); 
+      Hashtbl.replace h pos newpath;
       let mvt_point = mvt_point - cost in
       dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos newpath
     )

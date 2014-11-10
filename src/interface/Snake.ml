@@ -21,6 +21,9 @@ class state = object(self)
   val tl = Position.create (0,0)
   val br = Position.create (15,9)
 
+  val mutable musicThread = None
+  val mutable runMusic = ref true
+
   method private move diff =
     let new_pos = add2D (Position.topair current_pos) diff in
     current_pos <- Position.create new_pos;
@@ -154,6 +157,9 @@ class state = object(self)
   initializer
     if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
     then failwith "Couldn't load the font here";
-    ignore (Thread.create MidiPlayer.play_midi_file "resources/music/tetris.mid")
+    musicThread <- Some (Thread.create (MidiPlayer.play_midi_file "resources/music/tetris.mid") runMusic)
+
+  method destroy =
+    runMusic := false
 
 end

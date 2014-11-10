@@ -13,6 +13,30 @@ let neighbors m pos =
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
 
+let neighbours l = 
+  (* add an element to a list without duplication *)
+  let rec add_elt elt = function
+    |[] -> [elt]
+    |t::q when t = elt -> t::q 
+    |t::q when t > elt -> elt::t::q
+    |t::q -> t::(add_elt elt q)
+  in 
+  (* check if an element is in a list *)
+  let rec is_in elt = function
+    |[] -> false
+    |t::q  -> t = elt || is_in elt q
+  in
+  let rec neigh_aux = function
+    |[] -> []
+    |t::q -> 
+      neigh_aux q 
+      |> add_elt (up t) 
+      |> add_elt (right t)
+      |> add_elt (down t)
+      |> add_elt (left t)
+  in 
+  List.filter (fun e -> not (is_in e l)) (neigh_aux l)
+
 let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
 
 (* functions working with densities *)
@@ -158,10 +182,9 @@ let placement m nbplayers legit_spawns =
     !army
   in
   let rec placement_armies = function
-  | 0 -> ([[]]:Unit.t list list) (* a remplacer par ([]:Unit.t list list) pour separer les armees *)
+  | 0 -> ([]:Unit.t list list)
   | n when n > 0 -> let others = placement_armies (n-1) in
-                    [(place_army_around (List.nth poslist (n-1)))@(List.hd others)]
-                    (* fusionne toutes les armes au player 1, a remplacer par (place_army_around (List.nth poslist (n-1)))::others *)
+                    (place_army_around (List.nth poslist (n-1)))::others
   | _ -> failwith("generate : nbplayer < 0")
   in
   (placement_armies nbplayers, poslist)
