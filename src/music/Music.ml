@@ -48,75 +48,18 @@ and print_pitch : Format.formatter -> pitch -> unit = fun fmt ->
     Format.fprintf fmt "@[<1>%a%d@]"
       print_pitchClass pitchClass octave
 
-and print_pitchClass : Format.formatter -> pitchClass -> unit = fun fmt ->
-  function
-  | Cff ->
-    Format.fprintf fmt "@[%s@]" "Cff"
-  | Cf -> 
-    Format.fprint fmt "@[%s@]" "Cf" 
-  | C -> 
-    Format.fprint fmt "@[%s@]" "C"
-  | Dff -> 
-    Format.fprint fmt "@[%s@]" "Dff" 
-  | Cs -> 
-    Format.fprint fmt "@[%s@]" "Cs" 
-  | Df -> 
-    Format.fprint fmt "@[%s@]" "Df" 
-  | Css -> 
-    Format.fprint fmt "@[%s@]" "Css" 
-  | D -> 
-    Format.fprint fmt "@[%s@]" "D" 
-  | Eff -> 
-    Format.fprint fmt "@[%s@]" "Eff" 
-  | Ds -> 
-    Format.fprint fmt "@[%s@]" "Ds" 
-  | Ef -> 
-    Format.fprint fmt "@[%s@]" "Ef" 
-  | Fff -> 
-    Format.fprint fmt "@[%s@]" "Fff" 
-  | Dss -> 
-    Format.fprint fmt "@[%s@]" "Dss" 
-  | E -> 
-    Format.fprint fmt "@[%s@]" "E"
-  | Ff -> 
-    Format.fprint fmt "@[%s@]" "Ff" 
-  | Es -> 
-    Format.fprint fmt "@[%s@]" "Es" 
-  | F -> 
-    Format.fprint fmt "@[%s@]" "F"
-  | Gff -> 
-    Format.fprint fmt "@[%s@]" "Gff" 
-  | Ess -> 
-    Format.fprint fmt "@[%s@]" "Ess" 
-  | Fs -> 
-    Format.fprint fmt "@[%s@]" "Fs" 
-  | Gf -> 
-    Format.fprint fmt "@[%s@]" "Gf" 
-  | Fss -> 
-    Format.fprint fmt "@[%s@]" "Fss" 
-  | G -> 
-    Format.fprint fmt "@[%s@]" "G"
-  | Aff -> 
-    Format.fprint fmt "@[%s@]" "Aff" 
-  | Gs -> 
-    Format.fprint fmt "@[%s@]" "Gs" 
-  | Af -> 
-    Format.fprint fmt "@[%s@]" "Af" 
-  | Gss -> 
-    Format.fprint fmt "@[%s@]" "Gss" 
-  | A -> 
-    Format.fprint fmt "@[%s@]" "A"
-  | Bff -> 
-    Format.fprint fmt "@[%s@]" "Bff" 
-  | As -> 
-    Format.fprint fmt "@[%s@]" "As" 
-  | Bf -> 
-    Format.fprint fmt "@[%s@]" "Bf" 
-  | Ass -> 
-    Format.fprint fmt "@[%s@]" "Ass" 
-  | B -> 
-    Format.fprint fmt "@[%s@]" "B"
-  | Bs -> 
-    Format.fprint fmt "@[%s@]" "Bs" 
-  | Bss -> 
-    Format.fprint fmt "@[%s@]" "Bss" 
+and print_pitchClass : Format.formatter -> pitchClass -> unit = fun fmt pitch_class ->
+  let pitchClass_name = match pitch_class with
+    | Cff -> "Cff" | Cf -> "Cf"   | C -> "C"
+    | Dff -> "Dff" | Cs -> "Cs"   | Df -> "Df" 
+    | Css -> "Css" | D -> "D"     | Eff -> "Eff" 
+    | Ds -> "Ds"   | Ef -> "Ef"   | Fff -> "Fff" 
+    | Dss -> "Dss" | E -> "E"     | Ff -> "Ff" 
+    | Es -> "Es"   | F -> "F"     | Gff -> "Gff" 
+    | Ess -> "Ess" | Fs -> "Fs"   | Gf -> "Gf" 
+    | Fss -> "Fss" | G -> "G"     | Aff -> "Aff" 
+    | Gs -> "Gs"   | Af -> "Af"   | Gss -> "Gss" 
+    | A -> "A"     | Bff -> "Bff" | As -> "As" 
+    | Bf -> "Bf"   | Ass -> "Ass" | B -> "B"
+    | Bs -> "Bs"   | Bss -> "Bss" 
+  in Format.fprintf fmt "@[%s@]"
