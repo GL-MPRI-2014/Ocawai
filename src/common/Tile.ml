@@ -13,14 +13,15 @@ let get_structure tile = tile.structure
 let traversable_m tile movement =
   let open Unit in
   match movement with
-  | Walk -> tile.walk_cost >= 0
-  | Roll -> tile.roll_cost >= 0
+  | Walk  -> tile.walk_cost >= 0
+  | Roll  -> tile.roll_cost >= 0
   | Tread -> tile.tread_cost >= 0
-  | Swim -> tile.swim_cost >= 0
-  | Fly -> tile.fly_cost >= 0
-  | Amphibious_Walk -> tile.swim_cost >= 0 || tile.walk_cost >= 0
-  | Amphibious_Roll -> tile.swim_cost >= 0 || tile.roll_cost >= 0
-  | Amphibious_Tread-> tile.swim_cost >= 0 || tile.tread_cost >= 0
+  | Swim  -> tile.swim_cost >= 0
+  | Fly   -> tile.fly_cost >= 0
+  | Amphibious_Walk  -> tile.swim_cost >= 0 || tile.walk_cost >= 0
+  | Amphibious_Roll  -> tile.swim_cost >= 0 || tile.roll_cost >= 0
+  | Amphibious_Tread -> tile.swim_cost >= 0 || tile.tread_cost >= 0
+  | All   -> true
 
 let traversable tile soldier = traversable_m tile soldier#movement_type
 
@@ -29,14 +30,20 @@ let movement_cost tile movement =
   let cost =
     let open Unit in
     match movement with
-      | Walk -> tile.walk_cost
-      | Roll -> tile.roll_cost
+      | Walk  -> tile.walk_cost
+      | Roll  -> tile.roll_cost
       | Tread -> tile.tread_cost
-      | Swim -> tile.swim_cost
-      | Fly -> tile.fly_cost
-      | Amphibious_Walk -> min_pos tile.swim_cost tile.walk_cost
-      | Amphibious_Roll -> min_pos tile.swim_cost tile.roll_cost
-      | Amphibious_Tread-> min_pos tile.swim_cost tile.tread_cost in
+      | Swim  -> tile.swim_cost
+      | Fly   -> tile.fly_cost
+      | Amphibious_Walk  -> min_pos tile.swim_cost tile.walk_cost
+      | Amphibious_Roll  -> min_pos tile.swim_cost tile.roll_cost
+      | Amphibious_Tread -> min_pos tile.swim_cost tile.tread_cost
+      | All   ->
+          List.fold_left
+            min_pos
+            tile.walk_cost
+            [tile.roll_cost; tile.tread_cost; tile.swim_cost;
+           tile.fly_cost] in
   if cost >= 0 then cost else failwith("Tile.movement_cost : not a valid movement")
 
 let tile_cost tile soldier = movement_cost tile soldier#movement_type

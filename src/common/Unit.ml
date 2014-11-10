@@ -1,6 +1,7 @@
 (* Dummy Unit implementation to test interface *)
 
-type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
+type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
+  | Amphibious_Roll | Amphibious_Tread | All
 
 class soldier (s : string) (p : Position.t) (m : movement)
   (v :int) (a : int) (r : int) (sp : int) =
