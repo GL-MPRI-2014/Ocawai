@@ -66,6 +66,7 @@ class game = object(self)
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
+
   method private keyboard_events = 
     let act_time = Unix.gettimeofday () in 
     if act_time -. last_event >= 0.05 then OcsfmlWindow.(
@@ -104,24 +105,28 @@ class game = object(self)
             camera#set_position (Position.create (80,80))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
-            camera#move (-1,0);
-            if not dir_key_pressed then 
+            if not dir_key_pressed then begin
+              camera#move (-1,0);
               last_event <- Unix.gettimeofday() +. 0.2
+            end
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Up; _ } ->
-            camera#move (0,-1);
-            if not dir_key_pressed then 
+            if not dir_key_pressed then begin
+              camera#move (0,-1);
               last_event <- Unix.gettimeofday() +. 0.2
+            end
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Right; _ } ->
-            camera#move (1,0);
-            if not dir_key_pressed then 
+            if not dir_key_pressed then begin
+              camera#move (1,0);
               last_event <- Unix.gettimeofday() +. 0.2
+            end
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down; _ } ->
-            camera#move (0,1);
-            if not dir_key_pressed then 
+            if not dir_key_pressed then begin
+              camera#move (0,1);
               last_event <- Unix.gettimeofday() +. 0.2
+            end
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Num0 ; _ } ->
             camera#set_zoom 1.
@@ -145,7 +150,7 @@ class game = object(self)
                   else
                     cursor#set_state Idle
               |Action(p,u) -> cursor#set_state Idle)
-          | _ -> ()
+        | _ -> ()
       end)
 
   method render window =

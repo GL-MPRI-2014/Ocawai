@@ -40,12 +40,12 @@ class main_menu = object(self)
     A
   ])
 
-  method private update_offset = 
+  method private update_offset =
     bg_offset <- Utils.addf2D bg_offset bg_dir;
-    let ox, oy = bg_offset in 
-    if ox <= 0. && oy <= 0. then 
+    let ox, oy = bg_offset in
+    if ox <= 0. && oy <= 0. then
       bg_dir <- (0.07, 0.)
-    else if ox >= 200. && oy <= 0. then 
+    else if ox >= 200. && oy <= 0. then
       bg_dir <- (0., 0.07)
     else if ox >= 200. && oy >= 200. then
       bg_dir <- (-0.07, 0.)
@@ -72,7 +72,7 @@ class main_menu = object(self)
       [new Home.item "title" (w/.2., h /. 2. -. 250.)]
       [
         new Home.actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
-          (fun () -> (new Game.game :> State.state) |> manager#push) ;
+          (fun () -> manager#push_load (new LoadScreen.state :> State.state) (fun () -> (new Game.game :> State.state))) ;
         new Home.actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;
@@ -112,9 +112,9 @@ class main_menu = object(self)
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
 
-    let (w,h) = Utils.foi2D window#get_size in 
-    let (tw,th) = Utils.foi2D bg_texture#get_size in 
-    new sprite ~texture:bg_texture ~scale:(w *. 1.5 /. tw, h *. 1.5 /. th) 
+    let (w,h) = Utils.foi2D window#get_size in
+    let (tw,th) = Utils.foi2D bg_texture#get_size in
+    new sprite ~texture:bg_texture ~scale:(w *. 1.5 /. tw, h *. 1.5 /. th)
       ~position:(subf2D (0.,0.) bg_offset) ()
     |> window#draw;
 
