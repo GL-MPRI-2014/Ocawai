@@ -52,5 +52,71 @@ and print_pitchClass : Format.formatter -> pitchClass -> unit = fun fmt ->
   function
   | Cff ->
     Format.fprintf fmt "@[%s@]" "Cff"
-  | _ -> 
-    Format.fprintf fmt "@[%s@]" "Mathias, do it for me please"
+  | Cf -> 
+    Format.fprint fmt "@[%s@]" "Cf" 
+  | C -> 
+    Format.fprint fmt "@[%s@]" "C"
+  | Dff -> 
+    Format.fprint fmt "@[%s@]" "Dff" 
+  | Cs -> 
+    Format.fprint fmt "@[%s@]" "Cs" 
+  | Df -> 
+    Format.fprint fmt "@[%s@]" "Df" 
+  | Css -> 
+    Format.fprint fmt "@[%s@]" "Css" 
+  | D -> 
+    Format.fprint fmt "@[%s@]" "D" 
+  | Eff -> 
+    Format.fprint fmt "@[%s@]" "Eff" 
+  | Ds -> 
+    Format.fprint fmt "@[%s@]" "Ds" 
+  | Ef -> 
+    Format.fprint fmt "@[%s@]" "Ef" 
+  | Fff -> 
+    Format.fprint fmt "@[%s@]" "Fff" 
+  | Dss -> 
+    Format.fprint fmt "@[%s@]" "Dss" 
+  | E -> 
+    Format.fprint fmt "@[%s@]" "E"
+  | Ff -> 
+    Format.fprint fmt "@[%s@]" "Ff" 
+  | Es -> 
+    Format.fprint fmt "@[%s@]" "Es" 
+  | F -> 
+    Format.fprint fmt "@[%s@]" "F"
+  | Gff -> 
+    Format.fprint fmt "@[%s@]" "Gff" 
+  | Ess -> 
+    Format.fprint fmt "@[%s@]" "Ess" 
+  | Fs -> 
+    Format.fprint fmt "@[%s@]" "Fs" 
+  | Gf -> 
+    Format.fprint fmt "@[%s@]" "Gf" 
+  | Fss -> 
+    Format.fprint fmt "@[%s@]" "Fss" 
+  | G -> 
+    Format.fprint fmt "@[%s@]" "G"
+  | Aff -> 
+    Format.fprint fmt "@[%s@]" "Aff" 
+  | Gs -> 
+    Format.fprint fmt "@[%s@]" "Gs" 
+  | Af -> 
+    Format.fprint fmt "@[%s@]" "Af" 
+  | Gss -> 
+    Format.fprint fmt "@[%s@]" "Gss" 
+  | A -> 
+    Format.fprint fmt "@[%s@]" "A"
+  | Bff -> 
+    Format.fprint fmt "@[%s@]" "Bff" 
+  | As -> 
+    Format.fprint fmt "@[%s@]" "As" 
+  | Bf -> 
+    Format.fprint fmt "@[%s@]" "Bf" 
+  | Ass -> 
+    Format.fprint fmt "@[%s@]" "Ass" 
+  | B -> 
+    Format.fprint fmt "@[%s@]" "B"
+  | Bs -> 
+    Format.fprint fmt "@[%s@]" "Bs" 
+  | Bss -> 
+    Format.fprint fmt "@[%s@]" "Bss" 
