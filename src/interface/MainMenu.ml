@@ -78,7 +78,7 @@ class main_menu = object(self)
           (fun () -> manager#window#close) ;
         new Home.actionnable "settings" "settings_hover"
           (w /. 2. +. 100., h /.2. +. 220.)
-          (fun () -> Printf.printf "settings\n")
+          (fun () -> new SettingsScreen.state |> manager#push)
       ]
 
   method handle_event e =
