@@ -140,6 +140,7 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
 	mkdir $(distdir)/$(music_tools_dir)
+	mkdir $(distdir)/$(test_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
 	cp configure.ac $(distdir)
@@ -153,6 +154,7 @@ $(distdir): FORCE
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(music_tools_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
+	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 #check that distdir create a correct archive
@@ -208,9 +210,11 @@ clean:
 	-rmdir doc 
 	rm -f documentation.html
 
-check: engine
+check_engine: engine
 	ocamlbuild -use-ocamlfind -Is $(test_src) -package $(test_dependencies) player_test.native
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
 	./player_test.native
+
+check: check_engine
 
 .PHONY: FORCE all clean dist distcheck engine interface network

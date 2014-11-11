@@ -17,21 +17,20 @@ let test2 test_ctxt = assert_equal 100 100;;
 let test_player_0 test_ctxt =
   let p = create_player() in
   let u = create_from_config "general" (create (10,10)) in
-  assert_equal 0 0
-  (*  assert_equal ~printer:string_of_int 0 (length (p#get_army))*)
+  assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
 (*check an army with one unit*)
 let test_player_1 test_ctxt =
   let p = create_player() in
   let u = create_from_config "general" (create (10,10)) in
   p#add_unit u;
-  assert_equal 0 0
+    assert_equal ~printer:string_of_int 1 (length (p#get_army))
 
 (*check empty player*)
 let test_player_2 test_ctxt =
   let p = create_player() in
   let u = create_from_config "general" (create (10,10)) in
-  assert_equal 0 0
+    assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
 (*
 let test_player_3 =
@@ -42,9 +41,9 @@ let test_player_3 =
 *)  
 let suite =
   "suite">:::
-  ["No unit">:: test_player_0;
-   "One unit">:: test_player_1;
-   "Zero building">:: test_player_2]
+  ["New player : check army">:: test_player_0;
+   "New player : check army with one unit">:: test_player_1;
+   "New player : check building">:: test_player_2]
 
 
 let () =
