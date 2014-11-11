@@ -170,7 +170,7 @@ let placement m nbplayers legit_spawns =
                   for i = 0 to ui#spawn_number - 1 do
                     let ne = List.filter (fun p ->
                                             Battlefield.in_range m p
-                                             && (Tile.traversable_m (Battlefield.get_tile m p) Unit.Walk)
+                                             && (Tile.traversable_m (Battlefield.get_tile m p) ui#movement_type)
                                           ) (neighbours !army_pos) in
                     if ne = [] then raise NotEnoughPlace else
                     let r = Random.int (List.length ne) in
