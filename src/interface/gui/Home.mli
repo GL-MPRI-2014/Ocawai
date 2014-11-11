@@ -4,11 +4,11 @@
 
 (** An item for the screen
   * It has a [position] that represents its center *)
-(* class virtual future_item : object
+class virtual future_item : object
 
   method virtual draw : OcsfmlGraphics.render_window -> unit
 
-  method position : float * float
+  method virtual position : float * float
   method x : float
   method y : float
 
@@ -26,9 +26,9 @@ end
 
 (** A modal item
   * It retains the focus when activated *)
-class virtual modal : object
+(* class virtual modal : object
 
-  inherit actionnable
+  inherit future_actionnable
 
   (* He doesn't know what to do! *)
 

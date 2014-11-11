@@ -1,5 +1,27 @@
 open Utils
 
+class virtual future_item = object(self)
+
+  method virtual draw : OcsfmlGraphics.render_window -> unit
+  method virtual position : float * float
+
+  method x = fst self#position
+  method y = snd self#position
+
+end
+
+class virtual future_actionnable = object(self)
+
+  inherit future_item as super
+
+  val mutable has_focus = false
+
+  method set_focus b = has_focus <- b
+
+  method virtual action : unit
+
+end
+
 class item name position = object(self)
 
   method draw target =
