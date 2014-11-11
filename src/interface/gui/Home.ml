@@ -41,7 +41,16 @@ class screen items actionnables = object(self)
     List.iter (fun i -> i#draw target) items ;
     List.iter (fun a -> a#draw target) actionnables
 
-  method action =
+  method handle_key = OcsfmlWindow.KeyCode.(function
+    | Left -> self#left
+    | Right -> self#right
+    | Up -> self#up
+    | Down -> self#down
+    | Return -> self#action
+    | _ -> ()
+  )
+
+  method private action =
     selected >? fun o -> o#action
 
   method private sqdist a b =
@@ -65,10 +74,10 @@ class screen items actionnables = object(self)
         | a :: _ -> self#select a
         | _ -> ()
 
-  method left = self#move (fun a s -> a#x <= s#x) true
-  method right = self#move (fun a s -> a#x >= s#x) true
-  method up = self#move (fun a s -> a#y <= s#y) false
-  method down = self#move (fun a s -> a#y >= s#y) false
+  method private left = self#move (fun a s -> a#x <= s#x) true
+  method private right = self#move (fun a s -> a#x >= s#x) true
+  method private up = self#move (fun a s -> a#y <= s#y) false
+  method private down = self#move (fun a s -> a#y >= s#y) false
 
   initializer
     match actionnables with

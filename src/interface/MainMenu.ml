@@ -88,16 +88,8 @@ class main_menu = object(self)
     OcsfmlWindow.Event.(
       match e with
         | Resized { width = w ; height = h } -> self#set_screen w h
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            screen#left
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            screen#right
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            screen#up
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            screen#down
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Return ; _ } ->
-            screen#action
+        | KeyPressed { code = kc ; _ } ->
+            screen#handle_key kc
         | _ -> ()
     )
 
