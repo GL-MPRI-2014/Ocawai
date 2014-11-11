@@ -17,6 +17,8 @@ end
 (** An actionnable item *)
 class virtual future_actionnable : object
 
+  inherit future_item
+
   method set_focus : bool -> unit
   method virtual action : unit
 
@@ -25,6 +27,8 @@ end
 (** A modal item
   * It retains the focus when activated *)
 class virtual modal : object
+
+  inherit actionnable
 
   (* He doesn't know what to do! *)
 
