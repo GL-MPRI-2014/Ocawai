@@ -65,8 +65,8 @@ fi
 
 ##dependency for the tests
 
-AC_CHECK_OCAML_PKG([ounit])
-if test "$OCAML_PKG_ounit" = "no"; then
+AC_CHECK_OCAML_PKG([oUnit])
+if test "$OCAML_PKG_oUnit" = "no"; then
    AC_MSG_ERROR([Please install OCaml findlib module 'ounit'.])
 fi
 

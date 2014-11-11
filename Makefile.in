@@ -35,6 +35,8 @@ network_dir=$(src_root)/network
 music_dir=$(src_root)/music
 music_tools_dir=$(music_dir)/tools
 
+test_dir=test
+
 dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir) $(music_tools_dir)
 
 #for each target, the directories concerned for ocamlbuild
@@ -42,10 +44,14 @@ engine_src=$(engine_dir),$(common_dir)
 interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
 network_src=$(network_dir)
 
+test_src=test,$(engine_src)
+
 #dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
 music_dependencies = bigarray,mm,pulseaudio,threads,num
+
+test_dependencies=$(engine_dependencies),oUnit
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
@@ -202,7 +208,9 @@ clean:
 	-rmdir doc 
 	rm -f documentation.html
 
-check:
-	@echo "To be completed, this is a command that returns 0 for Travis."
+check: engine
+	ocamlbuild -use-ocamlfind -Is $(test_src) -package $(test_dependencies) player_test.native
+	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
+	./player_test.native
 
 .PHONY: FORCE all clean dist distcheck engine interface network
