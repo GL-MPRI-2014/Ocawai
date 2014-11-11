@@ -39,8 +39,8 @@ let test_player_3 =
   p
   len(p#get_buildings)
 *)  
-let suite =
-  "suite">:::
+let suite_player =
+  "Dummy player tests">:::
   ["New player : check army">:: test_player_0;
    "New player : check army with one unit">:: test_player_1;
    "New player : check building">:: test_player_2]
