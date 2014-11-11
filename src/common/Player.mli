@@ -1,3 +1,19 @@
+module type FAMILY =
+sig
+  type 'a family
+  val add_element :  'a family -> 'a  -> 'a family
+  val remove_element : 'a family -> 'a -> 'a family
+  val new_family : () -> 'a family
+  exception family_is_empty
+end
+
+module 'a List_family : FAMILY =
+struct
+  type 'a family = 'a list
+  let add_element list elem = elem::list
+                              
+  let new_family () = []
+end
 
 type t = <
   (*TO DO: The type Unit.t list could (should) not be exposed. Instead,

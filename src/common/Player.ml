@@ -1,4 +1,4 @@
-class player (a : Unit.t list) (b : Building.t list) = 
+class virtual player (a : Unit.t list) (b : Building.t list) = 
 object (self)
   val mutable army = (a : Unit.t list)
   val mutable buildings = (b : Building.t list)
