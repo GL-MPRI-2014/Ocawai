@@ -6,27 +6,28 @@ exception NotEnoughPlace
 exception InvalidPlacement
 exception NoPath
 exception UnitsSpawnFail
+exception StructSpawnFail
 
-(*renvoie la liste des 8 voisins d'une case, <> neighbours *)
+(*renvoie la liste des 8 voisins d'une case, <> neighbours, qui renvoie les voisins d'une liste de positions, sans doublons *)
 let neighbors m pos =
   List.map (Battlefield.get_tile m)
     (List.filter (Battlefield.in_range m)
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
+ (*TODO : use unionfind for neighbours*)
+(* add an element to a list without duplication *)
+let rec add_elt elt = function
+  |[] -> [elt]
+  |t::q when t = elt -> t::q 
+  |t::q when t > elt -> elt::t::q
+  |t::q -> t::(add_elt elt q)
 
-let neighbours l = 
-  (* add an element to a list without duplication *)
-  let rec add_elt elt = function
-    |[] -> [elt]
-    |t::q when t = elt -> t::q 
-    |t::q when t > elt -> elt::t::q
-    |t::q -> t::(add_elt elt q)
-  in 
-  (* check if an element is in a list *)
-  let rec is_in elt = function
-    |[] -> false
-    |t::q  -> t = elt || is_in elt q
-  in
+(* check if an element is in a list *)
+let rec is_in elt = function
+  |[] -> false
+  |t::q  -> t = elt || is_in elt q
+  
+let neighbours l =
   let rec neigh_aux = function
     |[] -> []
     |t::q -> 
@@ -35,6 +36,22 @@ let neighbours l =
       |> add_elt (right t)
       |> add_elt (down t)
       |> add_elt (left t)
+  in 
+  List.filter (fun e -> not (is_in e l)) (neigh_aux l)
+
+let neighbours_corners l =
+  let rec neigh_aux = function
+    |[] -> []
+    |t::q -> 
+      neigh_aux q 
+      |> add_elt (up t) 
+      |> add_elt (right t)
+      |> add_elt (down t)
+      |> add_elt (left t)
+      |> add_elt (up (left t)) 
+      |> add_elt (right (up t))
+      |> add_elt (down (right t))
+      |> add_elt (left (down t))
   in 
   List.filter (fun e -> not (is_in e l)) (neigh_aux l)
 
@@ -191,8 +208,36 @@ let placement m nbplayers legit_spawns =
   in
   (placement_armies nbplayers, poslist)
 
+let placement_roads m = m (*TODO*)
 
-let units_spawn m nbplayers nbattempts legit_spawns=
+let placement_borders m =
+  let borders = Tile.create_list_from_config () in
+  let placement_border m water beach =
+    let poslist_water = Battlefield.tile_filteri (fun pos t ->Tile.get_name t = water && count (fun u -> Tile.get_name u = water) (neighbors m pos) <> 8) m in
+    let poslist_beach = Utils.shuffle (List.filter (fun pos -> let t = Battlefield.get_tile m pos in Tile.get_name t <> water && Tile.traversable_m t Unit.Roll) (List.filter (Battlefield.in_range m) (neighbours_corners poslist_water))) in
+    let rec behead = function
+    | 0,_ -> []
+    | n,[] -> raise StructSpawnFail
+    | n,p::q -> p::(behead (n-1,q))
+    in
+    let seeds_beach = behead ((Tile.get_border_rate beach)*(List.length poslist_beach)/1000, poslist_beach ) in
+    let grow_border m seed =
+      let bord = ref [seed] in
+      (*TODO*)
+      for i = 1 to Tile.get_border_expansion beach do
+      bord := !bord @ (List.filter (fun pos -> Battlefield.in_range m pos && List.mem pos poslist_beach) (neighbours_corners !bord));
+      done;
+      !bord
+    in
+    List.iter (fun pos -> Battlefield.set_tile m pos beach) (List.fold_left (fun l e -> (grow_border m e) @ l) [] seeds_beach)
+  in
+  List.iter (fun beach -> match Tile.get_structure beach with | `Border -> placement_border m (Tile.get_border_name beach) beach | _ -> ()) borders;
+  m
+
+let placement_structs m =
+  placement_roads (placement_borders m)
+
+let units_spawn m nbplayers nbattempts legit_spawns =
   let rec units_spawn_aux = function
   | 0 -> raise UnitsSpawnFail
   | n ->
@@ -203,35 +248,50 @@ let units_spawn m nbplayers nbattempts legit_spawns=
         let attempt = (m,a,sp) in
         (print_string "|"; flush_all (); test_movement attempt; test_path attempt (* place here any checks on units placement*); (a,sp))
       with
-      | NotEnoughSpawns -> (print_endline " Not enough spawns found"; units_spawn_aux (n-1) )
-      | NotEnoughPlace -> (print_endline " Not enough space around spawn for army"; units_spawn_aux (n-1) )
-      | InvalidPlacement -> (print_endline " Unit placed on an area not coresponding to its movement modes"; units_spawn_aux (n-1) )
-      | NoPath -> (print_endline " No path between armies"; units_spawn_aux (n-1) )
+      | NotEnoughSpawns -> (print_endline "      Not enough spawns found"; units_spawn_aux (n-1) )
+      | NotEnoughPlace -> (print_endline "      Not enough space around spawn for army"; units_spawn_aux (n-1) )
+      | InvalidPlacement -> (print_endline "      Unit placed on an area not coresponding to its movement modes"; units_spawn_aux (n-1) )
+      | NoPath -> (print_endline "      No path between armies"; units_spawn_aux (n-1) )
     end
   in (print_endline "  Spawning armies ..."; units_spawn_aux nbattempts)
 
 
-let generate width height nbplayers nbattempts1 nbattempts2 =
+let structures_spawn m nbplayers nbattempts =
+  let rec structures_spawn_aux = function
+  | 0 -> raise StructSpawnFail
+  | n ->
+    begin
+      print_string ("    attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^": ");
+      try
+        let new_m = placement_structs m in
+        (print_string "|"(* place here any checks on structures placement*); new_m)
+      with
+      | StructSpawnFail -> raise StructSpawnFail
+    end
+  in (print_endline "  Spawning structures ..."; structures_spawn_aux nbattempts)
+
+
+let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3=
   let rec generate_aux = function
   | 0 -> failwith("generator failed, try more attempts")
   | n ->
     begin
-      print_string ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^" ");
+      print_string ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^": ");
       try
-        let attempt =
-          let m = swap_gen width height in
-          let (a,sp) = units_spawn m nbplayers nbattempts2 (init_placement m nbplayers) in
-            (m,a,sp)
-        in ( print_endline "|"(* place here any check on map generation*); attempt)
+        let m = structures_spawn (swap_gen width height) nbplayers nbattempts2 in
+        let (a,sp) = units_spawn m nbplayers nbattempts3 (init_placement m nbplayers) in
+        let attempt = (m,a,sp) in
+        (print_endline "|"(* place here any check on map generation*); attempt)
       with
-      | UnitsSpawnFail -> (print_endline " units spawn aborted"; generate_aux (n-1) )
+      | StructSpawnFail -> (print_endline "  structures spawn aborted"; generate_aux (n-1) )
+      | UnitsSpawnFail -> (print_endline "  units spawn aborted"; generate_aux (n-1) )
     end
   in (print_endline "Generating Battlefield, please wait ... ";generate_aux nbattempts1)
 
 
-class t (width:int) (height:int) (nbplayers:int) (generate_attempts:int) (units_spawn_attempts:int)=
+class t (width:int) (height:int) (nbplayers:int) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
 object (self)
-  val g = generate width height nbplayers generate_attempts units_spawn_attempts
+  val g = generate width height nbplayers generate_attempts (*structs_attempts*) 1 units_spawn_attempts
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp

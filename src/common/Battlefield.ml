@@ -18,6 +18,14 @@ let tile_iter f m =
 let tile_iteri f m =
   Array.iteri (fun x -> Array.iteri (fun y -> f (Position.create (x,y)))) m
 
+let tile_filter f m =
+  List.map fst (List.filter (fun a -> f (snd a)) (Array.fold_left (fun l e -> (Array.to_list e)@l) [] (Array.mapi (fun i ss_m -> (Array.mapi (fun j t -> (Position.create(i,j),t)) ss_m)) m)))
+
+let tile_filteri f m =
+  List.map fst (List.filter (fun a -> f (fst a) (snd a)) (Array.fold_left (fun l e -> (Array.to_list e)@l) [] (Array.mapi (fun i ss_m -> (Array.mapi (fun j t -> (Position.create(i,j),t)) ss_m)) m)))
+  
+  
+
 let size m = (Array.length m,Array.length m.(0))
 
 let in_range (bf : t) (pos : Position.t) : bool =

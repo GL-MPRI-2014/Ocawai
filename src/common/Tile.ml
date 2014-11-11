@@ -1,6 +1,6 @@
 open Tile_t
 
-type structure = [ `Block | `Road | `Border of string ]
+type structure = Tile_t.structure
 
 type t = Tile_t.t
 
@@ -9,6 +9,12 @@ let get_name tile = tile.name
 let get_density tile = tile.density
 
 let get_structure tile = tile.structure
+
+let get_border_name tile = tile.border_of
+
+let get_border_rate tile = tile.border_rate
+
+let get_border_expansion tile = tile.border_expansion
 
 let traversable_m tile movement =
   let open Unit in
