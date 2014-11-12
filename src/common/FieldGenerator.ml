@@ -5,6 +5,7 @@ exception NotEnoughSpawns
 exception BadSpawnsSequence
 exception NotEnoughPlace
 exception InvalidPlacement
+exception UnitsSuperposition
 exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
@@ -113,19 +114,24 @@ let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joue
 (* un placement est valide si les unites sont placees sur des tuiles acceptant leurs mouvements *)
 let test_movement attempt = let (m,a,_) = attempt in
   if not (List.for_all (List.for_all (fun u -> Tile.traversable (Battlefield.get_tile m (u#position)) u)) a)
-    then raise InvalidPlacement else ()
+    then raise InvalidPlacement
 
 (* teste la connexité *)
 let test_path attempt = let (m,_,sp) = attempt in
   if not  (let sp1 = List.hd sp in let dij = Path.dijkstra m sp1 Unit.Walk in List.for_all (fun sp2 -> dij sp2 <> None ) (List.tl sp))
     then raise NoPath
 
+let test_superposed_units attempt = let (m,a,_) = attempt in
+  let (w,h) = Battlefield.size m in
+  let t = Array.make_matrix w h false in
+  List.iter (fun l -> List.iter (fun u -> let (x,y) = topair u#position in if t.(x).(y) then raise UnitsSuperposition else t.(x).(y) <- true) l) a
+
 
 let init_placement m nbplayers = (* séparé de placement pour ne pas le recalculer en cas de fail de placement *)
   let (width,height) = Battlefield.size m in
   let poslist = ref ([]:Position.t list) in
   let test_dist_edge pos =
-    let (a,b) = Position.topair(pos) in a > 10*width/100 && b > 10*height/100 && a < 90*width/100 && b < 90*height/100
+    let (a,b) = topair(pos) in a > 10*width/100 && b > 10*height/100 && a < 90*width/100 && b < 90*height/100
   in
   (* trouve les points centraux des armées, (les spawns)*)
   Battlefield.tile_iteri (fun pos ti ->
@@ -248,11 +254,12 @@ let units_spawn m nbplayers nbattempts legit_spawns =
       try
         let (a,sp) = placement m nbplayers legit_spawns in
         let attempt = (m,a,sp) in
-        (print_string "armies spawned, checking... ";flush_all(); test_movement attempt; test_path attempt (* place here any checks on units placement*);print_endline "success"; (a,sp))
+        (print_string "armies spawned, checking... ";flush_all(); test_movement attempt;test_superposed_units attempt; test_path attempt (* place here any checks on units placement*);print_endline "success"; (a,sp))
       with
       | BadSpawnsSequence -> (print_endline "Not enough spawns found"; units_spawn_aux (n-1) )
       | NotEnoughPlace -> (print_endline " Not enough space around spawn for army"; units_spawn_aux (n-1) )
       | InvalidPlacement -> (print_endline "Unit placed on an area not coresponding to its movement modes"; units_spawn_aux (n-1) )
+      | UnitsSuperposition -> (print_endline "Units superposition"; units_spawn_aux (n-1) )
       | NoPath -> (print_endline "No path between armies"; units_spawn_aux (n-1) )
     end
   in (print_endline "  Spawning armies ..."; units_spawn_aux nbattempts)
