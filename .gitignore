@@ -56,6 +56,14 @@ _build
 documentation.html
 documentation
 
+# Autotools
+autom4te.cache
+aclocal.m4
+config.log
+config.status
+configure
+Makefile
+
 # ATD files
 *_j.ml
 *_j.mli
