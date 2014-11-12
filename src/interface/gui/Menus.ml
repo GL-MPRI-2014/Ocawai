@@ -59,7 +59,9 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
 
   method draw target lib = if self#active then begin
     new rectangle_shape ~fill_color:theme.Theme.default_color
-      ~size:(foi2D size) ~position:(foi2D self#position) ()
+      ~size:(foi2D size) ~position:(foi2D self#position) 
+      ~outline_color:theme.Theme.border_color 
+      ~outline_thickness:2. ()
     |> target#draw;
 
     let texture = TextureLibrary.(get_texture lib icon) in
@@ -120,16 +122,19 @@ class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
   val mutable toolbar_text = m_bar_text
 
   method draw target lib = if self#active then begin
-    toolbar#draw target lib;
     new rectangle_shape ~fill_color:theme.Theme.default_color
-      ~size:(foi2D size) ~position:(foi2D self#position) ()
+      ~size:(foi2D (fst size, snd size+m_bar_height-2)) 
+      ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2)) 
+      ~outline_thickness:2. ~outline_color:theme.Theme.border_color ()
     |> target#draw;
+    toolbar#draw target lib;
     let (posx, posy) = self#position in
     new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
       ~size:(foi2D (m_width, item_height))
       ~position:(foi2D (posx, posy + self#selected * item_height)) ()
     |> target#draw;
-    List.iter (fun w -> w#draw target lib) self#children end
+    List.iter (fun w -> w#draw target lib) self#children 
+  end
 
   method add_child w =
     super#add_child w;

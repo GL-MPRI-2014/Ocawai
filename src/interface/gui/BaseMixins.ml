@@ -90,8 +90,8 @@ class virtual has_toolbar = object(self)
   val virtual mutable toolbar_text : string
 
   method draw target lib =
-    let position = foi2D (sub2D self#position (0, toolbar_height)) in
-    new rectangle_shape ~position ~size:(foi2D (fst size, toolbar_height))
+    let position = foi2D (sub2D self#position (2, toolbar_height)) in
+    new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
       ~fill_color:theme.Theme.bar_color ()
     |> target#draw;
     let texture = TextureLibrary.get_texture lib toolbar_icon in
