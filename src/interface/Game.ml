@@ -35,16 +35,39 @@ let new_game () =
 
   val cdata : ClientData.client_data = m_cdata
 
-  val disp_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
-    Theme.yellow_theme 30 "menu_icon" "Action" 
+  val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150 
+    ~m_item_height:30 ~m_theme:Theme.yellow_theme 
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" 
 
-  val atk_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
-    Theme.red_theme 30 "menu_icon" "Attack" 
+  val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150 
+    ~m_item_height:30 ~m_theme:Theme.red_theme 
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack" 
 
   method private create_ui =
     (* Main ingame menu *)
-    let my_menu = new menu (manager#window#get_width / 2 - 75, 30) 150 30
-    OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "menu_icon" "Menu" in
+    let my_menu = new ingame_menu 
+      ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150 
+      ~m_item_height:30 ~m_theme:Theme.blue_theme 
+      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" in
+
+    (* Forfeit confirmation popup *)
+    let forfeit_popup = new Windows.ingame_popup
+      ~m_position:(manager#window#get_width / 2 - 200, 
+        manager#window#get_height / 2 - 80)
+      ~m_size:(400, 110) ~m_theme:Theme.blue_theme 
+      ~m_text:"Do you really want to forfeit ? The game will be considered lost... Also, notice how this text is perfectly handled ! This is beautiful isn't it ?"
+      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
+
+    (* Buttons for the forfeit popup *)
+    new Windows.text_framed_item
+      (50, 70) (100, 25) "Yes :(" (fun () -> Manager.manager#pop) 
+      Theme.blue_theme
+    |> forfeit_popup#add_child;
+
+    new Windows.text_framed_item
+      (250, 70) (100, 25) "No !" (fun () -> ui_manager#unfocus forfeit_popup;
+        forfeit_popup#toggle) Theme.blue_theme
+    |> forfeit_popup#add_child;
 
     (* Button to open ingame menu *)
     let main_button = new key_button_oneuse ~icon:"return"
@@ -54,7 +77,8 @@ let new_game () =
     in
 
     (* Ingame menu items *)
-    new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited"; Manager.manager#pop)
+    new item "forfeit" "Forfeit" (fun () -> forfeit_popup#toggle; 
+      ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
     new item "info" "Info" (fun () -> print_endline "info activated";
@@ -113,7 +137,9 @@ let new_game () =
     my_menu#toggle;
     disp_menu#toggle;
     atk_menu#toggle;
+    forfeit_popup#toggle;
 
+    ui_manager#add_widget forfeit_popup;
     ui_manager#add_widget main_button;
     ui_manager#add_widget my_menu;
     ui_manager#add_widget disp_menu;
