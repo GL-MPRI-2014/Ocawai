@@ -223,10 +223,12 @@ let new_game () =
                      cdata#players
                      cdata#map))
                 )
-              |Displace(_) -> 
-                disp_menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus disp_menu;
-                disp_menu#toggle
+              |Displace(_,_,(acc,_)) -> 
+                if List.mem cursor#position acc then begin
+                  disp_menu#set_position (cdata#camera#project cursor#position);
+                  ui_manager#focus disp_menu;
+                  disp_menu#toggle
+                end else cursor#set_state Idle
               |Action(_) -> 
                 atk_menu#toggle;
                 atk_menu#set_position (cdata#camera#project cursor#position);
