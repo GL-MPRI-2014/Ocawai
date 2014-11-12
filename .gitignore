@@ -54,7 +54,7 @@ Temporary Items
 _build
 *.native
 documentation.html
-documentation
+doc
 
 # Autotools
 autom4te.cache
