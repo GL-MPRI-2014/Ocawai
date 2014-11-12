@@ -35,16 +35,20 @@ let new_game () =
 
   val cdata : ClientData.client_data = m_cdata
 
-  val disp_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
-    Theme.yellow_theme 30 "menu_icon" "Action" 
+  val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150 
+    ~m_item_height:30 ~m_theme:Theme.yellow_theme 
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" 
 
-  val atk_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
-    Theme.red_theme 30 "menu_icon" "Attack" 
+  val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150 
+    ~m_item_height:30 ~m_theme:Theme.red_theme 
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack" 
 
   method private create_ui =
     (* Main ingame menu *)
-    let my_menu = new menu (manager#window#get_width / 2 - 75, 30) 150 30
-    OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "menu_icon" "Menu" in
+    let my_menu = new ingame_menu 
+      ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150 
+      ~m_item_height:30 ~m_theme:Theme.blue_theme 
+      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" in
 
     (* Button to open ingame menu *)
     let main_button = new key_button_oneuse ~icon:"return"

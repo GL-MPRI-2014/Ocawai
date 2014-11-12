@@ -93,31 +93,31 @@ class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
       | _ -> false)
 end
 
-(* TODO : label arguments *)
-class menu pos width i_height keycode m_theme bar_height bar_icon bar_text =
-object(self)
+class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height 
+  ~m_bar_icon ~m_bar_text
+  = object(self)
 
   inherit [item] evq_container as super
 
-  inherit key_ctrl_list
+  inherit key_ctrl_list OcsfmlWindow.KeyCode.Up OcsfmlWindow.KeyCode.Down
 
   inherit has_toolbar as toolbar
 
-  val mutable position = pos
+  val mutable position = m_position
 
-  val mutable size = (width, 0)
+  val mutable size = (m_width, 0)
 
   val mutable nb_items = 0
 
-  val mutable item_height = i_height
+  val mutable item_height = m_item_height
 
   val mutable theme = m_theme
 
-  val mutable toolbar_height = bar_height
+  val mutable toolbar_height = m_bar_height
 
-  val mutable toolbar_icon = bar_icon
+  val mutable toolbar_icon = m_bar_icon
 
-  val mutable toolbar_text = bar_text
+  val mutable toolbar_text = m_bar_text
 
   method draw target lib = if self#active then begin
     toolbar#draw target lib;
@@ -126,7 +126,7 @@ object(self)
     |> target#draw;
     let (posx, posy) = self#position in
     new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
-      ~size:(foi2D (width, item_height))
+      ~size:(foi2D (m_width, item_height))
       ~position:(foi2D (posx, posy + self#selected * item_height)) ()
     |> target#draw;
     List.iter (fun w -> w#draw target lib) self#children end
@@ -137,7 +137,7 @@ object(self)
 
   initializer
     self#add_event(function
-      |Event.KeyPressed{Event.code = kc; _} when keycode = kc ->
+      |Event.KeyPressed{Event.code = KeyCode.Space; _} ->
           nb_items <> 0 &&
           ((List.nth self#children (nb_items - self#selected - 1))#action;
           true)
