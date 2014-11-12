@@ -34,27 +34,27 @@ class game = object(self)
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
-      ~callback:(fun () -> my_menu#toggle) ~m_theme:Theme.blue_theme
+      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu) ~m_theme:Theme.blue_theme
     in
 
     new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited"; Manager.manager#pop)
     |> my_menu#add_child;
 
     new item "info" "Info" (fun () -> print_endline "info activated";
-      my_menu#toggle; main_button#toggle)
+      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
     new item "params" "Settings" (fun () -> print_endline "settings activated";
-      my_menu#toggle; main_button#toggle)
+      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
     new item "infantry" "Cancel" (fun () -> print_endline "canceled";
-      my_menu#toggle; main_button#toggle)
+      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    ui_manager#add_widget (main_button :> Widget.widget);
+    ui_manager#add_widget main_button;
     my_menu#toggle;
-    ui_manager#add_widget (my_menu :> Widget.widget)
+    ui_manager#add_widget my_menu
 
   initializer
     self#create_ui;
@@ -69,7 +69,8 @@ class game = object(self)
 
   method private keyboard_events = 
     let act_time = Unix.gettimeofday () in 
-    if act_time -. last_event >= 0.05 then OcsfmlWindow.(
+    if (not ui_manager#is_focusing) && 
+     act_time -. last_event >= 0.05 then OcsfmlWindow.(
       last_event <- act_time;
       if Keyboard.is_key_pressed KeyCode.Right ||
          Keyboard.is_key_pressed KeyCode.Left  ||
