@@ -6,6 +6,11 @@ open Manager
 open Player
 open Menus
 
+let get_option opt = 
+  match opt with
+  |Some(o) -> o
+  |None -> failwith "Bad game initialization"
+
 class game = object(self)
 
   inherit State.state as super
@@ -19,24 +24,26 @@ class game = object(self)
     ~w:manager#window#get_width ~h:manager#window#get_height
     ~maxpos:(Position.create (99,99))
 
-  (*val cdata = new ClientData.client_data ~camera
-    ~map:(generator#field)
-    ~players:(List.map (fun a -> 
-      let p = Player.create_player () in 
-      p#set_army a) generator#armies)*)
-
   val mutable cdata : ClientData.client_data option = None
 
+  val mutable displ_menu = None
+
+  val mutable atck_menu = None
+
   method private create_ui =
+    (* Main ingame menu *)
     let my_menu = new menu (manager#window#get_width / 2 - 75, 30) 150 30
     OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "menu_icon" "Menu" in
+    my_menu#toggle;
 
+    (* Button to open ingame menu *)
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
       ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu) ~m_theme:Theme.blue_theme
     in
 
+    (* Ingame menu items *)
     new item "forfeit" "Forfeit" (fun () -> print_endline "forfeited"; Manager.manager#pop)
     |> my_menu#add_child;
 
@@ -52,17 +59,73 @@ class game = object(self)
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
+    let cdata = get_option cdata in
+    let cursor = cdata#camera#cursor in
+
+    (* Attack menu *)
+    let atk_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
+    Theme.red_theme 30 "menu_icon" "Attack" in 
+    atk_menu#toggle;
+
+    (* Attack menu items *)
+    new item "infantry" "Fire !" (fun () -> 
+      atk_menu#toggle;
+      ui_manager#unfocus atk_menu;
+      cursor#set_state Cursor.Idle)
+    |> atk_menu#add_child;
+
+    new item "infantry" "Cancel" (fun () ->
+      atk_menu#toggle;
+      ui_manager#unfocus atk_menu;
+      cursor#set_state Cursor.Idle)
+    |> atk_menu#add_child;
+
+    (* Displacement menu *)
+    let disp_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
+    Theme.yellow_theme 30 "menu_icon" "Action" in 
+    disp_menu#toggle;
+
+    (* Displacement menu items *)
+    new item "infantry" "Attack" (fun () -> 
+      disp_menu#toggle;
+      ui_manager#unfocus disp_menu;
+      match cursor#get_state with
+      |Cursor.Displace(_,u,(r,_)) -> 
+        if List.mem cursor#position r then begin
+          cursor#set_state (Cursor.Action (u,cursor#position));
+          camera#set_position (Position.right cursor#position)
+        end else
+          cursor#set_state Cursor.Idle
+      | _ -> assert false)
+    |> disp_menu#add_child;
+
+    new item "infantry" "Move" (fun () ->
+      disp_menu#toggle;
+      ui_manager#unfocus disp_menu;
+      cursor#set_state Cursor.Idle)
+    |> disp_menu#add_child;
+
+    new item "infantry" "Cancel" (fun () ->
+      disp_menu#toggle;
+      ui_manager#unfocus disp_menu;
+      cursor#set_state Cursor.Idle)
+    |> disp_menu#add_child;
+
     ui_manager#add_widget main_button;
-    my_menu#toggle;
-    ui_manager#add_widget my_menu
+    ui_manager#add_widget my_menu;
+    ui_manager#add_widget disp_menu;
+    ui_manager#add_widget atk_menu;
+    (* Store the displacement menu as attribute for later use *)
+    displ_menu <- Some disp_menu;
+    atck_menu <- Some atk_menu
 
   initializer
-    self#create_ui;
     cdata <-Some (new ClientData.client_data ~camera
       ~map:(generator#field)
       ~players:(List.map (fun a -> 
         let p = Player.create_player () in 
-        p#set_army a; p) generator#armies))
+        p#set_army a; p) generator#armies));
+    self#create_ui
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
@@ -94,12 +157,6 @@ class game = object(self)
     )
 
   method handle_event e =
-    (* Ugly *)
-    let cdata = match cdata with
-      | Some c -> c
-      | None -> failwith "Oh no !\n"
-    in
-
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
@@ -136,6 +193,7 @@ class game = object(self)
             camera#toggle_zoom
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+              let cdata = get_option cdata in
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?
@@ -145,12 +203,16 @@ class game = object(self)
                      cdata#players
                      cdata#map))
                 )
-              |Displace(_,u,(r,_)) -> 
-                  if List.mem cursor#position r then 
-                    cursor#set_state (Action (u,cursor#position))
-                  else
-                    cursor#set_state Idle
-              |Action(p,u) -> cursor#set_state Idle)
+              |Displace(_) -> 
+                let menu = get_option displ_menu in 
+                menu#set_position (cdata#camera#project cursor#position);
+                ui_manager#focus menu;
+                menu#toggle
+              |Action(_) -> 
+                let atck_menu = get_option atck_menu in
+                atck_menu#toggle;
+                atck_menu#set_position (cdata#camera#project cursor#position);
+                ui_manager#focus atck_menu)
         | _ -> ()
       end)
 
