@@ -8,3 +8,7 @@ type t = {
   active_color      : Color.t}
 
 val blue_theme : t
+
+val yellow_theme : t
+
+val red_theme : t
