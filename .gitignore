@@ -69,3 +69,6 @@ Makefile
 *_j.mli
 *_t.ml
 *_t.mli
+
+# merlin config file
+.merlin
