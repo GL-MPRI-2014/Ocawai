@@ -60,7 +60,7 @@ let new_game () =
 
     (* Buttons for the forfeit popup *)
     new Windows.text_framed_item
-      (50, 70) (100, 25) "Yes :(" (fun () -> Manager.manager#pop) 
+      (50, 70) (100, 25) "Yes !" (fun () -> Manager.manager#pop) 
       Theme.blue_theme
     |> forfeit_popup#add_child;
 
