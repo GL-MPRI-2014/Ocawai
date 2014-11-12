@@ -6,9 +6,9 @@ open Manager
 open Player
 open Menus
 
-let new_game () = 
-  
-  let m_generator = new FieldGenerator.t 100 100 2 10 5 in 
+let new_game () =
+
+  let m_generator = new FieldGenerator.t 100 100 2 10 5 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -18,8 +18,8 @@ let new_game () =
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
       ~map:(m_generator#field)
-      ~players:(List.map (fun a -> 
-        let p = Player.create_player () in 
+      ~players:(List.map (fun a ->
+        let p = Player.create_player () in
         p#set_army a; p) m_generator#armies))
   in
 
@@ -35,32 +35,32 @@ let new_game () =
 
   val cdata : ClientData.client_data = m_cdata
 
-  val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150 
-    ~m_item_height:30 ~m_theme:Theme.yellow_theme 
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" 
+  val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
+    ~m_item_height:30 ~m_theme:Theme.yellow_theme
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action"
 
-  val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150 
-    ~m_item_height:30 ~m_theme:Theme.red_theme 
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack" 
+  val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
+    ~m_item_height:30 ~m_theme:Theme.red_theme
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
 
   method private create_ui =
     (* Main ingame menu *)
-    let my_menu = new ingame_menu 
-      ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150 
-      ~m_item_height:30 ~m_theme:Theme.blue_theme 
+    let my_menu = new ingame_menu
+      ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150
+      ~m_item_height:30 ~m_theme:Theme.blue_theme
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" in
 
     (* Forfeit confirmation popup *)
     let forfeit_popup = new Windows.ingame_popup
-      ~m_position:(manager#window#get_width / 2 - 200, 
+      ~m_position:(manager#window#get_width / 2 - 200,
         manager#window#get_height / 2 - 80)
-      ~m_size:(400, 110) ~m_theme:Theme.blue_theme 
+      ~m_size:(400, 110) ~m_theme:Theme.blue_theme
       ~m_text:"Do you really want to forfeit ? The game will be considered lost... Also, notice how this text is perfectly handled ! This is beautiful isn't it ?"
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
 
     (* Buttons for the forfeit popup *)
     new Windows.text_framed_item
-      (50, 70) (100, 25) "Yes !" (fun () -> Manager.manager#pop) 
+      (50, 70) (100, 25) "Yes !" (fun () -> Manager.manager#pop)
       Theme.blue_theme
     |> forfeit_popup#add_child;
 
@@ -77,7 +77,7 @@ let new_game () =
     in
 
     (* Ingame menu items *)
-    new item "forfeit" "Forfeit" (fun () -> forfeit_popup#toggle; 
+    new item "forfeit" "Forfeit" (fun () -> forfeit_popup#toggle;
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
@@ -96,24 +96,24 @@ let new_game () =
     let cursor = cdata#camera#cursor in
 
     (* Attack menu items *)
-    new item "infantry" "Fire !" (fun () -> 
+    new item "fire" "Fire !" (fun () ->
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
-    new item "infantry" "Cancel" (fun () ->
+    new item "cancel" "Cancel" (fun () ->
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
     (* Displacement menu items *)
-    new item "infantry" "Attack" (fun () -> 
+    new item "attack" "Attack" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
       match cursor#get_state with
-      |Cursor.Displace(_,u,(r,_)) -> 
+      |Cursor.Displace(_,u,(r,_)) ->
         if List.mem cursor#position r then begin
           cursor#set_state (Cursor.Action (u,cursor#position));
           camera#set_position (Position.right cursor#position)
@@ -122,13 +122,13 @@ let new_game () =
       | _ -> assert false)
     |> disp_menu#add_child;
 
-    new item "infantry" "Move" (fun () ->
+    new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
-    new item "infantry" "Cancel" (fun () ->
+    new item "cancel" "Cancel" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
       cursor#set_state Cursor.Idle)
@@ -151,9 +151,9 @@ let new_game () =
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
 
-  method private keyboard_events = 
-    let act_time = Unix.gettimeofday () in 
-    if (not ui_manager#is_focusing) && 
+  method private keyboard_events =
+    let act_time = Unix.gettimeofday () in
+    if (not ui_manager#is_focusing) &&
      act_time -. last_event >= 0.05 then OcsfmlWindow.(
       last_event <- act_time;
       if Keyboard.is_key_pressed KeyCode.Right ||
@@ -217,19 +217,19 @@ let new_game () =
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?
-                (fun u -> cursor#set_state (Displace (cdata#map, u, 
-                  Logics.accessible_positions u 
+                (fun u -> cursor#set_state (Displace (cdata#map, u,
+                  Logics.accessible_positions u
                     (cdata#player_of u)
                      cdata#players
                      cdata#map))
                 )
-              |Displace(_,_,(acc,_)) -> 
+              |Displace(_,_,(acc,_)) ->
                 if List.mem cursor#position acc then begin
                   disp_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus disp_menu;
                   disp_menu#toggle
                 end else cursor#set_state Idle
-              |Action(_) -> 
+              |Action(_) ->
                 atk_menu#toggle;
                 atk_menu#set_position (cdata#camera#project cursor#position);
                 ui_manager#focus atk_menu)
