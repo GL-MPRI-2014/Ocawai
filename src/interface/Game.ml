@@ -6,35 +6,45 @@ open Manager
 open Player
 open Menus
 
-let get_option opt = 
-  match opt with
-  |Some(o) -> o
-  |None -> failwith "Bad game initialization"
+let new_game () = 
+  
+  let m_generator = new FieldGenerator.t 100 100 2 10 5 in 
 
-class game = object(self)
-
-  inherit State.state as super
-
-  val generator = new FieldGenerator.t 100 100 2 10 5
-
-  val ui_manager = new UIManager.ui_manager
-
-  val camera = new Camera.camera
+  let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
     ~maxpos:(Position.create (99,99))
+  in
 
-  val mutable cdata : ClientData.client_data option = None
+  let m_cdata = (new ClientData.client_data ~camera:m_camera
+      ~map:(m_generator#field)
+      ~players:(List.map (fun a -> 
+        let p = Player.create_player () in 
+        p#set_army a; p) m_generator#armies))
+  in
 
-  val mutable displ_menu = None
+  object(self)
 
-  val mutable atck_menu = None
+  inherit State.state as super
+
+  val generator = m_generator
+
+  val ui_manager = new UIManager.ui_manager
+
+  val camera = m_camera
+
+  val cdata : ClientData.client_data = m_cdata
+
+  val disp_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
+    Theme.yellow_theme 30 "menu_icon" "Action" 
+
+  val atk_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
+    Theme.red_theme 30 "menu_icon" "Attack" 
 
   method private create_ui =
     (* Main ingame menu *)
     let my_menu = new menu (manager#window#get_width / 2 - 75, 30) 150 30
     OcsfmlWindow.KeyCode.Return Theme.blue_theme 30 "menu_icon" "Menu" in
-    my_menu#toggle;
 
     (* Button to open ingame menu *)
     let main_button = new key_button_oneuse ~icon:"return"
@@ -59,13 +69,7 @@ class game = object(self)
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    let cdata = get_option cdata in
     let cursor = cdata#camera#cursor in
-
-    (* Attack menu *)
-    let atk_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
-    Theme.red_theme 30 "menu_icon" "Attack" in 
-    atk_menu#toggle;
 
     (* Attack menu items *)
     new item "infantry" "Fire !" (fun () -> 
@@ -79,11 +83,6 @@ class game = object(self)
       ui_manager#unfocus atk_menu;
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
-
-    (* Displacement menu *)
-    let disp_menu = new menu (0,0) 150 30 OcsfmlWindow.KeyCode.Space
-    Theme.yellow_theme 30 "menu_icon" "Action" in 
-    disp_menu#toggle;
 
     (* Displacement menu items *)
     new item "infantry" "Attack" (fun () -> 
@@ -111,20 +110,16 @@ class game = object(self)
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
+    my_menu#toggle;
+    disp_menu#toggle;
+    atk_menu#toggle;
+
     ui_manager#add_widget main_button;
     ui_manager#add_widget my_menu;
     ui_manager#add_widget disp_menu;
-    ui_manager#add_widget atk_menu;
-    (* Store the displacement menu as attribute for later use *)
-    displ_menu <- Some disp_menu;
-    atck_menu <- Some atk_menu
+    ui_manager#add_widget atk_menu
 
   initializer
-    cdata <-Some (new ClientData.client_data ~camera
-      ~map:(generator#field)
-      ~players:(List.map (fun a -> 
-        let p = Player.create_player () in 
-        p#set_army a; p) generator#armies));
     self#create_ui
 
   val mutable last_event = 0.
@@ -193,7 +188,6 @@ class game = object(self)
             camera#toggle_zoom
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
-              let cdata = get_option cdata in
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?
@@ -204,15 +198,13 @@ class game = object(self)
                      cdata#map))
                 )
               |Displace(_) -> 
-                let menu = get_option displ_menu in 
-                menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus menu;
-                menu#toggle
+                disp_menu#set_position (cdata#camera#project cursor#position);
+                ui_manager#focus disp_menu;
+                disp_menu#toggle
               |Action(_) -> 
-                let atck_menu = get_option atck_menu in
-                atck_menu#toggle;
-                atck_menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus atck_menu)
+                atk_menu#toggle;
+                atk_menu#set_position (cdata#camera#project cursor#position);
+                ui_manager#focus atk_menu)
         | _ -> ()
       end)
 
@@ -221,12 +213,6 @@ class game = object(self)
     super#render window ;
     Interpolators.update () ;
     window#clear ();
-
-    (* Ugly *)
-    let cdata = match cdata with
-      | Some c -> c
-      | None -> failwith "Oh no !\n"
-    in
 
     (* Rendering goes here *)
     Render.render_game window cdata;
