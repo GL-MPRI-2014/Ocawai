@@ -23,13 +23,13 @@ let get_move = List.rev
 
 let start_position path  =
   match path with
-  | [] -> raise Path_exception "Empty path"
-  | _ -> hd (List.rev path)
+  | [] -> raise (Path_exception "Empty path")
+  | _ -> List.hd (List.rev path)
 
 let final_position path =
   match path with  
-  | [] -> raise Path_exception "Empty path"
-  | _ -> hd path
+  | [] -> raise (Path_exception "Empty path")
+  | _ -> List.hd path
 
 
 
