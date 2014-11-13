@@ -6,6 +6,7 @@ open TPTM
 open Logics
 open Theme
 open Settings
+open Setters
 
 let () = begin
 
