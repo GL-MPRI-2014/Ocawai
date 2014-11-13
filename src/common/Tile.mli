@@ -2,7 +2,7 @@
 
 type t
 
-(** {Border : name, rate, expansion *)
+(** {Border : name, rate, expansion} *)
 type structure = [ `Block | `Road | `Border of (string * int * int) ]
 
 (** [get_name tile] returns the name of the tile *)
