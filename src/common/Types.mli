@@ -11,7 +11,9 @@ type  send = Get_next_action | Update of update
 type  receive = Next_action of Action.t | Error of Error
 
 type id_player = int
-  
+
+
+(** Type of the data sent from the engine to the player/client *)
 type update =
     Game_over
   | Classement 
