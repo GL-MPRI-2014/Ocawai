@@ -17,7 +17,6 @@ class state = object(self)
 
   val mutable current_pos = Position.create (0,0)
   val mutable snake = [Position.create (0,0)]
-  val mutable last_dir = (1,0)
   val mutable size = 5
 
   val tl = Position.create (0,0)
@@ -37,7 +36,6 @@ class state = object(self)
         running <- false
       else begin
         map.(x).(y) <- true;
-        last_dir <- diff;
         if goods.(x).(y) then begin
           size <- size + 1;
           goods.(x).(y) <- false
@@ -55,18 +53,12 @@ class state = object(self)
 
   (* Inspired by @VLanvin *)
   val mutable last_event = 0.
+  val mutable diff = (1,0)
   method private handle_keys =
     let act_time = Unix.gettimeofday () in
     if act_time -. last_event >= 0.1 then OcsfmlWindow.(
       last_event <- act_time;
-      let diff = if Keyboard.is_key_pressed KeyCode.Right then (1,0)
-        else if Keyboard.is_key_pressed KeyCode.Left then (-1,0)
-        else if Keyboard.is_key_pressed KeyCode.Up then (0,-1)
-        else if Keyboard.is_key_pressed KeyCode.Down then (0,1)
-        else last_dir
-      in
-      if add2D diff last_dir = (0,0) then self#move last_dir
-      else self#move diff;
+      self#move diff;
       let p = Random.int 100 in
       if p >= 95 then
       begin
@@ -131,10 +123,22 @@ class state = object(self)
               done;
               snake <- [Position.create (0,0)];
               current_pos <- Position.create (0,0);
-              last_dir <- (1,0);
+              diff <- (1,0);
               size <- 5;
               running <- true
             end
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            if diff = (-1,0) then ()
+            else diff <- (1,0)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            if diff = (1,0) then ()
+            else diff <- (-1,0)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            if diff = (0,1) then ()
+            else diff <- (0,-1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            if diff = (0,-1) then ()
+            else diff <- (0,1)
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
             manager#pop
         | _ -> ()
