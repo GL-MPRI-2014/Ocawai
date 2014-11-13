@@ -41,7 +41,3 @@ let play_midi_file fname run =
     print_endline ""
   done;
   f#close
-
-let () =
-  let run = ref true in
-  play_midi_file "../../resources/music/tetris.mid" run
