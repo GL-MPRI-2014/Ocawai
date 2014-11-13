@@ -45,7 +45,7 @@ network_src=$(network_dir)
 #dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num
+music_dependencies = bigarray,mm,pulseaudio,threads,num,ocsfml.audio
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
