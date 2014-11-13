@@ -19,6 +19,8 @@ class virtual actionnable : object
 
   inherit item
 
+  val mutable has_focus : bool
+
   method set_focus : bool -> unit
 
   method virtual action : unit
