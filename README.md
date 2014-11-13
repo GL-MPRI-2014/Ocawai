@@ -17,7 +17,7 @@ sélectionné **game on!** pour lancer le jeu.
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
 * **touches fléchées** : Déplacer la caméra
-* **espace** : Entrer/sortir du mode déplacement d'unité
+* **espace** : Actions (déplacements, menus)
 * **entrée** : Affiche le menu (*forfeit* permet de revenir au menu
   principal)
 * **A** : Dézoomer
