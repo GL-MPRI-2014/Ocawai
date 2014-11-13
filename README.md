@@ -17,7 +17,7 @@ sélectionné **game on!** pour lancer le jeu.
 * **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
 * **touches fléchées** : Déplacer la caméra
-* **espace** : Entrer/sortir du mode déplacement d'unité
+* **espace** : Actions (déplacements, menus)
 * **entrée** : Affiche le menu (*forfeit* permet de revenir au menu
   principal)
 * **A** : Dézoomer
@@ -28,9 +28,22 @@ sélectionné **game on!** pour lancer le jeu.
 
 # Compilation
 
+Si c'est la première fois que vous générer le projet, lancer la commande `aclocal -I m4`.
+
+
+* `autoreconf configure.ac` : Générer le fichier *configure*
+* `./configure` : Générer le makefile si les dépendances sont satisfaites
 * `make interface` : Compiler l'interface graphique
-* `make run` : Compiler l'interface et la lancer
-* `make doc` : Compile la documentation
+* `make engine` : Compiler le moteur
+* `make network` : Compiler la partie réseaux
+* `make doc` : Compiler la documentation
+* `make all` : Compiler l'interface, le moteur et la partie réseaux
+
+Si vous faites une modification dans le Makefile.in (et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile` pour le mettre à jour.
+
+# Distribuer le projet
+
+* `make dist` : Créer une archive **tar.gz** du projet
 
 # Documentation
 

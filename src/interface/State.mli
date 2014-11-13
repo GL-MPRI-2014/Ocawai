@@ -9,4 +9,7 @@ class virtual state : object
   (** Method called on very event transmitted by the manager *)
   method handle_event : OcsfmlWindow.Event.t -> unit
 
+  (** Method ran when state is ended *)
+  method destroy : unit
+
 end

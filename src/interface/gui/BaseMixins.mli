@@ -34,8 +34,10 @@ class virtual ['a] evq_container : object
 end
 
 
-(** A mixin that represents a keyboard-controlled list (up/down) *)
-class virtual key_ctrl_list : object
+(** A mixin that represents a keyboard-controlled list 
+  * The two parameters are the up/down keys *)
+class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t -> 
+  OcsfmlWindow.KeyCode.t -> object
 
   val virtual mutable nb_items : int
 
