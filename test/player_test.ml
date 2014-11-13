@@ -47,4 +47,4 @@ let suite_player =
 
 
 let () =
-  run_test_tt_main suite
+  run_test_tt_main suite_player
