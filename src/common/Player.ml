@@ -6,6 +6,7 @@ class  player (a : Unit.t list) (b : Building.t list) =
     val mutable buildings = (b : Building.t list)
     val id = Oo.id
     method get_army = army
+    method get_id = id
     method set_army a = army <- a
     method add_unit u = army <- u::army
     method get_buildings = buildings
