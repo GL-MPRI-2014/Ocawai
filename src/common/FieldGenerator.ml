@@ -329,7 +329,7 @@ let placement_roads m = () (*TODO*)
 
 let placement_borders m =
   let borders = Tile.create_list_from_config () in
-  let placement_border m water beach =
+  let placement_border (water, rate, expansion) beach =
     let poslist_water = Battlefield.tile_filteri (fun pos t ->Tile.get_name t = water && count (fun u -> Tile.get_name u = water) (neighbors m pos) <> 8) m in
     let poslist_beach = Utils.shuffle (List.filter (fun pos -> let t = Battlefield.get_tile m pos in Tile.get_name t <> water && Tile.traversable_m t Unit.Roll) (List.filter (Battlefield.in_range m) (neighbours_corners poslist_water))) in
     let rec behead = function
@@ -337,17 +337,17 @@ let placement_borders m =
     | n,[] -> assert false
     | n,p::q -> p::(behead (n-1,q))
     in
-    let seeds_beach = behead ((Tile.get_border_rate beach)*(List.length poslist_beach)/1000, poslist_beach ) in
+    let seeds_beach = behead (rate*(List.length poslist_beach)/1000, poslist_beach ) in
     let grow_border m seed =
       let bord = ref [seed] in
-      for i = 1 to Tile.get_border_expansion beach do
+      for i = 1 to expansion do
       bord := !bord @ (List.filter (fun pos -> Battlefield.in_range m pos && List.mem pos poslist_beach) (neighbours_corners !bord));
       done;
       !bord
     in
     List.iter (fun pos -> Battlefield.set_tile m pos beach) (List.fold_left (fun l e -> (grow_border m e) @ l) [] seeds_beach)
   in
-  List.iter (fun beach -> match Tile.get_structure beach with | `Border -> placement_border m (Tile.get_border_name beach) beach | _ -> ()) borders
+  List.iter (fun beach -> match Tile.get_structure beach with | `Border param -> placement_border param beach | _ -> ()) borders
 
 let placement_structs m =
   placement_roads m;
@@ -411,7 +411,7 @@ let structures_spawn m nbplayers nbattempts =
   structures_spawn_aux nbattempts
 
 
-let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3=
+let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
   let rec generate_aux = function
   | 0 -> failwith("generator failed, not enough tries? bad calling arguments?")
   | n ->

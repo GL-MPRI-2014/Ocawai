@@ -10,12 +10,6 @@ let get_density tile = tile.density
 
 let get_structure tile = tile.structure
 
-let get_border_name tile = tile.border_of
-
-let get_border_rate tile = tile.border_rate
-
-let get_border_expansion tile = tile.border_expansion
-
 let traversable_m tile movement =
   let open Unit in
   match movement with

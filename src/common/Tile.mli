@@ -2,7 +2,8 @@
 
 type t
 
-type structure = [ `Block | `Road | `Border ]
+(** {Border : name, rate, expansion *)
+type structure = [ `Block | `Road | `Border of (string * int * int) ]
 
 (** [get_name tile] returns the name of the tile *)
 val get_name : t -> string
@@ -12,15 +13,6 @@ val get_density : t -> int
 
 (** [get_structure tile] return the structure type *)
 val get_structure : t -> structure
-
-(** [get_border_of tile] return the name of the bordered tile *)
-val get_border_name : t -> string
-
-(** [get_border_rate tile] return the rate of the border with the bordered tile *)
-val get_border_rate : t -> int
-
-(** [get_border_expansion tile] return the expansion of the border with the bordered tile *)
-val get_border_expansion : t -> int
 
 (** Check if a tile is traversable by a given type of movement *)
 val traversable_m : t -> Unit.movement -> bool

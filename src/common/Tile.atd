@@ -1,5 +1,5 @@
 
-type structure = [ Block | Road | Border ]
+type structure = [ Block | Road | Border of (string * int * int) ]
 
 type t = {
   name: string;
@@ -10,9 +10,6 @@ type t = {
   ~fly_cost<ocaml default="-1">: int;
   ~density<ocaml default="0">: int;
   ~structure<ocaml default="`Block">: structure;
-  ~border_of<ocaml default="\"\"">: string;
-  ~border_rate<ocaml default="0">: int;
-  ~border_expansion<ocaml default="0">: int;
 }
 
 type t_list = t list
