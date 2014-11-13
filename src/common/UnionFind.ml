@@ -26,6 +26,9 @@ let get_data x = match x.parent with
 
 let get_data_gen x = get_data (find x)
 
+let is_representative x = match x.parent with
+  | Node _ -> false
+  | Leaf _ -> true
 (*
 let test () =
   let a = make_sing 0 in

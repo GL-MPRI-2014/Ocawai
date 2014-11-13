@@ -23,3 +23,5 @@ val get_data : 'a node -> 'a list
   the subset containing x*)
 val get_data_gen : 'a node -> 'a list
 
+(** Tell if a node is the representative *)
+val is_representative : 'a node -> bool
