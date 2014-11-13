@@ -1,5 +1,5 @@
 open Position
-open UnionFind
+open Utils
 
 exception NotEnoughSpawns
 exception NotEnoughPlace
@@ -14,7 +14,65 @@ let neighbors m pos =
       [left (up pos); left pos; left (down pos); up pos; down pos; right(up pos); right pos; right (down pos)]
     )
 
-let rec count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
+let count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
+
+let matrix_init sx sy f =
+  Array.init
+    sx
+    (fun x ->
+      Array.init
+      sy
+      (f x)
+    )
+
+let matrix_foreach f =
+  Array.iteri (fun x -> Array.iteri (f x))
+
+(* return the list of list of positions of connected composants among positions
+   that satifies f *)
+let find_connected_composants f m =
+  let sizex, sizey = Battlefield.size m in
+  (* singletons *)
+  let sings =
+    matrix_init
+      sizex
+      sizey
+      (fun x y ->
+        let p = Position.create (x, y) in
+        if f p then
+          Some(UnionFind.make_sing p)
+        else
+          None
+      ) in
+  let union a (x',y') =
+    sings.(x').(y') >? (UnionFind.union_gen a) in
+  (* union when neighbours are walkables *)
+  matrix_foreach
+    (fun x y aopt ->
+      aopt >? (fun a ->
+        List.iter
+        (fun b ->
+          if Battlefield.in_range m b then
+            let x', y' = topair b in
+            union a (x', y')
+        )
+        (neighbours [Position.create (x,y)]))
+    )
+    sings;
+  List.map
+    UnionFind.get_data
+    (
+      List.map
+        (function Some(r) -> r | None -> assert false)
+      (List.filter
+        (function
+          | None -> false
+          | Some(r) -> UnionFind.is_representative r)
+        (List.concat (Array.to_list (Array.map Array.to_list sings))))
+    )
+  
+  
+
 
 (* functions working with densities *)
 (* compute the total density of a list of tiles *)
@@ -201,8 +259,9 @@ let generate width height nbplayers nbattempts1 nbattempts2 =
         in ( print_endline "|"(* place here any check on map generation*); attempt)
       with
       | UnitsSpawnFail -> (print_endline " units spawn aborted"; generate_aux (n-1) )
-    end
-  in (print_endline "Generating Battlefield, please wait ... ";generate_aux nbattempts1)
+    end in
+  print_endline "Generating Battlefield, please wait ... ";
+  generate_aux nbattempts1
 
 
 class t (width:int) (height:int) (nbplayers:int) (generate_attempts:int) (units_spawn_attempts:int)=
