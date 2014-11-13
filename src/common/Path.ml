@@ -21,6 +21,18 @@ let reach path pos =
 
 let get_move = List.rev
 
+let start_position path  =
+  match path with
+  | [] -> raise Path_exception "Empty path"
+  | _ -> hd (List.rev path)
+
+let final_position path =
+  match path with  
+  | [] -> raise Path_exception "Empty path"
+  | _ -> hd path
+
+
+
 let cat p1 p2 = p2 @ p1
 
 let rec cost mvt_type m path = match path with
