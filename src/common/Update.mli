@@ -1,4 +1,5 @@
 (*A first draft *)
+(** @author Paul-Gallot Julien Grange et François Thiré *)
 
 (*what a NetPlayer send to a client player*)
 type  send = Get_next_action | Update of update
