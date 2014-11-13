@@ -275,7 +275,7 @@ let placement m nbplayers legit_spawns =
   in
   (fst (placement_armies nbplayers), poslist)
 
-let placement_roads m = m (*TODO*)
+let placement_roads m = () (*TODO*)
 
 let placement_borders m =
   let borders = Tile.create_list_from_config () in
@@ -297,11 +297,11 @@ let placement_borders m =
     in
     List.iter (fun pos -> Battlefield.set_tile m pos beach) (List.fold_left (fun l e -> (grow_border m e) @ l) [] seeds_beach)
   in
-  List.iter (fun beach -> match Tile.get_structure beach with | `Border -> placement_border m (Tile.get_border_name beach) beach | _ -> ()) borders;
-  m
+  List.iter (fun beach -> match Tile.get_structure beach with | `Border -> placement_border m (Tile.get_border_name beach) beach | _ -> ()) borders
 
 let placement_structs m =
-  placement_roads (placement_borders m)
+  placement_roads m;
+  placement_borders m
 
 let units_spawn m nbplayers nbattempts legit_spawns =
   let rec units_spawn_aux = function
@@ -330,8 +330,8 @@ let structures_spawn m nbplayers nbattempts =
     begin
       print_string ("    attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^": ");
       try
-        let new_m = placement_structs m in
-        (print_endline "structures spawn success"(* place here any checks on structures placement*); new_m)
+        placement_structs m;
+        (print_endline "structures spawn success"(* place here any checks on structures placement*))
       with
       | StructSpawnFail -> print_newline(); raise StructSpawnFail
     end
@@ -345,7 +345,8 @@ let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3=
     begin
       print_endline ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^": ");
       try
-        let m = structures_spawn (swap_gen width height) nbplayers nbattempts2 in
+        let m = swap_gen width height in
+        structures_spawn m nbplayers nbattempts2;
         let (a,sp) = units_spawn m nbplayers nbattempts3 (init_placement m nbplayers) in
         let attempt = (m,a,sp) in
         (print_endline "Generation success"(* place here any check on map generation*); attempt)
