@@ -4,4 +4,6 @@ class virtual state = object(self)
 
   method handle_event (e : OcsfmlWindow.Event.t) = ()
 
+  method destroy = ()
+
 end

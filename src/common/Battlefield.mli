@@ -15,6 +15,10 @@ val tile_iter : (Tile.t -> unit) -> t -> unit
 
 val tile_iteri : (Position.t -> Tile.t -> unit) -> t -> unit
 
+val tile_filter : (Tile.t -> bool) -> t -> Position.t list
+
+val tile_filteri : (Position.t -> Tile.t -> bool) -> t -> Position.t list
+
 val size : t -> int * int
 
 (** Returns true iff the given position is within the battlefield *)

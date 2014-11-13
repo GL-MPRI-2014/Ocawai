@@ -1,5 +1,7 @@
 (* We might want to change it later, leave it hidden *)
 (* We want to make sure there is no loop and discontinuity in it *)
+exception Path_exception of string
+
 type t = Position.t list
 
 let empty = []
@@ -12,10 +14,10 @@ let rec back_to pos = function
   | p :: r -> back_to pos r
   | [] -> [pos]
 
-(* We will change it to handle the case when its not continous *)
 let reach path pos =
   if List.mem pos path then back_to pos path
-  else pos :: path
+  else if Position.dist pos (List.hd path) = 1 then pos :: path
+  else raise (Path_exception "discontinuous path")
 
 let get_move = List.rev
 
@@ -87,10 +89,18 @@ let dijkstra m pos move_type =
     | None -> []
     | Some prev_pos -> prev_pos::(rev_path (access prev prev_pos))
   in
-  (fun tar ->  
-      match access dist tar with
+  (fun pos2 ->  
+      match access dist pos2 with
       | None -> None
-      | Some dab -> Some (dab , List.rev ( rev_path (Some tar) ) ) 
+      | Some dab -> Some (dab , List.rev ( rev_path (Some pos2) ) ) 
   )
 
 
+let rec print_path = function
+  |[] -> print_endline ""
+  |[t] -> 
+      let t' = Position.topair t in 
+      Printf.printf "(%i,%i)" (fst t') (snd t')
+  |t::q -> 
+      let t' = Position.topair t in 
+      Printf.printf "(%i,%i) - " (fst t') (snd t'); print_path q

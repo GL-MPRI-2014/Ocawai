@@ -1,4 +1,5 @@
 (** Some useful functions related to the game's logic *)
+type accessibles = Position.t list * (Position.t, Path.t) Hashtbl.t
 
 (** Returns the list of positions that a given unit can see *)
 val unit_vision : Unit.t -> Battlefield.t -> Position.t list
