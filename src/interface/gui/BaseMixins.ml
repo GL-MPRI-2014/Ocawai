@@ -55,7 +55,7 @@ end
 
 
 
-class virtual key_ctrl_list = object(self)
+class virtual key_ctrl_list key1 key2 = object(self)
 
   val mutable selected = 0
 
@@ -67,10 +67,10 @@ class virtual key_ctrl_list = object(self)
 
   initializer
     self#add_event (function
-      |Event.KeyPressed {Event.code = KeyCode.Up; _} ->
+      |Event.KeyPressed {Event.code = kc; _} when kc = key1 ->
           nb_items <> 0
           && (selected <- (selected - 1 + nb_items) mod nb_items; true)
-      |Event.KeyPressed {Event.code = KeyCode.Down; _} ->
+      |Event.KeyPressed {Event.code = kc; _} when kc = key2 ->
           nb_items <> 0
           && (selected <- (selected + 1 + nb_items) mod nb_items; true)
       | _ -> false)
@@ -90,8 +90,8 @@ class virtual has_toolbar = object(self)
   val virtual mutable toolbar_text : string
 
   method draw target lib =
-    let position = foi2D (sub2D self#position (0, toolbar_height)) in
-    new rectangle_shape ~position ~size:(foi2D (fst size, toolbar_height))
+    let position = foi2D (sub2D self#position (2, toolbar_height)) in
+    new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
       ~fill_color:theme.Theme.bar_color ()
     |> target#draw;
     let texture = TextureLibrary.get_texture lib toolbar_icon in

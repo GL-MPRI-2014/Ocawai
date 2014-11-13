@@ -45,9 +45,9 @@ network_src=$(network_dir)
 #dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num
+music_dependencies = bigarray,mm,pulseaudio,threads,num,ocsfml.audio
 
-#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
+#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
 network_libraries = unix
 
@@ -91,8 +91,11 @@ files_atd_mli := $(files_atd_ml:.ml=.mli)
 
 all: interface engine network
 
-interface: $(files_atd_ml) 
+interface: $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+run: interface
+	./$(output_interface)
 
 engine:  $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
@@ -199,7 +202,7 @@ clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
 	-rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
-	-rmdir doc 
+	-test \! -e doc || rmdir doc
 	rm -f documentation.html
 
 check:

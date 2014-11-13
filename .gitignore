@@ -54,10 +54,21 @@ Temporary Items
 _build
 *.native
 documentation.html
-documentation
+doc
+
+# Autotools
+autom4te.cache
+aclocal.m4
+config.log
+config.status
+configure
+Makefile
 
 # ATD files
 *_j.ml
 *_j.mli
 *_t.ml
 *_t.mli
+
+# merlin config file
+.merlin
