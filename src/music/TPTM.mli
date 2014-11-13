@@ -30,6 +30,11 @@ val delay : Time.t -> t
 *)
 val make : Music.event -> t
 
+(**
+   @return a tile holding [event] with duration [dur event]
+*)
+val make_withDelay : Music.event -> t
+
 (** {2 Tile operators} *)
 
 (**
@@ -88,6 +93,13 @@ val headTail : t -> t * t
 val normalize : t -> t
 
 (** {2 Testing functions} *) 
+
+(** {3 Tile <-> event list transform} *)
+
+(**
+   @return the product of all tiles in the input list
+*)
+val fromList : t list -> t
 
 (** {3 Pretty_printing} *)
 

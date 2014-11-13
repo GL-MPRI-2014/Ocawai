@@ -7,7 +7,10 @@
    music with the base type [Music.param Music.t]
 *)
 
-type 'a t
+(** {2 Type definitions} *)
+
+type 'a t = Note of (Time.t * 'a)
+	       | Rest of Time.t
 
 type octave = int
 type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds 
@@ -15,16 +18,29 @@ type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Gf | Fss | G | Aff | Gs | Af | Gss | A | Bff | As 
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
+type velocity = int
 
 (**
    One specific type for ['a] in ['a t], used in other modules
 *)
-type param
+type param = pitch * velocity
 
 (**
-   The instantion of ['a t] used in other modules
+   The instantiation of ['a t] used in other modules
 *)
 type event = param t
+
+(** {2 Basic Music creation} *)
+
+(**
+   @return the note of duration [time] with parameter ['a]
+*)
+val note : Time.t -> 'a -> 'a t 
+
+(**
+   @return a rest of duration [Time.t]
+*)
+val rest : Time.t -> 'a t
 
 (**
    @return the length of an event

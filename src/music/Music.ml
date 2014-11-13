@@ -4,7 +4,7 @@
 
 type time = Time.t
 
-type 'a t = Note of time * 'a
+type 'a t = Note of (time * 'a)
 	    | Rest of time
 
 type velocity = int (** To-Do : is there a special mm.int
@@ -20,13 +20,14 @@ type param = pitch * velocity
     
 type event = param t
 
-let note : time -> param -> event = fun dur (pitch, velocity) ->
-  if (velocity <= 127 && velocity >= 0) then
-    Note(dur, (pitch, velocity))
-  else failwith "Incompatible value for velocity"
+let note : time -> 'a -> 'a t = fun dur a ->
+  Note(dur, a)
+  
+let rest : time -> 'a t = fun dur -> Rest (dur)
 
 let getDur : 'a t -> time = function
   | Note(dur, _) -> dur
+  | Rest(dur) -> dur
 
 (** {2 Testing functions} *)
 
@@ -35,7 +36,9 @@ let getDur : 'a t -> time = function
 let rec fprintf : Format.formatter -> event -> unit = fun fmt ->
   function
   | Note(dur, param) ->
-    Format.fprintf fmt "@[<1>Note(@,%a,@ %a@,)@]@." Time.fprintf dur fprint_param param
+    Format.fprintf fmt "@[<1>Note(@,%a,@ %a@,)@]" Time.fprintf dur fprint_param param
+  | Rest(dur) -> 
+    Format.fprintf fmt "@[<1>Rest(@,%a@,)@]" Time.fprintf dur
 
 and fprint_param : Format.formatter -> param -> unit = fun fmt ->
   function
@@ -65,6 +68,3 @@ and fprint_pitchClass : Format.formatter -> pitchClass -> unit = fun fmt pitch_c
   in Format.fprintf fmt "@[%s@]" pitchClass_name
 
 let printf = fprintf Format.std_formatter
-
-let () =
-  printf (Note(Obj.magic(Num.Int(3)), ((C, 4), 127)))

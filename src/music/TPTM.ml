@@ -27,6 +27,9 @@ let make : event -> t = fun event ->
 let (%) : t -> t -> t = fun (Tile(events1)) (Tile(events2)) ->
   Tile(DList.(/::/) events1 events2)
 
+let make_withDelay : Music.event -> t = fun event ->
+  make event % delay (Music.getDur event) 
+
 let getDur : t -> time = function
   | Tile(events) -> DList.getDur events  
 
@@ -65,9 +68,15 @@ let rec normalize : t -> t = fun t ->
 
 (** {2 Testing functions} *)
 
+(** {3 Tile <-> event list transform} *)
+
+let fromList : t list -> t = function list ->
+  List.fold_left (%) zero list
+
 (** {3 Pretty-printing} *)
 
 let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
   | Tile(t) -> Format.fprintf fmt "@[Tile(%a@,)@]" DList.fprintf t
   
 let rec printf : t -> unit = fprintf Format.std_formatter
+
