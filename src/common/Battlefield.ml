@@ -51,7 +51,7 @@ let to_string_off m off1 off2 =
     let rec aux = function
     | [],i when 0<=i && i < String.length s -> aux([(s.[i],1)],i+1)
     | (a,b)::q,i when 0<=i && i < String.length s -> 
-      if a = s.[i] && b<255-off2 then 
+      if a = s.[i] && b<255 then 
         aux((a,b+1)::q,i+1) 
       else 
         aux((s.[i],1)::(a,b)::q,i+1)
@@ -63,7 +63,7 @@ let to_string_off m off1 off2 =
     | []->ss
     | (a,b)::q ->
       Bytes.set ss (2*n) a;
-      Bytes.set ss (2*n+1) (char_of_int (b+off2));
+      Bytes.set ss (2*n+1) (char_of_int ((b+off2) mod 256));
       list_to_string (n+1) q
     in
     list_to_string 0 li
@@ -73,7 +73,7 @@ let to_string_off m off1 off2 =
 let create_from_string_off w h s_short off1 off2 =
   let decompress s =
     let rec string_to_list = function
-    |i when 0 <=i && 2*i+1 < String.length s -> (s.[2*i],int_of_char s.[2*i+1] - off2)::(string_to_list (i+1))
+    |i when 0 <=i && 2*i+1 < String.length s -> (s.[2*i],let j = int_of_char s.[2*i+1] - off2 in if(j>=0) then j else j+256)::(string_to_list (i+1))
     |i -> []
     in
     let li = string_to_list 0 in

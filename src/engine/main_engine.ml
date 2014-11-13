@@ -1,5 +1,5 @@
 (** main function for testing the engine (only the generation and djikstra for now) *)
-let print_ascii_extended m a p sp=
+let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
   for i = 0 to w-1 do
     for j = 0 to h-1 do
@@ -82,9 +82,8 @@ begin
   let init_field = new FieldGenerator.t map_width map_height players_number 10 5 in
   
     (* test de la compression/decompression de la map*)
-    let m=init_field#field in
-    print_ascii m;
-    let s = Battlefield.to_string m in
+    print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
+    let s = Battlefield.to_string init_field#field(*(Battlefield.create map_width map_height (Tile.create_from_config "plain"))*) in
     print_endline ("Size : "
       ^(string_of_int (map_width*map_height))
       ^" tiles, compressed to a string of "

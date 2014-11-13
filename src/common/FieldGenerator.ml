@@ -330,8 +330,24 @@ let placement_roads m = () (*TODO*)
 let placement_borders m =
   let borders = Tile.create_list_from_config () in
   let placement_border (water, rate, expansion) beach =
-    let poslist_water = Battlefield.tile_filteri (fun pos t ->Tile.get_name t = water && count (fun u -> Tile.get_name u = water) (neighbors m pos) <> 8) m in
-    let poslist_beach = Utils.shuffle (List.filter (fun pos -> let t = Battlefield.get_tile m pos in Tile.get_name t <> water && Tile.traversable_m t Unit.Roll) (List.filter (Battlefield.in_range m) (neighbours_corners poslist_water))) in
+    let poslist_water =
+      Battlefield.tile_filteri 
+        (fun pos t ->
+          Tile.get_name t = water
+          && count (fun u -> Tile.get_name u = water) (neighbors m pos) <> 8)
+        m 
+      in
+    let poslist_beach =
+      Utils.shuffle (List.filter 
+          (fun pos -> 
+            let t = Battlefield.get_tile m pos in 
+            Tile.get_name t <> water 
+            && Tile.traversable_m t Unit.Roll)
+          (List.filter 
+            (Battlefield.in_range m) 
+            (neighbours_corners poslist_water)
+          ) )
+    in
     let rec behead = function
     | 0,_ -> []
     | n,[] -> assert false
@@ -341,17 +357,32 @@ let placement_borders m =
     let grow_border m seed =
       let bord = ref [seed] in
       for i = 1 to expansion do
-      bord := !bord @ (List.filter (fun pos -> Battlefield.in_range m pos && List.mem pos poslist_beach) (neighbours_corners !bord));
+        bord := !bord @ (List.filter 
+                          (fun pos -> 
+                            Battlefield.in_range m pos
+                            && List.mem pos poslist_beach)
+                          (neighbours_corners !bord));
       done;
       !bord
     in
-    List.iter (fun pos -> Battlefield.set_tile m pos beach) (List.fold_left (fun l e -> (grow_border m e) @ l) [] seeds_beach)
+    List.iter 
+      (fun pos -> Battlefield.set_tile m pos beach) 
+      (List.fold_left 
+        (fun l e -> (grow_border m e) @ l) 
+        [] seeds_beach
+      )
   in
-  List.iter (fun beach -> match Tile.get_structure beach with | `Border param -> placement_border param beach | _ -> ()) borders
+  List.iter 
+    (fun beach -> 
+      match Tile.get_structure beach with 
+      | `Border param -> placement_border param beach
+      | _ -> ()
+    )
+    borders
 
 let placement_structs m =
-  placement_roads m;
-  placement_borders m
+  placement_borders m;
+  placement_roads m
 
 let units_spawn m nbplayers nbattempts legit_spawns =
   let rec units_spawn_aux = function
