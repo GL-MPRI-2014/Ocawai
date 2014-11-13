@@ -29,8 +29,8 @@ end
 type t = soldier
 type unbound_t = unbound_soldier
 
-let bind uu pos =
-  new soldier uu#name "INSERT player_id HERE" pos uu#movement_type 
+let bind uu pos p_id =
+  new soldier uu#name p_id pos uu#movement_type 
     uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
     uu#spawn_number
 
