@@ -202,7 +202,7 @@ clean:
 	ocamlbuild -clean
 	rm -f $(files_atd_ml) $(files_atd_mli)
 	-rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
-	-rmdir doc
+	-test \! -e doc || rmdir doc
 	rm -f documentation.html
 
 check:

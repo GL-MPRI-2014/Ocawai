@@ -59,26 +59,29 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
       (Position.create (0,0))
       maxpos
     in
-    let (dx, dy) = Position.topair
-      (Position.diff new_position cursor#position)
-    in
-    (* Interpolating camera *)
-    let (offx, offy) = foi2D (dx * self#tile_size, dy * self#tile_size) in
-    offset <- addf2D offset (offx, offy);
-    let interp_function t dt =
-      offset <- addf2D offset (-. dt *. settings#cursor_speed *. offx /. 5.,
-                               -. dt *. settings#cursor_speed *. offy /. 5.)
-    in
-    ignore(Interpolators.new_ip_with_timeout interp_function (5./.settings#cursor_speed));
-    (* Interpolating cursor *)
-    cursor#set_offset (addf2D cursor#offset (offx, offy));
-    let interp_cursor t dt =
-      cursor#set_offset (addf2D cursor#offset
-        (-. dt *. settings#cursor_speed *. offx,
-         -. dt *. settings#cursor_speed *. offy))
-    in
-    ignore(Interpolators.new_ip_with_timeout interp_cursor (1./.settings#cursor_speed));
-    cursor#set_position new_position
+    let old_cursor = cursor#position in
+    (* Try to move the cursor first *)
+    if cursor#set_position new_position then begin
+      let (dx, dy) = Position.topair
+        (Position.diff new_position old_cursor)
+      in
+      (* Interpolating camera *)
+      let (offx, offy) = foi2D (dx * self#tile_size, dy * self#tile_size) in
+      offset <- addf2D offset (offx, offy);
+      let interp_function t dt =
+        offset <- addf2D offset (-. dt *. settings#cursor_speed *. offx /. 5.,
+                                -. dt *. settings#cursor_speed *. offy /. 5.)
+      in
+      ignore(Interpolators.new_ip_with_timeout interp_function (5./.settings#cursor_speed));
+      (* Interpolating cursor *)
+      cursor#set_offset (addf2D cursor#offset (offx, offy));
+      let interp_cursor t dt =
+        cursor#set_offset (addf2D cursor#offset
+          (-. dt *. settings#cursor_speed *. offx,
+          -. dt *. settings#cursor_speed *. offy))
+      in
+      ignore(Interpolators.new_ip_with_timeout interp_cursor (1./.settings#cursor_speed))
+    end
 
   method set_position pos =
     let clamped = Position.clamp pos (Position.create (0,0)) maxpos in

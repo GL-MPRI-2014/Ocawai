@@ -72,7 +72,7 @@ class main_menu = object(self)
       [new Home.item "title" (w/.2., h /. 2. -. 250.)]
       [
         new Home.actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push_load (new LoadScreen.state :> State.state) (fun () -> (new Game.game :> State.state))) ;
+          (fun () -> manager#push_load (new LoadScreen.state :> State.state) (Game.new_game)) ;
         new Home.actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;
