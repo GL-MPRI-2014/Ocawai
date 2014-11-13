@@ -17,9 +17,19 @@ class virtual actionnable = object(self)
   val mutable has_focus = false
 
   method set_focus b = has_focus <- b
-  method has_focus = has_focus
 
   method virtual action : unit
+
+end
+
+class virtual modal = object(self)
+
+  inherit actionnable
+
+  val mutable holds_focus = false
+
+  method holds_focus = holds_focus
+  method virtual  handle_key : OcsfmlWindow.KeyCode.t -> unit 
 
 end
 

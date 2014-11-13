@@ -20,21 +20,21 @@ class virtual actionnable : object
   inherit item
 
   method set_focus : bool -> unit
-  method has_focus : bool
-  
+
   method virtual action : unit
 
 end
 
 (** A modal item
   * It retains the focus when activated *)
-(* class virtual modal : object
+class virtual modal : object
 
   inherit actionnable
 
-  (* He doesn't know what to do! *)
+  method holds_focus : bool
+  method virtual handle_key : OcsfmlWindow.KeyCode.t -> unit
 
-end *)
+end
 
 (** A screen item
   * [position] should be given wrt to the center of the texture *)
