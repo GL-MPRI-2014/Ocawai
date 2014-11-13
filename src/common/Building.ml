@@ -1,13 +1,15 @@
-class building =
+class building (p_id : string) (p : Position.t) =
 object (self)
-  val mutable name = ""
+  val name = ""
   val mutable product = ([] : Unit.t list)
   (* val mutable income = Resource.create 0 *) (* Resource à implanter *)
-  val mutable pos = Position.create (0,0)
-  method get_name = name
-  method get_producible = product
+  val mutable pos = p
+  method name = name
+  method id = string_of_int (Oo.id self)
+  method player_id = p_id
+  method producible = product
   (* method get_income = income *)
-  method get_position = pos
+  method position = pos
 end
 
 type t = building
