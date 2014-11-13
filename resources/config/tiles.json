@@ -41,10 +41,7 @@
     "tread_cost": 15,
     "swim_cost": 1,
     "fly_cost": 1,
-    "structure": "Border",
-    "border_of": "water",
-    "border_rate": 50,
-    "border_expansion": 2
+    "structure": <"Border":("water",50,2)>
   },
   {
     "name": "forest",
