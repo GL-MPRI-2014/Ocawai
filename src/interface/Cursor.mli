@@ -8,7 +8,7 @@ type cursor_state = Idle
 class cursor : position:Position.t -> object
 
   (** Sets the position of the cursor *)
-  method set_position : Position.t -> unit
+  method set_position : Position.t -> bool
 
   (** @return the position of the cursor *)
   method position : Position.t
