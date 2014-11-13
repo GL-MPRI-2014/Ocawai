@@ -1,11 +1,14 @@
 (*A first draft *)
 (** @author Paul-Gallot Julien Grange et François Thiré *)
 
+
+type Error = Wrong_id_player
+
 (*what a NetPlayer send to a client player*)
 type  send = Get_next_action | Update of update
 
 (*What a client player send to a Net Player *)
-type  receive = Next_action of Action.t
+type  receive = Next_action of Action.t | Error of Error
 
 type id_player = int
   

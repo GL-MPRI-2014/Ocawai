@@ -2,6 +2,8 @@ type t = <
   (*TO DO: The type Unit.t list could (should) not be exposed. Instead,
     we could create a module allowing some functions as search one unit,
     get a list of unit etc... *)
+
+  get_id : int;
   get_army : Unit.t list;
   add_unit : Unit.t -> unit;
   set_army : Unit.t list -> unit;
