@@ -1,8 +1,5 @@
 (** The state that represents the game itself *)
 
 (** Game Screen state *)
-class game : object
+val new_game : unit -> State.state
 
-  inherit State.state
-
-end

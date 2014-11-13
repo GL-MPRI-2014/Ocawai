@@ -19,7 +19,10 @@ let manager = object(self)
   method push_load (state : State.state) (build : unit -> State.state) =
     self#push state ;
     let _ =
-      Thread.create (fun () -> let s = build () in self#pop ; self#push s) ()
+      Thread.create
+        (fun () ->
+          try let s = build () in self#pop ; self#push s
+          with e -> self#pop ; raise e) ()
     in ()
 
 
