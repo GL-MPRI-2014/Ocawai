@@ -67,3 +67,11 @@ val fromList_parallel : Music.event list -> t
    @return the tile containing all events in the [Music.event list] in sequence
 *)
 val fromList_sequence : Music.event list -> t
+
+(** {3 Pretty_printing} *)
+
+(**
+   Pretty prints the input [t] and outputs to the channel
+   defined by the [Format.formatter]
+*)
+val fprintf : Format.formatter -> t -> unit

@@ -9,6 +9,13 @@
 
 type 'a t
 
+type octave = int
+type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds 
+		   | Ef | Fff | Dss | E | Ff | Es | F | Gff | Ess | Fs
+		   | Gf | Fss | G | Aff | Gs | Af | Gss | A | Bff | As 
+		   | Bf | Ass | B | Bs | Bss
+type pitch = pitchClass * octave
+
 (**
    One specific type for ['a] in ['a t], used in other modules
 *)
@@ -29,7 +36,7 @@ val getDur : 'a t -> Time.t
 (** {3 Pretty-printing} *)
 
 (**
-   Pretty prints the input [t] and outputs to the channel
+   Pretty prints the input [event] and outputs to the channel
    defined by the [Format.formatter]
 *)
-val printf : Format.formatter -> event -> unit
+val fprintf : Format.formatter -> event -> unit

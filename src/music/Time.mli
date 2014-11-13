@@ -39,4 +39,4 @@ val max : t -> t -> t
 
 (** {3 Pretty-printing} *)
 
-val printf : Format.formatter -> t -> unit
+val fprintf : Format.formatter -> t -> unit

@@ -206,22 +206,24 @@ let headTail : t -> t * t =
 
 (** {3 Pretty_printing} *)
 
-let ident : Format.formatter -> string -> unit = fun ppf s -> fprintf ppf "%s" s;;
-let kwd : Format.formatter -> string -> unit = fun ppf s -> fprintf ppf "%s" s;;
+let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
+  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]" Music.fprintf event
+  | Sync dur -> Format.fprintf fmt "@[<1>Dur(%a@,)@]" Time.fprintf dur
+  | Prod(tag, t1, t2) ->
+    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]" fprint_tag tag fprintf t1 fprintf t2
 
-let rec pr_exp0 ppf = function
-  | Var s -> fprintf ppf "%a" ident s
-  | lam -> fprintf ppf "@[<1>(%a)@]" pr_lambda lam
+and fprint_tag fmt = function
+  | Tag(dur, start) -> Format.fprintf fmt "@[<1>Tag(@[Dur =@ %a,@ Start =@ %a@]@,)@]"
+    Time.fprintf dur fprint_start start
 
-and pr_app ppf = function
-  | e ->  fprintf ppf "@[<2>%a@]" pr_other_applications e
+and fprint_start fmt = function
+  | None -> Format.fprintf fmt "%s" "None"
+  | Some(dur) -> Format.fprintf fmt "@[%a@]" Time.fprintf dur
 
-and pr_other_applications ppf f =
-  match f with
-  | Apply (f, arg) -> fprintf ppf "%a@ %a" pr_app f pr_exp0 arg
-  | f -> pr_exp0 ppf f
+let printf : t -> unit = fprintf Format.std_formatter
 
-and pr_lambda ppf = function
- | Lambda (s, lam) ->
-     fprintf ppf "@[<1>%a%a%a@ %a@]" kwd "\\" ident s kwd "." pr_lambda lam
- | e -> pr_app ppf e
+let dummy_event =
+  Music.Note(Num.Int(3), ((Music.C, 4), 127))
+
+let () =
+  printf (fromList_sequence [dummy_event; dummy_event])

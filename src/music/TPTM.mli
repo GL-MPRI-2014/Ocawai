@@ -87,4 +87,12 @@ val headTail : t -> t * t
 *)
 val normalize : t -> t
 
+(** {2 Testing functions} *) 
 
+(** {3 Pretty_printing} *)
+
+(**
+   Pretty prints the input [t] and outputs to the channel
+   defined by the [Format.formatter]
+*)
+val fprintf : Format.formatter -> t -> unit
