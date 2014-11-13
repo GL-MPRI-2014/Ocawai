@@ -4,7 +4,7 @@
 
 (** An item for the screen
   * It has a [position] that represents its center *)
-class virtual future_item : object
+class virtual item : object
 
   method virtual draw : OcsfmlGraphics.render_window -> unit
 
@@ -15,11 +15,13 @@ class virtual future_item : object
 end
 
 (** An actionnable item *)
-class virtual future_actionnable : object
+class virtual actionnable : object
 
-  inherit future_item
+  inherit item
 
   method set_focus : bool -> unit
+  method has_focus : bool
+  
   method virtual action : unit
 
 end
@@ -28,7 +30,7 @@ end
   * It retains the focus when activated *)
 (* class virtual modal : object
 
-  inherit future_actionnable
+  inherit actionnable
 
   (* He doesn't know what to do! *)
 
@@ -36,25 +38,24 @@ end *)
 
 (** A screen item
   * [position] should be given wrt to the center of the texture *)
-class item : string -> (float * float) -> object
+class textured_item : string -> (float * float) -> object
+
+  inherit item
 
   method draw : OcsfmlGraphics.render_window -> unit
 
   method position : float * float
-  method x : float
-  method y : float
 
 end
 
 (** An actionnable item *)
-class actionnable : string -> string -> (float*float) -> (unit -> unit) ->
+class textured_actionnable : string -> string -> (float*float) -> (unit -> unit) ->
 object
 
-  inherit item
+  inherit textured_item
+  inherit actionnable
 
   method action : unit
-
-  method set_selected : bool -> unit
 
   method draw : OcsfmlGraphics.render_window -> unit
 

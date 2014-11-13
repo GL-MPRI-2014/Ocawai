@@ -17,7 +17,7 @@ class state = object(self)
     screen <- new Home.screen
       []
       [
-        new Home.actionnable "back" "back_hover" (200., h -. 100.)
+        new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop) ;
       ]
 

@@ -1,6 +1,6 @@
 open Utils
 
-class virtual future_item = object(self)
+class virtual item = object(self)
 
   method virtual draw : OcsfmlGraphics.render_window -> unit
   method virtual position : float * float
@@ -10,41 +10,39 @@ class virtual future_item = object(self)
 
 end
 
-class virtual future_actionnable = object(self)
+class virtual actionnable = object(self)
 
-  inherit future_item as super
+  inherit item as super
 
   val mutable has_focus = false
 
   method set_focus b = has_focus <- b
+  method has_focus = has_focus
 
   method virtual action : unit
 
 end
 
-class item name position = object(self)
+class textured_item name position = object(self)
+
+  inherit item
 
   method draw target =
     Render.draw_txr target name position 0.
 
   method position = position
-  method x = fst position
-  method y = snd position
 
 end
 
-class actionnable txr txr_hover position (action : unit -> unit) = object(self)
+class textured_actionnable txr txr_hover position (action : unit -> unit) = object(self)
 
-  val mutable selected = false
-
-  inherit item txr position as super
+  inherit textured_item txr position as super
+  inherit actionnable
 
   method action = action ()
 
-  method set_selected b = selected <- b
-
   method draw target =
-    if selected then Render.draw_txr target txr_hover position 0. ;
+    if has_focus then Render.draw_txr target txr_hover position 0. ;
     super#draw target
 
 end
@@ -54,9 +52,9 @@ class screen items actionnables = object(self)
   val mutable selected = None
 
   method private select actionnable =
-    selected >? (fun o -> o#set_selected false) ;
+    selected >? (fun o -> o#set_focus false) ;
     selected <- Some actionnable ;
-    actionnable#set_selected true
+    actionnable#set_focus true
 
   method draw (target : OcsfmlGraphics.render_window) =
 
