@@ -17,7 +17,6 @@ class cursor ~position = object(self)
       (fun s -> scale <- s) 3. (1./.20.) 1.)
 
   method set_position pos =
-    current_position <- pos ;
     match state with
     |Displace(map,u,(range,table)) -> 
         if List.mem pos range then begin
@@ -28,8 +27,16 @@ class cursor ~position = object(self)
           if Path.cost u#movement_type map p' > u#move_range then
             path <- Hashtbl.find table pos
           else path <- p'
-        end
-    | _ -> ()
+        end;
+        current_position <- pos ;
+        true
+    |Action(u, p) -> 
+        let range = Position.range p 1 u#attack_range in
+        if List.mem pos range then begin
+          current_position <- pos;
+          true
+        end else false
+    | _ -> current_position <- pos; true
 
   method position =
     current_position
