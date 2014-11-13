@@ -6,6 +6,8 @@ type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_
 type t = <
   name : string;
   position : Position.t;
+  id : string;
+  player_id : string;
   move : Position.t -> unit;
   movement_type : movement;
   vision_range : int;

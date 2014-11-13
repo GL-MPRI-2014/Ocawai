@@ -15,11 +15,13 @@ object (self)
   method spawn_number = sp
 end
 
-class soldier (s : string) (p : Position.t) (m : movement)
+class soldier (s : string) (p_id : string) (p : Position.t) (m : movement)
   (v :int) (min_a : int) (a : int) (r : int) (sp : int) =
 object (self)
   inherit unbound_soldier s m v min_a a r sp
   val mutable pos = p
+  method id = "toto"
+  method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
 end
@@ -28,8 +30,9 @@ type t = soldier
 type unbound_t = unbound_soldier
 
 let bind uu pos =
-  new soldier uu#name pos uu#movement_type uu#vision_range uu#min_attack_range
-    uu#attack_range uu#move_range uu#spawn_number
+  new soldier uu#name "INSERT player_id HERE" pos uu#movement_type 
+    uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
+    uu#spawn_number
 
 let create_unbound_from_unit_t u = new unbound_soldier (u.Unit_t.name) (match (u.Unit_t.movement_type) with
                                                   | "walk" -> Walk
