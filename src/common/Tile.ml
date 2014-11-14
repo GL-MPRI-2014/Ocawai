@@ -21,9 +21,35 @@ let traversable_m tile movement =
   | Amphibious_Walk  -> tile.swim_cost >= 0 || tile.walk_cost >= 0
   | Amphibious_Roll  -> tile.swim_cost >= 0 || tile.roll_cost >= 0
   | Amphibious_Tread -> tile.swim_cost >= 0 || tile.tread_cost >= 0
-  | All   -> true
+  | All   -> List.exists (fun i -> i>=0) [tile.roll_cost; tile.tread_cost; tile.swim_cost; tile.fly_cost]
 
 let traversable tile soldier = traversable_m tile soldier#movement_type
+
+let compare_movements_list t1 t2 li =
+  let count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l in
+  let csup = count (fun i -> i>0) li in
+  let cinf = count (fun i -> i<0) li in
+  if csup = 0 then
+    Some (-cinf)
+  else
+    if cinf = 0 then
+      Some csup
+    else
+      None
+
+let compare_movements t1 t2 = 
+  compare_movements_list t1 t2 
+    [ compare (t1.walk_cost >=0) (t2.walk_cost >=0) ;
+      compare (t1.roll_cost >=0) (t2.roll_cost >=0) ;
+      compare (t1.tread_cost >=0) (t2.tread_cost >=0) ;
+      compare (t1.swim_cost >=0) (t2.swim_cost >=0) ;
+      compare (t1.fly_cost >=0) (t2.fly_cost >=0) ]
+
+let compare_walkability t1 t2 = 
+  compare_movements_list t1 t2 
+    [ compare (t1.walk_cost >=0) (t2.walk_cost >=0) ;
+      compare (t1.roll_cost >=0) (t2.roll_cost >=0) ;
+      compare (t1.tread_cost >=0) (t2.tread_cost >=0) ]
 
 let movement_cost tile movement =
   let min_pos a b = if a >= 0 then if b >= 0 then min a b else a else b in
@@ -42,8 +68,7 @@ let movement_cost tile movement =
           List.fold_left
             min_pos
             tile.walk_cost
-            [tile.roll_cost; tile.tread_cost; tile.swim_cost;
-           tile.fly_cost] in
+            [tile.roll_cost; tile.tread_cost; tile.swim_cost; tile.fly_cost] in
   if cost >= 0 then cost else failwith("Tile.movement_cost : not a valid movement")
 
 let tile_cost tile soldier = movement_cost tile soldier#movement_type

@@ -10,7 +10,7 @@ exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
 
-(*renvoie la liste des 8 voisins d'une case, <> neighbours, qui renvoie les voisins d'une liste de positions, sans doublons *)
+(*renvoie la liste des 8 tuiles voisines d'une case*)
 let neighbors m pos =
   let nei = [left (up pos); left pos; left (down pos); up pos; down pos;
     right(up pos); right pos; right (down pos)] in
@@ -22,50 +22,33 @@ let neighbors m pos =
     (Battlefield.get_tile m)
     nei_in_range
 
-(*TODO : use a set for neighbours*)
-(* add an element to a list without duplication *)
-let rec add_elt elt = function
-  |[] -> [elt]
-  |t::q when t = elt -> t::q 
-  |t::q when t > elt -> elt::t::q
-  |t::q -> t::(add_elt elt q)
+module SetPos = Set.Make(Position)
 
-(* check if an element is in a list *)
-let rec is_in elt = function
-  |[] -> false
-  |t::q  -> t = elt || is_in elt q
-  
+(* renvoie la liste des positions voisines d'une liste de positions, sans doublons *)
 let neighbours l =
   let rec neigh_aux = function
-    |[] -> []
-    |t::q -> 
-      neigh_aux q 
-      |> add_elt (up t) 
-      |> add_elt (right t)
-      |> add_elt (down t)
-      |> add_elt (left t)
+    |[] -> SetPos.empty
+    |t::q -> List.fold_right SetPos.add [up t;down t;left t;right t] (neigh_aux q)
   in 
-  List.filter
-    (fun e -> not (is_in e l))
-    (neigh_aux l)
+  SetPos.fold 
+    (fun e l -> e::l) 
+    (SetPos.filter
+      (fun e -> not (List.mem e l))
+      (neigh_aux l))
+    []
 
+(* pareil mais considère les coins du carré 3*3 centré sur une position comme voisins *)
 let neighbours_corners l =
   let rec neigh_aux = function
-    |[] -> []
-    |t::q -> 
-      neigh_aux q 
-      |> add_elt (up t) 
-      |> add_elt (right t)
-      |> add_elt (down t)
-      |> add_elt (left t)
-      |> add_elt (up (left t)) 
-      |> add_elt (right (up t))
-      |> add_elt (down (right t))
-      |> add_elt (left (down t))
+    |[] -> SetPos.empty
+    |t::q -> List.fold_right SetPos.add [up t;down t;left t;right t;up (left t);down (right t);left (down t);right (up t)] (neigh_aux q)
   in 
-  List.filter
-    (fun e -> not (is_in e l))
-    (neigh_aux l)
+  SetPos.fold 
+    (fun e l -> e::l) 
+    (SetPos.filter
+      (fun e -> not (List.mem e l))
+      (neigh_aux l))
+    []
 
 let count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
 
@@ -204,7 +187,7 @@ let test_movement attempt =
 let test_path attempt =
   let (m,_,sp) = attempt in
   let sp1 = List.hd sp in
-  let dij = Path.dijkstra m sp1 Unit.Walk in
+  let dij = Path.dijkstra m sp1 Unit.Tread in
   let b =
     List.for_all
       (fun sp2 -> dij sp2 <> None )
@@ -325,10 +308,13 @@ let placement m nbplayers legit_spawns =
   in
   (fst (placement_armies nbplayers), poslist)
 
+(* place routes et ponts sur la map*)
 let placement_roads m = () (*TODO*)
 
+(* place les plages et autres (?) bordures de `Block *)
 let placement_borders m =
   let borders = Tile.create_list_from_config () in
+  (* place la bordure (water : string,rate : int (0-1000),expansion : int) de tuile beach*)
   let placement_border (water, rate, expansion) beach =
     let poslist_water =
       Battlefield.tile_filteri 
@@ -342,7 +328,7 @@ let placement_borders m =
           (fun pos -> 
             let t = Battlefield.get_tile m pos in 
             Tile.get_name t <> water 
-            && Tile.traversable_m t Unit.Roll)
+            && match Tile.compare_walkability t beach with | None -> false | Some i -> i = 0)
           (List.filter 
             (Battlefield.in_range m) 
             (neighbours_corners poslist_water)
