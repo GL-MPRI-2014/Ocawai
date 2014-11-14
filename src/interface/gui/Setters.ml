@@ -13,7 +13,7 @@ let setter_height = 40.
 
 class virtual setter pos name = object(self)
 
-  inherit actionnable
+  inherit modal
 
   method position = pos
 
@@ -27,9 +27,9 @@ class virtual setter pos name = object(self)
     |> target#draw ;
 
     rect_print
-      target name font Color.black (Pix 30) (Pix 2) Left {
-        left = fst self#position +. 2. -. 400. ;
-        top = snd self#position +. 4. -. 20. ;
+      target name font (Color.rgb 64 64 64) (Pix 20) (Pix 2) Left {
+        left = fst self#position +. 20. -. 400. ;
+        top = snd self#position +. 10. -. 20. ;
         width = setter_width -. setting_width -. 4. ;
         height = setter_height }
 
@@ -38,7 +38,6 @@ end
 class ['a] slider pos (f : int -> 'a) name = object(self)
 
   inherit setter pos name as super_set
-  inherit modal
 
   val slider_h = 2.
   val slider_w = setting_width -. 20.

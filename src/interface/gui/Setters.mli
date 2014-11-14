@@ -9,7 +9,7 @@ val setter_height : float
 (** Basic setter *)
 class virtual setter : (float * float) -> string -> object
 
-  inherit actionnable
+  inherit modal
 
   method position : float * float
 
