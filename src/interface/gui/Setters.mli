@@ -24,7 +24,6 @@ end
 class ['a] slider : (float * float) -> (int -> 'a) -> string -> object
 
   inherit setter
-  inherit modal
 
   method value : 'a
 
