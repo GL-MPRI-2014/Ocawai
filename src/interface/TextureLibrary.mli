@@ -1,5 +1,7 @@
 (** Handles textures *)
 
+type drawable = TSet of Tileset.tileset | Tex of OcsfmlGraphics.texture
+
 type t
 
 exception Unknown_texture of string
@@ -11,4 +13,6 @@ val load_directory : t -> string -> unit
 
 val load_texture : t -> string -> unit
 
-val get_texture : t -> string -> CustomDrawable.drawable
+val get_texture : t -> string -> drawable
+
+val assert_texture : drawable -> OcsfmlGraphics.texture

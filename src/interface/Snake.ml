@@ -76,7 +76,8 @@ class state = object(self)
     (x *. 50. +. dx, y *. 50. +. dy)
 
   method private draw_path (target : OcsfmlGraphics.render_window) path =
-    let draw pos rot name = Render.draw_txr target name (self#topos pos) rot in
+    let draw pos rot name = Render.draw_txr target name (self#topos pos)
+    ~rotation:rot () in
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
@@ -171,7 +172,7 @@ class state = object(self)
       for y = 0 to 9 do
         if goods.(x).(y) then
           let pos = self#topos (Position.create (x,y)) in
-          Render.draw_txr window "infantry" pos (Random.float 360.)
+          Render.draw_txr window "infantry" pos ~rotation:(Random.float 360.) ()
       done
     done;
 
