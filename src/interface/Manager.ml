@@ -18,6 +18,7 @@ let manager = object(self)
 
   method push_load (state : State.state) (build : unit -> State.state) =
     self#push state ;
+    self#current#render window;
     let _ =
       Thread.create
         (fun () ->
