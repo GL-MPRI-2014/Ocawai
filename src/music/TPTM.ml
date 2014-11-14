@@ -76,7 +76,7 @@ let fromList : t list -> t = function list ->
 (** {3 Pretty-printing} *)
 
 let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
-  | Tile(t) -> Format.fprintf fmt "@[Tile(%a@,)@]" DList.fprintf t
+  | Tile(t) -> Format.fprintf fmt "@[Tile(%a@,)@]@." DList.fprintf t
   
 let rec printf : t -> unit = fprintf Format.std_formatter
 
