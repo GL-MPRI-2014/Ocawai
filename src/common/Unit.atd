@@ -3,7 +3,8 @@ type t = {
   name : string;
   movement_type : string;
   vision_range : int;
-  attack_range : int;
+  attack_range_min : int;
+  attack_range_max : int;
   move_range : int;
   ~spawn_number<ocaml default="0"> : int
 }

@@ -6,6 +6,9 @@
 (** The type of the positions *)
 type t
 
+(** in order to use Sets *)
+val compare : t -> t -> int
+
 (** Creates a position *)
 val create : int * int -> t
 
