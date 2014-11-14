@@ -85,7 +85,7 @@ class minimap def width height = object(self)
     for i = 0 to def - 1 do
       for j = 0 to def - 1 do
         let maxt = ref (-1) in
-        let maxn = ref 0 in 
+        let maxn = ref (-1) in 
         for k = 0 to 3 do 
           if majority_map.(i).(j).(k) > !maxn then begin
             maxn := majority_map.(i).(j).(k);
@@ -105,14 +105,19 @@ class minimap def width height = object(self)
     self#compute_battlefield battlefield;
     self#compute_players players
 
+  method private add_rectangle vao pos size color = 
+    vao#append (mk_vertex ~position:pos ~color ());
+    vao#append (mk_vertex ~position:(Utils.addf2D pos (fst size, 0.)) ~color ());
+    vao#append (mk_vertex ~position:(Utils.addf2D pos size) ~color ());
+    vao#append (mk_vertex ~position:(Utils.addf2D pos (0., snd size)) ~color ())
+
+  val vao = new vertex_array ~primitive_type:Quads []
+
   method draw : 'a. (#render_target as 'a) -> Cursor.cursor -> unit = 
     fun target cursor ->
     let foi = float_of_int in
     let ratio = 200. /. (foi def) in
-    new rectangle_shape ~size:(200.,200.) ~position:(8.,8.) 
-      ~fill_color:(Color.rgb 255 255 255) ~outline_color:(Color.rgb 200 200 200)
-      ~outline_thickness:4. ()
-    |> target#draw;
+    self#add_rectangle vao (4.,4.) (208.,208.) (Color.rgb 200 200 200);
     for i = 0 to def - 1 do
       for j = 0 to def - 1 do
         let fill_color = 
@@ -122,20 +127,17 @@ class minimap def width height = object(self)
           |Plain -> Color.rgb 80 180 80
           |Water -> Color.rgb 50 50 220
         in
-        new rectangle_shape ~size:(ratio, ratio)
-          ~position:((8. +. (foi i) *. ratio),(8. +. (foi j) *. ratio))
-          ~fill_color ()
-        |> target#draw;
+        self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
+          (ratio,ratio) fill_color;
         match player_map.(i).(j) with
         |None -> ()
         |Some(p) ->
           let alpha = (sin (Unix.gettimeofday () *. 3.) +. 1.)/. 2. in 
           let alpha = int_of_float (100. *. alpha) + 50 in
-          new rectangle_shape ~size:(ratio, ratio)
-            ~position:((9. +. (foi i) *. ratio), (9. +. (foi j) *. ratio))
-            ~fill_color:player_colors.(p) ~outline_thickness:1. 
-            ~outline_color:(Color.rgba 255 255 255 alpha) ()
-          |> target#draw
+          self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
+            (ratio,ratio) (Color.rgba 255 255 255 alpha);
+          self#add_rectangle vao ((9.+.(foi i)*.ratio), (9.+.(foi j)*.ratio))
+            (ratio-.2.,ratio-.2.) player_colors.(p);
       done;
     done;
     let (px, py) = Position.topair cursor#position in
@@ -143,11 +145,10 @@ class minimap def width height = object(self)
       ((foi px) /. (foi (width  - 1))) *. (foi (def - 1)),
       ((foi py) /. (foi (height - 1))) *. (foi (def - 1)))
     in 
-    new rectangle_shape ~size:(ratio, ratio)
-      ~position:((8. +. (foi px') *. ratio), (8. +. (foi py') *. ratio))
-      ~fill_color:(Color.rgba 255 255 255 180)
-      ~outline_thickness:1. ~outline_color:(Color.rgba 170 170 255 240) ()
-      |> target#draw
+    self#add_rectangle vao ((8.+.(foi px')*.ratio), (8.+.(foi py')*.ratio))
+      (ratio, ratio) (Color.rgba 255 255 255 180);
+    target#draw vao;
+    vao#clear
 
 end
     
