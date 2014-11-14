@@ -32,7 +32,7 @@ let tagProd : tag -> tag -> tag =
   fun (Tag (dur1, start1)) (Tag (dur2, start2)) -> 
     let newStart = match (start1, start2) with
       | (None, None) -> None
-      | (None, Some st_time) -> Some (st_time /+/ dur2)
+      | (None, Some st_time) -> Some (st_time /+/ dur1)
       | (Some st_time, None) -> Some st_time
       | (Some st_time1, Some st_time2) -> Some (Time.min st_time1 (st_time2 /+/ dur2))
     in Tag (dur1 /+/ dur2, newStart)
