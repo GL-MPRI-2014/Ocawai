@@ -49,7 +49,7 @@ test_src=test,$(engine_src)
 #dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num
+music_dependencies = bigarray,mm,pulseaudio,threads,num,ocsfml.audio
 
 
 test_dependencies=$(engine_dependencies),oUnit
