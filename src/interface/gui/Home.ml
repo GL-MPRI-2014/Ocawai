@@ -8,6 +8,9 @@ class virtual item = object(self)
   method x = fst self#position
   method y = snd self#position
 
+  method holds_focus = false
+  method handle_key (key : OcsfmlWindow.KeyCode.t) = ()
+
 end
 
 class virtual actionnable = object(self)
@@ -29,7 +32,7 @@ class virtual modal = object(self)
   val mutable holds_focus = false
 
   method holds_focus = holds_focus
-  method virtual  handle_key : OcsfmlWindow.KeyCode.t -> unit 
+  method virtual handle_key : OcsfmlWindow.KeyCode.t -> unit
 
 end
 
@@ -66,19 +69,27 @@ class screen items actionnables = object(self)
     selected <- Some actionnable ;
     actionnable#set_focus true
 
+  method private focus_held =
+    match selected with
+      | None -> false
+      | Some o -> o#holds_focus
+
   method draw (target : OcsfmlGraphics.render_window) =
 
     List.iter (fun i -> i#draw target) items ;
     List.iter (fun a -> a#draw target) actionnables
 
-  method handle_key = OcsfmlWindow.KeyCode.(function
-    | Left -> self#left
-    | Right -> self#right
-    | Up -> self#up
-    | Down -> self#down
-    | Return -> self#action
-    | _ -> ()
-  )
+  method handle_key key =
+    if self#focus_held then selected >? (fun o -> o#handle_key key)
+    else key |>
+    OcsfmlWindow.KeyCode.(function
+      | Left -> self#left
+      | Right -> self#right
+      | Up -> self#up
+      | Down -> self#down
+      | Return -> self#action
+      | _ -> ()
+    )
 
   method private action =
     selected >? fun o -> o#action

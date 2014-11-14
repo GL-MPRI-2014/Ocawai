@@ -12,6 +12,9 @@ class virtual item : object
   method x : float
   method y : float
 
+  method holds_focus : bool
+  method handle_key : OcsfmlWindow.KeyCode.t -> unit
+
 end
 
 (** An actionnable item *)
@@ -32,6 +35,8 @@ end
 class virtual modal : object
 
   inherit actionnable
+
+  val mutable holds_focus : bool
 
   method holds_focus : bool
   method virtual handle_key : OcsfmlWindow.KeyCode.t -> unit

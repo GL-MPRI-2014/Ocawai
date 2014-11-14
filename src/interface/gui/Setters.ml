@@ -19,7 +19,11 @@ class virtual setter pos name = object(self)
 
   method draw (target : OcsfmlGraphics.render_window) =
 
-    let bg_color = if has_focus then Color.rgb 237 240 242 else Color.white in
+    let bg_color =
+      if self#holds_focus then Color.rgb 222 222 222
+      else if has_focus then Color.rgb 237 240 242
+      else Color.white
+    in
     new rectangle_shape ~fill_color:bg_color
       ~size:(setter_width,setter_height) ~position:self#position
       ~origin:(setter_width/.2.,setter_height/.2.)
@@ -74,8 +78,14 @@ class ['a] slider pos (f : int -> 'a) name = object(self)
     |> target#draw
 
 
-  method action = ()
+  method action =
+    holds_focus <- true
 
-  method handle_key key = ()
+  method handle_key = OcsfmlWindow.KeyCode.(function
+    | Left -> ()
+    | Right -> ()
+    | Return -> holds_focus <- false
+    | _ -> ()
+  )
 
 end
