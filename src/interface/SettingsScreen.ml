@@ -1,6 +1,7 @@
 open OcsfmlGraphics
 open Utils
 open GuiTools
+open Settings
 
 open Manager
 
@@ -17,8 +18,8 @@ class state = object(self)
     screen <- new Home.screen
       []
       [
-        (new Setters.slider (w /. 2., 150.) (fun i -> i) "Cursor speed" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. Setters.setter_height) (fun i -> i) "Zoom speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150.) (fun i -> settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i))) "Cursor speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150. +. Setters.setter_height) (fun i -> ()) "Zoom speed" :> Home.actionnable) ;
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop) ;
       ]

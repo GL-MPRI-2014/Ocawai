@@ -18,14 +18,11 @@ class virtual setter : (float * float) -> string -> object
 end
 
 (** A slider
-  * ['a] represents the type returned by the slider
   * It takes a function that should associate every integer between [0]
-  * and [100] to an ['a] value (basically what is set) *)
-class ['a] slider : (float * float) -> (int -> 'a) -> string -> object
+  * and [100] to a unit value (typically a setter) *)
+class slider : (float * float) -> (int -> unit) -> string -> object
 
   inherit setter
-
-  method value : 'a
 
   method draw : OcsfmlGraphics.render_window -> unit
 

@@ -39,7 +39,7 @@ class virtual setter pos name = object(self)
 
 end
 
-class ['a] slider pos (f : int -> 'a) name = object(self)
+class slider pos update name = object(self)
 
   inherit setter pos name as super_set
 
@@ -49,8 +49,6 @@ class ['a] slider pos (f : int -> 'a) name = object(self)
   val cursor_r = 10.
 
   val mutable percentage = 50
-
-  method value = f percentage
 
   method draw (target : OcsfmlGraphics.render_window) =
 
@@ -77,14 +75,19 @@ class ['a] slider pos (f : int -> 'a) name = object(self)
       ()
     |> target#draw
 
+  method private incr =
+    percentage <- min (percentage + 1) 100
+
+  method private decr =
+    percentage <- max 0 (percentage - 1)
 
   method action =
     holds_focus <- true
 
   method handle_key = OcsfmlWindow.KeyCode.(function
-    | Left -> percentage <- percentage - 1
-    | Right -> percentage <- percentage + 1
-    | Return -> holds_focus <- false
+    | Left -> self#decr
+    | Right -> self#incr
+    | Return -> holds_focus <- false ; update percentage
     | _ -> ()
   )
 
