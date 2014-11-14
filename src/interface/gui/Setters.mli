@@ -3,6 +3,9 @@
 open Settings
 open Home
 
+(** Height of a setter *)
+val setter_height : float
+
 (** Basic setter *)
 class virtual setter : (float * float) -> string -> object
 
