@@ -7,6 +7,10 @@ open Utils
 
 let font = new font (`File "resources/fonts/Roboto-Regular.ttf")
 
+let setter_width = 800.
+let setting_width = 300.
+let setter_height = 40.
+
 class virtual setter pos name = object(self)
 
   inherit actionnable
@@ -17,7 +21,7 @@ class virtual setter pos name = object(self)
 
     let bg_color = if has_focus then Color.blue else Color.white in
     new rectangle_shape ~fill_color:bg_color
-      ~size:(800.,40.) ~position:self#position
+      ~size:(setter_width,setter_height) ~position:self#position
       ~origin:(400.,20.)
       ()
     |> target#draw ;
@@ -26,8 +30,8 @@ class virtual setter pos name = object(self)
       target name font Color.black (Pix 30) (Pix 2) Left {
         left = fst self#position +. 2. -. 400. ;
         top = snd self#position +. 4. -. 20. ;
-        width = 800. -. 4. ;
-        height = 40. }
+        width = setter_width -. setting_width -. 4. ;
+        height = setter_height }
 
 end
 
