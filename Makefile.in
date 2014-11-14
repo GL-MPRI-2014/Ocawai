@@ -40,7 +40,7 @@ dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(engine_dir),$(common_dir)
 interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
-network_src=$(network_dir)
+network_src=$(network_dir),$(common_dir)
 
 #dependencies required for each target
 common_dependencies = atdgen
@@ -49,7 +49,7 @@ music_dependencies = bigarray,mm,pulseaudio,threads,num
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
-network_libraries = unix
+network_libraries = unix,marshal
 
 #tags needed for each target
 interface_tags = thread
@@ -57,7 +57,7 @@ interface_tags = thread
 #name of the target for ocamlbuild
 output_interface = main.native
 output_engine = main_engine.native
-output_network = server.native
+output_network = dealer.native
 
 
 #get every source file of the project

@@ -8,11 +8,19 @@ type t = <
   add_unit : Unit.t -> unit;
   set_army : Unit.t list -> unit;
 
+
+  set_buildings : Building.t list -> unit;
   get_buildings : Building.t list;
   add_building : Building.t -> unit;
-  (* set_buildings : Building.t list -> unit; *)
   
-   get_next_action :  Action.t;    (* Appelé par la grosse boucle, renvoie depuis la file l'action que veut effectuer le joueur *)
+  (* set_buildings : Building.t list -> unit; *)
+
+  (* not implemented yet *)
+  delete_unit : Unit.t -> unit;
+  move_unit : Unit.t -> Path.t -> unit;
+  delete_building : Building.t -> unit;
+  
+  get_next_action :  Action.t;    (* Appelé par la grosse boucle, renvoie depuis la file l'action que veut effectuer le joueur *)
 >
 
 val create_player : unit -> t

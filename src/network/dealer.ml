@@ -2,15 +2,15 @@ open Unix
 open Marshal
 open Types
 
-class dealer (sockfd : file_descr) (tablogp : LogP.t list) (clip : CliP.t) =
+class dealer (s : file_descr) (tablogp : Player.t list) (clip : Player.t) =
 object (self)
 	 
   (* The socket we read from and write into to communicate with the net player over the network *)
-  val mutable sockfd = sockfd
+  val mutable sockfd = s
 
   (* in_channel and out_channel corresponding to that socket *)
-  val in_channel = in_channel_of_descr sockfd
-  val out_channel = out_channel_of_descr sockfd
+  val mutable in_channel = in_channel_of_descr s
+  val mutable out_channel = out_channel_of_descr s
 
   (* list of all the other (logical) players *)
   val tab_players = tablogp
@@ -24,7 +24,9 @@ object (self)
   (* Mazzocchi asked for it *)
 	
   method change_socket s =
-    sockfd = s
+    sockfd <- s;
+    in_channel <- in_channel_of_descr s;
+    out_channel <- out_channel_of_descr s
 
 
 
@@ -39,37 +41,40 @@ object (self)
     in
     fonction_a_la_con id tab_players
 
-  (* give the player which id is id - or send Wrong_id_player *)
+  (* give the player which id is id - or send Wrong_id_player and give cli_player *)
+
 
   method get_player id =
     if cli_player#get_id = id
     then cli_player
     else
       try
-	list_scan id
+	self#list_scan id
       with
-	Not_found -> to_channel out_channel (Error Wrong_id_player) [Closures];
+	Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures]; cli_player)
+		     
+		     
 
 
-  (* manages Get_next_action*)
+  (* manages Get_next_action *)
 
   method manage_gna = 
     let action = cli_player#get_next_action in
-    to_channel out_channel (Next_action action)
+    to_channel out_channel (Next_action action) [Closures]
     
 
-  (* do what have to be done with an update... *)
+  (* do what has to be done with an update... *)
 
   method manage_update = function
     | Game_over -> ()
     | Classement -> ()
-    | Set_army (l,id) -> (get_player id)#set_army l
-    | Set_building (l,id) -> (get_player id)#set_building l
-    | Add_unit (u,id) -> (get_player id)#add_unit u
-    | Add_building (b,id) -> (get_player id)#add_building b
-    | Delete_unit (u,id) -> (get_player id)#delete_unit u
-    | Delete_building (b,id) -> (get_player id)#delete_building b
-    | Move_unit (u,p,id) -> (get_player id)#move_unit u p
+    | Set_army (l,id) -> (self#get_player id)#set_army l
+    | Set_building (l,id) -> (self#get_player id)#set_buildings l
+    | Add_unit (u,id) -> (self#get_player id)#add_unit u
+    | Add_building (b,id) -> (self#get_player id)#add_building b
+    | Delete_unit (u,id) -> (self#get_player id)#delete_unit u
+    | Delete_building (b,id) -> (self#get_player id)#delete_building b
+    | Move_unit (u,p,id) -> (self#get_player id)#move_unit u p
 
 
 
@@ -87,7 +92,7 @@ object (self)
 
 end
 
-type t = cliPlayer
+type t = dealer
 
-let create_cliPlayer sockfd = new cliPlayer sockfd;
+let create_dealer sockfd tablogp clip = new dealer sockfd tablogp clip
 

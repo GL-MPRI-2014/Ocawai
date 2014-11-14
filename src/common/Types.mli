@@ -2,16 +2,9 @@
 (** @author Paul-Gallot Julien Grange et François Thiré *)
 
 
-type Error = Wrong_id_player
-
-(*what a NetPlayer send to a client player*)
-type  send = Get_next_action | Update of update
-
-(*What a client player send to a Net Player *)
-type  receive = Next_action of Action.t | Error of Error
+type error = Wrong_id_player
 
 type id_player = int
-
 
 (** Type of the data sent from the engine to the player/client *)
 type update =
@@ -25,4 +18,14 @@ type update =
   | Delete_building of Building.t * id_player(*fog or kill*)
   | Move_unit of Unit.t * Path.t * id_player
                        
+
+
+(*what a NetPlayer send to a client player*)
+type  send = Get_next_action | Update of update
+
+(*What a client player send to a Net Player *)
+type  receive = Next_action of Action.t | Error of error
+
+
+
                          
