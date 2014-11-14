@@ -142,7 +142,6 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(network_dir)
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
-	mkdir $(distdir)/$(music_tools_dir)
 	mkdir $(distdir)/$(test_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
