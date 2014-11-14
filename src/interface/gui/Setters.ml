@@ -82,8 +82,8 @@ class ['a] slider pos (f : int -> 'a) name = object(self)
     holds_focus <- true
 
   method handle_key = OcsfmlWindow.KeyCode.(function
-    | Left -> ()
-    | Right -> ()
+    | Left -> percentage <- percentage - 1
+    | Right -> percentage <- percentage + 1
     | Return -> holds_focus <- false
     | _ -> ()
   )
