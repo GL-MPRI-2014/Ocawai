@@ -41,7 +41,7 @@ let to_string_off m off1 off2 =
   | n,p::q when Tile.get_name p = Tile.get_name e -> n
   | n,p::q -> mempos e (n+1,q)
   in
-  let s = String.init 
+  let s = Utils.init_string
     (w*h) 
     (fun i ->
       let pos = Position.create (i/w,i mod w) in
@@ -58,12 +58,12 @@ let to_string_off m off1 off2 =
     |l,i-> l
     in
     let li = List.rev (aux ([],0)) in
-    let ss = String.init (2*List.length li) (fun i -> '?') in
+    let ss = Utils.init_string (2*List.length li) (fun i -> '?') in
     let rec list_to_string n = function
     | []->ss
     | (a,b)::q ->
-      Bytes.set ss (2*n) a;
-      Bytes.set ss (2*n+1) (char_of_int ((b+off2) mod 256));
+      ss.[2*n] <- a;
+      ss.[2*n+1] <- (char_of_int ((b+off2) mod 256));
       list_to_string (n+1) q
     in
     list_to_string 0 li
@@ -78,12 +78,12 @@ let create_from_string_off w h s_short off1 off2 =
     in
     let li = string_to_list 0 in
     let size_new_string = List.fold_left (fun t e -> snd e + t) 0 li in
-    let ss = String.init size_new_string (fun i -> '?') in
+    let ss = Utils.init_string size_new_string (fun i -> '?') in
     let rec fill_string p = function
     | [] -> ss
     | (a,b)::q -> 
       for i = 0 to b-1 do 
-        Bytes.set ss (p+i) a;
+        ss.[p+i] <- a;
       done;
       fill_string (p+b) q
     in
