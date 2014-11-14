@@ -27,6 +27,10 @@ val (>?) : 'a option -> ('a  -> unit) -> unit
 (** [shuffle l] return a new list with elements reorganized randomly *)
 val shuffle : 'a list -> 'a list
 
+(** [init_string n f] returns a new string of size n, where the ith 
+  * character is f i *)
+val init_string : int -> (int -> char) -> string
+
 module type PrioQueue =
     sig
       type priority = int         (* still concrete *)
