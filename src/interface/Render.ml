@@ -188,6 +188,7 @@ let render_game (target : #OcsfmlGraphics.render_target)
   draw_cursor target data#camera;
   List.iter (fun p -> List.iter (draw_unit target data#camera) p#get_army)
     data#players;
+  data#minimap#draw target data#camera#cursor;
   FPS.display target
 
 let load_ressources () =

@@ -4,6 +4,8 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method map : Battlefield.t
 
+  method minimap : Minimap.minimap
+
   method camera : Camera.camera
 
   method players : Player.t list
