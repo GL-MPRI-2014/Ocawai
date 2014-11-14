@@ -20,7 +20,7 @@ class virtual setter pos name = object(self)
   method draw (target : OcsfmlGraphics.render_window) =
 
     let bg_color =
-      if self#holds_focus then Color.rgb 222 222 222
+      if self#holds_focus then Color.rgb 233 233 233
       else if has_focus then Color.rgb 237 240 242
       else Color.white
     in
@@ -44,9 +44,9 @@ class slider pos update name = object(self)
   inherit setter pos name as super_set
 
   val slider_h = 2.
-  val slider_w = setting_width -. 20.
+  val slider_w = setting_width -. 30.
 
-  val cursor_r = 10.
+  val cursor_r = 7.
 
   val mutable percentage = 50
 
