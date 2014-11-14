@@ -1,5 +1,10 @@
 type t = int * int
 
+let compare (x0,y0) (x1,y1) =
+  match Pervasives.compare x0 x1 with
+  | 0 -> Pervasives.compare y0 y1
+  | c -> c
+
 let create p = p
 
 let topair p = p
@@ -55,7 +60,6 @@ let range center minr maxr =
 let project p c i = 
   let (a,b) = diff p c in
   (a * i, b * i)
-
 
 let dist (x1,y1) (x2,y2) =
   (abs (x2-x1)) + (abs (y2-y1)) 

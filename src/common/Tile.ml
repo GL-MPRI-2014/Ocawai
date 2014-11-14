@@ -1,63 +1,80 @@
+open Tile_t
 
-type t = {
-  name: string;
-  walk_cost: int;
-  roll_cost: int;
-  tread_cost: int;
-  swim_cost: int;
-  fly_cost: int;
-  density: int
-}
+type structure = Tile_t.structure
+
+type t = Tile_t.t
 
 let get_name tile = tile.name
 
 let get_density tile = tile.density
 
+let get_structure tile = tile.structure
+
 let traversable_m tile movement =
   let open Unit in
   match movement with
-  | Walk -> tile.walk_cost >= 0
-  | Roll -> tile.roll_cost >= 0
+  | Walk  -> tile.walk_cost >= 0
+  | Roll  -> tile.roll_cost >= 0
   | Tread -> tile.tread_cost >= 0
-  | Swim -> tile.swim_cost >= 0
-  | Fly -> tile.fly_cost >= 0
-  | Amphibious_Walk -> tile.swim_cost >= 0 || tile.walk_cost >= 0
-  | Amphibious_Roll -> tile.swim_cost >= 0 || tile.roll_cost >= 0
-  | Amphibious_Tread-> tile.swim_cost >= 0 || tile.tread_cost >= 0
+  | Swim  -> tile.swim_cost >= 0
+  | Fly   -> tile.fly_cost >= 0
+  | Amphibious_Walk  -> tile.swim_cost >= 0 || tile.walk_cost >= 0
+  | Amphibious_Roll  -> tile.swim_cost >= 0 || tile.roll_cost >= 0
+  | Amphibious_Tread -> tile.swim_cost >= 0 || tile.tread_cost >= 0
+  | All   -> List.exists (fun i -> i>=0) [tile.roll_cost; tile.tread_cost; tile.swim_cost; tile.fly_cost]
 
 let traversable tile soldier = traversable_m tile soldier#movement_type
+
+let compare_movements_list t1 t2 li =
+  let count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l in
+  let csup = count (fun i -> i>0) li in
+  let cinf = count (fun i -> i<0) li in
+  if csup = 0 then
+    Some (-cinf)
+  else
+    if cinf = 0 then
+      Some csup
+    else
+      None
+
+let compare_movements t1 t2 = 
+  compare_movements_list t1 t2 
+    [ compare (t1.walk_cost >=0) (t2.walk_cost >=0) ;
+      compare (t1.roll_cost >=0) (t2.roll_cost >=0) ;
+      compare (t1.tread_cost >=0) (t2.tread_cost >=0) ;
+      compare (t1.swim_cost >=0) (t2.swim_cost >=0) ;
+      compare (t1.fly_cost >=0) (t2.fly_cost >=0) ]
+
+let compare_walkability t1 t2 = 
+  compare_movements_list t1 t2 
+    [ compare (t1.walk_cost >=0) (t2.walk_cost >=0) ;
+      compare (t1.roll_cost >=0) (t2.roll_cost >=0) ;
+      compare (t1.tread_cost >=0) (t2.tread_cost >=0) ]
 
 let movement_cost tile movement =
   let min_pos a b = if a >= 0 then if b >= 0 then min a b else a else b in
   let cost =
     let open Unit in
     match movement with
-      | Walk -> tile.walk_cost
-      | Roll -> tile.roll_cost
+      | Walk  -> tile.walk_cost
+      | Roll  -> tile.roll_cost
       | Tread -> tile.tread_cost
-      | Swim -> tile.swim_cost
-      | Fly -> tile.fly_cost
-      | Amphibious_Walk -> min_pos tile.swim_cost tile.walk_cost
-      | Amphibious_Roll -> min_pos tile.swim_cost tile.roll_cost
-      | Amphibious_Tread-> min_pos tile.swim_cost tile.tread_cost in
+      | Swim  -> tile.swim_cost
+      | Fly   -> tile.fly_cost
+      | Amphibious_Walk  -> min_pos tile.swim_cost tile.walk_cost
+      | Amphibious_Roll  -> min_pos tile.swim_cost tile.roll_cost
+      | Amphibious_Tread -> min_pos tile.swim_cost tile.tread_cost
+      | All   ->
+          List.fold_left
+            min_pos
+            tile.walk_cost
+            [tile.roll_cost; tile.tread_cost; tile.swim_cost; tile.fly_cost] in
   if cost >= 0 then cost else failwith("Tile.movement_cost : not a valid movement")
 
 let tile_cost tile soldier = movement_cost tile soldier#movement_type
 
-let tile_t_to_t ti =
-  {
-    name = ti.Tile_t.name;
-    walk_cost = ti.Tile_t.walk_cost;
-    roll_cost = ti.Tile_t.roll_cost;
-    tread_cost = ti.Tile_t.tread_cost;
-    swim_cost = ti.Tile_t.swim_cost;
-    fly_cost = ti.Tile_t.fly_cost;
-    density = ti.Tile_t.density
-  }
-
 let create_list_from_file file =
-  List.map tile_t_to_t (Ag_util.Json.from_file Tile_j.read_t_list file)
-  (*TODO : cache ? *)
+  Ag_util.Json.from_file Tile_j.read_t_list file
 
 let create_from_file name file =
   let tiles = create_list_from_file file in

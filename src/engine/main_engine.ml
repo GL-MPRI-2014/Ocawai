@@ -1,45 +1,48 @@
 (** main function for testing the engine (only the generation and djikstra for now) *)
-let print_ascii m a p sp=
-let (w,h) = Battlefield.size m in
-for i = 0 to w-1 do
-  for j = 0 to h-1 do
-  let pos = Position.create (i,j) in
-  let t = Battlefield.get_tile m pos in
-  let name =
-    (( if List.mem pos sp
-        then "spawn"
-      else if List.exists (List.exists (fun u -> u#position = pos)) a
-        then "unit"
-      else if List.mem pos (Path.get_move p)
-        then "path"
-      else "") , Tile.get_name t )
-  in
-  print_string (match name with
-              | "","water" -> "  "
-              | "","plain" -> ". "
-              | "","forest" -> ": "
-              | "","concrete" -> "= "
-              | "","mountain" -> "/\\"
-              | "spawn","water" -> " S"
-              | "spawn","plain" -> ".S"
-              | "spawn","forest" -> ":S"
-              | "spawn","concrete" -> "=S"
-              | "spawn","mountain" -> "/S"
-              | "unit","water" -> " @"
-              | "unit","plain" -> ".@"
-              | "unit","forest" -> ":@"
-              | "unit","concrete" -> "=@"
-              | "unit","mountain" -> "/@"
-              | "path","water" -> " #"
-              | "path","plain" -> ".#"
-              | "path","forest" -> ":#"
-              | "path","concrete" -> "=#"
-              | "path","mountain" -> "/#"
-              | _ -> "?"
-  )
-  done;
-  print_endline ""
-done
+let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
+  let (w,h) = Battlefield.size m in
+  for i = 0 to w-1 do
+    for j = 0 to h-1 do
+    let pos = Position.create (i,j) in
+    let t = Battlefield.get_tile m pos in
+    let name =
+      (( if List.mem pos sp
+          then "spawn"
+        else if List.exists (List.exists (fun u -> u#position = pos)) a
+          then "unit"
+        else if List.mem pos (Path.get_move p)
+          then "path"
+        else "") , Tile.get_name t )
+    in
+    print_string (let str = String.init 2 (fun i -> '?') in
+      begin
+        match fst name with
+        | "spawn" -> Bytes.set str 1 'S';
+        | "unit" -> Bytes.set str 1 '@';
+        | "path" -> Bytes.set str 1 '#';
+        | "" -> Bytes.set str 1 ' ';
+        | _ -> ()
+      end;
+      begin
+      match snd name with
+        | "water" -> Bytes.set str 0 ' ';
+        | "shallow" -> Bytes.set str 0 '%';
+        | "sand" -> Bytes.set str 0 '~';
+        | "beach" -> Bytes.set str 0 '_';
+        | "road" -> Bytes.set str 0 '=';
+        | "plain" -> Bytes.set str 0 '.';
+        | "forest" -> Bytes.set str 0 ':';
+        | "concrete" -> Bytes.set str 0 'X';
+        | "mountain" -> Bytes.set str 0 '/'; if str.[1] = ' ' then Bytes.set str 1 '\\';
+        | _ -> ()
+      end;
+      str
+    )
+    done;
+    print_endline ""
+  done
+
+let print_ascii m = print_ascii_extended m [[];[]] Path.empty []
 
 let get_game_parameters ()=
 	print_string "Entrer le nom de la partie : ";
@@ -55,7 +58,7 @@ let get_game_parameters ()=
 let djikstra_test gen =
   let dij = Path.dijkstra (gen#field) (List.hd gen#spawns) (Unit.Walk) in
   let r = dij (List.nth gen#spawns 1) in
-  print_ascii gen#field gen#armies (match r with | None -> Path.empty | Some (_,b) -> b) gen#spawns;
+  print_ascii_extended gen#field gen#armies (match r with | None -> Path.empty | Some (_,b) -> b) gen#spawns;
   print_endline ("path length between spawns 1 and 2 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a))
   
 let init_players list_armies =
@@ -77,6 +80,19 @@ let () =
 begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in  
   let init_field = new FieldGenerator.t map_width map_height players_number 10 5 in
+  
+    (* test de la compression/decompression de la map*)
+    print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
+    let s = Battlefield.to_string init_field#field(*(Battlefield.create map_width map_height (Tile.create_from_config "plain"))*) in
+    print_endline ("Size : "
+      ^(string_of_int (map_width*map_height))
+      ^" tiles, compressed to a string of "
+      ^(string_of_int (String.length s))
+      ^" char :");
+    print_endline s;
+    let m =Battlefield.create_from_string map_width map_height s in
+    print_ascii m;
+  
  (* djikstra_test init_field; *)
   let players = init_players (init_field#armies) and current_player = ref (init_current_player players_number) and gameover = ref false in
   while not !gameover do
@@ -90,4 +106,5 @@ begin
       ()
 		done;
 	done;
+	
 end
