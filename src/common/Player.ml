@@ -1,6 +1,6 @@
 open List
 
-class  player (a : Unit.t list) (b : Building.t list) =
+class player (a : Unit.t list) (b : Building.t list) =
   object (self)
     val mutable army = (a : Unit.t list)
     val mutable buildings = (b : Building.t list)
@@ -15,6 +15,13 @@ class  player (a : Unit.t list) (b : Building.t list) =
     method get_buildings = buildings
     method add_building b = buildings <- b::buildings
     method get_next_action = ([]:Action.movement),Action.Wait
+
+
+    (* TODO : implement these methods *)
+    method delete_unit (u : Unit.t) = ()
+    method move_unit (u : Unit.t) (p : Path.t) = ()
+    method delete_building (b : Building.t) = ()
+
     initializer id <- Oo.id self
   end
   
