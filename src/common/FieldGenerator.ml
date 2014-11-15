@@ -1,6 +1,8 @@
 open Position
 open Utils
 
+exception GeneratorFailure
+
 exception NotEnoughSpawns
 exception BadSpawnsSequence
 exception NotEnoughPlace
@@ -10,44 +12,57 @@ exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
 
-(*renvoie la liste des 8 tuiles voisines d'une case*)
-let neighbors m pos =
-  let nei = [left (up pos); left pos; left (down pos); up pos; down pos;
-    right(up pos); right pos; right (down pos)] in
-  let nei_in_range =
-    List.filter
-      (Battlefield.in_range m)
-      nei in
+let neigh_list t = [up t;down t;left t;right t]
+
+let neigh_list_corners t = [up t;down t;left t;right t;up (left t);down (right t);left (down t);right (up t)]
+
+let pos_neighbors_aux m f p =
+  List.filter
+    (Battlefield.in_range m)
+    (f p)
+
+let pos_neighbors_corners m p =
+  pos_neighbors_aux m neigh_list_corners p
+
+let pos_neighbors m p =
+  pos_neighbors_aux m neigh_list p
+
+let neighbors_corners m pos =
   List.map
     (Battlefield.get_tile m)
-    nei_in_range
+    (pos_neighbors_corners m pos)
+
+let neighbors m pos =
+  List.map
+    (Battlefield.get_tile m)
+    (pos_neighbors m pos)
 
 module SetPos = Set.Make(Position)
 
-(* renvoie la liste des positions voisines d'une liste de positions, sans doublons *)
+let rec neighbours_set_aux f = function
+| [] -> SetPos.empty
+| p::q -> List.fold_right SetPos.add (f p) (neighbours_set_aux f q)
+
+let neighbours_set l =
+  SetPos.filter
+    (fun e -> not (List.mem e l))
+    (neighbours_set_aux neigh_list l)
+
+let neighbours_corners_set l =
+  SetPos.filter
+    (fun e -> not (List.mem e l))
+    (neighbours_set_aux neigh_list_corners l)
+
 let neighbours l =
-  let rec neigh_aux = function
-    |[] -> SetPos.empty
-    |t::q -> List.fold_right SetPos.add [up t;down t;left t;right t] (neigh_aux q)
-  in 
   SetPos.fold 
     (fun e l -> e::l) 
-    (SetPos.filter
-      (fun e -> not (List.mem e l))
-      (neigh_aux l))
+    (neighbours_set l)
     []
 
-(* pareil mais considère les coins du carré 3*3 centré sur une position comme voisins *)
 let neighbours_corners l =
-  let rec neigh_aux = function
-    |[] -> SetPos.empty
-    |t::q -> List.fold_right SetPos.add [up t;down t;left t;right t;up (left t);down (right t);left (down t);right (up t)] (neigh_aux q)
-  in 
   SetPos.fold 
     (fun e l -> e::l) 
-    (SetPos.filter
-      (fun e -> not (List.mem e l))
-      (neigh_aux l))
+    (neighbours_corners_set l)
     []
 
 let count f l = List.fold_left (fun c e -> if f e then 1+c else c) 0 l
@@ -130,45 +145,119 @@ let get_tile_with_density total tiles =
 (* degre de contiguite d'une position = nb de voisins identiques / nb de voisins*)
 let contiguite m pos =
   let name = Tile.get_name (Battlefield.get_tile m pos) in
-  let nei = neighbors m pos in
+  let nei = neighbors_corners m pos in
   let a = count (fun t -> Tile.get_name t = name) nei in
   let b = List.length nei in
   float_of_int a /. float_of_int b
 
-
-let swap_gen width height = (* stats sur 300 générations : en 100*100 a 2 joueurs, la génération prend en moyenne 1.2 secondes et rate 1 fois sur 3 *)
-  Random.self_init();
-  let tiles_all = Tile.create_list_from_config () in
-  let tiles =
-    List.filter
-    (fun a -> Tile.get_structure a = `Block)
-    tiles_all in
-  let get_tile_with_density () =
-    let total = total_density tiles in
-    get_tile_with_density total tiles in
-  let m = Battlefield.create width height (List.hd tiles) in
-
-  (* fill the map with regards to densities *)
-  Battlefield.tile_iteri
-    (fun p _ -> Battlefield.set_tile m p (get_tile_with_density ()))
-    m;
-
+let swap_smoothing m factor =
+  let (width,height) = Battlefield.size m in
   let swap pos1 pos2 =
     let t1 = Battlefield.get_tile m pos1 in
     Battlefield.set_tile m pos1 (Battlefield.get_tile m pos2);
     Battlefield.set_tile m pos2 t1
   in
-
   (* on prends 2 positions random, on les swap si ca augmente la contiguite, et on itere*)
-  for i = 0 to 50 * width * height (* arbitraire *) do
+  for i = 0 to factor * width * height (* arbitraire *) do
     let pos1 = create (Random.int width , Random.int height) in
     let pos2 = create (Random.int width , Random.int height) in
-    let previous = contiguite m pos1 +. contiguite m pos2 in
+    let pc1 = contiguite m pos1 in
+    let pc2 = contiguite m pos2 in 
     swap pos1 pos2;
-    if previous > contiguite m pos1 +. contiguite m pos2 then
+    let c1 = contiguite m pos1 in
+    let c2 = contiguite m pos2 in
+    if pc1 +. pc2 > c1 +. c2  || ((c1 = 0. || c2 = 0.) && (pc1 <> 0. && pc2 <> 0.)) then
       swap pos1 pos2;
-  done;
+  done
+
+
+
+let swap_gen width height =
+  let tiles_all = Tile.create_list_from_config () in
+  let tiles =
+    List.filter
+    (fun a -> Tile.get_structure a = `Block)
+    tiles_all in
+  if (List.length tiles = 0) then failwith("no `Block tiles in config") else
+  let total = total_density tiles in
+  let m = Battlefield.create width height (List.hd tiles) in
+
+  (* fill the map with regards to densities *)
+  Battlefield.tile_iteri
+    (fun p _ -> Battlefield.set_tile m p (get_tile_with_density total tiles))
+    m;
+  swap_smoothing m 50;
   m
+
+let seeds_gen width height =
+  let nbseeds = width*height/50 in
+  let tiles_all = Tile.create_list_from_config () in
+  let tiles =
+    List.filter
+    (fun a -> Tile.get_structure a = `Block)
+    tiles_all in
+  if (List.length tiles = 0) then failwith("no `Block tiles in config") else
+  let seed_tile = Tile.create_from_config "shallow" in
+  let blank_tile = Tile.create_from_config "blank" in
+  let m = Battlefield.create width height blank_tile in
+  let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank" in
+  let total = total_density tiles in
+  let rec create_seeds = function
+  | 0 -> []
+  | n ->
+    let t = get_tile_with_density total tiles in
+    let p = create(Random.int width,Random.int height) in
+    if List.for_all 
+        (fun pos -> 
+          Battlefield.in_range m pos
+          && ( is_blank m pos 
+              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t
+             )
+         )
+        (let ne = pos_neighbors_corners m p in p::ne@(neighbours_corners ne)) 
+    then
+    (
+      Battlefield.set_tile m p t(*seed_tile*); 
+      (t,p)::(create_seeds (n-1))
+    )
+    else
+      create_seeds (n-1)
+  in
+  let rec grow_list m t = function
+  | [] -> ()
+  | p::q ->
+    if is_blank m p then
+      Battlefield.set_tile m p t;
+    grow_list m t q
+  in
+  let rec behead = function
+  | 0,_ -> []
+  | n,[] -> []
+  | n,p::q -> p::(behead (n-1,q))
+  in
+  let grow_seed t nb_grow setpos =
+    let sl = behead (nb_grow,Utils.shuffle (SetPos.fold (fun e l -> e::l) setpos [])) in
+    grow_list m t sl;
+    SetPos.filter
+      (fun p -> is_blank m p)
+      (SetPos.union 
+        (SetPos.filter 
+          (fun p -> Battlefield.in_range m p)
+          (neighbours_set sl)
+        )
+        setpos
+      )
+  in
+  let rec grow = function
+  | [] -> ()
+  | ll -> grow (List.filter (fun (t,l) -> l <> SetPos.empty ) (List.map (fun (t,s) -> (t,grow_seed t (max 1 ((SetPos.cardinal s)*0/100)) s)) ll))
+  in
+  let seeds = create_seeds nbseeds in
+  let neigh = List.map (fun (t,p) -> (t, SetPos.filter (fun pos -> Battlefield.in_range m pos && is_blank m pos) (neighbours_set [p]))) seeds in
+  grow neigh;
+  (*swap_smoothing m 20;*)
+  m
+  
 
 (* un placement est valide si les unites sont placees sur des tuiles acceptant leurs mouvements *)
 let test_movement attempt =
@@ -228,7 +317,7 @@ let init_placement m nbplayers = (* séparé de placement pour ne pas le recalcu
     (
       let is_plain t = Tile.get_name t = "plain" in
       fun pos ti ->
-        let nei = neighbors m pos in
+        let nei = neighbors_corners m pos in
         if test_dist_edge pos
             && Tile.get_name ti = "plain"
             && count is_plain nei = 8 then
@@ -314,13 +403,13 @@ let placement_roads m = () (*TODO*)
 (* place les plages et autres (?) bordures de `Block *)
 let placement_borders m =
   let borders = Tile.create_list_from_config () in
-  (* place la bordure (water : string,rate : int (0-1000),expansion : int) de tuile beach*)
+  (* place la bordure (water : string, rate : int (0-1000), expansion : int) de tuile beach*)
   let placement_border (water, rate, expansion) beach =
     let poslist_water =
       Battlefield.tile_filteri 
         (fun pos t ->
           Tile.get_name t = water
-          && count (fun u -> Tile.get_name u = water) (neighbors m pos) <> 8)
+          && count (fun u -> Tile.get_name u = water) (neighbors_corners m pos) <> 8)
         m 
       in
     let poslist_beach =
@@ -430,12 +519,14 @@ let structures_spawn m nbplayers nbattempts =
 
 let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
   let rec generate_aux = function
-  | 0 -> failwith("generator failed, not enough tries? bad calling arguments?")
+  | 0 -> 
+    print_endline("generator failed, not enough tries? bad calling arguments?");
+    raise GeneratorFailure
   | n ->
     begin
       print_endline ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^": ");
       try
-        let m = swap_gen width height in
+        let m = seeds_gen width height in
         structures_spawn m nbplayers nbattempts2;
         let (a,sp) = units_spawn m nbplayers nbattempts3 (init_placement m nbplayers) in
         let attempt = (m,a,sp) in
@@ -459,7 +550,7 @@ let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
 
 class t (width:int) (height:int) (nbplayers:int) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
 object (self)
-  val g = generate width height nbplayers generate_attempts (*structs_attempts*) 1 units_spawn_attempts
+  val g = Random.self_init();generate width height nbplayers generate_attempts (*structs_attempts*) 1 units_spawn_attempts
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp

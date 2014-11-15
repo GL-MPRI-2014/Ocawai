@@ -81,8 +81,9 @@ begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in  
   let init_field = new FieldGenerator.t map_width map_height players_number 10 5 in
   
+  print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
+    (*
     (* test de la compression/decompression de la map*)
-    print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
     let s = Battlefield.to_string init_field#field(*(Battlefield.create map_width map_height (Tile.create_from_config "plain"))*) in
     print_endline ("Size : "
       ^(string_of_int (map_width*map_height))
@@ -90,9 +91,9 @@ begin
       ^(string_of_int (String.length s))
       ^" char :");
     print_endline s;
-    let m =Battlefield.create_from_string map_width map_height s in
+    let m = Battlefield.create_from_string map_width map_height s in
     print_ascii m;
-  
+    *)
  (* djikstra_test init_field; *)
   let players = init_players (init_field#armies) and current_player = ref (init_current_player players_number) and gameover = ref false in
   while not !gameover do

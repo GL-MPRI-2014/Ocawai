@@ -1,5 +1,8 @@
 [
   {
+    "name": "blank"
+  },
+  {
     "name": "water",
     "walk_cost": -1,
     "roll_cost": -1,
