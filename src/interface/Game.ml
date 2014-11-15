@@ -244,7 +244,6 @@ let new_game () =
 
     (* Rendering goes here *)
     Render.render_game window cdata;
-    Render.draw_hud window;
     Render.draw_gui window ui_manager;
 
     window#display

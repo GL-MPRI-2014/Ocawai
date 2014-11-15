@@ -41,7 +41,7 @@ class textured_item name position = object(self)
   inherit item
 
   method draw target =
-    Render.draw_txr target name position ()
+    Render.draw_txr target name ~position ()
 
   method position = position
 
@@ -55,7 +55,7 @@ class textured_actionnable txr txr_hover position (action : unit -> unit) = obje
   method action = action ()
 
   method draw target =
-    if has_focus then Render.draw_txr target txr_hover position () ;
+    if has_focus then Render.draw_txr target txr_hover ~position () ;
     super#draw target
 
 end

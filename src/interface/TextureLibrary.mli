@@ -15,4 +15,4 @@ val load_texture : t -> string -> unit
 
 val get_texture : t -> string -> drawable
 
-val assert_texture : drawable -> OcsfmlGraphics.texture
+val get_size : drawable -> (int * int) 

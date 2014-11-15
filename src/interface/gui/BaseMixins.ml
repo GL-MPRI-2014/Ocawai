@@ -94,21 +94,16 @@ class virtual has_toolbar = object(self)
     new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
       ~fill_color:theme.Theme.bar_color ()
     |> target#draw;
-    let texture = TextureLibrary.get_texture lib toolbar_icon 
-      |> TextureLibrary.assert_texture in
-    let (sx, sy) = foi2D texture#get_size in
-    let scale = (float_of_int toolbar_height) /. sy in
-    new sprite ~position ~texture ~scale:(scale, scale) ()
-    |> target#draw;
+    let th = float_of_int toolbar_height in 
+    Render.draw_txr target toolbar_icon ~position ~size:(th, th) ~centered:false ();
     let (posx,posy) = position in
-    let tx = sx *. scale in
     let (sx,sy) = foi2D (fst size, toolbar_height) in
     rect_print
       target toolbar_text bold_font Color.white (Pix (toolbar_height - 3))
         (Pix 2) Left {
-          left = posx +. tx ;
+          left = posx +. th ;
           top = posy ;
-          width = sx -. tx ;
+          width = sx -. th ;
           height = sy }
 
 end

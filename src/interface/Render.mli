@@ -1,14 +1,12 @@
 (** Rendering module *)
 
 (** Draw a [texture] in screen coordinates (from the local library).
-  * Usage: [draw_txr target name position rotation]*)
+  * Usage: [draw_txr target name ... ]*)
 val draw_txr : #OcsfmlGraphics.render_target -> string ->
-  (float * float) -> ?rotation:float-> ?scale:(float*float) -> 
+  ?tile_name:string -> ?position:(float * float) -> 
+  ?rotation:float -> ?size:(float*float) -> ?scale:(float*float) -> 
   ?blend_mode:OcsfmlGraphics.blend_mode -> ?color:OcsfmlGraphics.Color.t -> 
-    unit -> unit
-
-(** Draw the Head-User-Display *)
-val draw_hud : #OcsfmlGraphics.render_target -> unit
+  ?centered:bool -> unit -> unit
 
 (** Draw the GUI *)
 val draw_gui : #OcsfmlGraphics.render_target -> UIManager.ui_manager -> unit

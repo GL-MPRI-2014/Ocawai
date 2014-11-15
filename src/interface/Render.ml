@@ -11,31 +11,37 @@ let filter_positions map p =
           (Position.create (Battlefield.size map))
           (Position.create (1,1))))
 
-let draw_txr (target : #OcsfmlGraphics.render_target) name position ?rotation
-  ?scale ?blend_mode ?color () =
+let draw_txr (target : #OcsfmlGraphics.render_target) name ?tile_name 
+  ?position ?rotation ?size ?scale:(scale = (1.,1.)) ?blend_mode ?color 
+  ?centered:(centered = true) () =
     let texture = TextureLibrary.get_texture texture_library name in
+    let (sx,sy) =  foi2D (TextureLibrary.get_size texture) in
+    let origin  = 
+      if centered then (sx/.2.,sy/.2.)
+      else (0.,0.)
+    in
+    let scale   = 
+      match size with
+      |None -> scale
+      |Some(s) ->
+        let scalem  = (fst s /. sx, snd s /. sy) in
+        (fst scale *. fst scalem, snd scale *. snd scalem)
+    in
     match texture with
     |TextureLibrary.Tex(texture) ->
-      let (sx,sy) =  foi2D texture#get_size in
-      let origin  = (sx/.2.,sy/.2.) in
-      new sprite ~origin ~position ?rotation ~texture ?scale ?color ()
+      new sprite ~origin ?position ?rotation ~texture ~scale ?color ()
       |> target#draw ?blend_mode
-    |_ -> assert false
-
-let draw_tile (target : #OcsfmlGraphics.render_target) tileset_name tile_name 
-  position ?rotation ?scale ?blend_mode ?color () = 
-    let texture = TextureLibrary.get_texture texture_library tileset_name in
-    match texture with
     |TextureLibrary.TSet(set) ->
-      let (sx,sy) = foi2D (set#tile_size, set#tile_size) in 
-      let origin  = (sx/.2., sy/.2.) in
-      new sprite ~origin ~position ?rotation ~texture:set#texture
-        ~texture_rect:(set#texture_rect tile_name) ?scale ?color ()
+      let tile_name = match tile_name with
+        |Some(t) -> t
+        |None -> failwith "Cannot draw a tileset without a tile name"
+      in
+      new sprite ~origin ?position ?rotation ~texture:set#texture
+        ~texture_rect:(set#texture_rect tile_name) ~scale ?color ()
       |> target#draw ?blend_mode
-    | _ -> assert false
 
 let draw_from_map (target : #OcsfmlGraphics.render_target) camera 
-  name position ?rotation ?offset:(offset = (0.,0.)) 
+  name position ?tile_name ?rotation ?offset:(offset = (0.,0.)) 
   ?scale:(scale = (1.,1.)) ?blend_mode ?color () = 
   let (ox,oy) = offset in
   let position = addf2D
@@ -43,19 +49,8 @@ let draw_from_map (target : #OcsfmlGraphics.render_target) camera
     (ox *. camera#zoom, oy *. camera#zoom)
   in
   let scale = (fst scale *. camera#zoom, snd scale *. camera#zoom) in
-  draw_txr target name position ?color ?rotation ~scale ?blend_mode ()
-
-let draw_tile_from_map (target : #OcsfmlGraphics.render_target) camera 
-  set_name tile_name position ?rotation ?offset:(offset = (0.,0.)) 
-  ?scale:(scale = (1.,1.)) ?blend_mode ?color () = 
-  let (ox,oy) = offset in
-  let position = addf2D
-    (foi2D (camera#project position))
-    (ox *. camera#zoom, oy *. camera#zoom)
-  in
-  let scale = (fst scale *. camera#zoom, snd scale *. camera#zoom) in
-  draw_tile target set_name tile_name position 
-  ?color ?rotation ~scale ?blend_mode ()
+  draw_txr target name ~position ?tile_name ?color 
+    ?rotation ~scale ?blend_mode ()
 
 let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile_name map =
   (* Utility *)
@@ -98,9 +93,9 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
 
 let render_map (target : #OcsfmlGraphics.render_target) camera
                (map : Battlefield.t) =
-  let render_tile n p = 
-    draw_tile_from_map target camera "tileset" n p ();
-    render_joint target camera p n map
+  let render_tile tile_name p = 
+    draw_from_map target camera "tileset" p ~tile_name ();
+    render_joint target camera p tile_name map
   in
   List.iter
     (fun p -> render_tile (Tile.get_name (Battlefield.get_tile map p)) p)
@@ -141,9 +136,7 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
     | [] -> ()
 
 
-(* This is not-so-garbage *)
 let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
-  (* We might later want to draw it a bit to the top *)
   draw_from_map target camera (my_unit#name) (my_unit#position) ()
 
 let draw_range (target : #OcsfmlGraphics.render_target) camera map =
@@ -165,24 +158,6 @@ let draw_cursor (target : #OcsfmlGraphics.render_target) (camera : Camera.camera
   draw_from_map target camera "cursor" camera#cursor#position 
   ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset) 
   ~scale:(camera#cursor#scale, camera#cursor#scale) ()
-
-
-(* Problem : Currently the text position depends of the resolution *)
-(* We need to think it through not to have weird effects depending *)
-(* on the screen *)
-let draw_hud (target : #OcsfmlGraphics.render_target) =
-  let text : text = new text
-    ~string:"PingouinSetter's turn"
-    ~font
-    ~character_size:20
-    ~color:Color.white
-    ()
-  in
-  let (w,h) = target#get_size in
-  let (w,h) = float_of_int w, float_of_int h in
-  let text_width = text#get_global_bounds.width in
-  text#set_position ((w -. text_width) /. 2.) (h -. 60.);
-  target#draw text
 
 
 let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager =

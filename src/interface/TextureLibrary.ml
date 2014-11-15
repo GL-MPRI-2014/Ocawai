@@ -48,9 +48,7 @@ let get_texture lib name =
   with 
     |Not_found -> raise (Unknown_texture name)
 
-let assert_texture d = 
+let get_size d = 
   match d with
-  |Tex(texture) -> texture
-  |_ -> assert false
-
-
+  |Tex(texture) -> texture#get_size
+  |TSet(set) -> (set#tile_size, set#tile_size)
