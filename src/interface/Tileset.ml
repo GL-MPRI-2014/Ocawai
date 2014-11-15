@@ -60,13 +60,14 @@ class tileset texture config =
 
     method texture_coords s = 
       try
-        Hashtbl.find coordinates s
+        Utils.foi2D (Hashtbl.find coordinates s)
       with 
         |Not_found -> raise (Tileset_error ("Tile not found : " ^ s))
 
     method texture_rect s = 
       let (cx, cy) = self#texture_coords s in 
-      OcsfmlGraphics.({left = cx; top = cy; width = size; height = size})
+      OcsfmlGraphics.({left = cx; top = cy; 
+        width = float_of_int size; height = float_of_int size})
 
 end
 

@@ -10,9 +10,9 @@ class tileset : OcsfmlGraphics.texture -> string -> object
   method texture : OcsfmlGraphics.texture
 
   (** Returns the coordinates associated to the corresponding texture name *)
-  method texture_coords : string -> (int * int)
+  method texture_coords : string -> (float * float)
 
   (** Returns the square containing the corresponding texture name *)
-  method texture_rect : string -> int OcsfmlGraphics.rect
+  method texture_rect : string -> float OcsfmlGraphics.rect
 
 end

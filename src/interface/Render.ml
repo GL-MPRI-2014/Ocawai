@@ -3,6 +3,7 @@ open Utils
 
 let texture_library = TextureLibrary.create ()
 let font = new font `None
+let tile_vaos = Hashtbl.create 10 
 
 let filter_positions map p =
   not (Position.out_of_bounds p
@@ -10,6 +11,39 @@ let filter_positions map p =
         (Position.diff
           (Position.create (Battlefield.size map))
           (Position.create (1,1))))
+
+let draw_tile tileset tilename ?position:(position = (0.,0.)) 
+  ?rotation:(rotation = 0.) ~scale 
+  ?color:(color = Color.rgb 255 255 255) ~origin () =
+    let vao = 
+      try Hashtbl.find tile_vaos tileset
+      with Not_found -> 
+        let vao = new vertex_array ~primitive_type:Quads [] in
+        Hashtbl.add tile_vaos tileset vao; vao
+    in 
+    let new_origin = (fst scale *. fst origin, snd scale *. snd origin) in
+    let real_pos = Utils.subf2D position new_origin in
+    let tex_size = float_of_int tileset#tile_size in
+    let real_end = (fst scale *. tex_size, snd scale *. tex_size) in
+    let texture_rect = tileset#texture_rect tilename in
+    vao#append (mk_vertex 
+      ~position:real_pos 
+      ~color 
+      ~tex_coords:(texture_rect.left, texture_rect.top) ());
+    vao#append (mk_vertex
+      ~position:(addf2D real_pos (fst real_end, 0.))
+      ~color
+      ~tex_coords:(texture_rect.left+.texture_rect.width, texture_rect.top) ());
+    vao#append (mk_vertex
+      ~position:(addf2D real_pos real_end)
+      ~color
+      ~tex_coords:(texture_rect.left +. texture_rect.width,
+        texture_rect.top +. texture_rect.height) ());
+    vao#append (mk_vertex
+      ~position:(addf2D real_pos (0., snd real_end))
+      ~color
+      ~tex_coords:(texture_rect.left, texture_rect.top+.texture_rect.height) ())
+
 
 let draw_txr (target : #OcsfmlGraphics.render_target) name ?tile_name 
   ?position ?rotation ?size ?scale:(scale = (1.,1.)) ?blend_mode ?color 
@@ -36,9 +70,8 @@ let draw_txr (target : #OcsfmlGraphics.render_target) name ?tile_name
         |Some(t) -> t
         |None -> failwith "Cannot draw a tileset without a tile name"
       in
-      new sprite ~origin ?position ?rotation ~texture:set#texture
-        ~texture_rect:(set#texture_rect tile_name) ~scale ?color ()
-      |> target#draw ?blend_mode
+      draw_tile set tile_name ?position ?rotation ~scale ?color ~origin ()
+
 
 let draw_from_map (target : #OcsfmlGraphics.render_target) camera 
   name position ?tile_name ?rotation ?offset:(offset = (0.,0.)) 
@@ -51,6 +84,7 @@ let draw_from_map (target : #OcsfmlGraphics.render_target) camera
   let scale = (fst scale *. camera#zoom, snd scale *. camera#zoom) in
   draw_txr target name ~position ?tile_name ?color 
     ?rotation ~scale ?blend_mode ()
+
 
 let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile_name map =
   (* Utility *)
@@ -81,6 +115,7 @@ let render_joint (target : #OcsfmlGraphics.render_target) camera pos tile_name m
       draw_h "water_ground_h" left ~rotation:0. ()
   end
 
+
 let highlight_tile (target : #OcsfmlGraphics.render_target) camera
                    base_color pos =
   let (r,g,b,a) = Color.(
@@ -91,6 +126,7 @@ let highlight_tile (target : #OcsfmlGraphics.render_target) camera
   draw_from_map target camera "highlight" pos ~color:(Color.rgba r g b alpha)
     ~blend_mode:BlendAdd ()
 
+
 let render_map (target : #OcsfmlGraphics.render_target) camera
                (map : Battlefield.t) =
   let render_tile tile_name p = 
@@ -100,6 +136,7 @@ let render_map (target : #OcsfmlGraphics.render_target) camera
   List.iter
     (fun p -> render_tile (Tile.get_name (Battlefield.get_tile map p)) p)
     (Position.square camera#top_left camera#bottom_right)
+
 
 let draw_path (target : #OcsfmlGraphics.render_target) camera path =
   let draw = draw_from_map target camera in
@@ -139,6 +176,7 @@ let draw_path (target : #OcsfmlGraphics.render_target) camera path =
 let draw_unit (target : #OcsfmlGraphics.render_target) camera my_unit =
   draw_from_map target camera (my_unit#name) (my_unit#position) ()
 
+
 let draw_range (target : #OcsfmlGraphics.render_target) camera map =
   match camera#cursor#get_state with
   |Cursor.Idle -> ()
@@ -167,12 +205,14 @@ let draw_gui (target : #OcsfmlGraphics.render_target) ui_manager =
 let render_game (target : #OcsfmlGraphics.render_target)
   (data : ClientData.client_data) =
   render_map target data#camera data#map;
+  Hashtbl.iter (fun s vao -> target#draw vao ~texture:s#texture; vao#clear) tile_vaos;
   draw_range target data#camera data#map;
   draw_path target data#camera data#current_move;
   draw_cursor target data#camera;
   List.iter (fun p -> List.iter (draw_unit target data#camera) p#get_army)
     data#players;
   FPS.display target
+
 
 let load_ressources () =
   TextureLibrary.load_directory texture_library "resources/textures/" ;
