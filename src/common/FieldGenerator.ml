@@ -12,8 +12,12 @@ exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
 
-let neigh_list t = [up t;down t;left t;right t]
+let seed_tile = Tile.create_from_config "seed"
+let blank_tile = Tile.create_from_config "blank"
+let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank"
+let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed"
 
+let neigh_list t = [up t;down t;left t;right t]
 let neigh_list_corners t = [up t;down t;left t;right t;up (left t);down (right t);left (down t);right (up t)]
 
 let pos_neighbors_aux m f p =
@@ -166,12 +170,12 @@ let swap_smoothing m factor =
     swap pos1 pos2;
     let c1 = contiguite m pos1 in
     let c2 = contiguite m pos2 in
-    if pc1 +. pc2 > c1 +. c2  || ((c1 = 0. || c2 = 0.) && (pc1 <> 0. && pc2 <> 0.)) then
+    if pc1 +. pc2 > c1 +. c2  || ((c1 = 0. || c2 = 0.) && (pc1 <> 0. && pc2 <> 0.) || is_seed m pos1 || is_seed m pos2) then
       swap pos1 pos2;
   done
 
 let hard_smoothing m tiles range =
-  let to_smooth = Battlefield.tile_filteri (fun p t -> contiguite m p <= range) m in
+  let to_smooth = Battlefield.tile_filteri (fun p t -> (not (is_seed m p)) && contiguite m p <= range) m in
   List.iter
     (fun pos ->
       let nei = neighbors_corners m pos in
@@ -225,10 +229,7 @@ let seeds_gen width height =
     (fun a -> Tile.get_structure a = `Block)
     tiles_all in
   if (List.length tiles = 0) then failwith("no `Block tiles in config") else
-  let seed_tile = Tile.create_from_config "shallow" in
-  let blank_tile = Tile.create_from_config "blank" in
   let m = Battlefield.create width height blank_tile in
-  let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank" in
   let total = total_density tiles in
   let rec create_seeds = function
   | 0 -> []
@@ -241,11 +242,11 @@ let seeds_gen width height =
           && ( is_blank m pos 
               || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t
              )
-         )
+        )
         (let ne = pos_neighbors_corners m p in p::ne@(neighbours_corners ne)) 
     then
     (
-      Battlefield.set_tile m p t(*seed_tile*); 
+      Battlefield.set_tile m p t (* replace t by seed_tile to visualize the seeds on the map *);
       (t,p)::(create_seeds (n-1))
     )
     else

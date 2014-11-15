@@ -3,6 +3,9 @@
     "name": "blank"
   },
   {
+    "name": "seed"
+  },
+  {
     "name": "water",
     "walk_cost": -1,
     "roll_cost": -1,
