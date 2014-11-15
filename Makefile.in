@@ -33,15 +33,14 @@ interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
 music_dir=$(src_root)/music
-music_tools_dir=$(music_dir)/tools
 
 test_dir=test
 
-dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir) $(music_tools_dir)
+dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir)
 
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(engine_dir),$(common_dir)
-interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
+interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir)
 network_src=$(network_dir)
 
 test_src=test,$(engine_src)
@@ -49,12 +48,12 @@ test_src=test,$(engine_src)
 #dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num
+music_dependencies = bigarray,mm,pulseaudio,threads,num,ocsfml.audio
 
 
 test_dependencies=$(engine_dependencies),oUnit
 
-#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
+#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
 network_libraries = unix
 
@@ -143,7 +142,6 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(network_dir)
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
-	mkdir $(distdir)/$(music_tools_dir)
 	mkdir $(distdir)/$(test_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
@@ -156,7 +154,6 @@ $(distdir): FORCE
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
-	cp $(music_tools_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
@@ -202,7 +199,7 @@ doc: interface engine
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
 	-I _build/src/common -I _build/$(interface_dir) -I _build/$(gui_dir) \
 	-I _build/$(engine_dir) -I _builld/$(network_dir) -I _build/$(music_dir) \
-	-I _build/$(music_tools_dir) -I +threads -html -colorize-code $(files)
+	-I +threads -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
 

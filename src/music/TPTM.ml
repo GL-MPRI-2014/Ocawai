@@ -9,7 +9,7 @@ type event = Music.event
 
 type t = Tile of DList.t
 
-(** Base tiles *)
+(** {2 Base tiles} *)
 
 let zero : t = Tile (DList.zero)
 
@@ -22,10 +22,13 @@ let delay : time -> t = fun dur ->
 let make : event -> t = fun event ->
   Tile (DList.return event)
 
-(** Tile manipulation *)
+(** {2 Tile manipulation} *)
 
 let (%) : t -> t -> t = fun (Tile(events1)) (Tile(events2)) ->
   Tile(DList.(/::/) events1 events2)
+
+let make_withDelay : Music.event -> t = fun event ->
+  make event % delay (Music.getDur event) 
 
 let getDur : t -> time = function
   | Tile(events) -> DList.getDur events  
@@ -51,7 +54,7 @@ let join : t -> t -> t = fun t1 t2 ->
 let fork : t -> t -> t = fun t1 t2 ->
   (reset t1) % t2
 
-(** Normalization *)
+(** {2 Normalization} *)
 
 let headTail : t -> (t * t) = fun (Tile events) ->
   let (head, tail) = DList.headTail events in
@@ -62,3 +65,18 @@ let rec normalize : t -> t = fun t ->
   if isZero tail then
     head
   else head % normalize tail
+
+(** {2 Testing functions} *)
+
+(** {3 Tile <-> event list transform} *)
+
+let fromList : t list -> t = function list ->
+  List.fold_left (%) zero list
+
+(** {3 Pretty-printing} *)
+
+let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
+  | Tile(t) -> Format.fprintf fmt "@[Tile(%a@,)@]@." DList.fprintf t
+  
+let rec printf : t -> unit = fprintf Format.std_formatter
+

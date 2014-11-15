@@ -22,6 +22,14 @@ let shuffle l =
   let sond = List.sort (fun (x,_) (y,_) -> compare x y) nd in
   List.map snd sond
 
+let init_string n f =
+  if n < 0 || n > Sys.max_string_length then 
+    raise (Invalid_argument "init_string");
+  let s = String.make n ' ' in
+  for i = 0 to n - 1 do
+    s.[i] <- f i
+  done; s
+
 module type PrioQueue =
     sig
       type priority = int
