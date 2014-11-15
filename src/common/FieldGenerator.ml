@@ -220,7 +220,7 @@ let swap_gen width height =
   swap_smoothing m 50;
   hard_smoothing m tiles (2./.8.);
   m
-
+  
 let seeds_gen width height =
   let nbseeds = width*height/50 in
   let tiles_all = Tile.create_list_from_config () in
@@ -231,6 +231,7 @@ let seeds_gen width height =
   if (List.length tiles = 0) then failwith("no `Block tiles in config") else
   let m = Battlefield.create width height blank_tile in
   let total = total_density tiles in
+  
   let rec create_seeds = function
   | 0 -> []
   | n ->
@@ -252,6 +253,7 @@ let seeds_gen width height =
     else
       create_seeds (n-1)
   in
+  
   let rec grow_list m t = function
   | [] -> ()
   | p::q ->
@@ -259,11 +261,14 @@ let seeds_gen width height =
       Battlefield.set_tile m p t;
     grow_list m t q
   in
+  
   let rec behead = function
   | 0,_ -> []
+  | n,_ when n<0 -> assert false
   | n,[] -> []
   | n,p::q -> p::(behead (n-1,q))
   in
+  
   let grow_seed t nb_grow setpos =
     let sl = behead (nb_grow,Utils.shuffle (SetPos.fold (fun e l -> e::l) setpos [])) in
     grow_list m t sl;
@@ -277,10 +282,29 @@ let seeds_gen width height =
         setpos
       )
   in
+  
   let rec grow = function
   | [] -> ()
-  | ll -> grow (List.filter (fun (t,l) -> l <> SetPos.empty ) (List.map (fun (t,s) -> (t,grow_seed t (max 1 ((SetPos.cardinal s)*0/100)) s)) ll))
+  | ll -> 
+    grow (
+        List.filter 
+          (fun (t,l) -> l <> SetPos.empty )
+          (
+            List.map 
+            (fun (t,s) -> 
+              (
+                t, grow_seed t 
+                  (max 
+                    1 
+                    (Tile.get_grow_speed t)
+                  ) s
+              )
+            )
+            ll
+          )
+        )
   in
+  
   let seeds = create_seeds nbseeds in
   let neigh = List.map (fun (t,p) -> (t, SetPos.filter (fun pos -> Battlefield.in_range m pos && is_blank m pos) (neighbours_set [p]))) seeds in
   grow neigh;

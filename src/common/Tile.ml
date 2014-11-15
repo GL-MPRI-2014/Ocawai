@@ -8,6 +8,8 @@ let get_name tile = tile.name
 
 let get_density tile = tile.density
 
+let get_grow_speed tile = tile.grow_speed
+
 let get_structure tile = tile.structure
 
 let traversable_m tile movement =

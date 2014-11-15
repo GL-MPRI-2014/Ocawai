@@ -9,6 +9,7 @@ type t = {
   ~swim_cost<ocaml default="-1">: int;
   ~fly_cost<ocaml default="-1">: int;
   ~density<ocaml default="0">: int;
+  ~grow_speed<ocaml default="1">:int;
   ~structure<ocaml default="`Block">: structure;
 }
 
