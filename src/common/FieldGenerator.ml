@@ -170,7 +170,34 @@ let swap_smoothing m factor =
       swap pos1 pos2;
   done
 
-
+let hard_smoothing m tiles range =
+  let to_smooth = Battlefield.tile_filteri (fun p t -> contiguite m p <= range) m in
+  List.iter
+    (fun pos ->
+      let nei = neighbors_corners m pos in
+      let nb = Array.make (List.length tiles) 0 in
+      let rec find_n e = function
+      | [],_ -> assert false
+      | p::q,n when Tile.get_name p = Tile.get_name e -> n
+      | p::q,n -> find_n e (q,n+1)
+      in
+      let rec count_nb = function
+      | [] -> ()
+      | p::q -> 
+        let n = find_n p (tiles,0) in 
+        nb.(n) <- nb.(n) + 1; 
+        count_nb q
+      in
+      count_nb nei;
+      let ma = ref (-1) in
+      let ma_n = ref (-1) in
+      for i = 0 to List.length tiles - 1 do
+        if !ma < nb.(i) then (ma := nb.(i);ma_n:=i)
+      done;
+      let t = List.nth tiles !ma_n in
+      Battlefield.set_tile m pos t
+    )
+    to_smooth
 
 let swap_gen width height =
   let tiles_all = Tile.create_list_from_config () in
@@ -187,6 +214,7 @@ let swap_gen width height =
     (fun p _ -> Battlefield.set_tile m p (get_tile_with_density total tiles))
     m;
   swap_smoothing m 50;
+  hard_smoothing m tiles (2./.8.);
   m
 
 let seeds_gen width height =
@@ -256,6 +284,7 @@ let seeds_gen width height =
   let neigh = List.map (fun (t,p) -> (t, SetPos.filter (fun pos -> Battlefield.in_range m pos && is_blank m pos) (neighbours_set [p]))) seeds in
   grow neigh;
   (*swap_smoothing m 20;*)
+  hard_smoothing m tiles (2./.8.);
   m
   
 
