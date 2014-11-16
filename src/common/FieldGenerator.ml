@@ -35,6 +35,9 @@ let pos_neighbors_corners m p =
 let pos_neighbors m p =
   pos_neighbors_aux m neigh_list p
 
+let pos_eucl_disk m p d =
+  pos_neighbors_aux m (fun t -> get_eucl_disk t d) p
+
 let neighbors_corners m pos =
   List.map
     (Battlefield.get_tile m)
@@ -44,6 +47,9 @@ let neighbors m pos =
   List.map
     (Battlefield.get_tile m)
     (pos_neighbors m pos)
+
+let eucl_disk m p d =
+  pos_neighbors_aux m (fun t -> get_eucl_disk t d) p
 
 (* function used to get the neighbors of a position list not already in the entry list, and without duplications *) 
 
@@ -186,6 +192,32 @@ let swap_smoothing m factor =
       swap pos1 pos2;
   done
 
+(* count neighbors to find the most occuring one, and set it at pos *)
+let smooth m tiles pos =
+  let nei = neighbors_corners m pos in
+  let nb = Array.make (List.length tiles) 0 in
+  let rec find_n e = function
+  | [],_ -> assert false
+  | p::q,n when Tile.get_name p = Tile.get_name e -> n
+  | p::q,n -> find_n e (q,n+1)
+  in
+  let rec count_nb = function
+  | [] -> ()
+  | p::q -> 
+    let n = find_n p (tiles,0) in 
+    nb.(n) <- nb.(n) + 1; 
+    count_nb q
+  in
+  count_nb nei;
+  let ma = ref (-1) in
+  let ma_n = ref (-1) in
+  for i = 0 to List.length tiles - 1 do
+    if !ma < nb.(i) then (ma := nb.(i);ma_n:=i)
+  done;
+  let t = List.nth tiles !ma_n in
+  Battlefield.set_tile m pos t
+
+
 (* remove isolated tiles (isolated is defined by contiguity <= range) 
   by changing them to their most occuring neighbor *)
 let hard_smoothing m tiles range =
@@ -198,33 +230,24 @@ let hard_smoothing m tiles range =
     )
     m
   in
-  List.iter
-    (fun pos ->
-      (* count neighbors to find the most occuring one, and set it at pos *)
-      let nei = neighbors_corners m pos in
-      let nb = Array.make (List.length tiles) 0 in
-      let rec find_n e = function
-      | [],_ -> assert false
-      | p::q,n when Tile.get_name p = Tile.get_name e -> n
-      | p::q,n -> find_n e (q,n+1)
-      in
-      let rec count_nb = function
-      | [] -> ()
-      | p::q -> 
-        let n = find_n p (tiles,0) in 
-        nb.(n) <- nb.(n) + 1; 
-        count_nb q
-      in
-      count_nb nei;
-      let ma = ref (-1) in
-      let ma_n = ref (-1) in
-      for i = 0 to List.length tiles - 1 do
-        if !ma < nb.(i) then (ma := nb.(i);ma_n:=i)
-      done;
-      let t = List.nth tiles !ma_n in
-      Battlefield.set_tile m pos t
+  List.iter (smooth m tiles) to_smooth
+
+(* does the same but there is only a chance (1- (proba/100)*(contiguity/range)) to smooth a position*)
+let random_hard_smoothing m tiles range proba =
+  (* to be changed position list *)
+  let to_smooth = 
+    Battlefield.tile_filteri 
+    (fun p t -> 
+      (not (is_seed m p))
+      && let a = 
+            (1. -. (float_of_int proba *. contiguity m p) /. (100. *. range) )
+         in
+         let r = Random.float 1. in
+         r<a
     )
-    to_smooth
+    m
+  in
+  List.iter (smooth m tiles) to_smooth
 
 (* generate a map randomly then uses swap_smoothing *)
 let swap_gen width height =
@@ -249,6 +272,7 @@ let swap_gen width height =
 (* place seeds (generation centers) and expand them until the whole map is filled *)
 let seeds_gen width height =
   let nbseeds = width*height/50 in
+  let dist_min_btw_seeds = 2 in
   let tiles_all = Tile.create_list_from_config () in
   let tiles =
     List.filter
@@ -261,19 +285,22 @@ let seeds_gen width height =
   let rec create_seeds = function
   | 0 -> []
   | n ->
+    (* pick a random tile with regards to densities *)
     let t = get_tile_with_density total tiles in
+    (* pick a random position and check that its not too close to other different seeds*)
     let p = create(Random.int width,Random.int height) in
     if List.for_all 
         (fun pos -> 
           Battlefield.in_range m pos
           && ( is_blank m pos 
-              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t
+              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using seed_tile instead of t on the following statement*)
              )
         )
-        (let ne = pos_neighbors_corners m p in p::ne@(neighbours_corners ne)) 
+        (p::(eucl_disk m p dist_min_btw_seeds))
     then
     (
-      Battlefield.set_tile m p t; (* option : replace t by seed_tile in order to visualize the seeds on the map *)
+      Battlefield.set_tile m p t; (* option : replace t by seed_tile in order to visualize the seeds on the map 
+                                     note : the previous test is affected, use with caution *)
       (t,p)::(create_seeds (n-1))
     )
     else
@@ -348,7 +375,7 @@ let seeds_gen width height =
   in
   grow neigh;
   (* change tiles with less than two identical neighbors *)
-  hard_smoothing m tiles (2./.8.);
+  random_hard_smoothing m tiles (2./.8.) 50;
   m
   
 
