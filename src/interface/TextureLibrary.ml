@@ -1,9 +1,8 @@
 open OcsfmlGraphics
-open CustomDrawable
-open SlicedTexture
 
 exception Unknown_texture of string
 
+type drawable = TSet of Tileset.tileset | Tex of texture
 
 type t = (string, drawable) Hashtbl.t
 
@@ -16,14 +15,15 @@ let load_texture lib path =
   let name = String.sub path (i'+1) (i-i'-1) in 
   let ext  = String.sub path (i+1) (String.length path - i - 1) in
   if ext = "png" then begin 
-    let tex = new basic_texture path in
+    let tex = new texture (`File path) in
     print_endline ("  [\027[32mstored\027[0m] " ^ name);
-    Hashtbl.add lib name tex
-  end else if ext = "slc" then begin
-    let tex = new sliced_texture path ~upcut:10 ~downcut:40 
-      ~rightcut:40 ~leftcut:10 in
+    Hashtbl.add lib name (Tex tex)
+  end else if ext = "set" then begin
+    let tex = new texture (`File path) in
+    let cfg = (String.sub path 0 i) ^ ".cfg" in
+    let set = new Tileset.tileset tex cfg in
     print_endline ("  [\027[32mstored\027[0m] " ^ name);
-    Hashtbl.add lib name tex
+    Hashtbl.add lib name (TSet set)
   end
 
 
@@ -48,6 +48,7 @@ let get_texture lib name =
   with 
     |Not_found -> raise (Unknown_texture name)
 
-
-
-
+let get_size d = 
+  match d with
+  |Tex(texture) -> texture#get_size
+  |TSet(set) -> (set#tile_size, set#tile_size)
