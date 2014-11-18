@@ -7,6 +7,7 @@ open Logics
 open Theme
 open Settings
 open Setters
+open PrioQueue
 
 let () = begin
 

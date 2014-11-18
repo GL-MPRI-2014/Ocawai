@@ -46,32 +46,22 @@ let dijkstra m pos move_type =
   (* prev.(x).(y) est la position de la tuile precedant Position.create(x,y) sur le chemin de pos a Position.create(x,y) *)
   let prev = Array.make_matrix w h None in
   
+  (* sommets non parcourus *)
+  let li = PosPrioQueue.empty w h in 
+  let p_none = PosPrioQueue.p_none in
   let access a p = let (a1,a2) = Position.topair p in a.(a1).(a2) in
   let change a p v = let (a1,a2) = Position.topair p in a.(a1).(a2) <- v in
   
-  (* recherche de min dist dans une liste *)
-  let rec min_dist a0 = function
-    |[] -> a0
-    |a::q -> match (access dist a,access dist a0) with 
-            | None , _ -> min_dist a0 q 
-            | _ , None -> min_dist a q
-            | Some c , Some d -> min_dist (if c <= d then a else a0) q 
-  in
-
-  (* liste des sommets non parcourus *)
-  let li = ref [] in 
-  
   (* initialisations *)
   change dist pos (Some 0);
-  Battlefield.tile_iteri (fun p t -> if (Tile.traversable_m t move_type) then li := p::( !li)) m;
-    
+  PosPrioQueue.push li 0 pos;
+  Battlefield.tile_iteri (fun p t -> if (Tile.traversable_m t move_type) && p <> pos then PosPrioQueue.push li p_none p) m;
   (* boucle principale *)
-  while !li <> [] do
+  while not (PosPrioQueue.is_empty li) do
     (* u : min dist a pour tout a non parcouru, i.e. plus près voisin atteignable des parcourus *)
-    let u = min_dist (List.hd( !li)) (List.tl( !li)) in
-      li := List.filter (fun x -> x <> u) ( !li);
+    let u = snd (PosPrioQueue.pop li)  in
       match access dist u with
-      | None -> li := []
+      | None -> PosPrioQueue.set_empty li 
       | Some du -> (* pour tout voisin v de u atteignable d'une autre façon, on teste si c'est plus court d'aller en u par v *)
           let shorter_path v cv = 
             let alternate_cost = du + cv in 
@@ -79,6 +69,7 @@ let dijkstra m pos move_type =
             begin
               change dist v (Some alternate_cost);
               change prev v (Some u);
+              PosPrioQueue.decrease_priority li alternate_cost v
             end
           in
           List.iter (fun v -> let open Utils in (cost v) >? (shorter_path v)) 
