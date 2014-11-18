@@ -89,7 +89,7 @@ let new_game () =
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "infantry" "Cancel" (fun () -> print_endline "canceled";
+    new item "cancel" "Cancel" (fun () -> print_endline "canceled";
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 

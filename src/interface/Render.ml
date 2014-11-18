@@ -113,12 +113,10 @@ let renderer = object(self)
     self#draw_tile set name ~position ?color ~scale ~origin:(o,o) ()
 
   (* Render the joints *)
-  method private render_joints (target : render_window) 
-    camera pos tile_name map = 
+  method private render_joints camera jointset pos texture_name map = 
     (* Utility *)
-    let draw_v = self#draw_from_map target camera ~offset:(0.,25.) in
-    let draw_h = self#draw_from_map target camera ~offset:(25.,0.) in
-    let texture_name = tile_name in
+    let draw_v = self#draw_tile_from_map camera jointset ~offset:(0.,48.) in
+    let draw_h = self#draw_tile_from_map camera jointset ~offset:(50.,0.) in
     (* Hardcode for testing *)
     (* Let's draw the junction *)
     let up = Position.up pos in
@@ -130,17 +128,17 @@ let renderer = object(self)
     begin
       let upname = Tile.get_name (Battlefield.get_tile map up) in
       if texture_name = "water" && is_ground upname then
-        draw_v "ground_water_v" up ~rotation:0. ()
+        draw_v "ground_water_v" up ()
       else if is_ground texture_name && upname = "water" then
-        draw_v "water_ground_v" up ~rotation:180. ()
+        draw_v "water_ground_v" up ()
     end ;
     if self#filter_positions map left then
     begin
       let leftname = Tile.get_name (Battlefield.get_tile map left) in
       if texture_name = "water" && is_ground leftname then
-        draw_h "water_ground_h" left ~rotation:180. ()
+        draw_h "water_ground_hr" left ()
       else if is_ground texture_name && leftname = "water" then
-        draw_h "water_ground_h" left ~rotation:0. ()
+        draw_h "water_ground_h" left ()
     end
 
   (* Highlight a tile *)
@@ -159,15 +157,18 @@ let renderer = object(self)
   method private render_map (target : render_window) 
     camera (map : Battlefield.t) =
     let tileset = TilesetLibrary.get_tileset tileset_library "tileset" in
+    let jointset = TilesetLibrary.get_tileset tileset_library "tilejoints" in
     let render_tile tile_name p = 
       self#draw_tile_from_map camera tileset tile_name p ();
-      self#render_joints target camera p tile_name map
+      self#render_joints camera jointset p tile_name map
     in
     List.iter
       (fun p -> render_tile (Tile.get_name (Battlefield.get_tile map p)) p)
       (Position.square camera#top_left camera#bottom_right);
     target#draw tileset#vao ~texture:tileset#texture;
-    tileset#vao#clear
+    tileset#vao#clear;
+    target#draw jointset#vao ~texture:jointset#texture;
+    jointset#vao#clear
 
   (* Render a path with arrows *)
   method private draw_path (target : render_window) 
