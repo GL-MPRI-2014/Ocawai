@@ -243,8 +243,8 @@ let new_game () =
     window#clear ();
 
     (* Rendering goes here *)
-    Render.render_game window cdata;
-    Render.draw_gui window ui_manager;
+    Render.renderer#render_game window cdata;
+    Render.renderer#draw_gui window ui_manager;
 
     window#display
 

@@ -1,4 +1,8 @@
+open OcsfmlGraphics
+
 exception Tileset_error of string
+
+type floatrect = {xmin : float; ymin : float; xmax : float; ymax : float}
 
 type tile_cfg = {
   tile_size : int; 
@@ -47,6 +51,8 @@ class tileset texture config =
 
     val coordinates = Hashtbl.create 10 
 
+    val vao = new vertex_array ~primitive_type:Quads []
+
     initializer
       List.iteri (fun i s ->
         let cw = i mod width in 
@@ -66,8 +72,10 @@ class tileset texture config =
 
     method texture_rect s = 
       let (cx, cy) = self#texture_coords s in 
-      OcsfmlGraphics.({left = cx; top = cy; 
-        width = float_of_int size; height = float_of_int size})
+      let s = float_of_int size in
+      {xmin = cx; ymin = cy; xmax = cx +. s; ymax = cy +. s}
+
+    method vao = vao
 
 end
 

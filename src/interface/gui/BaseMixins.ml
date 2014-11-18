@@ -95,7 +95,7 @@ class virtual has_toolbar = object(self)
       ~fill_color:theme.Theme.bar_color ()
     |> target#draw;
     let th = float_of_int toolbar_height in 
-    Render.draw_txr target toolbar_icon ~position ~size:(th, th) ~centered:false ();
+    Render.renderer#draw_txr target toolbar_icon ~position ~size:(th, th) ~centered:false ();
     let (posx,posy) = position in
     let (sx,sy) = foi2D (fst size, toolbar_height) in
     rect_print

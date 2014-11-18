@@ -1,19 +1,27 @@
 (** Rendering module *)
 
-(** Draw a [texture] in screen coordinates (from the local library).
-  * Usage: [draw_txr target name ... ]*)
-val draw_txr : #OcsfmlGraphics.render_target -> string ->
-  ?tile_name:string -> ?position:(float * float) -> 
-  ?rotation:float -> ?size:(float*float) -> ?scale:(float*float) -> 
-  ?blend_mode:OcsfmlGraphics.blend_mode -> ?color:OcsfmlGraphics.Color.t -> 
-  ?centered:bool -> unit -> unit
+val renderer : <
 
-(** Draw the GUI *)
-val draw_gui : #OcsfmlGraphics.render_target -> UIManager.ui_manager -> unit
+  (** Draw a [texture] in screen coordinates (from the local library).
+    * Usage: [draw_txr target name ... ]*)
+  draw_txr : OcsfmlGraphics.render_window -> string ->
+    ?position:(float * float) -> 
+    ?rotation:float -> 
+    ?scale:(float*float) -> 
+    ?size:(float*float) -> 
+    ?color:OcsfmlGraphics.Color.t -> 
+    ?centered:bool ->
+    ?blend_mode:OcsfmlGraphics.blend_mode -> unit -> unit;
 
-(** Draw the whole game on the screen *)
-val render_game : #OcsfmlGraphics.render_target ->
-  ClientData.client_data -> unit
+  (** Draw the GUI *)
+  draw_gui : OcsfmlGraphics.render_window -> 
+    UIManager.ui_manager -> unit;
 
-(** Load the various ressources stored in ressources/ *)
-val load_ressources : unit -> unit
+  (** Draw the whole game on the screen *)
+  render_game : OcsfmlGraphics.render_window ->
+    ClientData.client_data -> unit;
+
+  (** Load the various ressources stored in ressources/ *)
+  init : unit
+
+>
