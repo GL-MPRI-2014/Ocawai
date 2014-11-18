@@ -193,7 +193,10 @@ class state = object(self)
     if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
     then failwith "Couldn't load the font here";
     Random.self_init ();
-    musicThread <- Some (Thread.create (MidiPlayer.play_midi_file "resources/music/tetris.mid") runMusic)
+    Sounds.play_sound "lets_do_this";
+    musicThread <-
+      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file "resources/music/tetris.mid" x) runMusic)
+    
 
   method destroy =
     runMusic := false
