@@ -15,7 +15,7 @@ type t = <
 
   (* not implemented yet *)
   delete_unit : Unit.t -> unit;
-  move_unit : Unit.t -> Path.t -> unit;
+  move_unit : Unit.t -> Action.movement -> unit;
   delete_building : Building.t -> unit;
   
   get_next_action :  Action.t;    (* Appelé par la grosse boucle, renvoie depuis la file l'action que veut effectuer le joueur *)

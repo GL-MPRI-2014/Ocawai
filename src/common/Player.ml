@@ -19,7 +19,7 @@ class player (a : Unit.t list) (b : Building.t list) =
 
     (* TODO : implement these methods *)
     method delete_unit (u : Unit.t) = ()
-    method move_unit (u : Unit.t) (p : Path.t) = ()
+    method move_unit (u : Unit.t) (p : Action.movement) = ()
     method delete_building (b : Building.t) = ()
 
     initializer id <- Oo.id self
