@@ -8,7 +8,7 @@ let manager = object(self)
       ~style: [OcsfmlWindow.Window.Fullscreen]
 
   initializer
-    Render.load_ressources ();
+    Render.renderer#init;
     window#set_key_repeat_enabled false
 
   method window : OcsfmlGraphics.render_window = window
@@ -18,6 +18,7 @@ let manager = object(self)
 
   method push_load (state : State.state) (build : unit -> State.state) =
     self#push state ;
+    self#current#render window;
     let _ =
       Thread.create
         (fun () ->

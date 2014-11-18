@@ -15,7 +15,17 @@ val tile_iter : (Tile.t -> unit) -> t -> unit
 
 val tile_iteri : (Position.t -> Tile.t -> unit) -> t -> unit
 
+val tile_filter : (Tile.t -> bool) -> t -> Position.t list
+
+val tile_filteri : (Position.t -> Tile.t -> bool) -> t -> Position.t list
+
 val size : t -> int * int
 
 (** Returns true iff the given position is within the battlefield *)
 val in_range : t -> Position.t -> bool
+
+(** [to_string map] Returns a string s such that , if [size map] = [(width,height)] then [create_from_string width height s] returns [map] *)
+val to_string : t -> string
+
+(** [create_from_string width height s] creates a new field based on [s], a [to_string] output *)
+val create_from_string : int -> int -> string -> t

@@ -33,23 +33,29 @@ interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
 music_dir=$(src_root)/music
-music_tools_dir=$(music_dir)/tools
 
-dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir) $(music_tools_dir)
+test_dir=test
+
+dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir)
 
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(engine_dir),$(common_dir)
-interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
-network_src=$(network_dir),$(common_dir)
+interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir)
+network_src=$(network_dir)
+
+test_src=test,$(engine_src)
 
 #dependencies required for each target
 common_dependencies = atdgen
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num
+music_dependencies = bigarray,mm,pulseaudio,threads,num,ocsfml.audio
+
+
+test_dependencies=$(engine_dependencies),oUnit
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
-network_libraries = unix,marshal
+network_libraries = unix
 
 #tags needed for each target
 interface_tags = thread
@@ -57,7 +63,7 @@ interface_tags = thread
 #name of the target for ocamlbuild
 output_interface = main.native
 output_engine = main_engine.native
-output_network = dealer.native
+output_network = server.native
 
 
 #get every source file of the project
@@ -136,7 +142,7 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(network_dir)
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
-	mkdir $(distdir)/$(music_tools_dir)
+	mkdir $(distdir)/$(test_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
 	cp configure.ac $(distdir)
@@ -148,8 +154,8 @@ $(distdir): FORCE
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
-	cp $(music_tools_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
+	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 #check that distdir create a correct archive
@@ -193,7 +199,7 @@ doc: interface engine
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
 	-I _build/src/common -I _build/$(interface_dir) -I _build/$(gui_dir) \
 	-I _build/$(engine_dir) -I _builld/$(network_dir) -I _build/$(music_dir) \
-	-I _build/$(music_tools_dir) -I +threads -html -colorize-code $(files)
+	-I +threads -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
 
@@ -205,7 +211,11 @@ clean:
 	-test \! -e doc || rmdir doc
 	rm -f documentation.html
 
-check:
-	@echo "To be completed, this is a command that returns 0 for Travis."
+check_engine: engine
+	ocamlbuild -use-ocamlfind -Is $(test_src) -package $(test_dependencies) player_test.native
+	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
+	./player_test.native
+
+check: check_engine
 
 .PHONY: FORCE all clean dist distcheck engine interface network

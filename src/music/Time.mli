@@ -34,3 +34,36 @@ val min : t -> t -> t
 
 (** Return the greater of the two arguments. *)
 val max : t -> t -> t
+
+(** {2 Basic time creation} *)
+
+(**
+   @return the time associated to the quotient of the input integers
+*)
+val fromPair : int * int -> t
+
+val bn : t (** brevis *)
+val wn : t (** whole note *)
+val hn : t (** half note *)
+val qn : t (** quarter note *)
+val en : t (** eighth note *)
+val sn : t (** sixteenth note *)
+val tn : t (** thirty-second note *)
+val sfn : t (** sixty-fourth note *)
+
+val dwn : t (** dotted whole note *)
+val dhn : t (** dotted half note *)
+val dqn : t (** dotted quarter note *)
+val den : t (** dotted eighth note *)
+val dsn : t (** dotted sixteenth note *)
+val dtn : t (** dotted thirty-second note *)
+
+val ddhn : t (** double-dotted half note *)
+val ddqn : t (** double-dotted quarter note *)
+val dden : t (** double-dotted eighth note *)
+
+(** {2 Testing functions} *)
+
+(** {3 Pretty-printing} *)
+
+val fprintf : Format.formatter -> t -> unit

@@ -17,7 +17,6 @@ class state = object(self)
 
   val mutable current_pos = Position.create (0,0)
   val mutable snake = [Position.create (0,0)]
-  val mutable last_dir = (1,0)
   val mutable size = 5
 
   val tl = Position.create (0,0)
@@ -37,7 +36,6 @@ class state = object(self)
         running <- false
       else begin
         map.(x).(y) <- true;
-        last_dir <- diff;
         if goods.(x).(y) then begin
           size <- size + 1;
           goods.(x).(y) <- false
@@ -55,18 +53,12 @@ class state = object(self)
 
   (* Inspired by @VLanvin *)
   val mutable last_event = 0.
+  val mutable diff = (1,0)
   method private handle_keys =
     let act_time = Unix.gettimeofday () in
     if act_time -. last_event >= 0.1 then OcsfmlWindow.(
       last_event <- act_time;
-      let diff = if Keyboard.is_key_pressed KeyCode.Right then (1,0)
-        else if Keyboard.is_key_pressed KeyCode.Left then (-1,0)
-        else if Keyboard.is_key_pressed KeyCode.Up then (0,-1)
-        else if Keyboard.is_key_pressed KeyCode.Down then (0,1)
-        else last_dir
-      in
-      if add2D diff last_dir = (0,0) then self#move last_dir
-      else self#move diff;
+      self#move diff;
       let p = Random.int 100 in
       if p >= 95 then
       begin
@@ -84,7 +76,8 @@ class state = object(self)
     (x *. 50. +. dx, y *. 50. +. dy)
 
   method private draw_path (target : OcsfmlGraphics.render_window) path =
-    let draw pos rot name = Render.draw_txr target name (self#topos pos) rot in
+    let draw pos rot name = Render.renderer#draw_txr target name 
+    ~position:(self#topos pos) ~rotation:rot () in
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
@@ -131,10 +124,22 @@ class state = object(self)
               done;
               snake <- [Position.create (0,0)];
               current_pos <- Position.create (0,0);
-              last_dir <- (1,0);
+              diff <- (1,0);
               size <- 5;
               running <- true
             end
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            if diff = (-1,0) then ()
+            else diff <- (1,0)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            if diff = (1,0) then ()
+            else diff <- (-1,0)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            if diff = (0,1) then ()
+            else diff <- (0,-1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            if diff = (0,-1) then ()
+            else diff <- (0,1)
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
             manager#pop
         | _ -> ()
@@ -167,7 +172,7 @@ class state = object(self)
       for y = 0 to 9 do
         if goods.(x).(y) then
           let pos = self#topos (Position.create (x,y)) in
-          Render.draw_txr window "infantry" pos (Random.float 360.)
+          Render.renderer#draw_txr window "infantry" ~position:pos ~rotation:(Random.float 360.) ()
       done
     done;
 

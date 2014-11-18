@@ -8,6 +8,7 @@ Déplacement : prairie/route/sable/forêt/montagne/eau peu profonde/eau profonde
 Attaque : contre armure légère/moyenne/lourde (en % des dégâts de base de l'unité). Ne dépend pas du terrain.
 Portée : minimale-maximale
 Carburant : Les unités aériennes consomment 1 de carburant par tour hors base/porte avion.
+Toute  unité apparaît sur la carte avec 100 points de vie, et meurt (en disparaissant de la carte) quand elle tombe à 0 points de vie.
 Si une unité se fait attaquer au corps à corps par une unité qu'elle a la possibilité d'attaquer, elle répond avec 50% des dégâts qu'elle ferait en initialisant l'attaque.
 
 ### Infanterie
@@ -241,7 +242,7 @@ Actions
 On peut créer une unité à condition de pouvoir payer les ressources nécessaires. Elle apparaît alors sur son bâtiment parent mais ne peut rien faire jusqu'à la fin du tour. En particulier, chaque bâtiment ne peut créer qu'une unité par tour (sauf pouvoir spécial ?). Une unité placée sur un bâtiment du même type que son parent regagnera 50% de sa vie à chaque tour.
 
 ### Combat
-Si une unité attaque au corps à corps une autre unité capable de répondre, un combat s'engage. Si l'unité attaquée survit, elle aura rendu en moyenne 50% de ce qu'elle aurait infligé si elle avait été l'attaquante. Si elle meurt, on suppose qu'elle a eu le temps de faire moins de dégâts. Elle ne rendra alors que 25% des dégâts normaux (sauf pouvoir spécial d'un général japonais ?).
+Si une unité attaque au corps à corps une autre unité capable de répondre, un combat s'engage. Si l'unité attaquée survit, elle aura rendu en moyenne 50% de ce qu'elle aurait infligé si elle avait été l'attaquante. Si elle meurt, on suppose qu'elle a eu le temps de faire moins de dégâts. Elle ne rendra alors que 25% des dégâts normaux (sauf pouvoir spécial d'un général japonais ?). L'unité attaquante infligera autant de dégâts si elle meure que si elle survit à son attaque. (Règles pouvant être changées par la suite mais semblant raisonnables ainsi énoncées. Schématiquement, l'unite attaquante opère son attaque normalement, puis reçoit une contre-attaque dépendante de si elle a tué ou pas son adversaire)
 
 ### Tir
 Si une unité attaque à distance, l'unité attaquée ne peut pas lui répondre (pour des raisons d'informations et de temps de calcul balistique). Dans ce cas, l'attaque ne se fait que dans un sens.

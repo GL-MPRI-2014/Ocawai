@@ -23,7 +23,7 @@ class virtual widget : object
   method on_event : OcsfmlWindow.Event.t -> bool
 
   (** Draw the widget to the given target *)
-  method virtual draw : OcsfmlGraphics.render_target -> TextureLibrary.t ->
+  method virtual draw : OcsfmlGraphics.render_window -> TextureLibrary.t ->
     unit
 
   (** Set the relative position of this widget *)

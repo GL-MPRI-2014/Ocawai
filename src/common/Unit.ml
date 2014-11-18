@@ -1,6 +1,7 @@
 (* Dummy Unit implementation to test interface *)
 
-type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
+type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
+  | Amphibious_Roll | Amphibious_Tread | All
 
 class unbound_soldier (s : string) (m : movement) (v : int) (min_a : int)
   (a : int) (r : int) (sp : int) =
@@ -43,7 +44,8 @@ let create_unbound_from_unit_t u = new unbound_soldier (u.Unit_t.name) (match (u
                                                   | "amphibious_walk" -> Amphibious_Walk
                                                   | "amphibious_roll" -> Amphibious_Roll
                                                   | "amphibious_tread" -> Amphibious_Tread
-                                                  | a -> failwith("unit_t_to_t : "^a^" is not a movement\n")
+                                                  | "all" -> All
+                                                  | a -> failwith("create_unbound_from_unit_t : "^a^" is not a movement\n")
 ) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) (u.Unit_t.move_range) (u.Unit_t.spawn_number)
 
 let create_list_from_file s1 =

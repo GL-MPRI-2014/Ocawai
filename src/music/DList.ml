@@ -3,6 +3,7 @@
 *)
 
 open Music
+open Format
 
 type time = Time.t
 type event = Music.event
@@ -31,10 +32,10 @@ let tagProd : tag -> tag -> tag =
   fun (Tag (dur1, start1)) (Tag (dur2, start2)) -> 
     let newStart = match (start1, start2) with
       | (None, None) -> None
-      | (None, Some st_time) -> Some (st_time /+/ dur2)
+      | (None, Some st_time) -> Some (st_time /+/ dur1)
       | (Some st_time, None) -> Some st_time
       | (Some st_time1, Some st_time2) -> Some (Time.min st_time1 (st_time2 /+/ dur2))
-    in Tag (dur1, newStart)
+    in Tag (dur1 /+/ dur2, newStart)
 
 let sync : time -> t = fun time -> Sync time
 
@@ -200,3 +201,29 @@ let headTail : t -> t * t =
     let head = (sync (headTailT.to_events)) /::/
       fromList_parallel (MusicSet.elements headTailT.events) /::/ (sync headTailT.to_next)
     in (head, headTailT.tailT)
+
+(** {2 Testing functions} *)
+
+(** {3 Pretty_printing} *)
+
+let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
+  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]@." Music.fprintf event
+  | Sync dur -> Format.fprintf fmt "@[<1>Sync(%a@,)@]@." Time.fprintf dur
+  | Prod(tag, t1, t2) ->
+    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]@." fprint_tag tag fprintf_sub t1 fprintf_sub t2
+
+and fprintf_sub : Format.formatter -> t -> unit = fun fmt -> function
+  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]" Music.fprintf event
+  | Sync dur -> Format.fprintf fmt "@[<1>Sync(%a@,)@]" Time.fprintf dur
+  | Prod(tag, t1, t2) ->
+    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]" fprint_tag tag fprintf_sub t1 fprintf_sub t2
+
+and fprint_tag fmt = function
+  | Tag(dur, start) -> Format.fprintf fmt "@[<1>Tag(@[Dur =@ %a,@ Start =@ %a@]@,)@]"
+    Time.fprintf dur fprint_start start
+
+and fprint_start fmt = function
+  | None -> Format.fprintf fmt "%s" "None"
+  | Some(dur) -> Format.fprintf fmt "@[%a@]" Time.fprintf dur
+
+let printf : t -> unit = fprintf Format.std_formatter

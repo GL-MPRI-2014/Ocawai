@@ -1,6 +1,7 @@
 (** Unit interface *)
 
-type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk | Amphibious_Roll | Amphibious_Tread
+type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
+  | Amphibious_Roll | Amphibious_Tread | All
 
 (** Unit type *)
 type t = <

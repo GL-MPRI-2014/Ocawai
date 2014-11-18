@@ -1,5 +1,10 @@
 type t = int * int
 
+let compare (x0,y0) (x1,y1) =
+  match Pervasives.compare x0 x1 with
+  | 0 -> Pervasives.compare y0 y1
+  | c -> c
+
 let create p = p
 
 let topair p = p
@@ -56,7 +61,23 @@ let project p c i =
   let (a,b) = diff p c in
   (a * i, b * i)
 
-
 let dist (x1,y1) (x2,y2) =
-  (abs (x2-x1)) + (abs (y2-y1)) 
+  (abs (x2-x1)) + (abs (y2-y1))
 
+let eucl_dist (x1,y1) (x2,y2) =
+  let fx1 = float_of_int x1 in
+  let fy1 = float_of_int y1 in
+  let fx2 = float_of_int x2 in
+  let fy2 = float_of_int y2 in
+  let d = sqrt ((fx2 -. fx1)**2. +. (fy2 -. fy1)**2.) in
+  int_of_float (d +. 0.5)
+
+let get_eucl_disk (x,y) d =
+  let l = ref [] in
+  for i = x-d to x+d do
+    for j = y-d to y+d do
+      if eucl_dist (x,y) (i,j) <= d then
+        l := (i,j)::(!l);
+    done;
+  done;
+  !l

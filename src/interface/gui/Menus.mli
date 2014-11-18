@@ -9,7 +9,7 @@ class item : string -> string -> (unit -> unit) -> object
 
   val mutable size : int * int
 
-  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 
   method action : unit
 
@@ -26,7 +26,7 @@ class key_button : icon:string -> text:string -> m_position:(int*int) ->
 
   val mutable size : int * int
 
-  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 
 end
 
@@ -61,6 +61,6 @@ class ingame_menu : m_position:(int * int) -> m_width:int ->
 
   val mutable item_height : int
 
-  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 
 end
