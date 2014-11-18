@@ -29,6 +29,7 @@ resources_dir=resources
 documentation_dir=doc
 engine_dir=$(src_root)/engine
 common_dir=$(src_root)/common
+utils_dir=$(src_root)/common/utils
 interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
@@ -36,11 +37,11 @@ music_dir=$(src_root)/music
 
 test_dir=test
 
-dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir)
+dirs = $(engine_dir) $(common_dir) $(utils_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir)
 
 #for each target, the directories concerned for ocamlbuild
-engine_src=$(engine_dir),$(common_dir)
-interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir)
+engine_src=$(engine_dir),$(common_dir),$(utils_dir)
+interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(interface_dir),$(gui_dir),$(music_dir)
 network_src=$(network_dir)
 
 test_src=test,$(engine_src)
@@ -136,6 +137,7 @@ $(distdir).tar.gz: $(distdir)
 $(distdir): FORCE
 	mkdir -p $(distdir)/src
 	mkdir $(distdir)/$(common_dir)
+	mkdir $(distdir)/$(utils_dir)
 	mkdir $(distdir)/$(engine_dir)
 	mkdir $(distdir)/$(interface_dir)
 	mkdir $(distdir)/$(gui_dir)
@@ -150,6 +152,7 @@ $(distdir): FORCE
 	cp install-sh $(distdir)
 	cp $(common_dir)/*.ml* $(distdir)/$(common_dir)
 	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
+	cp $(utils_dir)/*.ml* $(distdir)/$(utils_dir)
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
