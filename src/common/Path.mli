@@ -31,5 +31,7 @@ val cost : Unit.movement -> Battlefield.t -> t -> int
 (** [dijkstra m pos1 Unit.Walk pos2] return [Some cost * path] for going to pos2 from pos1, or [None] if pos2 is not reachable from pos1 *)
 val dijkstra : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option
 
+val a_star : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option
+
 (** Printing for debug purposes *)
 val print_path : t -> unit

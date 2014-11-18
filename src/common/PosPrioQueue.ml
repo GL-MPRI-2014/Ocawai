@@ -20,11 +20,11 @@ let add a p b = set a p (Some (b::(match get a p with | None -> assert false | S
 let rem a p = set a p None
 let behead a p = set a p (match get a p with | None | Some [] -> assert false | Some(p::q) -> Some q)
 let path a p = List.rev (match get a p with | None -> assert false | Some l -> l)
-let compare_si p1 p2 = match (p1,p2) with | (-1),(-1) -> false | _,(-1) -> true | (-1), _ -> false | _ -> p1 < p2
-let compare_i p1 p2 = match (p1,p2) with | (-1),(-1) -> true | _,(-1) -> true | (-1), _ -> false | _ -> p1 <= p2
-let compare_ss p1 p2 = match (p1,p2) with | (-1),(-1) -> false | _,(-1) -> false | (-1), _ -> true | _ -> p1 > p2
-let compare_s p1 p2 = match (p1,p2) with | (-1),(-1) -> true | _,(-1) -> false | (-1), _ -> true | _ -> p1 >= p2
-let min_p p1 p2 = match (p1,p2) with | (-1),(-1) -> (-1) | _,(-1) -> p1 | (-1), _ -> p2 | _ -> min p1 p2
+let compare_si p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> false | _,b when b = p_none -> true | a,_ when a = p_none -> false | _ -> p1 < p2
+let compare_i p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> true | _,b when b = p_none -> true | a,_ when a = p_none -> false | _ -> p1 <= p2
+let compare_ss p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> false | _,b when b = p_none -> false | a,_ when a = p_none -> true | _ -> p1 > p2
+let compare_s p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> true | _,b when b = p_none -> false | a,_ when a = p_none -> true | _ -> p1 >= p2
+let min_p p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> (-1) | _,b when b = p_none -> p1 | a,_ when a = p_none -> p2 | _ -> min p1 p2
 let matrix_foreach f =
   Array.iteri (fun x -> Array.iteri (f x))
 
@@ -175,4 +175,4 @@ let decrease_priority (refqueue,ind) prio elt =
       end
   | _ -> assert false
   in refqueue := aux(path ind elt,queue)
-      
+
