@@ -78,8 +78,6 @@ let rec init_current_player players_number =
 	else
 	  (players_number-1)::(init_current_player (players_number -1) )
 
-open PosPrioQueue
-
 let () =
 begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in
