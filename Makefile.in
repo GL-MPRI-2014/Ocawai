@@ -143,7 +143,6 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(network_dir)
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
-	mkdir $(distdir)/$(music_tools_dir)
 	mkdir $(distdir)/$(test_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
@@ -156,7 +155,6 @@ $(distdir): FORCE
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
-	cp $(music_tools_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
@@ -202,7 +200,6 @@ doc: interface engine
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
 	-I _build/src/common -I _build/$(interface_dir) -I _build/$(gui_dir) \
 	-I _build/$(engine_dir) -I _builld/$(network_dir) -I _build/$(music_dir) \
-	-I _build/$(music_tools_dir) -I +threads -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
 
