@@ -1,4 +1,5 @@
 (** main function for testing the engine (only the generation and djikstra for now) *)
+open Action
 let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
   for i = 0 to w-1 do
@@ -83,6 +84,18 @@ let rec init_current_player players_number =
 	else
 	  (players_number-1)::(init_current_player (players_number -1) )
 
+let end_turn player_turn_end current_player =
+    player_turn_end := true; 
+    current_player := ((List.tl !current_player)@([List.hd !current_player]))
+
+let apply_movement (player:Player.t) movement =
+	let u = find_unit (List.hd movement) (player :> logic_player) in
+ 		player#move_unit u movement
+
+let apply_action player action =
+	match action with 
+		| Attack_unit a-> ()
+		| Attack_building a-> ()
 
 
 let () =
@@ -111,12 +124,17 @@ begin
   while not !gameover do
 	let player_turn_end =  ref false and has_played = [] in
 	while not (!player_turn_end) do
-		let next_wanted_action =  players.( List.hd !current_player )#get_next_action in
-		player_turn_end := ((snd next_wanted_action) = Action.Wait);
-
-		let action = Action.try_next_action (game#get_players :> Action.logic_player list) (players.(List.hd !current_player):> Action.logic_player) has_played init_field#field next_wanted_action in 
-     (* apply_action *)
-      ()
+        let player_turn = players.( List.hd !current_player ) in
+		let next_wanted_action =  player_turn#get_next_action in
+		player_turn_end := ((snd next_wanted_action) = Wait);
+		try
+		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) has_played init_field#field next_wanted_action in 
+            if action = End_turn or action = Wait then
+                end_turn player_turn_end current_player
+            else
+                    apply_movement player_turn movement
+        with
+           _ -> end_turn player_turn_end current_player;
 		done;
 	done;
 
