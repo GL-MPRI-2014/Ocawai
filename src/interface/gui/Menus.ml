@@ -20,7 +20,7 @@ class item icon text (action : unit -> unit) = object(self)
     (* First draw the icon *)
     let position = foi2D self#position in
     let (selfx, selfy) = foi2D size in
-    Render.draw_txr target icon ~position:position
+    Render.renderer#draw_txr target icon ~position:position
       ~size:(selfy, selfy) ~centered:false ();
     (* Then draw the text *)
     rect_print
@@ -64,7 +64,7 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
 
     let (selfx, selfy) = foi2D size in
     let position = foi2D self#position in
-    Render.draw_txr target icon ~position ~size:(selfy, selfy) 
+    Render.renderer#draw_txr target icon ~position ~size:(selfy, selfy) 
       ~centered:false ();
 
     rect_print

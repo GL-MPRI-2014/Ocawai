@@ -38,7 +38,7 @@ class virtual widget = object(self)
 
   method set_parent p = parent <- p
 
-  method virtual draw : render_target -> TextureLibrary.t -> unit
+  method virtual draw : render_window -> TextureLibrary.t -> unit
 
   method toggle = active <- not active
 
