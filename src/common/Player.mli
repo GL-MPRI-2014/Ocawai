@@ -7,8 +7,6 @@ type t = <
   get_army : Unit.t list;
   add_unit : Unit.t -> unit;
   set_army : Unit.t list -> unit;
-
-
   set_buildings : Building.t list -> unit;
   get_buildings : Building.t list;
   add_building : Building.t -> unit;
