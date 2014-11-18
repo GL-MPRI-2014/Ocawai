@@ -160,9 +160,8 @@ let get_tile_with_density total tiles =
   in
   nth_dens d tiles
 
-(* the contiguity of a position is defined as its number of identical neighbors on its total nmber of neighbors *)
-let contiguity m pos =
-  let name = Tile.get_name (Battlefield.get_tile m pos) in
+(* the contiguity of a position is defined as its number of identical neighbors on its total number of neighbors *)
+let contiguity m pos name =
   let nei = neighbors_corners m pos in
   let a = count (fun t -> Tile.get_name t = name) nei in
   let b = List.length nei in
@@ -180,16 +179,20 @@ let swap_smoothing m factor =
   for i = 0 to factor * width * height do
     let pos1 = create (Random.int width , Random.int height) in
     let pos2 = create (Random.int width , Random.int height) in
-    let pc1 = contiguity m pos1 in
-    let pc2 = contiguity m pos2 in 
-    swap pos1 pos2;
-    let c1 = contiguity m pos1 in
-    let c2 = contiguity m pos2 in
-    (* the swap is canceled if the contiguity has decreased 
-      or if we are looking at a seed tile 
-      (they can be rendered to examine how seed_gen works, we don't want to move them ) *)
-    if pc1 +. pc2 > c1 +. c2  || is_seed m pos1 || is_seed m pos2 then
-      swap pos1 pos2;
+    let name1 = Tile.get_name (Battlefield.get_tile m pos1) in
+    let name2 = Tile.get_name (Battlefield.get_tile m pos2) in
+    if(name1 <> name2) then
+    begin
+      let pc1 = contiguity m pos1 name1 in
+      let pc2 = contiguity m pos2 name2 in 
+      let c1 = contiguity m pos1 name2 in
+      let c2 = contiguity m pos2 name1 in
+      (* we do the swap if the contiguity has increased 
+        and if we are not looking at a seed tile 
+        (they can be rendered to examine how seed_gen works, we don't want to move them ) *)
+      if pc1 +. pc2 < c1 +. c2  && (not (is_seed m pos1)) && (not (is_seed m pos2)) then
+        swap pos1 pos2;
+    end
   done
 
 (* count neighbors to find the most occuring one, and set it at pos *)
@@ -226,7 +229,7 @@ let hard_smoothing m tiles range =
     Battlefield.tile_filteri 
     (fun p t -> 
       (not (is_seed m p))
-      && contiguity m p <= range
+      && contiguity m p (Tile.get_name (Battlefield.get_tile m p)) <= range
     )
     m
   in
@@ -240,7 +243,7 @@ let random_hard_smoothing m tiles range proba =
     (fun p t -> 
       (not (is_seed m p))
       && let a = 
-            (1. -. (float_of_int proba *. contiguity m p) /. (100. *. range) )
+            (1. -. (float_of_int proba *. contiguity m p (Tile.get_name (Battlefield.get_tile m p))) /. (100. *. range) )
          in
          let r = Random.float 1. in
          r<a
@@ -606,7 +609,7 @@ let units_spawn m nbplayers nbattempts legit_spawns =
         flush_all();
         check_movement attempt;
         check_superposed_units attempt;
-        check_path attempt; (* place here any checks on units positioning*)
+        (*check_path attempt;*) (* place here any checks on units positioning*)
         print_endline "success";
         (a,sp)
       with

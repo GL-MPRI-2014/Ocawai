@@ -78,11 +78,12 @@ let rec init_current_player players_number =
 	else
 	  (players_number-1)::(init_current_player (players_number -1) )
 
+open PosPrioQueue
+
 let () =
 begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in
   let init_field = new FieldGenerator.t map_width map_height players_number 10 5 in
-  
   print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
     (*
     (* test de la compression/decompression de la map*)
