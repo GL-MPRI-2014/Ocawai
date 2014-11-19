@@ -6,6 +6,7 @@
  * @author Mazzocchi Nicolas
  *)
 
+
 (**
  * This function creates a connection to the server
  * @param port Server port
