@@ -8,7 +8,7 @@ let manager = object(self)
       ~style: [OcsfmlWindow.Window.Fullscreen]
 
   initializer
-    Render.load_ressources ();
+    Render.renderer#init;
     Sounds.load_sounds ();
     window#set_key_repeat_enabled false
 

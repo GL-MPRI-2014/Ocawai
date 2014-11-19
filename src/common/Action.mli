@@ -35,3 +35,5 @@ exception Bad_path
 val try_next_action : logic_player list -> logic_player -> Unit.t list -> 
   Battlefield.t -> t -> t
 
+val find_unit : Position.t -> logic_player -> Unit.t
+
