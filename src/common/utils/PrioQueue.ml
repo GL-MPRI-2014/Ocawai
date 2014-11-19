@@ -1,5 +1,7 @@
 type priority = int
-
+(* a queue is a binary heap, filled from left to right
+  A node is labeled by a priority and an element, contains the left and right sub-trees,
+  and a bool true iif the sub-trees are both complete *)
 type 'a queue = Empty | Node of priority * 'a * 'a queue * 'a queue * bool
 exception Queue_is_empty
 
