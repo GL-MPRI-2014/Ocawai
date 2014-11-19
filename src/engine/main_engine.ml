@@ -1,4 +1,4 @@
-(** main function for testing the engine (only the generation and djikstra for now) *)
+(** main function for testing the engine (only the generation and dijkstra for now) *)
 open Action
 let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
@@ -15,8 +15,6 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
           then "path"
         else "") , Tile.get_name t )
     in
-    (* The following line only works for 4.02.0+ *)
-    (* print_string (let str = String.init 2 (fun i -> '?') in *)
     print_string (let str = "??" in
       begin
         match fst name with
@@ -58,7 +56,7 @@ let get_game_parameters ()=
 	let map_height = read_int () in
 	(game_name,players_number,map_width,map_height)
 
-let djikstra_test gen =
+let dijkstra_test gen =
   let dij = Path.dijkstra (gen#field) (List.hd gen#spawns) (Unit.Walk) in
   let r = dij (List.nth gen#spawns 1) in
   print_ascii_extended gen#field gen#armies (match r with | None -> Path.empty | Some (_,b) -> b) gen#spawns;
@@ -117,7 +115,7 @@ begin
     print_ascii m;
     *)
 
- (* djikstra_test init_field; *)
+ (*dijkstra_test init_field; *)
 
   let game = Game_engine.create_game_engine players_number in
   let players = init_players game#get_players and current_player = ref (init_current_player players_number) and gameover = ref false in
