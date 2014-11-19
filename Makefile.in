@@ -200,7 +200,7 @@ doc: interface engine
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
-	-I _build/src/common -I _build/$(interface_dir) -I _build/$(gui_dir) \
+	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
 	-I _build/$(engine_dir) -I _builld/$(network_dir) -I _build/$(music_dir) \
 	-I +threads -html -colorize-code $(files)
 	rm -f documentation.html
