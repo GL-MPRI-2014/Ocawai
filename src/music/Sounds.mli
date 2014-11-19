@@ -1,10 +1,13 @@
 (**
-   A simple tool to play sounds (in game sounds for exemple).
+   A simple tool to play in game sounds.
 
    The mli is quite minimalistic, but the implementation will load every
    sound into a buffer before playing it, this is not juste a renaming of
    some ocsfml.audio function.
 *)
+
+
+(** {2 Exceptions} *)
 
 (**
   The exception of unknown sound. They have to be stored into
@@ -17,6 +20,8 @@ exception Unknown_sound of string
   match a recognised sound file extention (Wav for the moment).
 *)
 exception Not_a_valid_sound_file of string
+
+(** {2 Management functions} *)
 
 (**
   Initiiate sound managing : loads the various sounds !
