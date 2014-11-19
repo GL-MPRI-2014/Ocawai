@@ -18,6 +18,12 @@ val init : Position.t -> t
   * It takes care of validity. *)
 val reach : t -> Position.t -> t
 
+(** @return the start position of a path*)
+val start_position : t -> Position.t
+
+(** @return the final position of a path *)
+val final_position : t -> Position.t
+             
 (** @return an [Action.movement] representing the same path. *)
 val get_move : t -> Action.movement
 

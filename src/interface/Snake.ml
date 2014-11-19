@@ -76,7 +76,8 @@ class state = object(self)
     (x *. 50. +. dx, y *. 50. +. dy)
 
   method private draw_path (target : OcsfmlGraphics.render_window) path =
-    let draw pos rot name = Render.draw_txr target name (self#topos pos) rot in
+    let draw pos rot name = Render.renderer#draw_txr target name 
+    ~position:(self#topos pos) ~rotation:rot () in
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
@@ -171,7 +172,7 @@ class state = object(self)
       for y = 0 to 9 do
         if goods.(x).(y) then
           let pos = self#topos (Position.create (x,y)) in
-          Render.draw_txr window "infantry" pos (Random.float 360.)
+          Render.renderer#draw_txr window "infantry" ~position:pos ~rotation:(Random.float 360.) ()
       done
     done;
 
@@ -193,7 +194,10 @@ class state = object(self)
     if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
     then failwith "Couldn't load the font here";
     Random.self_init ();
-    musicThread <- Some (Thread.create (MidiPlayer.play_midi_file "resources/music/tetris.mid") runMusic)
+    Sounds.play_sound "lets_do_this";
+    musicThread <-
+      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file "resources/music/tetris.mid" x) runMusic)
+    
 
   method destroy =
     runMusic := false

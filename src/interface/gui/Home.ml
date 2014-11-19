@@ -41,7 +41,7 @@ class textured_item name position = object(self)
   inherit item
 
   method draw target =
-    Render.draw_txr target name position 0.
+    Render.renderer#draw_txr target name ~position ()
 
   method position = position
 
@@ -55,7 +55,7 @@ class textured_actionnable txr txr_hover position (action : unit -> unit) = obje
   method action = action ()
 
   method draw target =
-    if has_focus then Render.draw_txr target txr_hover position 0. ;
+    if has_focus then Render.renderer#draw_txr target txr_hover ~position () ;
     super#draw target
 
 end
@@ -92,7 +92,7 @@ class screen items actionnables = object(self)
     )
 
   method private action =
-    selected >? fun o -> o#action
+    selected >? fun o -> (Sounds.play_sound "enter" ; o#action)
 
   method private sqdist a b =
     let x = a#x -. b#x
@@ -109,6 +109,7 @@ class screen items actionnables = object(self)
     (self#weight h s a - self#weight h s b)
 
   method private move p h = selected >? fun s ->
+    Sounds.play_sound "click";
     List.find_all (fun a -> a <> s && p a s) actionnables
     |> List.sort (self#compare h s)
     |> function

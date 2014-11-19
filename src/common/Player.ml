@@ -1,15 +1,63 @@
-class player (a : Unit.t list) (b : Building.t list) = 
+open List
+
+class player (a : Unit.t list) (b : Building.t list) =
+  object (self)
+    val mutable army = (a : Unit.t list)
+    val mutable buildings = (b : Building.t list)
+                            
+    (*Quite dirty mutable id. Can't we do without it ?*)
+    val mutable id = 0
+    method get_army = army
+    method get_id = id
+    method set_army a = army <- a
+    method add_unit u = army <- u::army
+    method set_buildings b = buildings <- b
+    method get_buildings = buildings
+    method add_building b = buildings <- b::buildings
+    method get_next_action = ([]:Action.movement),Action.Wait
+
+
+    (* TODO : implement these methods *)
+    method delete_unit (u : Unit.t) = ()
+    method move_unit (u : Unit.t) (p : Action.movement) = ()
+    method delete_building (b : Building.t) = ()
+
+    initializer id <- Oo.id self
+  end
+  
+(*
+class virtual player (army_ : Unit.t list) (buildings_ : Building.t list) = 
 object (self)
-  val mutable army = (a : Unit.t list)
-  val mutable buildings = (b : Building.t list)
+  val mutable army = (army_ : Unit.t list)
+  val mutable buildings = (buildings_ : Building.t list)
+                          
   method get_army = army
-  method set_army a = army <- a
   method add_unit u = army <- u::army
+  method set_army army_ = army <- army_
+    
   method get_buildings = buildings
   method add_building b = buildings <- b::buildings
-  method get_next_action = ([]:Action.movement),Action.Wait
+  method set_buildings buildings_ = buildings <- buildings_
+    
+  method virtual get_next_action :  Action.t
 end
+*)
+
+
+class dummy_player army_ buildings_ (a: Action.t list) =
+  object
+    inherit player army_ buildings_
+    val mutable actions = (a: Action.t list)
+    method get_next_action  =
+      if length a == 0 then
+        ([Position.create (0,0)], Wait)
+      else
+        let action= hd(actions) in
+        actions<-tl(actions);
+        action
+  end
+
 
 type t = player
 
-let create_player () = new player [] [] 
+let create_player () = new dummy_player [] []  []

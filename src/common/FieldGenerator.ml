@@ -486,9 +486,9 @@ let positioning m nbplayers legit_spawns =
   check_path (m,(),poslist);
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
-  let position_army_around spawn other_armies_pos =
+  let position_army_around spawn p_id other_armies_pos =
     let unbound_list = Unit.create_list_from_config() in
-    let army = ref [Unit.bind (Unit.create_from_config "general") spawn] in
+    let army = ref [Unit.bind (Unit.create_from_config "general") spawn p_id] in
     let army_pos = ref [spawn] in
     List.iter
       (
@@ -508,7 +508,7 @@ let positioning m nbplayers legit_spawns =
               (
                 let r = Random.int (List.length ne) in
                 let pos = List.nth ne r in
-                army := (Unit.bind ui pos) :: !army;
+                army := (Unit.bind ui pos p_id) :: !army;
                 army_pos := pos :: !army_pos;
               )
           done;
@@ -521,7 +521,7 @@ let positioning m nbplayers legit_spawns =
   | 0 -> (([]:Unit.t list list),([]:Position.t list))
   | n when n > 0 ->
       let others = position_armies (n-1) in
-      let ap = position_army_around (List.nth poslist (n-1)) (snd others) in
+      let ap = position_army_around (List.nth poslist (n-1)) (string_of_int (nbplayers-n)) (snd others) in
       ((fst ap)::(fst others),snd ap)
   | _ -> assert false
   in
@@ -692,4 +692,3 @@ object (self)
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp
 end
-

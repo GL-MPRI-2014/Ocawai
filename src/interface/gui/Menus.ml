@@ -18,18 +18,16 @@ class item icon text (action : unit -> unit) = object(self)
 
   method draw target lib = if self#active then begin
     (* First draw the icon *)
-    let texture = TextureLibrary.(get_texture lib icon) in
-    let (sx, sy) = foi2D texture#default_size in
-    let (selfx, selfy) = foi2D size in
-    let tex_size_x = sx *. selfy /. sy in
     let position = foi2D self#position in
-    texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
+    let (selfx, selfy) = foi2D size in
+    Render.renderer#draw_txr target icon ~position:position
+      ~size:(selfy, selfy) ~centered:false ();
     (* Then draw the text *)
     rect_print
       target text my_font Color.black (Pix (snd size - 3)) (Pix 2) Left {
-        left = fst position +. tex_size_x ;
+        left = fst position +. selfy ;
         top = snd position ;
-        width = selfx -. tex_size_x ;
+        width = selfx -. selfy ;
         height = selfy }
   end
 
@@ -64,18 +62,16 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
       ~outline_thickness:2. ()
     |> target#draw;
 
-    let texture = TextureLibrary.(get_texture lib icon) in
-    let (sx, sy) = foi2D texture#default_size in
     let (selfx, selfy) = foi2D size in
-    let tex_size_x = sx *. selfy /. sy in
     let position = foi2D self#position in
-    texture#draw ~target ~position ~size:(tex_size_x, selfy) ();
+    Render.renderer#draw_txr target icon ~position ~size:(selfy, selfy) 
+      ~centered:false ();
 
     rect_print
       target text my_font Color.black (Pix (snd size - 1)) (Pix 2) Center {
-        left = fst position +. tex_size_x ;
+        left = fst position +. selfy ;
         top = snd position ;
-        width = selfx -. tex_size_x ;
+        width = selfx -. selfy ;
         height = selfy }
   end
 
