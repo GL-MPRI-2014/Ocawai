@@ -31,89 +31,30 @@ let rec cost mvt_type m path = match path with
     assert (Tile.traversable_m tile mvt_type);
     (Tile.movement_cost tile mvt_type) + (cost mvt_type m t)
 
-let dijkstra m pos move_type =
+let access a p = let (a1,a2) = Position.topair p in a.(a1).(a2)
+let change a p v = let (a1,a2) = Position.topair p in a.(a1).(a2) <- v
+  
+(* construit le chemin jusqu'à pos en remontant  prev *)
+let rec rev_path prev = function
+| None -> []
+| Some prev_pos -> prev_pos::(rev_path prev (access prev prev_pos))
 
+let walk_on_canvas m pos move_type pos2 w h dist prev f =
   (* renvoie Some "cout de la tuile en Position.create(a,b)" ou None si pas traversable *)
   let cost a = 
     let ti = (Battlefield.get_tile m a) in 
-    if (Tile.traversable_m ti move_type) then Some (Tile.movement_cost ti move_type) else None in
-    
-  let (w,h) = Battlefield.size m in
-  
-  (* table des distances à pos *)
-  let dist = Array.make_matrix w h None in
-  
-  (* prev.(x).(y) est la position de la tuile precedant Position.create(x,y) sur le chemin de pos a Position.create(x,y) *)
-  let prev = Array.make_matrix w h None in
-  
-  (* sommets non parcourus *)
-  let li = PosPrioQueue.empty w h in 
-  let p_none = PosPrioQueue.p_none in
-  let access a p = let (a1,a2) = Position.topair p in a.(a1).(a2) in
-  let change a p v = let (a1,a2) = Position.topair p in a.(a1).(a2) <- v in
-  
-  (* initialisations *)
-  change dist pos (Some 0);
-  PosPrioQueue.push li 0 pos;
-  Battlefield.tile_iteri (fun p t -> if (Tile.traversable_m t move_type) && p <> pos then PosPrioQueue.push li p_none p) m;
-  (* boucle principale *)
-  while not (PosPrioQueue.is_empty li) do
-    (* u : min dist a pour tout a non parcouru, i.e. plus près voisin atteignable des parcourus *)
-    let u = snd (PosPrioQueue.pop li)  in
-      match access dist u with
-      | None -> PosPrioQueue.set_empty li 
-      | Some du -> (* pour tout voisin v de u atteignable d'une autre façon, on teste si c'est plus court d'aller en v par u *)
-          let shorter_path v cv = 
-            let alternate_cost = du + cv in 
-            if match access dist v with | None -> true | Some dv -> alternate_cost < dv then
-            begin
-              change dist v (Some alternate_cost);
-              change prev v (Some u);
-              PosPrioQueue.decrease_priority li alternate_cost v
-            end
-          in
-          List.iter (fun v -> let open Utils in (cost v) >? (shorter_path v)) 
-                    ( List.filter (Battlefield.in_range m) (Utils.shuffle [Position.up u; Position.down u; Position.left u; Position.right u]) );
-  done;
-  (* construit le chemin jusqu'à pos en remontant  prev *)
-  let rec rev_path = function
-    | None -> []
-    | Some prev_pos -> prev_pos::(rev_path (access prev prev_pos))
+    if (Tile.traversable_m ti move_type) then Some (Tile.movement_cost ti move_type) else None 
   in
-  (fun pos2 ->  
-      match access dist pos2 with
-      | None -> None
-      | Some dab -> Some (dab , rev_path (Some pos2) ) 
-  )
-
-let a_star m pos move_type pos2 =
-
-  (* renvoie Some "cout de la tuile en Position.create(a,b)" ou None si pas traversable *)
-  let cost a = 
-    let ti = (Battlefield.get_tile m a) in 
-    if (Tile.traversable_m ti move_type) then Some (Tile.movement_cost ti move_type) else None in
-    
-  let (w,h) = Battlefield.size m in
-  
-  (* table des distances à pos *)
-  let dist = Array.make_matrix w h None in
-  
-  (* prev.(x).(y) est la position de la tuile precedant Position.create(x,y) sur le chemin de pos a Position.create(x,y) *)
-  let prev = Array.make_matrix w h None in
-  
   (* sommets non parcourus *)
   let li = PosPrioQueue.empty w h in 
   let p_none = PosPrioQueue.p_none in
-  let access a p = let (a1,a2) = Position.topair p in a.(a1).(a2) in
-  let change a p v = let (a1,a2) = Position.topair p in a.(a1).(a2) <- v in
-  
   (* initialisations *)
   change dist pos (Some 0);
   PosPrioQueue.push li 0 pos;
   Battlefield.tile_iteri (fun p t -> if (Tile.traversable_m t move_type) && p <> pos then PosPrioQueue.push li p_none p) m;
   (* boucle principale *)
   while not (PosPrioQueue.is_empty li) do
-    (* u : min dist a pour tout a non parcouru, i.e. plus près voisin atteignable des parcourus *)
+    (* u : min (dist a + Position.dist a pos2) pour tout a non parcouru *)
     let u = snd (PosPrioQueue.pop li)  in
     if u = pos2 then PosPrioQueue.set_empty li else
     match access dist u with
@@ -125,20 +66,38 @@ let a_star m pos move_type pos2 =
           begin
             change dist v (Some alternate_cost);
             change prev v (Some u);
-            PosPrioQueue.decrease_priority li (alternate_cost + Position.dist v pos2) v
+            PosPrioQueue.decrease_priority li (alternate_cost + f v pos2) v;
           end
         in
         List.iter (fun v -> let open Utils in (cost v) >? (shorter_path v)) 
                   ( List.filter (Battlefield.in_range m) (Utils.shuffle [Position.up u; Position.down u; Position.left u; Position.right u]) );
-  done;
+  done
+
+let dijkstra m pos move_type =
+  let (w,h) = Battlefield.size m in
+  (* table des distances à pos *)
+  let dist = Array.make_matrix w h None in
+  (* prev.(x).(y) est la position de la tuile precedant Position.create(x,y) sur le chemin de pos a Position.create(x,y) *)
+  let prev = Array.make_matrix w h None in
+  walk_on_canvas m pos move_type (Position.create(-1,-1)) w h dist prev (fun _ _ -> 0);
   (* construit le chemin jusqu'à pos en remontant  prev *)
-  let rec rev_path = function
-    | None -> []
-    | Some prev_pos -> prev_pos::(rev_path (access prev prev_pos))
-  in  
+  (fun pos2 ->  
+      match access dist pos2 with
+      | None -> None
+      | Some dab -> Some (dab , rev_path prev (Some pos2) ) 
+  )
+
+let a_star m pos move_type pos2 =  
+  let (w,h) = Battlefield.size m in
+  (* table des distances à pos *)
+  let dist = Array.make_matrix w h None in
+  (* prev.(x).(y) est la position de la tuile precedant Position.create(x,y) sur le chemin de pos a Position.create(x,y) *)
+  let prev = Array.make_matrix w h None in
+  walk_on_canvas m pos move_type pos2 w h dist prev Position.dist;
+  (* construit le chemin jusqu'à pos en remontant  prev *)
   match access dist pos2 with
   | None -> None
-  | Some dab -> Some (dab , rev_path (Some pos2) )
+  | Some dab -> Some (dab , rev_path prev (Some pos2) )
 
 let rec print_path = function
   |[] -> print_endline ""
