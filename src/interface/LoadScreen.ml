@@ -15,16 +15,7 @@ class state = object(self)
   method private set_alpha a =
     text_alpha <- a
 
-  method handle_event e =
-
-    OcsfmlWindow.Event.(
-      match e with
-        | _ -> ()
-    )
-
   method render window =
-
-    super#render window ;
 
     Interpolators.update ();
 

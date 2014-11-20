@@ -38,8 +38,6 @@ class state = object(self)
 
   method render window =
 
-    super#render window ;
-
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
 

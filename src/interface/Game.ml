@@ -238,7 +238,6 @@ let new_game () =
 
   method render window =
     self#keyboard_events;
-    super#render window ;
     Interpolators.update () ;
     window#clear ();
 
