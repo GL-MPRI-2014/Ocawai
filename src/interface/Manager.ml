@@ -3,13 +3,14 @@ let manager = object(self)
   val mutable states : State.state list = []
   val mutable window : OcsfmlGraphics.render_window =
     new OcsfmlGraphics.render_window
-      (OcsfmlWindow.VideoMode.create ~w:1200 ~h:700 ())
+      (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
+      ~style:[OcsfmlWindow.Window.Fullscreen]
       "Flower Wars"
 
   initializer
     Render.renderer#init;
     Sounds.load_sounds ();
-    window#set_key_repeat_enabled false;
+    window#set_key_repeat_enabled true;
     window#set_framerate_limit 60
 
   method window : OcsfmlGraphics.render_window = window
