@@ -8,7 +8,8 @@ open Menus
 
 let new_game () =
 
-  let mkplayer () : Player.logicPlayer = (Player.create_player () : Player.player :> Player.logicPlayer) in
+  let mkplayer () : Player.logicPlayer =
+    (Player.create_player () : Player.player :> Player.logicPlayer) in
   let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
 
   let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
@@ -60,7 +61,9 @@ let new_game () =
       ~m_position:(manager#window#get_width / 2 - 200,
         manager#window#get_height / 2 - 80)
       ~m_size:(400, 110) ~m_theme:Theme.blue_theme
-      ~m_text:"Do you really want to forfeit ? The game will be considered lost... Also, notice how this text is perfectly handled ! This is beautiful isn't it ?"
+      ~m_text:("Do you really want to forfeit ? The game will be considered "
+                ^ "lost... Also, notice how this text is perfectly handled ! "
+                ^ "This is beautiful isn't it ?")
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
 
     (* Buttons for the forfeit popup *)
@@ -78,7 +81,8 @@ let new_game () =
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
-      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu) ~m_theme:Theme.blue_theme
+      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu)
+      ~m_theme:Theme.blue_theme
     in
 
     (* Ingame menu items *)
@@ -90,7 +94,7 @@ let new_game () =
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> print_endline "settings activated";
+    new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
