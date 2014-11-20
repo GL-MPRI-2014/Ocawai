@@ -17,7 +17,15 @@ class logicplayer (a : Unit.t list) (b : Building.t list) =
 
 
     (* TODO : implement these methods *)
-    method delete_unit (u : Unit.t) = ()
+    method delete_unit (u : Unit.t) =
+      let rec delete unit_list =
+        match unit_list with
+        | [] -> [] (*TO DO: Add an exception*)
+        | h::d when h#id == u#id -> d
+        | _ -> delete (tl unit_list)
+      in
+      army <- delete army
+        
     method move_unit (u : Unit.t) (p : Action.movement) = ()
     method delete_building (b : Building.t) = ()
 
