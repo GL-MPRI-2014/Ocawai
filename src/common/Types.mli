@@ -16,7 +16,7 @@ type update =
   | Add_building of Building.t * id_player
   | Delete_unit of Unit.t *id_player (*Fog or kill*)
   | Delete_building of Building.t * id_player(*fog or kill*)
-  | Move_unit of Unit.t * Path.t * id_player
+  | Move_unit of Unit.t * Action.movement * id_player
                        
 
 
