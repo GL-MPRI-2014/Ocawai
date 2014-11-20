@@ -17,7 +17,7 @@ let new_game () =
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
-    ~maxpos:(Position.create (99,99))
+    ~maxpos:(Position.create (Battlefield.size m_map))
   in
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
@@ -129,9 +129,9 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle;
       cdata#actual_player#set_state (ClientPlayer.Received 
-        (cdata#current_move, Action.Wait)))
+        (cdata#current_move, Action.Wait));
+      cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
     new item "cancel" "Cancel" (fun () ->
