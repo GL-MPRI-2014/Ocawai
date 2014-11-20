@@ -4,7 +4,8 @@ type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
   | Amphibious_Roll | Amphibious_Tread | All
 
 class unbound_soldier (s : string) (m : movement) (v : int) (min_a : int)
-  (a : int) (r : int) (sp : int) =
+  (a : int) (r : int) (sp : int) (ab : int) (ar : armor) (pl : int) (pn : int)
+  (ph :int) (price : int)=
 object (self)
   val name = s
   method name = name
@@ -14,6 +15,12 @@ object (self)
   method attack_range = a
   method move_range = r
   method spawn_number = sp
+  method attack_base = int
+  method armor = ar
+  method price = price
+  method percentage_light = pl
+  method percentage_normal = pn
+  method percentage_heavy = ph
 end
 
 class soldier (s : string) (p_id : string) (p : Position.t) (m : movement)
@@ -25,6 +32,11 @@ object (self)
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
+  method attack u a b = match u#armor with 
+  (* fonction affine gérée par l'engine -> gérer les ripostes *)
+    | Light -> u#hp <- u#hp - a*attack_base*percentage_light/100 + b
+    | Normal -> u#hp <- u#hp - a*attack_base*percentage_normal/100 + b
+    | Heavy -> u#hp <- u#hp - a*attack_base*percentage_heavy/100 + b
 end
 
 type t = soldier
