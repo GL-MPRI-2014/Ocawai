@@ -13,6 +13,7 @@ type t = {
   ~percentage_normal<ocaml default="100"> : int;
   ~percentage_heavy<ocaml default="0"> : int;
   ~price<ocaml default="50"> : int;
+  ~life_max<ocaml default="100"> : int;
 }
 
 type t_list = t list

@@ -7,7 +7,7 @@ type armor = Light | Normal | Heavy
 
 class unbound_soldier (s : string) (m : movement) (v : int) (min_a : int)
   (a : int) (r : int) (sp : int) (ab : int) (ar : armor) (pl : int) (pn : int)
-  (ph :int) (price : int)=
+  (ph :int) (price : int) (l_m : int)=
 object (self)
   method name = s
   method movement_type = m
@@ -22,23 +22,30 @@ object (self)
   method percentage_light = pl
   method percentage_normal = pn
   method percentage_heavy = ph
+  method life_max = l_m
 end
 
 class soldier (s : string) (p_id : string) (p : Position.t) (m : movement)
   (v :int) (min_a : int) (a : int) (r : int) (sp : int) (ab : int) (ar : armor) (pl : int) (pn : int)
-  (ph :int) (price : int) =
+  (ph :int) (price : int) (l_m : int)=
 object (self)
   inherit unbound_soldier s m v min_a a r sp ab ar pl pn ph price
   val mutable pos = p
+  val mutable life = l_m
+  method hp = life
+  method life_max = l_m
   method id = string_of_int (Oo.id self)
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
-  method attack u a b = match u#armor with 
+  method attack u a b = 
   (* fonction affine gérée par l'engine -> gérer les ripostes *)
-    | Light -> u#hp <- u#hp - a*attack_base*percentage_light/100 + b
-    | Normal -> u#hp <- u#hp - a*attack_base*percentage_normal/100 + b
-    | Heavy -> u#hp <- u#hp - a*attack_base*percentage_heavy/100 + b
+    let _ = Random.init (Sys.time()) in
+    let r = 85 + Random.int 31 in
+    match u#armor with 
+      | Light -> u#hp <- u#hp - a*attack_base*percentage_light*r/10000 + b
+      | Normal -> u#hp <- u#hp - a*attack_base*percentage_normal*r/10000 + b
+      | Heavy -> u#hp <- u#hp - a*attack_base*percentage_heavy*r/10000 + b
 end
 
 type t = soldier
@@ -47,7 +54,7 @@ type unbound_t = unbound_soldier
 let bind uu pos p_id =
   new soldier uu#name p_id pos uu#movement_type 
     uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
-    uu#spawn_number uu#attack_base uu#armor uu#percentage_light uu#percentage#normal uu#percentage_heavy uu#price
+    uu#spawn_number uu#attack_base uu#armor uu#percentage_light uu#percentage#normal uu#percentage_heavy uu#price uu#life_max
 
 let create_unbound_from_unit_t u = new unbound_soldier (u.Unit_t.name) (match (u.Unit_t.movement_type) with
                                                   | "walk" -> Walk
@@ -60,7 +67,7 @@ let create_unbound_from_unit_t u = new unbound_soldier (u.Unit_t.name) (match (u
                                                   | "amphibious_tread" -> Amphibious_Tread
                                                   | "all" -> All
                                                   | a -> failwith("create_unbound_from_unit_t : "^a^" is not a movement\n")
-) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) (u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base) (match u.Unit_t.armor with | "light" -> Light | "normal" -> Normal | "heavy" -> Heavy) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy) (u.Unit_t.price)
+) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) (u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base) (match u.Unit_t.armor with | "light" -> Light | "normal" -> Normal | "heavy" -> Heavy) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy) (u.Unit_t.price) (u.Unit_t.life_max)
 
 let create_list_from_file s1 =
   List.map create_unbound_from_unit_t (Ag_util.Json.from_file Unit_j.read_t_list s1)
