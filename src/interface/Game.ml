@@ -135,7 +135,8 @@ let new_game () =
       |Cursor.Displace(_,u,(r,_)) ->
         if List.mem cursor#position r then begin
           cursor#set_state (Cursor.Action 
-            (u, Position.range cursor#position u#min_attack_range u#attack_range));
+            (u, Position.range cursor#position 
+                u#min_attack_range u#attack_range));
           camera#set_position (Position.right cursor#position)
         end else
           cursor#set_state Cursor.Idle

@@ -15,6 +15,8 @@ let renderer = object(self)
   method init = 
     TextureLibrary.load_directory texture_library "resources/textures/";
     TilesetLibrary.load_directory tileset_library "resources/textures/";
+    font#load_from_file "resources/fonts/Roboto-Black.ttf"
+    |> ignore;
     (* Recreate-it after having initialized the window *)
     rect_vao <- new vertex_array ~primitive_type:Quads []
 
@@ -209,7 +211,12 @@ let renderer = object(self)
   (* Render a unit *)
   method private draw_unit (target : render_window) 
     camera my_unit =
-    self#draw_from_map target camera (my_unit#name) (my_unit#position) ()
+    self#draw_from_map target camera (my_unit#name) (my_unit#position) ();
+    let size = int_of_float (camera#zoom *. 14.) in
+    let position = (foi2D (camera#project my_unit#position)) in
+    new text ~string:(string_of_int (my_unit#hp * 10 / my_unit#life_max))
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw
  
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) 
