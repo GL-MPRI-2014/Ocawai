@@ -5,9 +5,9 @@ type accessibles = Position.t list * (Position.t, Path.t) Hashtbl.t
 val unit_vision : Unit.t -> Battlefield.t -> Position.t list
 
 (** Returns the list of all positions that a given player can see *)
-val player_vision : Player.t -> Battlefield.t -> Position.t list
+val player_vision : Player.logicPlayer -> Battlefield.t -> Position.t list
 
 (** For a given unit, returns the list of accessible positions and the 
     hashtable where the keys are the accessible positions and the entry 
     is a shortest path to this position *)
-val accessible_positions : Unit.t -> Player.t -> Player.t list -> Battlefield.t -> Position.t list * (Position.t, Path.t) Hashtbl.t
+val accessible_positions : Unit.t -> Player.logicPlayer -> Player.logicPlayer list -> Battlefield.t -> Position.t list * (Position.t, Path.t) Hashtbl.t
