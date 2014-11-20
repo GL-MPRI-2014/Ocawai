@@ -71,8 +71,10 @@ class main_menu = object(self)
     screen <- new Home.screen
       [new Home.textured_item "title" (w/.2., h /. 2. -. 250.)]
       [
-        new Home.textured_actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push (new LoadScreen.state Game.new_game :> State.state)) ;
+        new Home.textured_actionnable "gameon" "gameon_hover"
+          (w/.2., h /. 2. +. 30.)
+          (fun () -> manager#push
+            (new LoadScreen.state Game.new_game :> State.state)) ;
         new Home.textured_actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;
