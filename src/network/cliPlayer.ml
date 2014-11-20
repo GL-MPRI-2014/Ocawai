@@ -2,9 +2,9 @@ open Unix
 open Marshal
 open Types
 
-class cliPlayer = 
+class cliPlayer a b = 
 object (self)
-  inherit Player.player	       
+  inherit Player.player	a b       
 
 
   method get_next_action = 
