@@ -95,6 +95,7 @@ let apply_action player action =
 	match action with 
 		| Attack_unit a-> ()
 		| Attack_building a-> ()
+                | _ -> ()
 
 
 let () =
