@@ -19,10 +19,12 @@ class state = object(self)
       []
       [
         (new Setters.slider (w /. 2., 150.)
+          ~default:(int_of_float ((settings#cursor_speed -. 1.) *. (19. /. 50.)))
           (fun i ->
             settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i)))
           "Cursor speed" :> Home.actionnable) ;
         (new Setters.slider (w /. 2., 150. +. Setters.setter_height)
+          ~default:(int_of_float ((settings#zoom_speed -. 1.) *. (9. /. 50.)))
           (fun i ->
             settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i)))
           "Zoom speed" :> Home.actionnable) ;
