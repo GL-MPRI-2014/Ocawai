@@ -17,20 +17,22 @@ and values_type =
   | Array   of values_type array
   | Var     of string
   | App     of string * values_type list
+  | Ifte    of values_type * seq_type * seq_type
 
 (** Type of a variable/function declaration *)
 and decl_type = 
     Vardecl of string * values_type
-  | Fundecl of string * string list * function_type
+  | Fundecl of string * string list * seq_type
 
-(** Type of the body of a function *)
-and function_type = 
-    Seq     of decl_type * function_type
+(** Type of the sequences *)
+and seq_type = 
+    Seq     of decl_type * seq_type
   | Return  of values_type
 
 (** Type of a program *)
 and prog_type = 
     Globseq of decl_type * prog_type
   | Procseq of procedure_type * prog_type 
+  | Empty
     
 

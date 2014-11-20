@@ -122,7 +122,7 @@ engine:  $(files_atd_ml)
 	$(engine_command)
 
 script:
-	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(script_src) $(output_script)
+	ocamlbuild -use-ocamlfind -use-menhir -cflags $(cflags) -Is $(script_src) $(output_script)
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
@@ -135,6 +135,7 @@ uninstall:
 	-rm $(bindir)/$(output_interface)
 	-rm $(bindir)/$(output_engine)
 	-rm $(bindir)/$(output_network)
+	-rm $(bindir)/$(output_script)
 
 
 
