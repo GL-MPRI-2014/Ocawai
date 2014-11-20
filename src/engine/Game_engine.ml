@@ -18,7 +18,7 @@ object (self)
       players.(0) <- player;
       field <- new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5 ;
       map <- field#field;
-      (self#get_players :> Player.logicPlayer list)
+      ((self#get_players :> Player.logicPlayer list),map)
   method run = 
     let  current_player = ref (self#init_current_players (Array.length players)) and gameover = ref false in
     while not !gameover do
