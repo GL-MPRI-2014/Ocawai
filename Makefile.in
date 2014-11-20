@@ -57,7 +57,7 @@ interface_tags = thread
 #name of the target for ocamlbuild
 output_interface = main.native
 output_engine = main_engine.native
-output_network = server.native
+
 
 
 #get every source file of the project
@@ -100,8 +100,6 @@ run: interface
 engine:  $(files_atd_ml)
 	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 
-network:
-	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
 
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
