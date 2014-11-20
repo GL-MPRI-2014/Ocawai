@@ -73,6 +73,14 @@ output_network = server.native
 output_script = script.native
 
 
+
+command = ocamlbuild -use-ocamlfind -cflags $(cflags)
+
+interface_command =	$(command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+engine_command = $(command)  -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+network_command = $(command) -libs $(network_libraries) -Is $(network_src) $(output_network)
+
 #get every source file of the project
 #needed for the target doc
 find_files = $(wildcard $(dir)/*.ml*)
@@ -105,16 +113,14 @@ files_atd_mli := $(files_atd_ml:.ml=.mli)
 all: interface engine network
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+	$(interface_command)
 
 run: interface
 	./$(output_interface)
 
 engine:  $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+	$(engine_command)
 
-network:
-	ocamlbuild -use-ocamlfind -cflags $(cflags) -libs $(network_libraries) -Is $(network_src) $(output_network)
 
 script:
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(script_src) $(output_script)
@@ -204,7 +210,7 @@ config.status: configure
 	./config.status --recheck
 
 
-#Generate documentation -I _builld/$(network_dir) removed for now 
+#Generate documentation -I _builld/$(network_dir) removed for now
 doc: interface engine
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \

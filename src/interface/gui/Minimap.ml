@@ -101,7 +101,7 @@ class minimap def width height = object(self)
       done;
     done
 
-  method compute battlefield (players : Player.t list) = 
+  method compute battlefield (players : Player.logicPlayer list) = 
     self#compute_battlefield battlefield;
     self#compute_players players
 

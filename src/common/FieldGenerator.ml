@@ -18,7 +18,7 @@ let blank_tile = Tile.create_from_config "blank"
 let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank"
 let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed"
 
-(* functions used to get the 4 or 8 direct neighbors of a position, 
+(* functions used to get the 4 or 8 direct neighbors of a position,
   as a position list or a tile list *)
 
 let neigh_list t = [up t;down t;left t;right t]
@@ -51,7 +51,7 @@ let neighbors m pos =
 let eucl_disk m p d =
   pos_neighbors_aux m (fun t -> get_eucl_disk t d) p
 
-(* function used to get the neighbors of a position list not already in the entry list, and without duplications *) 
+(* function used to get the neighbors of a position list not already in the entry list, and without duplications *)
 
 module SetPos = Set.Make(Position)
 
@@ -70,14 +70,14 @@ let neighbours_corners_set l =
     (neighbours_set_aux neigh_list_corners l)
 
 let neighbours l =
-  SetPos.fold 
-    (fun e l -> e::l) 
+  SetPos.fold
+    (fun e l -> e::l)
     (neighbours_set l)
     []
 
 let neighbours_corners l =
-  SetPos.fold 
-    (fun e l -> e::l) 
+  SetPos.fold
+    (fun e l -> e::l)
     (neighbours_corners_set l)
     []
 
@@ -140,8 +140,8 @@ let find_connected_composants f m =
           | Some(r) -> UnionFind.is_representative r)
         (List.concat (Array.to_list (Array.map Array.to_list sings))))
     )
-  
-  
+
+
 
 
 (* functions working with densities *)
@@ -184,11 +184,11 @@ let swap_smoothing m factor =
     if(name1 <> name2) then
     begin
       let pc1 = contiguity m pos1 name1 in
-      let pc2 = contiguity m pos2 name2 in 
+      let pc2 = contiguity m pos2 name2 in
       let c1 = contiguity m pos1 name2 in
       let c2 = contiguity m pos2 name1 in
-      (* we do the swap if the contiguity has increased 
-        and if we are not looking at a seed tile 
+      (* we do the swap if the contiguity has increased
+        and if we are not looking at a seed tile
         (they can be rendered to examine how seed_gen works, we don't want to move them ) *)
       if pc1 +. pc2 < c1 +. c2  && (not (is_seed m pos1)) && (not (is_seed m pos2)) then
         swap pos1 pos2;
@@ -206,9 +206,9 @@ let smooth m tiles pos =
   in
   let rec count_nb = function
   | [] -> ()
-  | p::q -> 
-    let n = find_n p (tiles,0) in 
-    nb.(n) <- nb.(n) + 1; 
+  | p::q ->
+    let n = find_n p (tiles,0) in
+    nb.(n) <- nb.(n) + 1;
     count_nb q
   in
   count_nb nei;
@@ -221,13 +221,13 @@ let smooth m tiles pos =
   Battlefield.set_tile m pos t
 
 
-(* remove isolated tiles (isolated is defined by contiguity <= range) 
+(* remove isolated tiles (isolated is defined by contiguity <= range)
   by changing them to their most occuring neighbor *)
 let hard_smoothing m tiles range =
   (* to be changed position list *)
-  let to_smooth = 
-    Battlefield.tile_filteri 
-    (fun p t -> 
+  let to_smooth =
+    Battlefield.tile_filteri
+    (fun p t ->
       (not (is_seed m p))
       && contiguity m p (Tile.get_name (Battlefield.get_tile m p)) <= range
     )
@@ -238,11 +238,11 @@ let hard_smoothing m tiles range =
 (* does the same but there is only a chance (1- (proba/100)*(contiguity/range)) to smooth a position*)
 let random_hard_smoothing m tiles range proba =
   (* to be changed position list *)
-  let to_smooth = 
-    Battlefield.tile_filteri 
-    (fun p t -> 
+  let to_smooth =
+    Battlefield.tile_filteri
+    (fun p t ->
       (not (is_seed m p))
-      && let a = 
+      && let a =
             (1. -. (float_of_int proba *. contiguity m p (Tile.get_name (Battlefield.get_tile m p))) /. (100. *. range) )
          in
          let r = Random.float 1. in
@@ -292,17 +292,17 @@ let seeds_gen width height =
     let t = get_tile_with_density total tiles in
     (* pick a random position and check that its not too close to other different seeds*)
     let p = create(Random.int width,Random.int height) in
-    if List.for_all 
-        (fun pos -> 
+    if List.for_all
+        (fun pos ->
           Battlefield.in_range m pos
-          && ( is_blank m pos 
+          && ( is_blank m pos
               || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using seed_tile instead of t on the following statement*)
              )
         )
         (p::(eucl_disk m p dist_min_btw_seeds))
     then
     (
-      Battlefield.set_tile m p t; (* option : replace t by seed_tile in order to visualize the seeds on the map 
+      Battlefield.set_tile m p t; (* option : replace t by seed_tile in order to visualize the seeds on the map
                                      note : the previous test is affected, use with caution *)
       (t,p)::(create_seeds (n-1))
     )
@@ -330,8 +330,8 @@ let seeds_gen width height =
     grow_list m t sl;
     SetPos.filter
       (fun p -> is_blank m p)
-      (SetPos.union 
-        (SetPos.filter 
+      (SetPos.union
+        (SetPos.filter
           (fun p -> Battlefield.in_range m p)
           (neighbours_set sl)
         )
@@ -341,17 +341,17 @@ let seeds_gen width height =
   (* grow every seed simultaneously, remove the ones that can't be expanded, until no seed can grow*)
   let rec grow = function
   | [] -> ()
-  | ll -> 
+  | ll ->
     grow (
-        List.filter 
+        List.filter
           (fun (t,l) -> l <> SetPos.empty )
           (
-            List.map 
-            (fun (t,s) -> 
+            List.map
+            (fun (t,s) ->
               (
-                t, grow_seed t 
-                  (max 
-                    1 
+                t, grow_seed t
+                  (max
+                    1
                     (Tile.get_grow_speed t)
                   ) s
               )
@@ -363,11 +363,11 @@ let seeds_gen width height =
   (* initial seeds *)
   let seeds = create_seeds nbseeds in
   (* associates their neighbors position set to them *)
-  let neigh = 
-    List.map 
-      (fun (t,p) -> 
-        (t, SetPos.filter 
-              (fun pos -> 
+  let neigh =
+    List.map
+      (fun (t,p) ->
+        (t, SetPos.filter
+              (fun pos ->
                 Battlefield.in_range m pos
                 && is_blank m pos
               )
@@ -380,7 +380,7 @@ let seeds_gen width height =
   (* change tiles with less than two identical neighbors *)
   random_hard_smoothing m tiles (2./.8.) 50;
   m
-  
+
 
 (* armies are in valid positions only if their units are placed on tiles where they can move *)
 let check_movement attempt =
@@ -456,7 +456,8 @@ let init_positioning m nbplayers =
     !poslist
 
 (* positions nbplayers armies on a map m, with legit_spawns the list returned by init_positioning *)
-let positioning m nbplayers legit_spawns =
+let positioning m playerslist legit_spawns =
+  let nbplayers = List.length playerslist in
   let (width,height) = Battlefield.size m in
   let rec behead = function
   | 0,_ -> []
@@ -486,9 +487,11 @@ let positioning m nbplayers legit_spawns =
   check_path (m,(),poslist);
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
-  let position_army_around spawn p_id other_armies_pos =
+  let position_army_around spawn player other_armies_pos =
     let unbound_list = Unit.create_list_from_config() in
-    let army = ref [Unit.bind (Unit.create_from_config "general") spawn p_id] in
+    let general = Unit.bind (Unit.create_from_config "general") spawn player#get_id in
+    player#add_unit general;
+    let army = ref [general] in
     let army_pos = ref [spawn] in
     List.iter
       (
@@ -508,7 +511,9 @@ let positioning m nbplayers legit_spawns =
               (
                 let r = Random.int (List.length ne) in
                 let pos = List.nth ne r in
-                army := (Unit.bind ui pos p_id) :: !army;
+                let binded_ui = Unit.bind ui pos player#get_id in
+                player#add_unit binded_ui;
+                army := binded_ui :: !army;
                 army_pos := pos :: !army_pos;
               )
           done;
@@ -517,15 +522,14 @@ let positioning m nbplayers legit_spawns =
     (!army, (!army_pos)@other_armies_pos)
   in
   (* iter position_army_around for all armies*)
-  let rec position_armies = function
-  | 0 -> (([]:Unit.t list list),([]:Position.t list))
-  | n when n > 0 ->
-      let others = position_armies (n-1) in
-      let ap = position_army_around (List.nth poslist (n-1)) (string_of_int (nbplayers-n)) (snd others) in
+  let rec position_armies n = function
+  | [] -> (([]:Unit.t list list),([]:Position.t list))
+  | p::q ->
+      let others = position_armies (n+1) q in
+      let ap = position_army_around (List.nth poslist n) p (snd others) in
       ((fst ap)::(fst others),snd ap)
-  | _ -> assert false
   in
-  (fst (position_armies nbplayers), poslist)
+  (fst (position_armies 0 playerslist), poslist)
 
 
 (* create roads and bridges on a map*)
@@ -538,20 +542,20 @@ let create_borders m =
   (* create the border (water : string, rate : int (0-1000), expansion : int) composed of beach tiles *)
   let create_border (water, rate, expansion) beach =
     let poslist_water =
-      Battlefield.tile_filteri 
+      Battlefield.tile_filteri
         (fun pos t ->
           Tile.get_name t = water
           && count (fun u -> Tile.get_name u = water) (neighbors_corners m pos) <> 8)
-        m 
+        m
       in
     let poslist_beach =
-      Utils.shuffle (List.filter 
-          (fun pos -> 
-            let t = Battlefield.get_tile m pos in 
-            Tile.get_name t <> water 
+      Utils.shuffle (List.filter
+          (fun pos ->
+            let t = Battlefield.get_tile m pos in
+            Tile.get_name t <> water
             && match Tile.compare_walkability t beach with | None -> false | Some i -> i = 0)
-          (List.filter 
-            (Battlefield.in_range m) 
+          (List.filter
+            (Battlefield.in_range m)
             (neighbours_corners poslist_water)
           ) )
     in
@@ -566,25 +570,25 @@ let create_borders m =
     let grow_border m seed =
       let bord = ref [seed] in
       for i = 1 to expansion do
-        bord := !bord @ (List.filter 
-                          (fun pos -> 
+        bord := !bord @ (List.filter
+                          (fun pos ->
                             Battlefield.in_range m pos
                             && List.mem pos poslist_beach)
                           (neighbours_corners !bord));
       done;
       !bord
     in
-    List.iter 
-      (fun pos -> Battlefield.set_tile m pos beach) 
-      (List.fold_left 
-        (fun l e -> (grow_border m e) @ l) 
+    List.iter
+      (fun pos -> Battlefield.set_tile m pos beach)
+      (List.fold_left
+        (fun l e -> (grow_border m e) @ l)
         [] seeds_beach
       )
   in
   (* iterates over all `Border tiles *)
-  List.iter 
-    (fun beach -> 
-      match Tile.get_structure beach with 
+  List.iter
+    (fun beach ->
+      match Tile.get_structure beach with
       | `Border param -> create_border param beach
       | _ -> ()
     )
@@ -596,14 +600,14 @@ let create_structs m =
   create_roads m
 
 (* iterated tries to spawn armies *)
-let units_spawn m nbplayers nbattempts legit_spawns =
+let units_spawn m playerslist nbattempts legit_spawns =
   let rec units_spawn_aux = function
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
       print_string ("    attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^": ");
       try
-        let (a,sp) = positioning m nbplayers legit_spawns in
+        let (a,sp) = positioning m playerslist legit_spawns in
         let attempt = (m,a,sp) in
         print_string "armies spawned, checking... ";
         flush_all();
@@ -614,7 +618,7 @@ let units_spawn m nbplayers nbattempts legit_spawns =
         (a,sp)
       with
       | BadSpawnsSequence ->
-          print_endline "Not enough spawns found"; 
+          print_endline "Not enough spawns found";
           units_spawn_aux (n-1)
       | NotEnoughPlace ->
           print_endline " Not enough space around spawn for army";
@@ -634,7 +638,7 @@ let units_spawn m nbplayers nbattempts legit_spawns =
   units_spawn_aux nbattempts
 
 (* iterated tries to create structures *)
-let create_structures m nbplayers nbattempts =
+let create_structures m nbattempts =
   let rec create_structures_aux = function
   | 0 -> raise StructSpawnFail
   | n ->
@@ -654,9 +658,9 @@ let create_structures m nbplayers nbattempts =
   create_structures_aux nbattempts
 
 (* iterated tries to generate the map *)
-let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
+let generate width height playerslist nbattempts1 nbattempts2 nbattempts3 =
   let rec generate_aux = function
-  | 0 -> 
+  | 0 ->
     print_endline("generator failed, not enough tries? bad calling arguments?");
     raise GeneratorFailure
   | n ->
@@ -664,8 +668,8 @@ let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
       print_endline ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^": ");
       try
         let m = seeds_gen width height in
-        create_structures m nbplayers nbattempts2;
-        let (a,sp) = units_spawn m nbplayers nbattempts3 (init_positioning m nbplayers) in
+        create_structures m nbattempts2;
+        let (a,sp) = units_spawn m playerslist nbattempts3 (init_positioning m (List.length playerslist)) in
         let attempt = (m,a,sp) in
         print_endline "Generation success"(* place here any check on map generation*);
         attempt
@@ -685,9 +689,9 @@ let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
   generate_aux nbattempts1
 
 
-class t (width:int) (height:int) (nbplayers:int) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
+class t (width:int) (height:int) (playerslist:Player.logicPlayer list) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
 object (self)
-  val g = Random.self_init();generate width height nbplayers generate_attempts (*structs_attempts*) 1 units_spawn_attempts
+  val g = Random.self_init();generate width height playerslist generate_attempts (*structs_attempts*) 1 units_spawn_attempts
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp
