@@ -10,8 +10,10 @@ class game_engine () = object (self)
   val mutable field = None
   val mutable map_width = 0
   val mutable map_height = 0
+
   method get_players =
     Array.to_list players
+
   method init_local player nbplayers map_wht map_hgt = 
       map_width <- map_wht;
       map_height <- map_hgt;
@@ -23,33 +25,31 @@ class game_engine () = object (self)
       done;
       field <- Some (new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5);
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
-  method run = 
-    let  current_player = ref (self#init_current_players (Array.length players)) and gameover = ref false in
-    while not !gameover do
-	  let player_turn_end =  ref false and has_played = ref [] in
-   while not (!player_turn_end) do
-     let player_turn = players.( List.hd !current_player ) in
-		    let next_wanted_action =  player_turn#get_next_action in
-		    player_turn_end := ((snd next_wanted_action) = Wait);
-	  try
-                        Printf.printf "%s\n" "start try next action";
-		                let (movement,action) = Logics.try_next_action
-                        (self#get_players :> Player.logicPlayer list)
-                        (player_turn:> Player.logicPlayer) !has_played (get_opt field)#field next_wanted_action in
-                  if action = End_turn then
-                    (
-                    Printf.printf "%s\n" "end turn of the player";
-                    self#end_turn player_turn_end current_player
-                    )
-                  else (
-                        Printf.printf "%s\n" "try to move";    
-                  self#apply_movement player_turn movement has_played
-                  )
-            with
-               _ -> (Printf.printf "%s\n" "exception raised. End of turn!";self#end_turn player_turn_end current_player;)
-	    done;
-	done
 
+  method run = 
+    let current_player = ref (self#init_current_players (Array.length players)) 
+    and gameover = ref false in
+    while not !gameover do
+      let player_turn_end =  ref false and has_played = ref [] in
+      while not (!player_turn_end) do
+        let player_turn = players.( List.hd !current_player ) in
+        let next_wanted_action =  player_turn#get_next_action in
+        player_turn_end := ((snd next_wanted_action) = Wait);
+        try
+          let (movement,action) = Logics.try_next_action
+              (self#get_players :> Player.logicPlayer list)
+              (player_turn:> Player.logicPlayer) !has_played 
+              (get_opt field)#field 
+              next_wanted_action 
+          in
+          if action = End_turn then
+            self#end_turn player_turn_end current_player
+          else
+            self#apply_movement player_turn movement has_played
+        with
+          _ -> self#end_turn player_turn_end current_player;
+      done;
+    done
 
   method private init_current_players nb= 
     let rec aux players_number =
