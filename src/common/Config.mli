@@ -1,5 +1,30 @@
 (** Config and settings gestion module*)
 
+(** default tiles,units,settings,and settings-default paths*)
+val default_config_files : string*string*string*string
+
+class t : string * string * string * string -> object
+
+  method tiles_list : Tile.t list
+  
+  method unbound_units_list : Unit.unbound_t list
+  
+  method settings : Settings_t.t
+  
+  method reload_tiles : unit
+  
+  method reload_units : unit
+  
+  method reload_settings : unit
+  
+  method reload : unit
+  
+  method reset_settings : unit
+  
+  method write_settings : unit
+end
+
+
 (** Default tiles config file *)
 val tiles_config : string
 (** Default units config file *)

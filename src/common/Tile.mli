@@ -44,4 +44,7 @@ val movement_cost : t -> Unit.movement -> int
 val tile_cost : t -> Unit.t -> int
 
 (** Creates a tile from a parsed record*)
-val create_tile_from_parsed_tile : Tile_t.t -> t
+val parsed_tile_to_tile : Tile_t.t -> t
+
+(** Creates a parsed tile from a tile*)
+val tile_to_parsed_tile : t -> Tile_t.t
