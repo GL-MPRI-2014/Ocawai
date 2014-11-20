@@ -32,6 +32,8 @@ class logicplayer (a : Unit.t list) (b : Building.t list) =
     initializer id <- Oo.id self
   end
 
+type logic = logicplayer
+
 
 class virtual player (a : Unit.t list) (b : Building.t list) = 
 object (self) 
@@ -40,6 +42,8 @@ object (self)
 
 end
 
+type t = player
+  
 class clientplayer (a : Unit.t list) (b : Building.t list) =
 object (self) inherit player a b
   method get_next_action = ([],Wait)
@@ -47,9 +51,6 @@ object (self) inherit player a b
 Ce get_next_action doit renvoyer ce que veut faire le joueur, à brancher sur l'interface
  *)
 end
-
-
-
 
 class dummy_player army_ buildings_ (a: Action.t list) =
   object
@@ -63,10 +64,5 @@ class dummy_player army_ buildings_ (a: Action.t list) =
         actions<-tl(actions);
         action
   end
-
-
-type t = logicplayer
-
-type actif = player
 
 let create_player () = new dummy_player [] []  []

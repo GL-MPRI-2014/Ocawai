@@ -1,5 +1,5 @@
 
-type t = <
+type logic = <
   (*TO DO: The type Unit.t list could (should) not be exposed. Instead,
     we could create a module allowing some functions as search one unit,
     get a list of unit etc... *)
@@ -18,7 +18,8 @@ type t = <
 >
 
 
-type actif = <
+
+type t = <
 
   get_id : int;
   get_army : Unit.t list;
@@ -35,5 +36,5 @@ type actif = <
   get_next_action :  Action.t;    (* Appelé par la grosse boucle, renvoie depuis la file l'action que veut effectuer le joueur *)
 >
 
-val create_player : unit -> actif
+val create_player : unit -> t
 
