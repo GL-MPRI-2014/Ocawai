@@ -1,4 +1,5 @@
 open Action
+open Settings_t
 
 let get_opt o = 
   match o with
@@ -10,20 +11,25 @@ class game_engine () = object (self)
   val mutable field = None
   val mutable map_width = 0
   val mutable map_height = 0
+  
+  val config = new Config.t Config.default_config_files
+  
+  method get_config = config
 
   method get_players =
     Array.to_list players
 
   method init_local player nbplayers map_wht map_hgt = 
-      map_width <- map_wht;
-      map_height <- map_hgt;
+      config#settings.battlefield_width <- map_wht;
+      config#settings.battlefield_height <- map_hgt;
       players <- Array.make nbplayers (Player.create_player ());     
       players.(0) <- player;
       for i = 1 to nbplayers - 1 do
         (*each player should be different*)
         players.(i) <- Player.create_player ()
       done;
-      field <- Some (new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5);
+      
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
   method run = 

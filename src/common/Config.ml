@@ -1,8 +1,4 @@
 
-let tiles_config = "resources/config/tiles.json"
-
-let units_config = "resources/config/units.json"
-
 (* Tiles config *)
 
 let create_tile_list_from_file file =
@@ -14,10 +10,6 @@ let create_tile_from_file name file =
     (fun t -> Tile.get_name t = name)
     tiles
 
-let create_tile_list () = create_tile_list_from_file tiles_config
-
-let create_tile name = create_tile_from_file name tiles_config
-
 (* Units config *)
 
 let create_unbound_unit_list_from_file file =
@@ -28,22 +20,33 @@ let create_unbound_unit_from_file name file =
     (fun uni -> uni#name = name)
     (create_unbound_unit_list_from_file file)
 
-let create_unbound_unit_list () = create_unbound_unit_list_from_file units_config
+(* Settings config *)
 
-let create_unbound_unit name = create_unbound_unit_from_file name units_config
+let create_settings_from_file file = Ag_util.Json.from_file Settings_j.read_t file
 
+(* default parameters *)
 
-let default_config_files = ("resources/config/tiles.json","resources/config/units.json","resources/config/settings_default.json","resources/config/settings.json")
+let default_config_files = 
+  ("resources/config/tiles.json",
+  "resources/config/units.json",
+  "resources/config/settings.json",
+  "resources/config/settings_default.json")
 
-class t (t_config,u_config,s_file,s_tmp : string*string*string*string) =
+(* config class *)
+
+class t (t_config,u_config,s_tmp,s_file : string*string*string*string) =
 object (self)
 
   val mutable t_list = create_tile_list_from_file t_config
   val mutable u_list = create_unbound_unit_list_from_file u_config
-  val mutable s = Ag_util.Json.from_file Settings_j.read_t (if Sys.file_exists s_tmp then s_tmp else s_file)
+  val mutable s = create_settings_from_file (if Sys.file_exists s_tmp then s_tmp else s_file)
   
   method tiles_list = t_list
+  method tile name = List.find (fun t -> Tile.get_name t = name) t_list
+  
   method unbound_units_list = u_list
+  method unbound_unit name = List.find (fun uni -> uni#name = name) u_list
+
   method settings = s
   
   method reload_tiles =
@@ -53,10 +56,10 @@ object (self)
     u_list <- create_unbound_unit_list_from_file u_config
   
   method reload_settings =
-    s <- Ag_util.Json.from_file Settings_j.read_t (if Sys.file_exists s_tmp then s_tmp else s_file)
+    s <- create_settings_from_file (if Sys.file_exists s_tmp then s_tmp else s_file)
   
   method reset_settings =
-    s <- Ag_util.Json.from_file Settings_j.read_t s_file
+    s <- create_settings_from_file s_file
   
   method reload = 
     self#reload_tiles;
@@ -68,9 +71,11 @@ object (self)
 
 end
 
+(* Test *)
+
 (*
 open Settings_j
-let test()=
+let test() = 
   let config = new Config.t Config.default_config_files in
   let print () = print_int config#settings.cursor_speed;print_newline() in
   
