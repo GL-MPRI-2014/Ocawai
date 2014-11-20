@@ -62,6 +62,13 @@ val ddhn : t (** double-dotted half note *)
 val ddqn : t (** double-dotted quarter note *)
 val dden : t (** double-dotted eighth note *)
 
+(** {2 Time conversions} *)
+
+(**
+   @return a floating-point approximation of the input [t]
+*)
+val toFloat : t -> float 
+
 (** {2 Testing functions} *)
 
 (** {3 Pretty-printing} *)
