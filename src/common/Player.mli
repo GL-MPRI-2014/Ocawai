@@ -17,6 +17,7 @@ class virtual player :  Unit.t list -> Building.t list  -> object
     inherit logicPlayer
     method virtual get_next_action :  Action.t
   end
+
 (*
 type logic = <
   (*TO DO: The type Unit.t list could (should) not be exposed. Instead,

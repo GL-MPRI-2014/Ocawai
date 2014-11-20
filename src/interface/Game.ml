@@ -130,7 +130,9 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle;
+      cdata#actual_player#set_state (ClientPlayer.Received 
+        (cdata#current_move, Action.Wait)))
     |> disp_menu#add_child;
 
     new item "cancel" "Cancel" (fun () ->
@@ -218,7 +220,8 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
+          cdata#event_state = ClientData.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?

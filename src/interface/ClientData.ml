@@ -1,12 +1,15 @@
-class client_data ~(map:Battlefield.t) ~(camera:Camera.camera)
-  ~(players:Player.logicPlayer list)= object
+class client_data 
+  ~(map:Battlefield.t)
+  ~(camera:Camera.camera) 
+  ~(players:Player.logicPlayer list)
+  ~(actual_player:ClientPlayer.client_player) = object
 
   val minimap = new Minimap.minimap 40 
     (fst (Battlefield.size map))
     (snd (Battlefield.size map))
 
   initializer
-    minimap#compute map players (*(players : Player.player list :> Player.logicPlayer list)*)
+    minimap#compute map players
 
   method map = map
 
@@ -14,10 +17,8 @@ class client_data ~(map:Battlefield.t) ~(camera:Camera.camera)
 
   method minimap = minimap
 
-  (* Will be useful later *)
   method players = players
 
-  (* method current_move = current_move *)
   method current_move = camera#cursor#get_move
 
   method unit_at_position p = 
