@@ -66,8 +66,7 @@ cflags = -w,-3
 
 #name of the target for ocamlbuild
 output_interface = main.native
-output_engine = dummy_serv.native
-output_network = server.native
+output_engine = main_engine.native
 
 
 
@@ -118,8 +117,6 @@ run: interface
 engine:  $(files_atd_ml)
 	$(engine_command)
 
-network:
-	$(network_command)
 
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
