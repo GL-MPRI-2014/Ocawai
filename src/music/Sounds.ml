@@ -7,6 +7,7 @@ let sound_bank = Hashtbl.create 13
 let path = "./resources/sounds/"
 
 let player = ref (new sound ())
+let volume = ref 100.
 
 let load_sound_file file_name =
   match (Str.split (Str.regexp "\\.") file_name) with
@@ -17,7 +18,7 @@ let load_sound_file file_name =
     | _ ->
         raise (Not_a_valid_sound_file (file_name ^ " (only WAV are supported)"))
 
-let load_sounds () = 
+let load_sounds () =
   print_endline "Loading sounds :";
   let files = Sys.readdir path in
   Array.iter load_sound_file files;
@@ -33,4 +34,7 @@ let play_sound sound =
     | Not_found -> raise (Unknown_sound sound)
 
 let set_volume f =
-  player := new sound ~volume:f ()
+  player := new sound ~volume:f ();
+  volume := f
+
+let get_volume () = !volume

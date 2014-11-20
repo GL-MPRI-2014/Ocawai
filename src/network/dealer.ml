@@ -2,7 +2,9 @@ open Unix
 open Marshal
 open Types
 
-class dealer (s : file_descr) (tablogp : Player.logicPlayer list) (clip : Player.player) =
+
+
+class dealer (s : file_descr) (tablogp : Player.logicPlayer list) (clip : CliPlayer.cliPlayer) =
 object (self)
 	 
   (* The socket we read from and write into to communicate with the net player over the network *)
