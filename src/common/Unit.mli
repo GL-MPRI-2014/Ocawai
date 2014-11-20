@@ -3,6 +3,8 @@
 type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
   | Amphibious_Roll | Amphibious_Tread | All
 
+type armor = Light | Normal | Heavy
+
 (** Unit type *)
 type t = <
   name : string;
@@ -15,7 +17,17 @@ type t = <
   min_attack_range : int;
   attack_range : int;
   move_range : int;
-  spawn_number : int
+  spawn_number : int;
+  attack_base : int;
+  armor : armor;
+  price : int;
+  percentage_light : int;
+  percentage_normal : int;
+  percentage_heavy : int;
+  life_max : int;
+  hp : int;
+  attack : armor -> int -> int;
+  take_damage : int -> unit
 >
 
 (** Type for units without a position *)
@@ -26,7 +38,14 @@ type unbound_t = <
   min_attack_range : int;
   attack_range : int;
   move_range : int;
-  spawn_number : int
+  spawn_number : int;
+  attack_base : int;
+  armor : armor;
+  price : int;
+  percentage_light : int;
+  percentage_normal : int;
+  percentage_heavy : int;
+  life_max : int
 >
 
 (** Create a unit from a unbound unit, a position and the controlling player id *)
