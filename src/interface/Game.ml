@@ -227,7 +227,8 @@ let new_game () =
           cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
-              |Idle -> cdata#unit_at_position cursor#position >?
+              |Idle -> cdata#player_unit_at_position 
+                cursor#position cdata#actual_player >?
                 (fun u -> cursor#set_state (Displace (cdata#map, u,
                   Logics.accessible_positions u
                     (cdata#player_of u)

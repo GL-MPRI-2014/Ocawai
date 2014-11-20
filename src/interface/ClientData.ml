@@ -2,7 +2,7 @@ class client_data
   ~(map:Battlefield.t)
   ~(camera:Camera.camera) 
   ~(players:Player.logicPlayer list)
-  ~(actual_player:ClientPlayer.client_player) = object
+  ~(actual_player:ClientPlayer.client_player) = object(self)
 
   val minimap = new Minimap.minimap 40 
     (fst (Battlefield.size map))
@@ -23,16 +23,20 @@ class client_data
 
   method current_move = camera#cursor#get_move
 
+  method player_unit_at_position : 
+    'a. Position.t -> (#Player.logicPlayer as 'a) -> Unit.t option
+    = fun pos player ->
+      let rec unit_aux = function
+        |[] -> None
+        |t::q when t#position = pos -> Some(t)
+        |t::q -> unit_aux q
+      in unit_aux player#get_army
+
   method unit_at_position p = 
-    let rec aux = function
-      |[] -> None
-      |t::q when t#position = p -> Some(t)
-      |t::q -> aux q
-    in 
     let rec aux_player = function 
       |[] -> None
       |t::q -> begin
-          match aux t#get_army with 
+          match self#player_unit_at_position p t with 
           |None -> aux_player q
           |Some(s) -> Some(s)
       end
