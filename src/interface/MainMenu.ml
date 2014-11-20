@@ -95,8 +95,6 @@ class main_menu = object(self)
 
   method render window =
 
-    super#render window ;
-
     Interpolators.update ();
 
     self#update_offset;

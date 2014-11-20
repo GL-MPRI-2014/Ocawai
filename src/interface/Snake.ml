@@ -76,7 +76,7 @@ class state = object(self)
     (x *. 50. +. dx, y *. 50. +. dy)
 
   method private draw_path (target : OcsfmlGraphics.render_window) path =
-    let draw pos rot name = Render.renderer#draw_txr target name 
+    let draw pos rot name = Render.renderer#draw_txr target name
     ~position:(self#topos pos) ~rotation:rot () in
     let angle s t =
       match Position.diff t s with
@@ -147,8 +147,6 @@ class state = object(self)
 
   method render window =
 
-    super#render window ;
-
     let color = Color.rgb 19 42 69 in
     window#clear ~color ();
 
@@ -197,7 +195,7 @@ class state = object(self)
     Sounds.play_sound "lets_do_this";
     musicThread <-
       Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file "resources/music/tetris.mid" x) runMusic)
-    
+
 
   method destroy =
     runMusic := false
