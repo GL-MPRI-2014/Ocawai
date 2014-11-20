@@ -20,7 +20,7 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
     method delete_unit (u : Unit.t) =
       let rec delete unit_list =
         match unit_list with
-        | [] -> [] (*TO DO: Add an exception*)
+        | [] -> raise Not_found
         | h::d when h#id == u#id -> d
         | _ -> delete (tl unit_list)
       in
