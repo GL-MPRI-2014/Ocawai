@@ -172,9 +172,10 @@ let try_next_action player_list player has_played bf order =
 
 let apply_attack att def =
   let lambda = 90 and mu = 10 in
-  let percentage = lambda * att#hp + mu in
-  let div = 100 * 100 * att#life_max in
+  let percentage = lambda * att#hp + mu * att#life_max in
+  let div = 100 * att#life_max in
   let damage = att#attack def#armor (percentage * 100 / div) in
+  (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
   def#take_damage damage
 
 

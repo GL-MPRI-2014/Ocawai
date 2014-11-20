@@ -31,6 +31,7 @@ class state = object(self)
         (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
           ~default: (int_of_float (Sounds.get_volume ()))
           (fun i ->
+            Sounds.play_sound "click";
             Sounds.set_volume (float_of_int i))
             "Sounds volume" :> Home.actionnable) ;
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
