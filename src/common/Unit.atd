@@ -8,7 +8,7 @@ type t = {
   move_range : int;
   ~spawn_number<ocaml default="0"> : int;
   ~attack_base<ocaml default="50"> : int;
-  ~armor<ocaml default="normal"> : string;
+  ~armor<ocaml default="\"normal\""> : string;
   ~percentage_light<ocaml default="100"> : int;
   ~percentage_normal<ocaml default="100"> : int;
   ~percentage_heavy<ocaml default="0"> : int;
