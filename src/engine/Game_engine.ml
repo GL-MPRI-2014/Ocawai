@@ -18,6 +18,7 @@ class game_engine () = object (self)
       players <- Array.make nbplayers (Player.create_player ());     
       players.(0) <- player;
       for i = 1 to nbplayers - 1 do
+        (*each player should be different*)
         players.(i) <- Player.create_player ()
       done;
       field <- Some (new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5);
@@ -25,21 +26,27 @@ class game_engine () = object (self)
   method run = 
     let  current_player = ref (self#init_current_players (Array.length players)) and gameover = ref false in
     while not !gameover do
-	    let player_turn_end =  ref false and has_played = ref [] in
-	    while not (!player_turn_end) do
-            let player_turn = players.( List.hd !current_player ) in
+	  let player_turn_end =  ref false and has_played = ref [] in
+   while not (!player_turn_end) do
+     let player_turn = players.( List.hd !current_player ) in
 		    let next_wanted_action =  player_turn#get_next_action in
 		    player_turn_end := ((snd next_wanted_action) = Wait);
-		    try
-		        let (movement,action) = Logics.try_next_action
+	  try
+                        Printf.printf "%s\n" "start try next action";
+		                let (movement,action) = Logics.try_next_action
                         (self#get_players :> Player.logicPlayer list)
                         (player_turn:> Player.logicPlayer) !has_played (get_opt field)#field next_wanted_action in
-                if action = End_turn then
+                  if action = End_turn then
+                    (
+                    Printf.printf "%s\n" "end turn of the player";
                     self#end_turn player_turn_end current_player
-                else
-                        self#apply_movement player_turn movement has_played
+                    )
+                  else (
+                        Printf.printf "%s\n" "try to move";    
+                  self#apply_movement player_turn movement has_played
+                  )
             with
-               _ -> self#end_turn player_turn_end current_player;
+               _ -> (Printf.printf "%s\n" "exception raised. End of turn!";self#end_turn player_turn_end current_player;)
 	    done;
 	done
 
