@@ -66,8 +66,7 @@ let try_movement unit bf player player_list mvt =
       if mvt_pt - cost < 0 then raise Bad_path;
       let (b1,b2) = unit_of_position dst player player_list in
       if b1 then
-	if not b2 then false
-	else aux (mvt_pt - cost) (dst::t)
+	b2 && (t <> []) && aux (mvt_pt - cost) (dst::t)
       else (
 	last_viable_pos := dst;
 	aux (mvt_pt - cost) (dst::t)
