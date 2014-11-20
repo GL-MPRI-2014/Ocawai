@@ -101,9 +101,9 @@ class screen items actionnables = object(self)
 
   method private weight horizontal s a =
     if horizontal then
-      self#sqdist a s * (abs (int_of_float (a#y -. s#y)))
+      self#sqdist a s * (abs (int_of_float (a#y -. s#y)) + 1)
     else
-      self#sqdist a s * (abs (int_of_float (a#x -. s#x)))
+      self#sqdist a s * (abs (int_of_float (a#x -. s#x)) + 1)
 
   method private compare h s a b =
     (self#weight h s a - self#weight h s b)
