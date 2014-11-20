@@ -67,7 +67,7 @@ let init_players list_players =
 	let players = ref list_players in
 	let res = Array.make (List.length list_players) (Player.create_player ()) in
 	for i=0 to ((List.length list_players) -1) do
-  	res.((List.hd !players)#get_id) <- (List.hd !players);
+  	res.(i) <- (List.hd !players);
     players := (List.tl !players);
   done;
   res
