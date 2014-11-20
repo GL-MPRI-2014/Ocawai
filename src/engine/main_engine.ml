@@ -129,7 +129,7 @@ begin
 		player_turn_end := ((snd next_wanted_action) = Wait);
 		try
 		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) !has_played init_field#field next_wanted_action in 
-            if action = End_turn or action = Wait then
+            if action = End_turn then
                 end_turn player_turn_end current_player
             else
                     apply_movement player_turn movement has_played
