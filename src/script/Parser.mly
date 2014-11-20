@@ -40,12 +40,13 @@ decl:
   ;
 
 value:
-  |s = simple_value {s}
   |c = composed_value {c}
+  |n = nested_value {n}
   ;
 
 nested_value:
   |s = simple_value {s}
+  |LEFTP; s = simple_value; RIGHTP {s}
   |LEFTP; c = composed_value; RIGHTP {c}
   ;
 
