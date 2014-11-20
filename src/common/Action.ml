@@ -108,4 +108,4 @@ let try_next_action player_list player has_played bf order =
 	(*New actions here*)
   )
 
-let apply_fight src dst 
+let apply_fight src dst = ()
