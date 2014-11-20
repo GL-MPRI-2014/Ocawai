@@ -8,11 +8,11 @@ open Menus
 
 let new_game () =
 
-  let mkplayer () : Player.logicPlayer =
-    (Player.create_player () : Player.player :> Player.logicPlayer) in
-  let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
+  let my_player = new ClientPlayer.client_player [] [] in
 
-  let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
+  let m_engine = new Game_engine.game_engine () in
+
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 100 100 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -21,19 +21,14 @@ let new_game () =
   in
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
-      ~map:(m_generator#field)
-      ~players:(List.map (fun a ->
-        (* Really ugly *)
-        let p = List.hd !players in
-        players := List.tl !players ;
-        p#set_army a; p) m_generator#armies))
+      ~map:m_map
+      ~players:m_players
+      ~actual_player:my_player)
   in
 
   object(self)
 
   inherit State.state as super
-
-  val generator = m_generator
 
   val ui_manager = new UIManager.ui_manager
 
@@ -134,7 +129,9 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle;
+      cdata#actual_player#set_state (ClientPlayer.Received 
+        (cdata#current_move, Action.Wait)))
     |> disp_menu#add_child;
 
     new item "cancel" "Cancel" (fun () ->
@@ -155,7 +152,9 @@ let new_game () =
     ui_manager#add_widget atk_menu
 
   initializer
-    self#create_ui
+    self#create_ui;
+    Thread.create (fun () -> m_engine#run) ()
+    |> ignore
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
@@ -222,7 +221,8 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
+          cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?

@@ -20,7 +20,8 @@ end
 (** A slider
   * It takes a function that should associate every integer between [0]
   * and [100] to a unit value (typically a setter) *)
-class slider : (float * float) -> (int -> unit) -> string -> object
+class slider : ?default:int -> (float * float) -> (int -> unit) -> string ->
+object
 
   inherit setter
 

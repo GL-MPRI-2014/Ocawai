@@ -11,3 +11,17 @@ val player_vision : Player.logicPlayer -> Battlefield.t -> Position.t list
     hashtable where the keys are the accessible positions and the entry 
     is a shortest path to this position *)
 val accessible_positions : Unit.t -> Player.logicPlayer -> Player.logicPlayer list -> Battlefield.t -> Position.t list * (Position.t, Path.t) Hashtbl.t
+
+(** Checks if the requested action is possible.
+    If it is, the same action is returned, else the function returns another
+    action with the maximum possible path. *)
+val try_next_action : Player.logicPlayer list -> Player.logicPlayer -> Unit.t list -> 
+  Battlefield.t -> Action.t -> Action.t
+
+(** Returns the unit of the given player at the given position.
+    Raises Bad_unit if it could not be found. *)
+val find_unit : Position.t -> Player.logicPlayer -> Unit.t
+
+(** Computes and apply the damage of an attack. *)
+val apply_attack : Unit.t -> Unit.t -> unit
+
