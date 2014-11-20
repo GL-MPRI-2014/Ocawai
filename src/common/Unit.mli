@@ -26,7 +26,7 @@ type t = <
   percentage_heavy : int;
   life_max : int;
   hp : int;
-  attack : armor -> int -> int -> int;
+  attack : armor -> int -> int;
   take_damage : int -> unit
 >
 
