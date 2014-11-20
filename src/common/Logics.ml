@@ -10,7 +10,7 @@ let rec remove_double l = match l with
   | h::t -> h :: (remove_double (List.filter (fun e -> e <> h) t))
 
 
-let player_vision (player : Player.t) (bf : Battlefield.t) : Position.t list =
+let player_vision (player : Player.logicPlayer) (bf : Battlefield.t) : Position.t list =
   let l = List.fold_left
     (fun list unit -> list @ (unit_vision unit bf))
     [] player#get_army

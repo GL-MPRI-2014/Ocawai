@@ -86,7 +86,7 @@ let end_turn player_turn_end current_player =
     player_turn_end := true; 
     current_player := ((List.tl !current_player)@([List.hd !current_player]))
 
-let apply_movement (player:Player.t) movement has_played =
+let apply_movement (player:Player.player) movement has_played =
 	let u = find_unit (List.hd movement) (player :> logic_player) in
  		player#move_unit u movement;
 		has_played := u::!has_played

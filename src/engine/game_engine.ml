@@ -1,6 +1,6 @@
-class game_engine (a : Player.t list) = 
+class game_engine (a : Player.player list) = 
 object (self)
-  val mutable players = (a : Player.t list)
+  val mutable players = (a : Player.player list)
   method get_players = players
 end
 
