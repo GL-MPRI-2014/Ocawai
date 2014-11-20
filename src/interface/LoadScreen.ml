@@ -4,11 +4,13 @@ open GuiTools
 
 open Manager
 
-class state = object(self)
+class state (build : unit -> State.state) = object(self)
 
   inherit State.state as super
 
   val font = new font `None
+
+  val mutable init = false
 
   val mutable text_alpha = 1.
 
@@ -16,6 +18,16 @@ class state = object(self)
     text_alpha <- a
 
   method render window =
+
+    (* On first render we load in parallel the other screen *)
+    if not init then begin
+      let _ =
+        Thread.create
+          (fun () ->
+            try let s = build () in manager#pop ; manager#push s
+            with e -> manager#pop ; raise e) ()
+        in init <- true
+    end;
 
     Interpolators.update ();
 
