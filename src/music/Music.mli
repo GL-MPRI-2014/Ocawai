@@ -5,12 +5,14 @@
    the first one is a single note with parameters in ['a],
    the second is a type for parameters, one then builds
    music with the base type [Music.param Music.t]
+
+   Borrows much from @author "Paul Hudak"'s Haskell library Euterpea 
 *)
 
 (** {2 Type definitions} *)
 
 type 'a t = Note of (Time.t * 'a)
-	       | Rest of Time.t
+	    | Rest of Time.t
 
 type octave = int
 type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds 
@@ -19,7 +21,7 @@ type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
 type velocity = int
-
+  
 (**
    One specific type for ['a] in ['a t], used in other modules
 *)
@@ -46,6 +48,19 @@ val rest : Time.t -> 'a t
    @return the length of an event
 *)
 val getDur : 'a t -> Time.t
+
+(** {2 MIDI conversion}
+    Based on @author "Savonet"'s mm Midi event type
+*)
+
+(**
+   @return the conversion of the given ['a t] into a MIDI event
+   @param int is the samplerate of the conversion
+   @param MIDI.division is the chosen grid division
+
+   Used for the rendering of music
+*)
+val toMidi : ?samplerate:int -> ?division:MIDI.division -> 'a t -> MIDI.buffer
 
 (** {2 Testing functions} *)
 

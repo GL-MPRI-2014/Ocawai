@@ -8,11 +8,11 @@ type 'a t = Note of (time * 'a)
 	    | Rest of time
 
 type velocity = int (** To-Do : is there a special mm.int
-			type for MIDI values in mm ? *) 
+			type for MIDI values in mm ? *)
 type octave = int
-type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds 
+type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Ef | Fff | Dss | E | Ff | Es | F | Gff | Ess | Fs
-		   | Gf | Fss | G | Aff | Gs | Af | Gss | A | Bff | As 
+		   | Gf | Fss | G | Aff | Gs | Af | Gss | A | Bff | As
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
 
@@ -28,6 +28,21 @@ let rest : time -> 'a t = fun dur -> Rest (dur)
 let getDur : 'a t -> time = function
   | Note(dur, _) -> dur
   | Rest(dur) -> dur
+
+(** {2 MIDI conversion} *)
+
+(**
+To-Do
+    
+let toMidi : ?samplerate:int -> ?division:MIDI.division -> ~tempo:Time.t -> 'a t -> MIDI.buffer
+  = fun ?samplerate:(sr = MidiV.samplerate) ?division:(div = MidiV.division)
+  -> function  
+  | Rest(dur) -> MIDI.create(Time.toFloat )
+  | Music(dur, a) -> 
+    let conversion =
+      
+    in Some conversion
+*)
 
 (** {2 Testing functions} *)
 
