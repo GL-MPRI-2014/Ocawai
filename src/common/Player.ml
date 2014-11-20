@@ -34,7 +34,7 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
 
 
 class virtual player (a : Unit.t list) (b : Building.t list) = 
-object (self) 
+  object (self) 
   inherit logicPlayer a b
   method virtual get_next_action :  Action.t
 
@@ -42,14 +42,6 @@ end
 
 type t = player
   
-class clientPlayer (a : Unit.t list) (b : Building.t list) =
-object (self) inherit player a b
-  method get_next_action = ([],Action.Wait)
-(*
-Ce get_next_action doit renvoyer ce que veut faire le joueur, à brancher sur l'interface
- *)
-end
-
 class dummy_player army_ buildings_ (a: Action.t list) =
   object
     inherit player army_ buildings_

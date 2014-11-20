@@ -18,5 +18,10 @@ val accessible_positions : Unit.t -> Player.logicPlayer -> Player.logicPlayer li
 val try_next_action : Player.logicPlayer list -> Player.logicPlayer -> Unit.t list -> 
   Battlefield.t -> Action.t -> Action.t
 
+(** Returns the unit of the given player at the given position.
+    Raises Bad_unit if it could not be found. *)
 val find_unit : Position.t -> Player.logicPlayer -> Unit.t
+
+(** Computes and apply the damage of an attack. *)
+val apply_attack : Unit.t -> Unit.t -> unit
 

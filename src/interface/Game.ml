@@ -8,8 +8,11 @@ open Menus
 
 let new_game () =
 
+  let my_player = new ClientPlayer.client_player [] [] in
+
   let mkplayer () : Player.logicPlayer =
     (Player.create_player () : Player.player :> Player.logicPlayer) in
+
   let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
 
   let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
@@ -27,6 +30,7 @@ let new_game () =
         let p = List.hd !players in
         players := List.tl !players ;
         p#set_army a; p) m_generator#armies))
+      ~actual_player:my_player
   in
 
   object(self)
@@ -134,7 +138,9 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle;
+      cdata#actual_player#set_state (ClientPlayer.Received 
+        (cdata#current_move, Action.Wait)))
     |> disp_menu#add_child;
 
     new item "cancel" "Cancel" (fun () ->
@@ -222,7 +228,8 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
+          cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?
