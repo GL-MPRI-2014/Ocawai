@@ -1,6 +1,6 @@
 (** Class representing the data hold by the client *)
 class client_data : map:Battlefield.t -> camera:Camera.camera ->
-  players:(Player.t list) -> object
+  players:(Player.logicPlayer list) -> object
 
   method map : Battlefield.t
 
@@ -8,12 +8,12 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method camera : Camera.camera
 
-  method players : Player.t list
+  method players : Player.logicPlayer list
 
   method current_move : Position.t list
 
   method unit_at_position : Position.t -> Unit.t option
 
-  method player_of : Unit.t -> Player.t
+  method player_of : Unit.t -> Player.logicPlayer
 
 end

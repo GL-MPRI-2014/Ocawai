@@ -1,6 +1,6 @@
 open List
 
-class logicplayer (a : Unit.t list) (b : Building.t list) =
+class logicPlayer (a : Unit.t list) (b : Building.t list) =
   object (self)
     val mutable army = (a : Unit.t list)
     val mutable buildings = (b : Building.t list)
@@ -32,19 +32,17 @@ class logicplayer (a : Unit.t list) (b : Building.t list) =
     initializer id <- Oo.id self
   end
 
-type logic = logicplayer
-
 
 class virtual player (a : Unit.t list) (b : Building.t list) = 
 object (self) 
-  inherit logicplayer a b
+  inherit logicPlayer a b
   method virtual get_next_action :  Action.t
 
 end
 
 type t = player
   
-class clientplayer (a : Unit.t list) (b : Building.t list) =
+class clientPlayer (a : Unit.t list) (b : Building.t list) =
 object (self) inherit player a b
   method get_next_action = ([],Wait)
 (*

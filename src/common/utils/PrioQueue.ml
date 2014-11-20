@@ -1,5 +1,7 @@
 type priority = int
-
+(* a queue is a binary heap, filled from left to right
+  A node is labeled by a priority and an element, contains the left and right sub-trees,
+  and a bool true iif the sub-trees are both complete *)
 type 'a queue = Empty | Node of priority * 'a * 'a queue * 'a queue * bool
 exception Queue_is_empty
 
@@ -26,7 +28,7 @@ let rec push queue prio elt =
 let pop queue = 
   let rec remove_last = function 
   | Empty -> raise Queue_is_empty
-  | Node(p, e, Empty, Empty, true) as n -> p,e,Empty,true
+  | Node(p, e, Empty, Empty, true) -> p,e,Empty,true
   | Node(p, e, (Node(_,_,_,_,cl) as left), right, complete) ->
       if complete then
         let (np,ne,r,b) = remove_last right in

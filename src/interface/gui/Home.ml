@@ -92,7 +92,7 @@ class screen items actionnables = object(self)
     )
 
   method private action =
-    selected >? fun o -> o#action
+    selected >? fun o -> (Sounds.play_sound "enter" ; o#action)
 
   method private sqdist a b =
     let x = a#x -. b#x
@@ -109,6 +109,7 @@ class screen items actionnables = object(self)
     (self#weight h s a - self#weight h s b)
 
   method private move p h = selected >? fun s ->
+    Sounds.play_sound "click";
     List.find_all (fun a -> a <> s && p a s) actionnables
     |> List.sort (self#compare h s)
     |> function

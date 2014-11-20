@@ -14,6 +14,7 @@ let load_texture lib path =
   let ext  = String.sub path (i+1) (String.length path - i - 1) in
   if ext = "png" then begin 
     let tex = new texture (`File path) in
+    tex#set_smooth true;
     print_endline ("  [\027[32mstored\027[0m] " ^ name);
     Hashtbl.add lib name tex
   end

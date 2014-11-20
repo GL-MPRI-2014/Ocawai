@@ -9,6 +9,7 @@ let manager = object(self)
 
   initializer
     Render.renderer#init;
+    Sounds.load_sounds ();
     window#set_key_repeat_enabled false
 
   method window : OcsfmlGraphics.render_window = window
