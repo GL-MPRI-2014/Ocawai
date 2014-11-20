@@ -1,6 +1,6 @@
 open List
 
-class player (a : Unit.t list) (b : Building.t list) =
+class logicPlayer (a : Unit.t list) (b : Building.t list) =
   object (self)
     val mutable army = (a : Unit.t list)
     val mutable buildings = (b : Building.t list)
@@ -14,35 +14,41 @@ class player (a : Unit.t list) (b : Building.t list) =
     method set_buildings b = buildings <- b
     method get_buildings = buildings
     method add_building b = buildings <- b::buildings
-    method get_next_action = ([]:Action.movement),Action.Wait
 
 
     (* TODO : implement these methods *)
-    method delete_unit (u : Unit.t) = ()
+    method delete_unit (u : Unit.t) =
+      let rec delete unit_list =
+        match unit_list with
+        | [] -> [] (*TO DO: Add an exception*)
+        | h::d when h#id == u#id -> d
+        | _ -> delete (tl unit_list)
+      in
+      army <- delete army
+        
     method move_unit (u : Unit.t) (p : Action.movement) = ()
     method delete_building (b : Building.t) = ()
 
     initializer id <- Oo.id self
   end
-  
-(*
-class virtual player (army_ : Unit.t list) (buildings_ : Building.t list) = 
-object (self)
-  val mutable army = (army_ : Unit.t list)
-  val mutable buildings = (buildings_ : Building.t list)
-                          
-  method get_army = army
-  method add_unit u = army <- u::army
-  method set_army army_ = army <- army_
-    
-  method get_buildings = buildings
-  method add_building b = buildings <- b::buildings
-  method set_buildings buildings_ = buildings <- buildings_
-    
-  method virtual get_next_action :  Action.t
-end
-*)
 
+
+class virtual player (a : Unit.t list) (b : Building.t list) = 
+object (self) 
+  inherit logicPlayer a b
+  method virtual get_next_action :  Action.t
+
+end
+
+type t = player
+  
+class clientPlayer (a : Unit.t list) (b : Building.t list) =
+object (self) inherit player a b
+  method get_next_action = ([],Wait)
+(*
+Ce get_next_action doit renvoyer ce que veut faire le joueur, à brancher sur l'interface
+ *)
+end
 
 class dummy_player army_ buildings_ (a: Action.t list) =
   object
@@ -56,8 +62,5 @@ class dummy_player army_ buildings_ (a: Action.t list) =
         actions<-tl(actions);
         action
   end
-
-
-type t = player
 
 let create_player () = new dummy_player [] []  []

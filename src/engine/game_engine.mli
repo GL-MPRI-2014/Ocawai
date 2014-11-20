@@ -1,5 +1,5 @@
 type t = <
-  get_players : Player.t list
+  get_players : Player.player list
 >
 
 val create_game_engine : int -> t
