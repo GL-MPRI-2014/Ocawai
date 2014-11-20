@@ -61,6 +61,9 @@ network_libraries = unix
 #tags needed for each target
 interface_tags = thread
 
+#compiler flags
+cflags = -w,-3
+
 #name of the target for ocamlbuild
 output_interface = main.native
 output_engine = main_engine.native
@@ -99,16 +102,16 @@ files_atd_mli := $(files_atd_ml:.ml=.mli)
 all: interface engine network
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
 
 run: interface
 	./$(output_interface)
 
 engine:  $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 
 network:
-	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -libs $(network_libraries) -Is $(network_src) $(output_network)
 
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
@@ -215,7 +218,7 @@ clean:
 	rm -f documentation.html
 
 check_engine: engine
-	ocamlbuild -use-ocamlfind -Is $(test_src) -package $(test_dependencies) player_test.native
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
 	./player_test.native
 

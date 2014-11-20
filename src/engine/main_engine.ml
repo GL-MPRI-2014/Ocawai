@@ -86,9 +86,10 @@ let end_turn player_turn_end current_player =
     player_turn_end := true; 
     current_player := ((List.tl !current_player)@([List.hd !current_player]))
 
-let apply_movement (player:Player.t) movement =
+let apply_movement (player:Player.t) movement has_played =
 	let u = find_unit (List.hd movement) (player :> logic_player) in
- 		player#move_unit u movement
+ 		player#move_unit u movement;
+		has_played := u::!has_played
 
 let apply_action player action =
 	match action with 
@@ -120,17 +121,17 @@ begin
   let game = Game_engine.create_game_engine players_number in
   let players = init_players game#get_players and current_player = ref (init_current_player players_number) and gameover = ref false in
   while not !gameover do
-	let player_turn_end =  ref false and has_played = [] in
+	let player_turn_end =  ref false and has_played = ref [] in
 	while not (!player_turn_end) do
         let player_turn = players.( List.hd !current_player ) in
 		let next_wanted_action =  player_turn#get_next_action in
 		player_turn_end := ((snd next_wanted_action) = Wait);
 		try
-		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) has_played init_field#field next_wanted_action in 
+		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) !has_played init_field#field next_wanted_action in 
             if action = End_turn or action = Wait then
                 end_turn player_turn_end current_player
             else
-                    apply_movement player_turn movement
+                    apply_movement player_turn movement has_played
         with
            _ -> end_turn player_turn_end current_player;
 		done;
