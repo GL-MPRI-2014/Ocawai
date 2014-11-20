@@ -9,7 +9,7 @@ open Menus
 let new_game () =
 
   let mkplayer () : Player.logicPlayer = (Player.create_player () : Player.player :> Player.logicPlayer) in
-  let players = ref [mkplayer () ; mkplayer () ; mkplayer () ] in
+  let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
 
   let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
 
