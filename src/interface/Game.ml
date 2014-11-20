@@ -94,7 +94,7 @@ let new_game () =
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> print_endline "settings activated";
+    new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 

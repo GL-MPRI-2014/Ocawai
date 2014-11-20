@@ -87,7 +87,7 @@ class screen items actionnables = object(self)
       | Right -> self#right
       | Up -> self#up
       | Down -> self#down
-      | Return -> self#action
+      | Space | Return -> self#action
       | _ -> ()
     )
 

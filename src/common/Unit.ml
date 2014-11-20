@@ -45,7 +45,7 @@ object (self)
       | Light -> a*self#attack_base*self#percentage_light*r/10000
       | Normal -> a*self#attack_base*self#percentage_normal*r/10000
       | Heavy -> a*self#attack_base*self#percentage_heavy*r/10000
-  method take_damage dmg = life <- life - dmg
+  method take_damage dmg = life <- max 0 (life-dmg)
 end
 
 type t = soldier
