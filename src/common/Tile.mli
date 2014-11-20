@@ -1,6 +1,6 @@
 (** Tile interface *)
 
-type t = Tile_t.t
+type t
 
 (** {Border : name, rate, expansion} *)
 type structure = [ `Block | `Road | `Border of (string * int * int) ]
@@ -43,3 +43,5 @@ val movement_cost : t -> Unit.movement -> int
 (** Takes a unit and return a tile cost. *)
 val tile_cost : t -> Unit.t -> int
 
+(** Creates a tile from a parsed record*)
+val create_tile_from_parsed_tile : Tile_t.t -> t

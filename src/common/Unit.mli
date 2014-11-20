@@ -51,6 +51,6 @@ type unbound_t = <
 (** Create a unit from a unbound unit, a position and the controlling player id *)
 val bind : unbound_t -> Position.t -> int -> t
 
-(** create an unbound unit from a parsed record*)
+(** Creates an unbound unit from a parsed record*)
 val create_unbound_from_parsed_unit : Unit_t.t -> unbound_t
 
