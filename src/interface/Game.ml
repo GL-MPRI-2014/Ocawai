@@ -17,7 +17,9 @@ let new_game () =
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
-    ~maxpos:(Position.create (Battlefield.size m_map))
+    ~maxpos:(Position.diff 
+      (Position.create (Battlefield.size m_map))
+      (Position.create (1,1)))
   in
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
