@@ -93,6 +93,20 @@ let try_next_action player_list player has_played bf order =
       match action with
       | Wait -> (mvt, Wait)
       | End_turn -> failwith "try_next_action: this case is not possible"
+      | Attack_unit (att, def) 
+      | Attack_building (att, def) ->
+	if att <> u then (mvt, Wait) (*only the unit that moved can attack*)
+	else (
+	  let dist = Position.dist (att#position) (def#position) in
+	  let range = (att#min_attack_range, att#attack_range) in
+	  if fst range > dist || snd range < dist then 
+	    (mvt, Wait) (*targeted unit not in range; do nothing*)
+	  else if snd range > 1 && List.length mvt > 1 then
+	    (mvt, Wait) (*a ranged unit must not move before firing*)
+	  else
+	    (mvt, action) (*the attack is valid*)
       | _ -> (mvt, Wait)
-	(*TODO : manage attacks here*)
+	(*New actions here*)
   )
+
+let apply_fight src dst 
