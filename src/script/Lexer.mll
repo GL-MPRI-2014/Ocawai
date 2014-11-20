@@ -8,6 +8,7 @@
   let keywords_table = 
     Hashtbl.create 20
     |> h_add "var"      VAR
+    |> h_add "fun"      FUN
     |> h_add "if"       IF
     |> h_add "then"     THEN
     |> h_add "else"     ELSE
@@ -15,6 +16,8 @@
     |> h_add "attack"   ATK
     |> h_add "main"     MAIN
     |> h_add "init"     INIT
+    |> h_add "true"     TRUE
+    |> h_add "false"    FALSE
 }
 
 let newline = ('\013' * '\010')
@@ -61,5 +64,9 @@ rule token = parse
   | ")" {RIGHTP}
   | "." {DOT}
   | "," {COMMA}
+  | "{" {LBRACE}
+  | "}" {RBRACE}
+  | "[" {LBRACK}
+  | "]" {RBRACK}
   | _  {raise (Script_syntax_error ("Syntax Error in script parser : " ^ 
     (Lexing.lexeme lexbuf)))}
