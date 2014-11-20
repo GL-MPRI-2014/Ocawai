@@ -34,3 +34,9 @@ val load_sounds : unit -> unit
   Might raise Unknown_sound of string if the sound has not been loaded yet.
 *)
 val play_sound : string -> unit
+
+(** 
+  Change the sounds volume. The expected float is a percentage of the volume,
+  100 being the loudest one.
+*)
+val set_volume : float -> unit
