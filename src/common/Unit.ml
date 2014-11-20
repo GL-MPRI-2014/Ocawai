@@ -16,12 +16,12 @@ object (self)
   method spawn_number = sp
 end
 
-class soldier (s : string) (p_id : string) (p : Position.t) (m : movement)
+class soldier (s : string) (p_id : int) (p : Position.t) (m : movement)
   (v :int) (min_a : int) (a : int) (r : int) (sp : int) =
 object (self)
   inherit unbound_soldier s m v min_a a r sp
   val mutable pos = p
-  method id = string_of_int (Oo.id self)
+  method id = Oo.id self
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
