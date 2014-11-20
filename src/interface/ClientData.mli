@@ -18,6 +18,8 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
   method player_unit_at_position : Position.t -> 
     #Player.logicPlayer -> Unit.t option
 
+  method enemy_unit_at_position : Position.t -> bool
+
   method unit_at_position : Position.t -> Unit.t option
 
   method player_of : Unit.t -> Player.logicPlayer

@@ -42,6 +42,13 @@ class client_data
       end
     in aux_player players
 
+  method enemy_unit_at_position p = 
+    let u  = self#unit_at_position p in
+    let u' = self#player_unit_at_position p actual_player in
+    match u with
+    |Some(_) when u' = None -> true
+    | _ -> false
+
   method player_of u = 
     let rec aux = function
       |[] -> false

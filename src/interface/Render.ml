@@ -220,10 +220,9 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera 
         (Color.rgba 255 255 100 150)) range
     end
-    |Cursor.Action(my_unit, pos) -> begin
+    |Cursor.Action(my_unit, range) -> begin
       let attack_range = 
-        List.filter (self#filter_positions map)
-        (Position.range pos 1 my_unit#attack_range)
+        List.filter (self#filter_positions map) range
       in
       List.iter (self#highlight_tile target camera 
         (Color.rgba 255 50 50 255)) attack_range
