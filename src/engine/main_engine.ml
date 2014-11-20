@@ -67,7 +67,7 @@ let init_players list_players =
 	let players = ref list_players in
 	let res = Array.make (List.length list_players) (Player.create_player ()) in
 	for i=0 to ((List.length list_players) -1) do
-  	res.((List.hd !players)#get_id) <- (List.hd !players);
+  	res.(i) <- (List.hd !players);
     players := (List.tl !players);
   done;
   res
@@ -83,7 +83,7 @@ let rec init_current_player players_number =
 	  (players_number-1)::(init_current_player (players_number -1) )
 
 let end_turn player_turn_end current_player =
-    player_turn_end := true; 
+    player_turn_end := true;
     current_player := ((List.tl !current_player)@([List.hd !current_player]))
 
 let apply_movement (player:Player.player) movement has_played =
@@ -92,17 +92,17 @@ let apply_movement (player:Player.player) movement has_played =
 		has_played := u::!has_played
 
 let apply_action player action =
-	match action with 
+	match action with
 		| Attack_unit a-> ()
 		| Attack_building a-> ()
+                | _ -> ()
 
 
 let () =
 begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in
-  let init_field = new FieldGenerator.t map_width map_height players_number 10 5 in
 
-  print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
+  (* print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns; *)
     (*
     (* test de la compression/decompression de la map*)
     let s = Battlefield.to_string init_field#field(*(Battlefield.create map_width map_height (Tile.create_from_config "plain"))*) in
@@ -120,6 +120,7 @@ begin
 
   let game = Game_engine.create_game_engine players_number in
   let players = init_players game#get_players and current_player = ref (init_current_player players_number) and gameover = ref false in
+  let init_field = new FieldGenerator.t map_width map_height (game#get_players : Player.player list :> Player.logicPlayer list) 10 5 in
   while not !gameover do
 	let player_turn_end =  ref false and has_played = ref [] in
 	while not (!player_turn_end) do
@@ -127,8 +128,8 @@ begin
 		let next_wanted_action =  player_turn#get_next_action in
 		player_turn_end := ((snd next_wanted_action) = Wait);
 		try
-		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) !has_played init_field#field next_wanted_action in 
-            if action = End_turn or action = Wait then
+		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) !has_played init_field#field next_wanted_action in
+            if action = End_turn then
                 end_turn player_turn_end current_player
             else
                     apply_movement player_turn movement has_played
