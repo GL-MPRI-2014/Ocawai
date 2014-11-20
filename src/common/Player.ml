@@ -44,7 +44,7 @@ type t = player
   
 class clientPlayer (a : Unit.t list) (b : Building.t list) =
 object (self) inherit player a b
-  method get_next_action = ([],Wait)
+  method get_next_action = ([],Action.Wait)
 (*
 Ce get_next_action doit renvoyer ce que veut faire le joueur, à brancher sur l'interface
  *)
@@ -56,7 +56,7 @@ class dummy_player army_ buildings_ (a: Action.t list) =
     val mutable actions = (a: Action.t list)
     method get_next_action  =
       if length a == 0 then
-        ([Position.create (0,0)], Action.Wait)
+        ([], Action.End_turn)
       else
         let action= hd(actions) in
         actions<-tl(actions);
@@ -64,3 +64,4 @@ class dummy_player army_ buildings_ (a: Action.t list) =
   end
 
 let create_player () = new dummy_player [] []  []
+let create_dummy_player actions = new dummy_player [] [] actions
