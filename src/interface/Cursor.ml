@@ -1,7 +1,7 @@
 type cursor_state = 
     Idle 
   | Displace of Battlefield.t * Unit.t * Logics.accessibles
-  | Action of Unit.t * Position.t
+  | Action of Unit.t * (Position.t list)
 
 class cursor ~position = object(self)
 
@@ -30,12 +30,6 @@ class cursor ~position = object(self)
         end;
         current_position <- pos ;
         true
-    |Action(u, p) -> 
-        let range = Position.range p 1 u#attack_range in
-        if List.mem pos range then begin
-          current_position <- pos;
-          true
-        end else false
     | _ -> current_position <- pos; true
 
   method position =

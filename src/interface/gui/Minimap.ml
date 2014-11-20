@@ -14,6 +14,14 @@ class minimap def width height = object(self)
 
   val player_map = Array.make_matrix def def None
 
+  method private reset = 
+    for i = 0 to def - 1 do
+      for j = 0 to def - 1 do
+        player_map.(i).(j) <- None;
+        map.(i).(j) <- Plain 
+      done;
+    done
+
   method private compute_players players = 
     let majority_map = Array.make_matrix def def [||] in
     let n = List.length players in 
@@ -102,6 +110,7 @@ class minimap def width height = object(self)
     done
 
   method compute battlefield (players : Player.logicPlayer list) = 
+    self#reset;
     self#compute_battlefield battlefield;
     self#compute_players players
 

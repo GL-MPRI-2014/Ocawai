@@ -12,12 +12,14 @@ let new_game () =
 
   let m_engine = new Game_engine.game_engine () in
 
-  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 100 100 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 50 50 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
-    ~maxpos:(Position.create (99,99))
+    ~maxpos:(Position.diff 
+      (Position.create (Battlefield.size m_map))
+      (Position.create (1,1)))
   in
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
@@ -103,6 +105,19 @@ let new_game () =
     new item "fire" "Fire !" (fun () ->
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
+      let cursor = cdata#camera#cursor in
+      let atking_unit = 
+        match cursor#get_state with
+        |Cursor.Action(u,_) -> u
+        | _ -> assert false
+      in
+      let atked_unit  =
+        match cdata#unit_at_position cursor#position with
+        |Some(u) -> u
+        |None -> assert false
+      in
+      cdata#actual_player#set_state (ClientPlayer.Received
+        (cdata#current_move, Action.Attack_unit (atking_unit, atked_unit)));
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
@@ -119,7 +134,9 @@ let new_game () =
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
         if List.mem cursor#position r then begin
-          cursor#set_state (Cursor.Action (u,cursor#position));
+          cursor#set_state (Cursor.Action 
+            (u, Position.range cursor#position 
+                u#min_attack_range u#attack_range));
           camera#set_position (Position.right cursor#position)
         end else
           cursor#set_state Cursor.Idle
@@ -129,9 +146,9 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle;
       cdata#actual_player#set_state (ClientPlayer.Received 
-        (cdata#current_move, Action.Wait)))
+        (cdata#current_move, Action.Wait));
+      cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
     new item "cancel" "Cancel" (fun () ->
@@ -225,7 +242,8 @@ let new_game () =
           cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
-              |Idle -> cdata#unit_at_position cursor#position >?
+              |Idle -> cdata#player_unit_at_position 
+                cursor#position cdata#actual_player >?
                 (fun u -> cursor#set_state (Displace (cdata#map, u,
                   Logics.accessible_positions u
                     (cdata#player_of u)
@@ -233,15 +251,19 @@ let new_game () =
                      cdata#map))
                 )
               |Displace(_,_,(acc,_)) ->
-                if List.mem cursor#position acc then begin
+                let u = cdata#unit_at_position cursor#position in
+                if List.mem cursor#position acc && u = None then begin
                   disp_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus disp_menu;
                   disp_menu#toggle
                 end else cursor#set_state Idle
-              |Action(_) ->
-                atk_menu#toggle;
-                atk_menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus atk_menu)
+              |Action(_,r) ->
+                if List.mem cursor#position r && 
+                   cdata#enemy_unit_at_position cursor#position then begin 
+                  atk_menu#toggle;
+                  atk_menu#set_position (cdata#camera#project cursor#position);
+                  ui_manager#focus atk_menu
+                end else cursor#set_state Idle)
         | _ -> ()
       end)
 
@@ -250,6 +272,8 @@ let new_game () =
     Interpolators.update () ;
     window#clear ();
 
+    cdata#minimap#compute cdata#map cdata#players;
+      
     (* Rendering goes here *)
     Render.renderer#render_game window cdata;
     Render.renderer#draw_gui window ui_manager;

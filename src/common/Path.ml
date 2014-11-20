@@ -1,7 +1,10 @@
 (* We might want to change it later, leave it hidden *)
+
+
 (* We want to make sure there is no loop and discontinuity in it *)
 exception Path_exception of string
 
+(*in the type Path.t , the head of the list is the ending position*)
 type t = Position.t list
 
 let empty = []
@@ -21,6 +24,7 @@ let reach path pos =
 
 let get_move = List.rev
 
+let get_path = List.rev 
 let start_position path  =
   match path with
   | [] -> raise (Path_exception "Empty path")
