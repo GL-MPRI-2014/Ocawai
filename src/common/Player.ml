@@ -56,7 +56,7 @@ class dummy_player army_ buildings_ (a: Action.t list) =
     val mutable actions = (a: Action.t list)
     method get_next_action  =
       if length a == 0 then
-        ([Position.create (0,0)], Action.Wait)
+        ([], Action.End_turn)
       else
         let action= hd(actions) in
         actions<-tl(actions);
@@ -64,3 +64,4 @@ class dummy_player army_ buildings_ (a: Action.t list) =
   end
 
 let create_player () = new dummy_player [] []  []
+let create_dummy_player actions = new dummy_player [] [] actions
