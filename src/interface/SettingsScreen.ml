@@ -27,7 +27,7 @@ class state = object(self)
             settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i)))
           "Zoom speed" :> Home.actionnable) ;
         (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
-          ~default: 100
+          ~default: (int_of_float (Sounds.get_volume ()))
           (fun i ->
             Sounds.set_volume (float_of_int i))
             "Sounds volume" :> Home.actionnable) ;
