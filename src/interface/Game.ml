@@ -12,7 +12,7 @@ let new_game () =
 
   let m_engine = new Game_engine.game_engine () in
 
-  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 100 100 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 50 50 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -271,6 +271,8 @@ let new_game () =
     Interpolators.update () ;
     window#clear ();
 
+    cdata#minimap#compute cdata#map cdata#players;
+      
     (* Rendering goes here *)
     Render.renderer#render_game window cdata;
     Render.renderer#draw_gui window ui_manager;
