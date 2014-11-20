@@ -456,7 +456,8 @@ let init_positioning m nbplayers =
     !poslist
 
 (* positions nbplayers armies on a map m, with legit_spawns the list returned by init_positioning *)
-let positioning m nbplayers legit_spawns =
+let positioning m playerslist legit_spawns =
+  let nbplayers = List.length playerslist in
   let (width,height) = Battlefield.size m in
   let rec behead = function
   | 0,_ -> []
@@ -486,9 +487,11 @@ let positioning m nbplayers legit_spawns =
   check_path (m,(),poslist);
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
-  let position_army_around spawn p_id other_armies_pos =
+  let position_army_around spawn player other_armies_pos =
     let unbound_list = Unit.create_list_from_config() in
-    let army = ref [Unit.bind (Unit.create_from_config "general") spawn p_id] in
+    let general = Unit.bind (Unit.create_from_config "general") spawn player#get_id in
+    player#add_unit general;
+    let army = ref [general] in
     let army_pos = ref [spawn] in
     List.iter
       (
@@ -508,7 +511,9 @@ let positioning m nbplayers legit_spawns =
               (
                 let r = Random.int (List.length ne) in
                 let pos = List.nth ne r in
-                army := (Unit.bind ui pos p_id) :: !army;
+                let binded_ui = Unit.bind ui pos player#get_id in
+                player#add_unit binded_ui;
+                army := binded_ui :: !army;
                 army_pos := pos :: !army_pos;
               )
           done;
@@ -517,15 +522,14 @@ let positioning m nbplayers legit_spawns =
     (!army, (!army_pos)@other_armies_pos)
   in
   (* iter position_army_around for all armies*)
-  let rec position_armies = function
-  | 0 -> (([]:Unit.t list list),([]:Position.t list))
-  | n when n > 0 ->
-      let others = position_armies (n-1) in
-      let ap = position_army_around (List.nth poslist (n-1)) (string_of_int (nbplayers-n)) (snd others) in
+  let rec position_armies n = function
+  | [] -> (([]:Unit.t list list),([]:Position.t list))
+  | p::q ->
+      let others = position_armies (n+1) q in
+      let ap = position_army_around (List.nth poslist n) p (snd others) in
       ((fst ap)::(fst others),snd ap)
-  | _ -> assert false
   in
-  (fst (position_armies nbplayers), poslist)
+  (fst (position_armies 0 playerslist), poslist)
 
 
 (* create roads and bridges on a map*)
@@ -596,14 +600,14 @@ let create_structs m =
   create_roads m
 
 (* iterated tries to spawn armies *)
-let units_spawn m nbplayers nbattempts legit_spawns =
+let units_spawn m playerslist nbattempts legit_spawns =
   let rec units_spawn_aux = function
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
       print_string ("    attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^": ");
       try
-        let (a,sp) = positioning m nbplayers legit_spawns in
+        let (a,sp) = positioning m playerslist legit_spawns in
         let attempt = (m,a,sp) in
         print_string "armies spawned, checking... ";
         flush_all();
@@ -634,7 +638,7 @@ let units_spawn m nbplayers nbattempts legit_spawns =
   units_spawn_aux nbattempts
 
 (* iterated tries to create structures *)
-let create_structures m nbplayers nbattempts =
+let create_structures m nbattempts =
   let rec create_structures_aux = function
   | 0 -> raise StructSpawnFail
   | n ->
@@ -654,7 +658,7 @@ let create_structures m nbplayers nbattempts =
   create_structures_aux nbattempts
 
 (* iterated tries to generate the map *)
-let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
+let generate width height playerslist nbattempts1 nbattempts2 nbattempts3 =
   let rec generate_aux = function
   | 0 -> 
     print_endline("generator failed, not enough tries? bad calling arguments?");
@@ -664,8 +668,8 @@ let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
       print_endline ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^": ");
       try
         let m = seeds_gen width height in
-        create_structures m nbplayers nbattempts2;
-        let (a,sp) = units_spawn m nbplayers nbattempts3 (init_positioning m nbplayers) in
+        create_structures m nbattempts2;
+        let (a,sp) = units_spawn m playerslist nbattempts3 (init_positioning m (List.length playerslist)) in
         let attempt = (m,a,sp) in
         print_endline "Generation success"(* place here any check on map generation*);
         attempt
@@ -685,9 +689,9 @@ let generate width height nbplayers nbattempts1 nbattempts2 nbattempts3 =
   generate_aux nbattempts1
 
 
-class t (width:int) (height:int) (nbplayers:int) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
+class t (width:int) (height:int) (playerslist:Player.t list) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
 object (self)
-  val g = Random.self_init();generate width height nbplayers generate_attempts (*structs_attempts*) 1 units_spawn_attempts
+  val g = Random.self_init();generate width height playerslist generate_attempts (*structs_attempts*) 1 units_spawn_attempts
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp
