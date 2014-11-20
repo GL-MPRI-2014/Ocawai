@@ -115,8 +115,8 @@ let renderer = object(self)
   (* Render the joints *)
   method private render_joints camera jointset pos texture_name map = 
     (* Utility *)
-    let draw_v = self#draw_tile_from_map camera jointset ~offset:(0.,48.) in
-    let draw_h = self#draw_tile_from_map camera jointset ~offset:(50.,0.) in
+    let draw_v = self#draw_tile_from_map camera jointset ~offset:(0.,-2.) in
+    let draw_h = self#draw_tile_from_map camera jointset in
     (* Hardcode for testing *)
     (* Let's draw the junction *)
     let up = Position.up pos in
@@ -128,17 +128,17 @@ let renderer = object(self)
     begin
       let upname = Tile.get_name (Battlefield.get_tile map up) in
       if texture_name = "water" && is_ground upname then
-        draw_v "ground_water_v" up ()
+        draw_v "ground_water_v" pos ()
       else if is_ground texture_name && upname = "water" then
-        draw_v "water_ground_v" up ()
+        draw_v "water_ground_v" pos ()
     end ;
     if self#filter_positions map left then
     begin
       let leftname = Tile.get_name (Battlefield.get_tile map left) in
       if texture_name = "water" && is_ground leftname then
-        draw_h "water_ground_hr" left ()
+        draw_h ~offset:(2.,0.) "water_ground_hr" left ()
       else if is_ground texture_name && leftname = "water" then
-        draw_h "water_ground_h" left ()
+        draw_h ~offset:(-2.,0.) "water_ground_h" pos ()
     end
 
   (* Highlight a tile *)
