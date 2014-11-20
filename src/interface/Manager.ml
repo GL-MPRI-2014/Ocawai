@@ -17,16 +17,6 @@ let manager = object(self)
   method push (state : State.state) =
     states <- state :: states
 
-  method push_load (state : State.state) (build : unit -> State.state) =
-    self#push state ;
-    self#current#render window;
-    let _ =
-      Thread.create
-        (fun () ->
-          try let s = build () in self#pop ; self#push s
-          with e -> self#pop ; raise e) ()
-    in ()
-
 
   method pop =
     self#current#destroy;

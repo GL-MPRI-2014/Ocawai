@@ -6,7 +6,7 @@ exception Not_a_valid_sound_file of string
 let sound_bank = Hashtbl.create 13
 let path = "./resources/sounds/"
 
-let player = new sound ()
+let player = ref (new sound ())
 
 let load_sound_file file_name =
   match (Str.split (Str.regexp "\\.") file_name) with
@@ -26,8 +26,11 @@ let load_sounds () =
 
 let play_sound sound =
   try
-    player#stop;
-    player#set_buffer (Hashtbl.find sound_bank sound);
-    player#play
+    !player#stop;
+    !player#set_buffer (Hashtbl.find sound_bank sound);
+    !player#play
   with
     | Not_found -> raise (Unknown_sound sound)
+
+let set_volume f =
+  player := new sound ~volume:f ()

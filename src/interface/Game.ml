@@ -8,7 +8,10 @@ open Menus
 
 let new_game () =
 
-  let m_generator = new FieldGenerator.t 100 100 2 10 5 in
+  let mkplayer () : Player.logicPlayer = (Player.create_player () : Player.player :> Player.logicPlayer) in
+  let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
+
+  let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -19,7 +22,9 @@ let new_game () =
   let m_cdata = (new ClientData.client_data ~camera:m_camera
       ~map:(m_generator#field)
       ~players:(List.map (fun a ->
-        let p = (Player.create_player () : Player.player :> Player.logicPlayer) in
+        (* Really ugly *)
+        let p = List.hd !players in
+        players := List.tl !players ;
         p#set_army a; p) m_generator#armies))
   in
 
@@ -238,7 +243,6 @@ let new_game () =
 
   method render window =
     self#keyboard_events;
-    super#render window ;
     Interpolators.update () ;
     window#clear ();
 
