@@ -17,8 +17,10 @@ class client_player (a : Unit.t list) (b : Building.t list) =
   method get_next_action = 
     event_state <- Waiting;
     let rec get_aux () = 
+      Thread.delay 0.25;
       match event_state with
-      |Received(a) -> a
+      |Received(a) -> 
+          event_state <- Idle; a
       | _ -> get_aux ()
     in get_aux ()
     
