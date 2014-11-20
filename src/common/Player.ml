@@ -44,7 +44,7 @@ type t = player
   
 class clientPlayer (a : Unit.t list) (b : Building.t list) =
 object (self) inherit player a b
-  method get_next_action = ([],Wait)
+  method get_next_action = ([],Action.Wait)
 (*
 Ce get_next_action doit renvoyer ce que veut faire le joueur, à brancher sur l'interface
  *)
