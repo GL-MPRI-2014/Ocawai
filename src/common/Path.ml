@@ -65,7 +65,7 @@ let walk_on_canvas m pos move_type pos2 w h dist prev f =
   PosPrioQueue.push li 0 pos;
   Battlefield.tile_iteri (fun p t -> if (Tile.traversable_m t move_type) && p <> pos then PosPrioQueue.push li p_none p) m;
   (* boucle principale *)
-  let min_cost = ref -1 in
+  let min_cost = ref (-1) in
   while not (PosPrioQueue.is_empty li) do
     (* u : min (dist a + Position.dist a pos2) pour tout a non parcouru *)
     let top = PosPrioQueue.pop li in
