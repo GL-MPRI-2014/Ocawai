@@ -31,9 +31,9 @@ let in_range (bf : t) (pos : Position.t) : bool =
   let pmax = Position.create (let w,h = size bf in w-1,h-1) in
   not (Position.out_of_bounds pos pmin pmax)
 
-let to_string_off m off1 off2 =
+let to_string_off m off1 off2 config =
   let (w,h) = size m in
-  let tiles = Tile.create_list_from_config() in
+  let tiles = config#tiles_list in
   let offset = if List.length tiles < 256-off1 then off1 else 0 in
   if (offset+List.length tiles>256) then failwith("more than 255 tiles in config, to_string can't be applied") else
   let rec mempos e = function
@@ -70,7 +70,7 @@ let to_string_off m off1 off2 =
   in
   compress s
 
-let create_from_string_off w h s_short off1 off2 =
+let create_from_string_off w h s_short off1 off2 config =
   let decompress s =
     let rec string_to_list = function
     |i when 0 <=i && 2*i+1 < String.length s -> (s.[2*i],let j = int_of_char s.[2*i+1] - off2 in if(j>=0) then j else j+256)::(string_to_list (i+1))
@@ -90,7 +90,7 @@ let create_from_string_off w h s_short off1 off2 =
     fill_string 0 li
   in
   let s = decompress s_short in
-  let tiles = Tile.create_list_from_config() in
+  let tiles = config#tiles_list in
   let offset = if List.length tiles < 256-off1 then off1 else 0 in
   if (offset+List.length tiles>256) then failwith("more than 255 tiles in config, create_from_string can't be applied") else
   let m = create h w (List.hd tiles) in
@@ -101,5 +101,5 @@ let create_from_string_off w h s_short off1 off2 =
     ) m;
   m
 
-let to_string m = to_string_off m 97 48
-let create_from_string w h s = create_from_string_off w h s 97 48
+let to_string m config = to_string_off m 97 48 config
+let create_from_string w h s config = create_from_string_off w h s 97 48 config

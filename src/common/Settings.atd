@@ -1,0 +1,13 @@
+
+type t = {
+  
+  battlefield_width<ocaml mutable> : int;
+  battlefield_height<ocaml mutable> : int;
+  
+  generate_attempts<ocaml mutable> : int;
+  structs_attempts<ocaml mutable> : int;
+  units_spawn_attempts<ocaml mutable> : int;
+  
+  cursor_speed<ocaml mutable> : int;
+}
+

@@ -224,6 +224,7 @@ clean:
 	-rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
 	-test \! -e doc || rmdir doc
 	rm -f documentation.html
+	rm -f resources/config/settings.json
 
 check_engine: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native

@@ -56,28 +56,27 @@ let bind uu pos p_id =
     uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
     uu#spawn_number uu#attack_base uu#armor uu#percentage_light uu#percentage_normal uu#percentage_heavy uu#price uu#life_max
 
-let create_unbound_from_unit_t u = new unbound_soldier (u.Unit_t.name) (match (u.Unit_t.movement_type) with
-                                                  | "walk" -> Walk
-                                                  | "roll" -> Roll
-                                                  | "tread" -> Tread
-                                                  | "swim" -> Swim
-                                                  | "fly" -> Fly
-                                                  | "amphibious_walk" -> Amphibious_Walk
-                                                  | "amphibious_roll" -> Amphibious_Roll
-                                                  | "amphibious_tread" -> Amphibious_Tread
-                                                  | "all" -> All
-                                                  | a -> failwith("create_unbound_from_unit_t : "^a^" is not a movement\n")
-) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) (u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base) (match u.Unit_t.armor with | "light" -> Light | "normal" -> Normal | "heavy" -> Heavy | a -> failwith("create_unbound_from_unit_t : "^a^" is not an armor type\n")) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy) (u.Unit_t.price) (u.Unit_t.life_max)
+let create_unbound_from_parsed_unit u = new unbound_soldier (u.Unit_t.name)
+(match (u.Unit_t.movement_type) with
+| "walk" -> Walk
+| "roll" -> Roll
+| "tread" -> Tread
+| "swim" -> Swim
+| "fly" -> Fly
+| "amphibious_walk" -> Amphibious_Walk
+| "amphibious_roll" -> Amphibious_Roll
+| "amphibious_tread" -> Amphibious_Tread
+| "all" -> All
+| a -> failwith("create_unbound_from_unit_t : "^a^" is not a movement\n")
+) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) 
+(u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base)
+(match u.Unit_t.armor with
+| "light" -> Light
+| "normal" -> Normal
+| "heavy" -> Heavy
+| a -> failwith("create_unbound_from_unit_t : "^a^" is not an armor type\n"))
+(u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
+(u.Unit_t.price) (u.Unit_t.life_max)
 
-let create_list_from_file s1 =
-  List.map create_unbound_from_unit_t (Ag_util.Json.from_file Unit_j.read_t_list s1)
 
-let create_from_file s1 s2 =
-  List.find
-    (fun uni -> uni#name = s1)
-    (create_list_from_file s2)
-
-let create_list_from_config () = create_list_from_file "resources/config/units.json"
-
-let create_from_config s1 = create_from_file s1 "resources/config/units.json"
 
