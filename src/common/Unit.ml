@@ -24,19 +24,23 @@ object (self)
 end
 
 class soldier (s : string) (p_id : string) (p : Position.t) (m : movement)
-  (v :int) (min_a : int) (a : int) (r : int) (sp : int) =
+  (v :int) (min_a : int) (a : int) (r : int) (sp : int) (life : int) =
 object (self)
   inherit unbound_soldier s m v min_a a r sp
   val mutable pos = p
+  val mutable hp = life
   method id = string_of_int (Oo.id self)
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
-  method attack u a b = match u#armor with 
+  method attack u a b = 
   (* fonction affine gérée par l'engine -> gérer les ripostes *)
-    | Light -> u#hp <- u#hp - a*attack_base*percentage_light/100 + b
-    | Normal -> u#hp <- u#hp - a*attack_base*percentage_normal/100 + b
-    | Heavy -> u#hp <- u#hp - a*attack_base*percentage_heavy/100 + b
+    let _ = Random.init (Sys.time()) in
+    let r = 85 + Random.int 31 in
+    match u#armor with 
+      | Light -> u#hp <- u#hp - a*attack_base*percentage_light*r/10000 + b
+      | Normal -> u#hp <- u#hp - a*attack_base*percentage_normal*r/10000 + b
+      | Heavy -> u#hp <- u#hp - a*attack_base*percentage_heavy*r/10000 + b
 end
 
 type t = soldier
