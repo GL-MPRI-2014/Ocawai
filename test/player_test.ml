@@ -3,7 +3,8 @@ open Player
 open Unit
 open Position
 open List
-
+open Action
+  
 let test1 test_ctxt = assert_equal "x" "x";;
 
 let test2 test_ctxt = assert_equal 100 100;;
@@ -39,21 +40,14 @@ let test_player_3 test_ctxt =
   p#delete_unit u;
   assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
-
-
-(*
-let test_player_3 =
-  let p = create_player() in
-  let u = create_from_unit_t "name" (create 10 10) in
-  p
-  len(p#get_buildings)
-*)  
 let suite_player =
   "Dummy player tests">:::
   ["New player : check army">:: test_player_0;
    "New player : check army with one unit">:: test_player_1;
    "New player : check building">:: test_player_2;
-     "New player : check delete_unit">:: test_player_3]
+   "New player : check delete_unit">:: test_player_3;
+   "New player : check empty_get_next_action">:: test_player_4]
+
 
 
 let () =

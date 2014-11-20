@@ -19,5 +19,5 @@ class virtual player :  Unit.t list -> Building.t list  -> object
   end
 
 val create_player : unit -> player
+val create_dummy_player : Action.t list ->  player
 
-val create_dummy_player : Action.t list -> player
