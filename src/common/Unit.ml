@@ -43,9 +43,9 @@ object (self)
     let _ = Random.init (Sys.time()) in
     let r = 85 + Random.int 31 in
     match u#armor with 
-      | Light -> u#hp <- u#hp - a*attack_base*percentage_light*r/10000 + b
-      | Normal -> u#hp <- u#hp - a*attack_base*percentage_normal*r/10000 + b
-      | Heavy -> u#hp <- u#hp - a*attack_base*percentage_heavy*r/10000 + b
+      | Light -> life <- life - a*attack_base*percentage_light*r/10000 + b
+      | Normal -> life <- life - a*attack_base*percentage_normal*r/10000 + b
+      | Heavy -> life <- life - a*attack_base*percentage_heavy*r/10000 + b
 end
 
 type t = soldier
