@@ -19,6 +19,8 @@ class client_data
 
   method players = players
 
+  method actual_player = actual_player
+
   method current_move = camera#cursor#get_move
 
   method unit_at_position p = 

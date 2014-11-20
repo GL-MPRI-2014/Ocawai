@@ -8,8 +8,11 @@ open Menus
 
 let new_game () =
 
+  let my_player = new ClientPlayer.client_player [] [] in
+
   let mkplayer () : Player.logicPlayer =
     (Player.create_player () : Player.player :> Player.logicPlayer) in
+
   let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
 
   let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
@@ -27,6 +30,7 @@ let new_game () =
         let p = List.hd !players in
         players := List.tl !players ;
         p#set_army a; p) m_generator#armies))
+      ~actual_player:my_player
   in
 
   object(self)
@@ -225,7 +229,7 @@ let new_game () =
             camera#toggle_zoom
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
-          cdata#event_state = ClientData.Waiting -> Cursor.(
+          cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> cdata#unit_at_position cursor#position >?
