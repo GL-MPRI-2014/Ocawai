@@ -22,7 +22,8 @@ let new_game () =
   let m_cdata = (new ClientData.client_data ~camera:m_camera
       ~map:(m_generator#field)
       ~players:(List.map (fun a ->
-        let p = List.head players in
+        (* What should I do here ? *)
+        let p = List.hd players in
         p#set_army a; p) m_generator#armies))
   in
 
