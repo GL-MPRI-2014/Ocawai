@@ -10,7 +10,7 @@ let manager = object(self)
   initializer
     Render.renderer#init;
     Sounds.load_sounds ();
-    window#set_key_repeat_enabled false;
+    window#set_key_repeat_enabled true;
     window#set_framerate_limit 60
 
   method window : OcsfmlGraphics.render_window = window
