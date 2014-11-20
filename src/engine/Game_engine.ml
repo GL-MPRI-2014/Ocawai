@@ -17,6 +17,9 @@ class game_engine () = object (self)
       map_height <- map_hgt;
       players <- Array.make nbplayers (Player.create_player ());     
       players.(0) <- player;
+      for i = 1 to nbplayers - 1 do
+        players.(i) <- Player.create_player ()
+      done;
       field <- Some (new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5);
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
   method run = 
