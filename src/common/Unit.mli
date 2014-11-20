@@ -23,7 +23,9 @@ type t = <
   price : int;
   percentage_light : int;
   percentage_normal : int;
-  percentage_heavy : int
+  percentage_heavy : int;
+  life_max : int;
+  hp : int
 >
 
 (** Type for units without a position *)
@@ -40,7 +42,8 @@ type unbound_t = <
   price : int;
   percentage_light : int;
   percentage_normal : int;
-  percentage_heavy : int
+  percentage_heavy : int;
+  life_max : int
 >
 
 (** Create a unit from a unbound unit, a position and the controlling player id *)
