@@ -120,7 +120,7 @@ begin
 
   let game = Game_engine.create_game_engine players_number in
   let players = init_players game#get_players and current_player = ref (init_current_player players_number) and gameover = ref false in
-  let init_field = new FieldGenerator.t map_width map_height game#get_players 10 5 in
+  let init_field = new FieldGenerator.t map_width map_height (game#get_players : Player.player list :> Player.logicPlayer list) 10 5 in
   while not !gameover do
 	let player_turn_end =  ref false and has_played = ref [] in
 	while not (!player_turn_end) do
