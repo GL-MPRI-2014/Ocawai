@@ -689,7 +689,7 @@ let generate width height playerslist nbattempts1 nbattempts2 nbattempts3 =
   generate_aux nbattempts1
 
 
-class t (width:int) (height:int) (playerslist:Player.player list) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
+class t (width:int) (height:int) (playerslist:Player.logicPlayer list) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
 object (self)
   val g = Random.self_init();generate width height playerslist generate_attempts (*structs_attempts*) 1 units_spawn_attempts
   method field = let m,_,_ = g in m
