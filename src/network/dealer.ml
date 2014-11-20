@@ -2,7 +2,9 @@ open Unix
 open Marshal
 open Types
 
-class dealer (s : file_descr) (tablogp : Player.t list) (clip : Player.t) =
+
+
+class dealer (s : file_descr) (tablogp : Player.logicPlayer list) (clip : CliPlayer.cliPlayer) =
 object (self)
 	 
   (* The socket we read from and write into to communicate with the net player over the network *)
@@ -46,12 +48,13 @@ object (self)
 
   method get_player id =
     if cli_player#get_id = id
-    then cli_player
+    then (cli_player : Player.player :> Player.logicPlayer)
     else
       try
 	self#list_scan id
       with
-	Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures]; cli_player)
+      (*TO DO : add a raise exception *)
+	Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures]; failwith "Wrong id")
 		     
 		     
 

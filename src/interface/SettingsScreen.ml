@@ -20,6 +20,7 @@ class state = object(self)
       [
         (new Setters.slider (w /. 2., 150.) (fun i -> settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i))) "Cursor speed" :> Home.actionnable) ;
         (new Setters.slider (w /. 2., 150. +. Setters.setter_height) (fun i -> settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i))) "Zoom speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height) (fun i -> Sounds.set_volume (float_of_int i)) "Sounds volume" :> Home.actionnable) ;
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop) ;
       ]
@@ -36,8 +37,6 @@ class state = object(self)
     )
 
   method render window =
-
-    super#render window ;
 
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
