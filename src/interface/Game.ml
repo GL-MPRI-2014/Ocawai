@@ -8,7 +8,7 @@ open Menus
 
 let new_game () =
 
-  let m_generator = new FieldGenerator.t 100 100 2 10 5 in
+  let m_generator = new FieldGenerator.t 100 100 [] 10 5 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50

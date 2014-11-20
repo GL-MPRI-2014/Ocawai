@@ -83,7 +83,7 @@ let rec init_current_player players_number =
 	  (players_number-1)::(init_current_player (players_number -1) )
 
 let end_turn player_turn_end current_player =
-    player_turn_end := true; 
+    player_turn_end := true;
     current_player := ((List.tl !current_player)@([List.hd !current_player]))
 
 let apply_movement (player:Player.player) movement has_played =
@@ -92,7 +92,7 @@ let apply_movement (player:Player.player) movement has_played =
 		has_played := u::!has_played
 
 let apply_action player action =
-	match action with 
+	match action with
 		| Attack_unit a-> ()
 		| Attack_building a-> ()
                 | _ -> ()
@@ -102,7 +102,7 @@ let () =
 begin
 	let (game_name,players_number,map_width,map_height) = get_game_parameters () in
 
-  print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns;
+  (* print_ascii_extended init_field#field init_field#armies Path.empty init_field#spawns; *)
     (*
     (* test de la compression/decompression de la map*)
     let s = Battlefield.to_string init_field#field(*(Battlefield.create map_width map_height (Tile.create_from_config "plain"))*) in
@@ -128,7 +128,7 @@ begin
 		let next_wanted_action =  player_turn#get_next_action in
 		player_turn_end := ((snd next_wanted_action) = Wait);
 		try
-		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) !has_played init_field#field next_wanted_action in 
+		    let (movement,action) = try_next_action (game#get_players :> logic_player list) (player_turn:> logic_player) !has_played init_field#field next_wanted_action in
             if action = End_turn then
                 end_turn player_turn_end current_player
             else
