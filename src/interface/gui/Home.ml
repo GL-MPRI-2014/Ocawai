@@ -116,10 +116,10 @@ class screen items actionnables = object(self)
         | a :: _ -> self#select a
         | _ -> ()
 
-  method private left = self#move (fun a s -> a#x <= s#x) true
-  method private right = self#move (fun a s -> a#x >= s#x) true
-  method private up = self#move (fun a s -> a#y <= s#y) false
-  method private down = self#move (fun a s -> a#y >= s#y) false
+  method private left = self#move (fun a s -> a#x < s#x) true
+  method private right = self#move (fun a s -> a#x > s#x) true
+  method private up = self#move (fun a s -> a#y < s#y) false
+  method private down = self#move (fun a s -> a#y > s#y) false
 
   initializer
     match actionnables with
