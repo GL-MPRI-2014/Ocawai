@@ -8,6 +8,9 @@
  *)
 
 
+(* SERVER *)
+
+
 (**
  * This function create a listening socket
  * @param port Listening port
@@ -96,6 +99,33 @@ let open_connexions_alarm port timeout =
   Unix.close (fd_listen);
   list
 *)
+
+
+(* CLIENT *)
+
+
+(**
+ * This function creates a connection to the server
+ * @param port Server port
+ * @param ip Server address
+ * @return Socket
+**)
+let open_connection ip port =
+  let addr = Unix.inet_addr_of_string ip in
+  let sock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+  let sock_addr = Unix.ADDR_INET (addr, port) in
+  try 
+    Unix.connect sock sock_addr;
+    sock
+  with 
+    | Unix.Unix_error (_, "connect", _) -> 
+      Unix.close sock;
+      failwith "connexion fail"
+
+
+(* COMUNNICATION *)
+
+
 
 (**
  * This function is blocking off version of [read].
