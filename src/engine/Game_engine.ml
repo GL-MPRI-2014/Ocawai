@@ -1,12 +1,13 @@
 open Action
 
+let get_opt o = 
+  match o with
+  |Some(s) -> s
+  |None -> failwith "Failed to init game engine"
 
-class game_engine () =
-  let m_field = new FieldGenerator.t 0 0 [] 0 0 in
-object (self)
+class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
-  val mutable field = m_field
-  val mutable map = m_field#field
+  val mutable field = None
   val mutable map_width = 0
   val mutable map_height = 0
   method get_players =
@@ -16,9 +17,8 @@ object (self)
       map_height <- map_hgt;
       players <- Array.make nbplayers (Player.create_player ());     
       players.(0) <- player;
-      field <- new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5 ;
-      map <- field#field;
-      ((self#get_players :> Player.logicPlayer list),map)
+      field <- Some (new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5);
+      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
   method run = 
     let  current_player = ref (self#init_current_players (Array.length players)) and gameover = ref false in
     while not !gameover do
@@ -28,7 +28,9 @@ object (self)
 		    let next_wanted_action =  player_turn#get_next_action in
 		    player_turn_end := ((snd next_wanted_action) = Wait);
 		    try
-		        let (movement,action) = Logics.try_next_action (self#get_players :> Player.logicPlayer list) (player_turn:> Player.logicPlayer) !has_played map next_wanted_action in
+		        let (movement,action) = Logics.try_next_action
+                        (self#get_players :> Player.logicPlayer list)
+                        (player_turn:> Player.logicPlayer) !has_played (get_opt field)#field next_wanted_action in
                 if action = End_turn then
                     self#end_turn player_turn_end current_player
                 else

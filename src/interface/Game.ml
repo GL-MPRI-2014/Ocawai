@@ -10,12 +10,9 @@ let new_game () =
 
   let my_player = new ClientPlayer.client_player [] [] in
 
-  let mkplayer () : Player.logicPlayer =
-    (Player.create_player () : Player.player :> Player.logicPlayer) in
+  let m_engine = new Game_engine.game_engine () in
 
-  let players = ref [mkplayer () ; mkplayer () ; mkplayer () ; mkplayer () ] in
-
-  let m_generator = new FieldGenerator.t 100 100 !players 10 5 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 100 100 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -24,20 +21,14 @@ let new_game () =
   in
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
-      ~map:(m_generator#field)
-      ~players:(List.map (fun a ->
-        (* Really ugly *)
-        let p = List.hd !players in
-        players := List.tl !players ;
-        p#set_army a; p) m_generator#armies))
-      ~actual_player:my_player
+      ~map:m_map
+      ~players:m_players
+      ~actual_player:my_player)
   in
 
   object(self)
 
   inherit State.state as super
-
-  val generator = m_generator
 
   val ui_manager = new UIManager.ui_manager
 
@@ -161,7 +152,9 @@ let new_game () =
     ui_manager#add_widget atk_menu
 
   initializer
-    self#create_ui
+    self#create_ui;
+    Thread.create (fun () -> m_engine#run) ()
+    |> ignore
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
