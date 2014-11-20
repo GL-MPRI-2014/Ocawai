@@ -42,7 +42,7 @@ dirs = $(engine_dir) $(common_dir) $(utils_dir) $(interface_dir) $(gui_dir) $(mu
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(engine_dir),$(common_dir),$(utils_dir)
 interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(interface_dir),$(gui_dir),$(music_dir)
-network_src=$(network_dir)
+network_src=$(network_dir),$(common_dir),$(utils_dir)
 
 test_src=test,$(engine_src)
 
@@ -66,6 +66,7 @@ cflags = -w,-3
 
 #name of the target for ocamlbuild
 output_interface = main.native
+#output_network = dealer.native
 output_engine = dummy_serv.native
 
 
@@ -75,6 +76,7 @@ command = ocamlbuild -use-ocamlfind -cflags $(cflags)
 interface_command =	$(command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
 
 engine_command = $(command)  -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+
 network_command = $(command) -libs $(network_libraries) -Is $(network_src) $(output_network)
 
 #get every source file of the project
@@ -106,7 +108,7 @@ files_atd := $(foreach dir,$(dirs),$(find_files_atd))
 files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
 files_atd_mli := $(files_atd_ml:.ml=.mli)
 
-all: interface engine network
+all: interface engine 
 
 interface: $(files_atd_ml)
 	$(interface_command)
@@ -117,14 +119,15 @@ run: interface
 engine:  $(files_atd_ml)
 	$(engine_command)
 
-
+#network:
+#	$(network_command)
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
 	install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
 	install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
-	install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
+	#install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 
 uninstall:
 	-rm $(bindir)/$(output_interface)
@@ -173,7 +176,7 @@ $(distdir): FORCE
 distcheck: $(distdir).tar.gz
 	gzip -cd $(distdir).tar.gz | tar xvf -
 	cd $(distdir) && ./configure
-	cd $(distdir) && $(MAKE) network
+	#cd $(distdir) && $(MAKE) network
 	cd $(distdir) && $(MAKE) engine
 	cd $(distdir) && $(MAKE) interface
 	cd $(distdir) && $(MAKE) check
