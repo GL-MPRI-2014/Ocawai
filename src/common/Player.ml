@@ -64,3 +64,4 @@ class dummy_player army_ buildings_ (a: Action.t list) =
   end
 
 let create_player () = new dummy_player [] []  []
+let create_dummy_player actions = new dummy_player [] [] actions

@@ -15,22 +15,31 @@ let test2 test_ctxt = assert_equal 100 100;;
 
 (*check empty player*)
 let test_player_0 test_ctxt =
-  let p = create_player() in
+  let p = create_dummy_player [] in
   let u = bind (create_from_config "general") (create (10,10)) 0 in
   assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
 (*check an army with one unit*)
 let test_player_1 test_ctxt =
-  let p = create_player() in
+  let p = create_dummy_player [] in
   let u = bind (create_from_config "general") (create (10,10)) 0 in
   p#add_unit u;
     assert_equal ~printer:string_of_int 1 (length (p#get_army))
 
 (*check empty player*)
 let test_player_2 test_ctxt =
-  let p = create_player() in
+  let p = create_dummy_player [] in
+    assert_equal ~printer:string_of_int 0 (length (p#get_buildings))
+
+(*check delete unit in player*)
+let test_player_3 test_ctxt =
+  let p = create_dummy_player [] in
   let u =bind (create_from_config "general") (create (10,10)) 0 in
-    assert_equal ~printer:string_of_int 0 (length (p#get_army))
+  p#add_unit u;
+  p#delete_unit u;
+  assert_equal ~printer:string_of_int 0 (length (p#get_army))
+
+
 
 (*
 let test_player_3 =
@@ -43,7 +52,8 @@ let suite_player =
   "Dummy player tests">:::
   ["New player : check army">:: test_player_0;
    "New player : check army with one unit">:: test_player_1;
-   "New player : check building">:: test_player_2]
+   "New player : check building">:: test_player_2;
+     "New player : check delete_unit">:: test_player_3]
 
 
 let () =
