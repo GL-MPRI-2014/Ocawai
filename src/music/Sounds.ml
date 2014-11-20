@@ -18,7 +18,7 @@ let load_sound_file file_name =
     | _ ->
         raise (Not_a_valid_sound_file (file_name ^ " (only WAV are supported)"))
 
-let load_sounds () = 
+let load_sounds () =
   print_endline "Loading sounds :";
   let files = Sys.readdir path in
   Array.iter load_sound_file files;
@@ -37,4 +37,4 @@ let set_volume f =
   player := new sound ~volume:f ();
   volume := f
 
-let get_volume () = !f
+let get_volume () = !volume

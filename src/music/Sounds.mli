@@ -35,8 +35,14 @@ val load_sounds : unit -> unit
 *)
 val play_sound : string -> unit
 
-(** 
+(**
   Change the sounds volume. The expected float is a percentage of the volume,
   100 being the loudest one.
 *)
 val set_volume : float -> unit
+
+
+(**
+  @Return the sounds volume.
+*)
+val get_volume : unit -> float
