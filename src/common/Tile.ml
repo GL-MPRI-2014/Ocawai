@@ -75,16 +75,3 @@ let movement_cost tile movement =
 
 let tile_cost tile soldier = movement_cost tile soldier#movement_type
 
-let create_list_from_file file =
-  Ag_util.Json.from_file Tile_j.read_t_list file
-
-let create_from_file name file =
-  let tiles = create_list_from_file file in
-  List.find
-    (fun t -> t.name = name)
-    tiles
-
-let create_list_from_config () = create_list_from_file "resources/config/tiles.json"
-
-let create_from_config name = create_from_file name "resources/config/tiles.json"
-

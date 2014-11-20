@@ -13,8 +13,8 @@ exception UnitsSpawnFail
 exception StructSpawnFail
 
 (* special tiles used by the generation *)
-let seed_tile = Tile.create_from_config "seed"
-let blank_tile = Tile.create_from_config "blank"
+let seed_tile = Config.create_tile "seed"
+let blank_tile = Config.create_tile "blank"
 let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank"
 let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed"
 
@@ -254,7 +254,7 @@ let random_hard_smoothing m tiles range proba =
 
 (* generate a map randomly then uses swap_smoothing *)
 let swap_gen width height =
-  let tiles_all = Tile.create_list_from_config () in
+  let tiles_all = Config.create_tile_list () in
   let tiles =
     List.filter
     (fun a -> Tile.get_structure a = `Block)
@@ -276,7 +276,7 @@ let swap_gen width height =
 let seeds_gen width height =
   let nbseeds = width*height/50 in
   let dist_min_btw_seeds = 2 in
-  let tiles_all = Tile.create_list_from_config () in
+  let tiles_all = Config.create_tile_list () in
   let tiles =
     List.filter
     (fun a -> Tile.get_structure a = `Block)
@@ -488,8 +488,8 @@ let positioning m playerslist legit_spawns =
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
   let position_army_around spawn player other_armies_pos =
-    let unbound_list = Unit.create_list_from_config() in
-    let general = Unit.bind (Unit.create_from_config "general") spawn player#get_id in
+    let unbound_list = Config.create_unbound_unit_list() in
+    let general = Unit.bind (Config.create_unbound_unit "general") spawn player#get_id in
     player#add_unit general;
     let army = ref [general] in
     let army_pos = ref [spawn] in
@@ -538,7 +538,7 @@ let create_roads m = () (*TODO*)
 
 (* create beaches and other (?) borders of `Block *)
 let create_borders m =
-  let borders = Tile.create_list_from_config () in
+  let borders = Config.create_tile_list () in
   (* create the border (water : string, rate : int (0-1000), expansion : int) composed of beach tiles *)
   let create_border (water, rate, expansion) beach =
     let poslist_water =
