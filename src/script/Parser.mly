@@ -3,8 +3,8 @@
 %token <string> LIDENT
 %token <int> INT
 %token VAR FUN
-%token IF THEN ELSE
-%token QUOTE SEMICOLON
+%token IF ELSE
+%token QUOTE SEMICOLON COMMA
 %token MOVE ATK MAIN INIT
 %token LEFTP RIGHTP
 %token LBRACE RBRACE
@@ -78,13 +78,13 @@ simple_value:
 
 composed_value:
   |s = LIDENT; v = values {Types.App (s,v)}
-  |IF; v = value; THEN; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE {Types.Ifte (v,t,e)}
-  |IF; v = value; THEN; LBRACE; t = seqexpr; RBRACE {Types.Ifte (v,t,Types.Return Types.Unit)}
+  |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE {Types.Ifte (v,t,e)}
+  |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE {Types.Ifte (v,t,Types.Return Types.Unit)}
   ;
 
 proc:
-  |MOVE; s = strings; LBRACE; e = seqexpr; RBRACE {Types.Move (s,e)}
-  |ATK;  s = strings; LBRACE; e = seqexpr; RBRACE {Types.Attack (s,e)}
+  |MOVE; s = strings_comma; LBRACE; e = seqexpr; RBRACE {Types.Move (s,e)}
+  |ATK;  s = strings_comma; LBRACE; e = seqexpr; RBRACE {Types.Attack (s,e)}
   |MAIN; LBRACE; e = seqexpr; RBRACE {Types.Main e}
   |INIT; LBRACE; e = seqexpr; RBRACE {Types.Init e}
   ;
@@ -97,6 +97,11 @@ values:
 strings:
   |s = LIDENT {[s]}
   |s = LIDENT; t = strings {s::t}
+  ;
+
+strings_comma:
+  |s = LIDENT {[s]}
+  |s = LIDENT; COMMA; t = strings_comma {s::t}
   ;
 
 value_list:

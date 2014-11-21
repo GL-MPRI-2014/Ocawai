@@ -10,7 +10,6 @@
     |> h_add "var"      VAR
     |> h_add "fun"      FUN
     |> h_add "if"       IF
-    |> h_add "then"     THEN
     |> h_add "else"     ELSE
     |> h_add "move"     MOVE
     |> h_add "attack"   ATK
@@ -62,7 +61,6 @@ rule token = parse
   | "&" {ESP}
   | "(" {LEFTP}
   | ")" {RIGHTP}
-  | "." {DOT}
   | "," {COMMA}
   | "{" {LBRACE}
   | "}" {RBRACE}
