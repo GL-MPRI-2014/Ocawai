@@ -63,7 +63,7 @@ let manager = object(self)
 
   method run =
 
-    if not window#is_open then states <- [] ;
+    if not window#is_open then while states <> [] do self#pop done ;
 
     if self#is_running then
     begin
