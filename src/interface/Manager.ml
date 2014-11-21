@@ -1,6 +1,7 @@
 let manager = object(self)
 
   val mutable states : State.state list = []
+  val mutable fullscreen = true
   val mutable window : OcsfmlGraphics.render_window =
     new OcsfmlGraphics.render_window
       (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
@@ -14,6 +15,24 @@ let manager = object(self)
     window#set_framerate_limit 60
 
   method window : OcsfmlGraphics.render_window = window
+
+  method reset_window =
+    window#close ;
+    if fullscreen then
+      window#create
+      ~style: [OcsfmlWindow.Window.Fullscreen]
+      (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
+      "Flower Wars"
+    else
+      window#create
+      (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
+      "Flower Wars" ;
+    window#set_key_repeat_enabled true ;
+    window#set_framerate_limit 60
+
+  method set_fullscreen b =
+    fullscreen <- b ;
+    self#reset_window
 
   method push (state : State.state) =
     states <- state :: states
@@ -37,24 +56,7 @@ let manager = object(self)
           | KeyPressed { code = OcsfmlWindow.KeyCode.C ; control = true ; _ } ->
               window#close
 
-          | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
-              window#close;
-              window#create
-                (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-                "Flower Wars";
-              window#set_key_repeat_enabled false
-
-          | KeyPressed { code = OcsfmlWindow.KeyCode.F ; _ } ->
-              window#close;
-              window#create
-                ~style: [OcsfmlWindow.Window.Fullscreen]
-                (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-                "Flower Wars";
-              window#set_key_repeat_enabled false
-
-          | Resized _ ->
-
-              ()
+          | Resized _ -> ()
 
           | _ -> self#current#handle_event e
         end) ;

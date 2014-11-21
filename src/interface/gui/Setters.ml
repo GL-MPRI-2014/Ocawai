@@ -92,3 +92,34 @@ class slider ?default:(default = 50) pos update name = object(self)
   )
 
 end
+
+class toogle ?default:(default = false) pos name update = object(self)
+
+  inherit setter pos name as super
+
+  val led_r = 8.
+
+  val mutable toogle = default
+
+  method draw (target : OcsfmlGraphics.render_window) =
+    super#draw target ;
+    let fill_color = if toogle then Color.rgb 57 131 204 else Color.white
+    and position = addf2D (setter_width/.2. -. 20., 0.) self#position
+    and outline_color = Color.rgb 97 171 244
+    and outline_thickness = 2. in
+    new circle_shape
+    ~fill_color
+    ~radius: led_r
+    ~origin: (led_r, led_r)
+    ~position
+    ~point_count: 100
+    ~outline_color
+    ~outline_thickness
+    ()
+    |> target#draw
+
+  method action =
+    toogle <- not toogle ;
+    update toogle
+
+end

@@ -10,6 +10,10 @@ val manager : <
   run : unit ;
   (** @Return the current window *)
   window : OcsfmlGraphics.render_window ;
+  (** Resets the window (for resizing) *)
+  reset_window : unit ;
+  (** Toogles fullscreen mode *)
+  set_fullscreen : bool -> unit ;
   (** @Return the state on top of the stack *)
   current : State.state ;
   (** Processes all events *)
