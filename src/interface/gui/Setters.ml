@@ -87,7 +87,7 @@ class slider ?default:(default = 50) pos update name = object(self)
   method handle_key = OcsfmlWindow.KeyCode.(function
     | Left -> self#decr ; update percentage
     | Right -> self#incr ; update percentage
-    | Space | Return -> holds_focus <- false
+    | Escape | Space | Return -> holds_focus <- false
     | _ -> ()
   )
 

@@ -46,8 +46,6 @@ class state = object(self)
 
     OcsfmlWindow.Event.(
       match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Back ; _ } ->
-            manager#pop
         | KeyPressed { code = kc ; _ } ->
             screen#handle_key kc
         | _ -> ()
