@@ -32,6 +32,8 @@ object (self)
   inherit unbound_soldier s m v min_a a r sp ab ar pl pn ph price l_m
   val mutable pos = p
   val mutable life = l_m
+  val mutable played = false
+
   method hp = life
   method id = Oo.id self
   method player_id = p_id
@@ -46,6 +48,8 @@ object (self)
       | Normal -> a*self#attack_base*self#percentage_normal*r/10000
       | Heavy -> a*self#attack_base*self#percentage_heavy*r/10000
   method take_damage dmg = life <- max 0 (life-dmg)
+  method has_played = played
+  method set_played p = played <- p
 end
 
 type t = soldier

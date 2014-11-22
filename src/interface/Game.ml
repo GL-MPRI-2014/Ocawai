@@ -242,14 +242,17 @@ let new_game () =
           cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
-              |Idle -> cdata#player_unit_at_position 
-                cursor#position cdata#actual_player >?
-                (fun u -> cursor#set_state (Displace (cdata#map, u,
-                  Logics.accessible_positions u
-                    (cdata#player_of u)
-                     cdata#players
-                     cdata#map))
-                )
+              |Idle -> begin
+                match cdata#player_unit_at_position cursor#position
+                      cdata#actual_player with
+                |Some(u) when (not u#has_played) ->
+                    cursor#set_state (Displace (cdata#map, u,
+                      Logics.accessible_positions u
+                     (cdata#actual_player :> logicPlayer)
+                      cdata#players
+                      cdata#map))
+                | _ -> ()
+              end
               |Displace(_,u,(acc,_)) ->
                 let uopt = cdata#unit_at_position cursor#position in
                 begin match uopt with 

@@ -36,7 +36,7 @@ class game_engine () = object (self)
     let current_player = ref (self#init_current_players (Array.length players)) 
     and gameover = ref false in
     while not !gameover do
-      let player_turn_end =  ref false and has_played = ref [] in
+      let player_turn_end =  ref false in
       while not (!player_turn_end) do
         let player_turn = players.( List.hd !current_player ) in
         let next_wanted_action =  player_turn#get_next_action in
@@ -44,16 +44,16 @@ class game_engine () = object (self)
         try
           let (movement,action) = Logics.try_next_action
               (self#get_players :> Player.logicPlayer list)
-              (player_turn:> Player.logicPlayer) !has_played 
+              (player_turn:> Player.logicPlayer)
               (get_opt field)#field 
               next_wanted_action 
           in
           if action = End_turn then
-            self#end_turn player_turn_end current_player
+            self#end_turn player_turn_end player_turn current_player
           else
-            self#apply_movement player_turn movement has_played
+            self#apply_movement player_turn movement
         with
-          _ -> self#end_turn player_turn_end current_player;
+          _ -> self#end_turn player_turn_end player_turn current_player;
       done;
     done
 
@@ -66,24 +66,21 @@ class game_engine () = object (self)
     in
     aux nb
 
-  method private end_turn player_turn_end current_player =
-        player_turn_end := true;
-        current_player := ((List.tl !current_player)@([List.hd !current_player]))
+  method private end_turn player_turn_end player_turn current_player =
+    player_turn_end := true;
+    List.iter (fun u -> u#set_played false) player_turn#get_army;
+    current_player := ((List.tl !current_player)@([List.hd !current_player]))
 
-  method private apply_movement (player:Player.player) movement has_played =
-	    let u = Logics.find_unit (List.hd movement) (player :> Player.logicPlayer) in
-     		player#move_unit u movement;
-		    has_played := u::!has_played
+  method private apply_movement (player:Player.player) movement =
+    let u = Logics.find_unit (List.hd movement) (player :> Player.logicPlayer) in
+    player#move_unit u movement;
+    u#set_played true
 
   method private apply_action player action =
-	    match action with
-		    | Attack_unit a-> ()
-		    | Attack_building a-> ()
-                    | _ -> ()
-
-
-
-
+    match action with
+    | Attack_unit a -> ()
+    | Attack_building a -> ()
+    | _ -> ()
 
 end
 

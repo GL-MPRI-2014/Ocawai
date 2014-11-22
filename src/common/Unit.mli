@@ -27,7 +27,9 @@ type t = <
   life_max : int;
   hp : int;
   attack : armor -> int -> int;
-  take_damage : int -> unit
+  take_damage : int -> unit;
+  has_played : bool;
+  set_played : bool -> unit
 >
 
 (** Type for units without a position *)

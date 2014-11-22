@@ -209,9 +209,13 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) 
-    camera my_unit =
-    self#draw_from_map target camera (my_unit#name) (my_unit#position) ();
+  method private draw_unit (target : render_window) camera my_unit =
+    let color = 
+      if my_unit#has_played 
+      then Color.rgb 150 150 150
+      else Color.rgb 255 255 255
+    in
+    self#draw_from_map target camera (my_unit#name) (my_unit#position) ~color();
     let size = int_of_float (camera#zoom *. 14.) in
     let position = (foi2D (camera#project my_unit#position)) in
     new text ~string:(string_of_int (my_unit#hp * 10 / my_unit#life_max))
@@ -219,8 +223,7 @@ let renderer = object(self)
     |> target#draw
  
   (* Render a range (move or attack, according to cursor's state) *)
-  method private draw_range (target : render_window) 
-    camera map =
+  method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
     |Cursor.Idle -> ()
     |Cursor.Displace(_,_,(range,_)) -> begin
