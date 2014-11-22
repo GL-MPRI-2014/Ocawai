@@ -155,14 +155,16 @@ let try_next_action player_list player bf order =
       | Wait -> (mvt, Wait)
       | End_turn -> failwith "try_next_action: this case is not possible"
       | Attack_unit (att, def) ->
+        let dest = List.nth mvt (List.length mvt - 1) in
 	if att <> u then raise Bad_attack (*only the unit who moved can attack*)
 	else (
-	  let dist = Position.dist (att#position) (def#position) in
+	  let dist = Position.dist dest (def#position) in
 	  let range = (att#min_attack_range, att#attack_range) in
 	  if fst range > dist || snd range < dist then 
 	    raise Bad_attack (*targeted unit not in range*)
-	  else if snd range > 1 && List.length mvt > 1 then
-	    raise Bad_attack (*a ranged unit must not move before firing*)
+          (*commented for testing purposes *) 
+	  (*else if snd range > 1 && List.length mvt > 1 then
+	    raise Bad_attack (*a ranged unit must not move before firing*)*)
 	  else
 	    (mvt, action) (*the attack is valid*)
 	)

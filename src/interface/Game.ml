@@ -238,8 +238,12 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.E ; _ } ->
+            if cdata#actual_player#event_state = ClientPlayer.Waiting then
+               cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn))
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
-          cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
+            cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> begin
