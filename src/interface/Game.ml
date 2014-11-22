@@ -250,13 +250,20 @@ let new_game () =
                      cdata#players
                      cdata#map))
                 )
-              |Displace(_,_,(acc,_)) ->
-                let u = cdata#unit_at_position cursor#position in
-                if List.mem cursor#position acc && u = None then begin
-                  disp_menu#set_position (cdata#camera#project cursor#position);
-                  ui_manager#focus disp_menu;
-                  disp_menu#toggle
-                end else cursor#set_state Idle
+              |Displace(_,u,(acc,_)) ->
+                let uopt = cdata#unit_at_position cursor#position in
+                begin match uopt with 
+                |None when List.mem cursor#position acc ->
+                    disp_menu#set_position (cdata#camera#project cursor#position);
+                    ui_manager#focus disp_menu;
+                    disp_menu#toggle
+                |Some(u') when u = u' && List.mem cursor#position acc ->
+                    disp_menu#set_position (cdata#camera#project cursor#position);
+                    ui_manager#focus disp_menu;
+                    disp_menu#toggle
+                |_ ->
+                    cursor#set_state Idle
+                end
               |Action(_,r) ->
                 if List.mem cursor#position r && 
                    cdata#enemy_unit_at_position cursor#position then begin 
