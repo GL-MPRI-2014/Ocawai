@@ -44,9 +44,9 @@ object (self)
     let _ = Random.self_init() in
     let r = 85 + Random.int 31 in
     match arm with 
-      | Light -> a*self#attack_base*self#percentage_light*r/10000
-      | Normal -> a*self#attack_base*self#percentage_normal*r/10000
-      | Heavy -> a*self#attack_base*self#percentage_heavy*r/10000
+      | Light -> a*self#attack_base*self#percentage_light*r/1000000
+      | Normal -> a*self#attack_base*self#percentage_normal*r/1000000
+      | Heavy -> a*self#attack_base*self#percentage_heavy*r/1000000
   method take_damage dmg = life <- max 0 (life-dmg)
   method has_played = played
   method set_played p = played <- p
