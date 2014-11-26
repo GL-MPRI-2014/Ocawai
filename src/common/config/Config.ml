@@ -131,6 +131,22 @@ object (self)
 
 end
 
+(* global config *)
+
+let config = let conf = new t in conf#init default_config_files;conf
+let init_engine () = config#init_engine default_engine_settings_files
+let init_interface () = config#init_interface default_interface_settings_files
+let tiles_list () = config#tiles_list
+let unbound_units_list () = config#unbound_units_list
+let settings () = config#settings
+let settings_engine () = config#settings_engine
+let settings_interface () = config#settings_interface
+let tile name = config#tile name
+let unbound_unit name = config#unbound_unit name
+let reload () = config#reload
+let reset_to_default () = config#reset_to_default
+let save_settings () = config#save_settings
+
 (* Test *)
 
 (*
