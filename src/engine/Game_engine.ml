@@ -35,6 +35,16 @@ class game_engine () = object (self)
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
+  method private player_of_unit u = 
+    let rec aux = function
+      |[] -> false
+      |t::q -> t#id = u#id || aux q
+    in
+    let rec player_aux = function
+      |[] -> assert false
+      |t::q -> if aux t#get_army then t else player_aux q
+    in player_aux self#get_players
+
   method run : unit = 
     let player = players.(actual_player) in
     let next_wanted_action =  player#get_next_action in
@@ -50,7 +60,9 @@ class game_engine () = object (self)
       |(move, Wait ) -> self#apply_movement move
       |(move, Attack_unit (u1,u2)) -> 
           self#apply_movement move;
-          Logics.apply_attack u1 u2
+          Logics.apply_attack u1 u2;
+          if u2#hp <= 0 then 
+            (self#player_of_unit u2)#delete_unit u2
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn 

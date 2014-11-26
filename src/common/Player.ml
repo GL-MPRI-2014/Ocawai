@@ -22,8 +22,8 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
       let rec delete unit_list =
         match unit_list with
         | [] -> raise Not_found
-        | h::d when h#id == u#id -> d
-        | _ -> delete (tl unit_list)
+        | h::d when h#id = u#id -> d
+        | h::d -> h :: (delete (tl unit_list))
       in
       army <- delete army
 
