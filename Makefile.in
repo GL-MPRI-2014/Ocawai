@@ -167,6 +167,7 @@ $(distdir): FORCE
 	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
 	cp $(utils_dir)/*.ml* $(distdir)/$(utils_dir)
 	cp $(config_dir)/*.ml* $(distdir)/$(config_dir)
+	cp $(config_dir)/*.atd $(distdir)/$(config_dir)
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
