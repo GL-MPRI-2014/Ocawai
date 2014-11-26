@@ -218,7 +218,8 @@ let renderer = object(self)
     self#draw_from_map target camera (my_unit#name) (my_unit#position) ~color();
     let size = int_of_float (camera#zoom *. 14.) in
     let position = (foi2D (camera#project my_unit#position)) in
-    new text ~string:(string_of_int (my_unit#hp * 10 / my_unit#life_max))
+    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else 
+        string_of_int (my_unit#hp * 10 / my_unit#life_max))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
  
