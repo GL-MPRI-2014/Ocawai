@@ -225,8 +225,9 @@ let renderer = object(self)
       begin
         let (path,time) = Hashtbl.find unit_ginfo my_unit in
         let ellapsed = Unix.gettimeofday () -. time in
-        if ellapsed > 0.2 then
-          Hashtbl.replace unit_ginfo my_unit (List.tl path, Unix.gettimeofday ());
+        if ellapsed > 0.1 then
+          Hashtbl.replace unit_ginfo my_unit
+            (List.tl path, Unix.gettimeofday () -. (ellapsed -. 0.1));
         let (path,time) = Hashtbl.find unit_ginfo my_unit in
         match path with
         | [] -> Hashtbl.remove unit_ginfo my_unit ; my_unit#position
