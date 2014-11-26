@@ -1,11 +1,22 @@
 open List
 open Path
 
+type log_item =
+  | Moved of Unit.t * Action.movement
+
 class logicPlayer (a : Unit.t list) (b : Building.t list) =
   object (self)
     val mutable army = (a : Unit.t list)
     val mutable buildings = (b : Building.t list)
-                            
+    val mutable log : (int * log_item) list = []
+    val mutable log_c = 0
+
+    method private log action =
+      log <- (log_c, action) :: log ;
+      log_c <- log_c + 1
+
+    method get_log = log
+
     (*Quite dirty mutable id. Can't we do without it ?*)
     val mutable id = 0
     method get_army = army
@@ -28,7 +39,9 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
       army <- delete army
 
     (*it is quite dirty*)
-    method move_unit (u : Unit.t) (p : Action.movement) = u#move (final_position (get_path p))
+    method move_unit (u : Unit.t) (p : Action.movement) =
+      self#log (Moved (u, p));
+      u#move (final_position (get_path p))
 
     (*TO DO*)
     method delete_building (b : Building.t) = ()
@@ -37,15 +50,15 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
   end
 
 
-class virtual player (a : Unit.t list) (b : Building.t list) = 
-  object (self) 
+class virtual player (a : Unit.t list) (b : Building.t list) =
+  object (self)
   inherit logicPlayer a b
   method virtual get_next_action :  Action.t
 
 end
 
 type t = player
-  
+
 class dummy_player army_ buildings_ (a: Action.t list) =
   object
     inherit player army_ buildings_
