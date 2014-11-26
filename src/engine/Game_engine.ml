@@ -11,7 +11,7 @@ class game_engine () = object (self)
   val mutable field = None
   val mutable actual_player = 0
   
-  val config = let c = new Config.t in c#init Config.default_config_files;c
+  val config = new Config.t
   
   method get_config = config
 
@@ -22,6 +22,8 @@ class game_engine () = object (self)
     Array.to_list players
 
   method init_local player nbplayers map_wht map_hgt = 
+      config#init Config.default_config_files;
+      config#init_engine Config.default_engine_settings_files;
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
       players <- Array.make nbplayers (Player.create_player ());     
