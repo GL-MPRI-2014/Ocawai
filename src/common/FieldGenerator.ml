@@ -251,8 +251,8 @@ let random_hard_smoothing m tiles range proba is_seed =
 let swap_gen config =
   (* special tiles used by the generation *)
   let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
-  let width = config#settings.battlefield_width in
-  let height = config#settings.battlefield_height in
+  let width = config#settings.map_width in
+  let height = config#settings.map_height in
   let tiles_all = config#tiles_list in
   let tiles =
     List.filter
@@ -277,8 +277,8 @@ let seeds_gen config =
   let blank_tile = config#tile "blank" in
   let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank" in
   let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
-  let width = config#settings.battlefield_width in
-  let height = config#settings.battlefield_height in
+  let width = config#settings.map_width in
+  let height = config#settings.map_height in
   let nbseeds = width*height/50 in
   let dist_min_btw_seeds = 2 in
   let tiles_all = config#tiles_list in

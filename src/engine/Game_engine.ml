@@ -9,11 +9,9 @@ let get_opt o =
 class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
-  val mutable map_width = 0
-  val mutable map_height = 0
   val mutable actual_player = 0
   
-  val config = new Config.t Config.default_config_files
+  val config = let c = new Config.t in c#init Config.default_config_files;c
   
   method get_config = config
 
@@ -24,8 +22,8 @@ class game_engine () = object (self)
     Array.to_list players
 
   method init_local player nbplayers map_wht map_hgt = 
-      config#settings.battlefield_width <- map_wht;
-      config#settings.battlefield_height <- map_hgt;
+      config#settings.map_width <- map_wht;
+      config#settings.map_height <- map_hgt;
       players <- Array.make nbplayers (Player.create_player ());     
       players.(0) <- player;
       for i = 1 to nbplayers - 1 do

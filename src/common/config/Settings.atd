@@ -1,8 +1,8 @@
 
 type t = {
   
-  battlefield_width<ocaml mutable> : int;
-  battlefield_height<ocaml mutable> : int;
+  map_width<ocaml mutable> : int;
+  map_height<ocaml mutable> : int;
   
   generate_attempts<ocaml mutable> : int;
   structs_attempts<ocaml mutable> : int;
