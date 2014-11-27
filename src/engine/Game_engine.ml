@@ -38,7 +38,7 @@ class game_engine () = object (self)
   method private player_of_unit u = 
     let rec aux = function
       |[] -> false
-      |t::q -> t#id = u#id || aux q
+      |t::q -> t#get_id = u#get_id || aux q
     in
     let rec player_aux = function
       |[] -> assert false
@@ -62,7 +62,7 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           if u2#hp <= 0 then 
-            (self#player_of_unit u2)#delete_unit u2
+            (self#player_of_unit u2)#delete_unit (u2#get_id)
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn 
@@ -78,7 +78,7 @@ class game_engine () = object (self)
     let player = players.(actual_player) in
     let u = Logics.find_unit (List.hd movement) 
       (player :> Player.logicPlayer) in
-    player#move_unit u movement;
+    player#move_unit (u#get_id) movement;
     u#set_played true
 end
 
