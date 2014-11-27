@@ -45,6 +45,12 @@ let default_interface_settings_files =
   ("resources/config/settings_interface.json",
   "resources/config/settings_interface_default.json")
 
+let default_files = 
+  let (x1,x2,x3,x4) = default_config_files in
+  let (x5,x6) = default_engine_settings_files in
+  let (x7,x8) = default_interface_settings_files in
+  (x1,x2,x3,x4,x5,x6,x7,x8)
+
 (* config class *)
 class t =
 object (self)
@@ -82,6 +88,8 @@ object (self)
     if Sys.file_exists interface_settings_default_file then interface_settings_default <- interface_settings_default_file;
     self#reload
   
+  method private init_all (x1,x2,x3,x4,x5,x6,x7,x8) = self#init_names x1 x2 x3 x4 x5 x6 x7 x8
+  
   method init (tiles_file, units_file, settings_temp_file, settings_default_file) =
     self#init_names
           tiles_file units_file
@@ -103,11 +111,14 @@ object (self)
             "" ""
             interface_settings_temp_file interface_settings_default_file
   
-  method tiles_list = match t_list with Some a -> a | None -> failwith("no valid tiles file provided")
-  method unbound_units_list = match u_list with Some a -> a | None -> failwith("no valid units file provided")
-  method settings = match s with Some a -> a | None -> failwith("no valid settings file provided")
-  method settings_engine = match engine_s with Some a -> a | None -> failwith("no valid engine settings file provided")
-  method settings_interface = match interface_s with Some a -> a | None -> failwith("no valid interface settings file provided")
+  method init_default () =
+    self#init_all default_files
+  
+  method tiles_list = match t_list with Some a -> a | None -> failwith("no valid tiles file provided so far, call init before")
+  method unbound_units_list = match u_list with Some a -> a | None -> failwith("no valid units file provided so far, call init before")
+  method settings = match s with Some a -> a | None -> failwith("no valid settings file provided so far, call init before")
+  method settings_engine = match engine_s with Some a -> a | None -> failwith("no valid engine settings file provided so far, call init_engine before")
+  method settings_interface = match interface_s with Some a -> a | None -> failwith("no valid interface settings file provided so far, call init_interface before")
   
   method tile name = List.find (fun t -> Tile.get_name t = name) self#tiles_list
   method unbound_unit name = List.find (fun uni -> uni#name = name) self#unbound_units_list
@@ -130,22 +141,6 @@ object (self)
     write_interface_settings_in_file interface_settings_temp self#settings_interface
 
 end
-
-(* global config *)
-
-let config = let conf = new t in conf#init default_config_files;conf
-let init_engine () = config#init_engine default_engine_settings_files
-let init_interface () = config#init_interface default_interface_settings_files
-let tiles_list () = config#tiles_list
-let unbound_units_list () = config#unbound_units_list
-let settings () = config#settings
-let settings_engine () = config#settings_engine
-let settings_interface () = config#settings_interface
-let tile name = config#tile name
-let unbound_unit name = config#unbound_unit name
-let reload () = config#reload
-let reset_to_default () = config#reset_to_default
-let save_settings () = config#save_settings
 
 (* Test *)
 
