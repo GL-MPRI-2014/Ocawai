@@ -5,7 +5,7 @@
 
   let h_add k e t = Hashtbl.add t k e; t
 
-  let keywords_table = 
+  let keywords_table =
     Hashtbl.create 20
     |> h_add "var"      VAR
     |> h_add "fun"      FUN
@@ -38,7 +38,7 @@ rule token = parse
     {token lexbuf}
   | newline
     {token lexbuf}
-  | eof 
+  | eof
     {EOF}
   | integers *
     {INT (int_of_string (Lexing.lexeme lexbuf))}
@@ -49,6 +49,7 @@ rule token = parse
      with Not_found -> LIDENT (Lexing.lexeme lexbuf)}
   | "\"" {QUOTE}
   | ";" {SEMICOLON}
+  | "==" {EQEQ}
   | "=" {EQUALS}
   | "!" {NOT}
   | ">" {GT}
@@ -66,5 +67,5 @@ rule token = parse
   | "}" {RBRACE}
   | "[" {LBRACK}
   | "]" {RBRACK}
-  | _  {raise (Script_syntax_error ("Syntax Error in script parser : " ^ 
+  | _  {raise (Script_syntax_error ("Syntax Error in script parser : " ^
     (Lexing.lexeme lexbuf)))}

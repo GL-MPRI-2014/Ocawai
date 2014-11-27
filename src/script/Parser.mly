@@ -11,10 +11,11 @@
 %token LBRACK RBRACK
 %token TRUE FALSE
 %token PIP ESP
-%token GT LT MUL ADD MIN DIV EQUALS NOT
+%token GT LT MUL ADD MIN DIV EQEQ EQUALS NOT
 
 %right PIP ESP
 %left GT LT MUL ADD MIN DIV
+%left EQUALS EQEQ
 %nonassoc NOT
 
 %start <Types.prog_type> file
@@ -55,7 +56,7 @@ operators:
   |v1 = nested_value; ESP; ESP; v2 = nested_value {Types.App ("_and", [v1; v2])}
   |v1 = nested_value; GT ; v2 = nested_value {Types.App ("_gt", [v1; v2])}
   |v1 = nested_value; LT ; v2 = nested_value {Types.App ("_lt", [v1; v2])}
-  |v1 = nested_value; EQUALS ; v2 = nested_value {Types.App ("_eq", [v1; v2])}
+  |v1 = nested_value; EQEQ ; v2 = nested_value {Types.App ("_eq", [v1; v2])}
   |v1 = nested_value; LT ; EQUALS ; v2 = nested_value {Types.App ("_le", [v1; v2])}
   |v1 = nested_value; GT ; EQUALS ; v2 = nested_value {Types.App ("_ge", [v1; v2])}
   |v1 = nested_value; MUL; v2 = nested_value {Types.App ("_mul", [v1; v2])}

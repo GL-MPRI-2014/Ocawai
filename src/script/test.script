@@ -2,12 +2,17 @@ var a_global = 10;
 
 a_global = a_global + 2 * 3;
 
+fun f x y =
+{
+  x == y
+}
+
 attack infantry, bazooka {
   var a_local = 42;
 
   a_local = a_local / 7;
 
-  if (a_local > 7) { 
+  if (a_local > 7) {
     printf "Fail"
   }
   else {
