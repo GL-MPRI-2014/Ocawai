@@ -33,9 +33,9 @@ object (self)
   val mutable pos = p
   val mutable life = l_m
   val mutable played = false
-
+  val mutable id = 0
   method hp = life
-  method id = Oo.id self
+  method get_id = id
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
@@ -50,8 +50,12 @@ object (self)
   method take_damage dmg = life <- max 0 (life-dmg)
   method has_played = played
   method set_played p = played <- p
+
+  initializer id <- Oo.id self
 end
 
+
+type id = int
 type t = soldier
 type unbound_t = unbound_soldier
 
