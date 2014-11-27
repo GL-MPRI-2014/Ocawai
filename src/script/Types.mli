@@ -2,14 +2,14 @@
 
 (** Static types *)
 type static = [
-`Int_t    |
-`Unit_t   |
-`String_t |
-`Bool_t   |
-`List_t  of static |
-`Array_t of static |
-`Fun_t   of static * static |
-`Pair_t  of static * static
+  `Int_t    |
+  `Unit_t   |
+  `String_t |
+  `Bool_t   |
+  `List_t  of static |
+  `Array_t of static |
+  `Fun_t   of static * static |
+  `Pair_t  of static * static
 ]
 
 (** Type of procedures called by the interpreter *)
@@ -52,11 +52,12 @@ and prog_type =
 and term_type = [static | `None] ref
 
 type value = [
-  `Int of int |
-  `Unit |
-  `String of string |
-  `Bool of bool |
-  `List of value list |
-  `Array of value array |
-  `Fun of (value -> value) |
-  `Pair of value * value]
+  `Int    of int              |
+  `Unit                       |
+  `String of string           |
+  `Bool   of bool             |
+  `List   of value list       |
+  `Array  of value array      |
+  `Fun    of (value -> value) |
+  `Pair   of value * value
+]
