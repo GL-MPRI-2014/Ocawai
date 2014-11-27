@@ -302,7 +302,7 @@ let seeds_gen config =
         (fun pos ->
           Battlefield.in_range m pos
           && ( is_blank m pos
-              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using 
+              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using
                                             (config#tile "seed") instead of t on the following statement*)
              )
         )
@@ -699,9 +699,9 @@ let generate playerslist config =
   generate_aux generate_attempts
 
 
-class t (playerslist:Player.logicPlayer list) config=
+class t (playerslist:Player.logicPlayer list)=
 object (self)
-  val g = Random.self_init(); generate playerslist config
+  val g = Random.self_init(); generate playerslist Config.config
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp

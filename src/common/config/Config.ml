@@ -142,6 +142,8 @@ object (self)
 
 end
 
+let config = new t
+
 (* Test *)
 
 (*

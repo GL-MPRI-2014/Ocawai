@@ -10,9 +10,9 @@ let new_game () =
 
   let my_player = new ClientPlayer.client_player [] [] in
 
-  let m_engine = 
+  let m_engine =
     let g = new Game_engine.game_engine () in
-    g#config#init_interface Config.default_interface_settings_files;
+    Config.config#init_interface Config.default_interface_settings_files;
     g in
 
   let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 50 50 in
@@ -20,7 +20,7 @@ let new_game () =
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
-    ~maxpos:(Position.diff 
+    ~maxpos:(Position.diff
       (Position.create (Battlefield.size m_map))
       (Position.create (1,1)))
   in
@@ -109,7 +109,7 @@ let new_game () =
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
       let cursor = cdata#camera#cursor in
-      let atking_unit = 
+      let atking_unit =
         match cursor#get_state with
         |Cursor.Action(u,_) -> u
         | _ -> assert false
@@ -137,8 +137,8 @@ let new_game () =
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
         if List.mem cursor#position r then begin
-          cursor#set_state (Cursor.Action 
-            (u, Position.range cursor#position 
+          cursor#set_state (Cursor.Action
+            (u, Position.range cursor#position
                 u#min_attack_range u#attack_range));
           camera#set_position (Position.right cursor#position)
         end else
@@ -149,7 +149,7 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cdata#actual_player#set_state (ClientPlayer.Received 
+      cdata#actual_player#set_state (ClientPlayer.Received
         (cdata#current_move, Action.Wait));
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
@@ -262,7 +262,7 @@ let new_game () =
               end
               |Displace(_,u,(acc,_)) ->
                 let uopt = cdata#unit_at_position cursor#position in
-                begin match uopt with 
+                begin match uopt with
                 |None when List.mem cursor#position acc ->
                     disp_menu#set_position (cdata#camera#project cursor#position);
                     ui_manager#focus disp_menu;
@@ -275,8 +275,8 @@ let new_game () =
                     cursor#set_state Idle
                 end
               |Action(_,r) ->
-                if List.mem cursor#position r && 
-                   cdata#enemy_unit_at_position cursor#position then begin 
+                if List.mem cursor#position r &&
+                   cdata#enemy_unit_at_position cursor#position then begin
                   atk_menu#toggle;
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
@@ -290,7 +290,7 @@ let new_game () =
     window#clear ();
 
     cdata#minimap#compute cdata#map cdata#players;
-      
+
     (* Rendering goes here *)
     Render.renderer#render_game window cdata;
     Render.renderer#draw_gui window ui_manager;

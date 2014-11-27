@@ -48,5 +48,5 @@ object
   
 end
 
-
+val config : t
 
