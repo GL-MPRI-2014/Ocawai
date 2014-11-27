@@ -14,13 +14,13 @@
 %token GT LT MUL ADD MIN DIV EQUALS NOT
 
 %right PIP ESP
-%left GT LT MUL ADD MIN DIV 
+%left GT LT MUL ADD MIN DIV
 %nonassoc NOT
 
-%start <Types.prog_type> file 
+%start <Types.prog_type> file
 %%
 
-file: 
+file:
   | EOF {Types.Empty}
   | d = decl; f = file {Types.Globseq (d,f)}
   | p = proc; f = file {Types.Procseq (p,f)}
@@ -55,6 +55,9 @@ operators:
   |v1 = nested_value; ESP; ESP; v2 = nested_value {Types.App ("_and", [v1; v2])}
   |v1 = nested_value; GT ; v2 = nested_value {Types.App ("_gt", [v1; v2])}
   |v1 = nested_value; LT ; v2 = nested_value {Types.App ("_lt", [v1; v2])}
+  |v1 = nested_value; EQUALS ; v2 = nested_value {Types.App ("_eq", [v1; v2])}
+  |v1 = nested_value; LT ; EQUALS ; v2 = nested_value {Types.App ("_le", [v1; v2])}
+  |v1 = nested_value; GT ; EQUALS ; v2 = nested_value {Types.App ("_ge", [v1; v2])}
   |v1 = nested_value; MUL; v2 = nested_value {Types.App ("_mul", [v1; v2])}
   |v1 = nested_value; ADD; v2 = nested_value {Types.App ("_add", [v1; v2])}
   |v1 = nested_value; MIN; v2 = nested_value {Types.App ("_min", [v1; v2])}
