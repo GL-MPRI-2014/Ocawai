@@ -191,24 +191,29 @@ let capture_buildings player_list player building_list =
   let p_id = player#get_id in
   let changed = ref [] in
   let aux u =
-    let pos = u#position in
-    let rec find_building = function
-      | [] -> ()
-      | b :: t -> 
-	if b#position = pos then (
-	  match b#player_id with
-	  | None -> 
-	    b#set_owner p_id;
-	    changed := (b, None) :: (!changed)
-	  | Some id when id = p_id ->
-	    ()
-	  | Some id ->
-	    b#set_neutral;
-	    changed := (b, Some (find_player id player_list)) :: (!changed)
-	)
-	else find_building t
-    in
-    find_building building_list
+    match u#movement_type with
+    | Unit.Walk | Unit.Roll | Unit.Tread 
+    | Unit.Amphibious_Walk | Unit.Amphibious_Roll | Unit.Amphibious_Tread -> (
+      let pos = u#position in
+      let rec find_building = function
+	| [] -> ()
+	| b :: t -> 
+	  if b#position = pos then (
+	    match b#player_id with
+	    | None -> 
+	      b#set_owner p_id;
+	      changed := (b, None) :: (!changed)
+	    | Some id when id = p_id ->
+	      ()
+	    | Some id ->
+	      b#set_neutral;
+	      changed := (b, Some (find_player id player_list)) :: (!changed)
+	  )
+	  else find_building t
+      in
+      find_building building_list
+    )
+    | _ -> ()
   in
   List.iter aux unit_list;
   (!changed)
