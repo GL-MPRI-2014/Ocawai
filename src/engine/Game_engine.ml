@@ -26,7 +26,7 @@ class game_engine () = object (self)
   method init_local player nbplayers map_wht map_hgt = 
       config#settings.battlefield_width <- map_wht;
       config#settings.battlefield_height <- map_hgt;
-      players <- Array.make nbplayers (Player.create_player ());     
+      players <- Array.init nbplayers (fun _ -> Player.create_player ());     
       players.(0) <- player;
       for i = 1 to nbplayers - 1 do
         (*each player should be different*)
