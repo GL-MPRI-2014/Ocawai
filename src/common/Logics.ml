@@ -180,4 +180,36 @@ let apply_attack att def =
   (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
   def#take_damage damage
 
+let rec find_player id player_list = match player_list with
+  | [] -> failwith "find_player: not found"
+  | p :: t -> 
+    if p#get_id = id then p 
+    else find_player id t
 
+let capture_buildings player_list player building_list =
+  let unit_list = player#get_army in
+  let p_id = player#get_id in
+  let changed = ref [] in
+  let aux u =
+    let pos = u#position in
+    let rec find_building = function
+      | [] -> ()
+      | b :: t -> 
+	if b#position = pos then (
+	  match b#player_id with
+	  | None -> 
+	    b#set_owner p_id;
+	    changed := (b, None) :: (!changed)
+	  | Some id when id = p_id ->
+	    ()
+	  | Some id ->
+	    b#set_neutral;
+	    changed := (b, Some (find_player id player_list)) :: (!changed)
+	)
+	else find_building t
+    in
+    find_building building_list
+  in
+  List.iter aux unit_list;
+  (!changed)
+  

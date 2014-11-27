@@ -22,6 +22,12 @@ val try_next_action : Player.logicPlayer list -> Player.logicPlayer ->
     Raises Bad_unit if it could not be found. *)
 val find_unit : Position.t -> Player.logicPlayer -> Unit.t
 
+(** Find the player with given id from the list of players *)
+val find_player : int -> Player.logicPlayer list -> Player.logicPlayer
+
 (** Computes and apply the damage of an attack. *)
 val apply_attack : Unit.t -> Unit.t -> unit
 
+(** Computes owner changes for buildings at the start of a turn *)
+val capture_buildings : Player.logicPlayer list -> Player.logicPlayer ->
+  Building.t list -> (Building.t * (Player.logicPlayer option)) list
