@@ -1,4 +1,5 @@
 var a_global = 10;
+var pair = (1,((false,true),"salut"));
 
 a_global = a_global + 2 * 3;
 

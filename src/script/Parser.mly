@@ -70,6 +70,7 @@ simple_value:
   |i = INT {Types.Int i}
   |o = operators {o}
   |LEFTP; RIGHTP {Types.Unit}
+  |LEFTP; v1 = value; COMMA; v2 = value; RIGHTP; {Types.Pair (v1, v2)}
   (* Strings with are not well handled yet *)
   |QUOTE; s = LIDENT; QUOTE {Types.String s}
   |QUOTE; s = UIDENT; QUOTE {Types.String s}
