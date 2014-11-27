@@ -1,7 +1,7 @@
 {
   open Parser
 
-  exception Script_syntax_error of string
+  exception Script_SyntaxError of string
 
   let h_add k e t = Hashtbl.add t k e; t
 
@@ -17,6 +17,7 @@
     |> h_add "init"     INIT
     |> h_add "true"     TRUE
     |> h_add "false"    FALSE
+
 }
 
 let newline = ('\013' * '\010')
@@ -37,17 +38,15 @@ rule token = parse
   | blank +
     {token lexbuf}
   | newline
-    {token lexbuf}
+    {Lexing.new_line lexbuf; token lexbuf}
   | eof
     {EOF}
   | integers *
     {INT (int_of_string (Lexing.lexeme lexbuf))}
-  | uppercase identchar *
-    {UIDENT (Lexing.lexeme lexbuf)}
   | lowercase identchar *
     {try Hashtbl.find keywords_table (Lexing.lexeme lexbuf)
      with Not_found -> LIDENT (Lexing.lexeme lexbuf)}
-  | "\"" {QUOTE}
+  | "\"" {read_string (Buffer.create 13) lexbuf}
   | ";" {SEMICOLON}
   | "==" {EQEQ}
   | "=" {EQUALS}
@@ -67,5 +66,22 @@ rule token = parse
   | "}" {RBRACE}
   | "[" {LBRACK}
   | "]" {RBRACK}
-  | _  {raise (Script_syntax_error ("Syntax Error in script parser : " ^
-    (Lexing.lexeme lexbuf)))}
+  | _  {raise (Script_SyntaxError ("Syntax Error, unknown char."))}
+
+and read_string buf = parse
+  | '"'       { STRING (Buffer.contents buf) }
+  | '\\' '/'  { Buffer.add_char buf '/';    read_string buf lexbuf }
+  | '\\' '\\' { Buffer.add_char buf '\\';   read_string buf lexbuf }
+  | '\\' 'b'  { Buffer.add_char buf '\b';   read_string buf lexbuf }
+  | '\\' 'f'  { Buffer.add_char buf '\012'; read_string buf lexbuf }
+  | '\\' 'n'  { Buffer.add_char buf '\n';   read_string buf lexbuf }
+  | '\\' 'r'  { Buffer.add_char buf '\r';   read_string buf lexbuf }
+  | '\\' 't'  { Buffer.add_char buf '\t';   read_string buf lexbuf }
+  | newline   { Lexing.new_line lexbuf; read_string buf lexbuf }
+  | ['\009' '\012'] { read_string buf lexbuf }
+  | [^ '"' '\\' '\r' '\n' '\009' '\012']+
+    { Buffer.add_string buf (Lexing.lexeme lexbuf);
+      read_string buf lexbuf
+    }
+  | _   { raise (Script_SyntaxError ("Illegal string character")) }
+  | eof { raise (Script_SyntaxError ("String not terminated")) }
