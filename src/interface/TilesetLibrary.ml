@@ -7,6 +7,7 @@ type t = (string, Tileset.tileset) Hashtbl.t
 
 let create () = Hashtbl.create 13
 
+module TilesetLoadingLog = Log.Make (struct let section = "Tileset" end)
 
 let load_tileset lib path = 
   let i,i' = String.rindex path '.', String.rindex path '/' in 
@@ -16,7 +17,7 @@ let load_tileset lib path =
     let tex = new texture (`File path) in
     let cfg = (String.sub path 0 i) ^ ".cfg" in
     let set = new Tileset.tileset tex cfg in
-    print_endline ("  [\027[32mstored\027[0m] " ^ name);
+    TilesetLoadingLog.infof "[stored] %s" name;
     Hashtbl.add lib name set
   end
 
@@ -30,15 +31,14 @@ let rec load_recursively lib prefix path =
 
 
 let load_directory lib dir = 
-  print_endline "Loading textures :";
   let children = Sys.readdir dir in 
-  Array.iter (load_recursively lib dir) children;
-  print_endline "All textures loaded"
+  Array.iter (load_recursively lib dir) children
 
 
 let get_tileset lib name = 
   try 
     Hashtbl.find lib name 
   with 
-    |Not_found -> raise (Unknown_tileset name)
-
+    |Not_found ->
+      TilesetLoadingLog.errorf "Couldn't retreive texture %s" name;
+      raise (Unknown_tileset name)

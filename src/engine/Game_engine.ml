@@ -26,12 +26,16 @@ class game_engine () = object (self)
   method init_local player nbplayers map_wht map_hgt = 
       config#settings.battlefield_width <- map_wht;
       config#settings.battlefield_height <- map_hgt;
-      players <- Array.make nbplayers (Player.create_player ());     
-      players.(0) <- player;
-      for i = 1 to nbplayers - 1 do
-        (*each player should be different*)
-        players.(i) <- Player.create_player ()
-      done;
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());     
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
+      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+
+  method init_net port nbplayers map_wht map_hgt = 
+      config#settings.battlefield_width <- map_wht;
+      config#settings.battlefield_height <- map_hgt;
+      let connections = Network_tool.open_n_connections port nbplayers in
+      let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
+      players <- (Array.of_list (player_list :> Player.player list));     
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
@@ -62,7 +66,10 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           if u2#hp <= 0 then 
-            (self#player_of_unit u2)#delete_unit (u2#get_id)
+            (self#player_of_unit u2)#delete_unit (u2#get_id);
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players
+            )
+
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn 
@@ -78,7 +85,9 @@ class game_engine () = object (self)
     let player = players.(actual_player) in
     let u = Logics.find_unit (List.hd movement) 
       (player :> Player.logicPlayer) in
+
     player#move_unit (u#get_id) movement;
+    Array.iter (fun x -> x#update (Types.Move_unit(u,movement,(x#get_id))) ) players; 
     u#set_played true
 end
 
