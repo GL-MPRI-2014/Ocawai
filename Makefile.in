@@ -41,8 +41,8 @@ test_dir=test
 dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir)
 
 #for each target, the directories concerned for ocamlbuild
-engine_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir)
-interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir)
+engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir)
+interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir)
 network_src=$(network_dir),$(common_dir),$(utils_dir),$(config_dir)
 
 test_src=test,$(engine_src)
