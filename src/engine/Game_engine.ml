@@ -22,7 +22,7 @@ class game_engine () = object (self)
       let config = Config.config in
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
-      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());     
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
@@ -32,7 +32,7 @@ class game_engine () = object (self)
       config#settings.map_height <- map_hgt;
       let connections = Network_tool.open_n_connections port nbplayers in
       let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
-      players <- (Array.of_list (player_list :> Player.player list));     
+      players <- (Array.of_list (player_list :> Player.player list));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
@@ -64,7 +64,7 @@ class game_engine () = object (self)
           Logics.apply_attack u1 u2;
           if u2#hp <= 0 then (
             (self#player_of_unit u2)#delete_unit (u2#get_id);
-            Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players            
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players)
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn
@@ -82,7 +82,7 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    Array.iter (fun x -> x#update (Types.Move_unit(u,movement,(x#get_id))) ) players; 
+    Array.iter (fun x -> x#update (Types.Move_unit(u,movement,(x#get_id))) ) players;
     u#set_played true
 end
 
@@ -151,4 +151,3 @@ let dijkstra_test gen =
   let r = dij (List.nth gen#spawns 1) in
   print_ascii_extended gen#field gen#armies (match r with | None -> Path.empty | Some (_,b) -> b) gen#spawns;
   print_endline ("path length between spawns 1 and 2 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a))
-
