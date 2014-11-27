@@ -82,7 +82,7 @@ network_command = $(command) -Is $(network_src) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
-find_files = $(wildcard $(dir)/*.ml*)
+find_files = $(wildcard $(dir)/*.ml[^~])
 files := $(foreach dir,$(dirs),$(find_files))
 
 
@@ -217,7 +217,7 @@ doc: interface engine
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
 	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(config_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
 	-I _build/$(engine_dir) -I _build/$(music_dir) \
-	-I +threads -html -colorize-code $(files)
+	-I -thread -thread -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
 
