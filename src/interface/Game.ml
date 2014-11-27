@@ -12,7 +12,7 @@ let new_game () =
 
   let m_engine = 
     let g = new Game_engine.game_engine () in
-    g#get_config#init_interface Config.default_interface_settings_files;
+    g#config#init_interface Config.default_interface_settings_files;
     g in
 
   let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 50 50 in

@@ -14,8 +14,8 @@ class game_engine () = object (self)
   
   val config = new Config.t
   
-  method get_config = config
-
+  method config = config
+  
   method private next_player = 
     (actual_player + 1) mod (Array.length players)
 

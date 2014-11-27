@@ -132,13 +132,13 @@ object (self)
   
   method reset_to_default =
     if settings_default <> "" then s <- Some (create_settings_from_file settings_default);
-    if engine_settings_default <> "" then s <- Some (create_settings_from_file engine_settings_default);
-    if interface_settings_default <> "" then s <- Some (create_settings_from_file interface_settings_default)
+    if engine_settings_default <> "" then engine_s <- Some (create_engine_settings_from_file engine_settings_default);
+    if interface_settings_default <> "" then interface_s <- Some (create_interface_settings_from_file interface_settings_default)
   
   method save_settings =
-    write_settings_in_file settings_temp self#settings;
-    write_engine_settings_in_file engine_settings_temp self#settings_engine;
-    write_interface_settings_in_file interface_settings_temp self#settings_interface
+    if s <> None then write_settings_in_file settings_temp self#settings;
+    if engine_s <> None then write_engine_settings_in_file engine_settings_temp self#settings_engine;
+    if interface_s <> None then write_interface_settings_in_file interface_settings_temp self#settings_interface
 
 end
 
@@ -146,30 +146,29 @@ end
 
 (*
 open Settings_j
-let test() = 
-  let config = new Config.t Config.default_config_files in
-  let print () = print_int config#settings.cursor_speed;print_newline() in
+let test game = 
+  let print () = print_int game#config#settings.cursor_speed;print_newline() in
   
   print();
   
-  config#settings.cursor_speed <- 50;
+  game#config#settings.cursor_speed <- 50;
   print();
   
-  config#reload;
+  game#config#reload;
   print();
   
-  config#settings.cursor_speed <- 50;
-  config#write_settings;
+  game#config#settings.cursor_speed <- 50;
+  game#config#save_settings;
   print();
   
-  config#reload;
+  game#config#reload;
   print();
   
-  config#reset_settings;
+  game#config#reset_to_default;
   print();
   
-  config#settings.cursor_speed <- 50;
-  config#write_settings;
+  game#config#settings.cursor_speed <- 50;
+  game#config#save_settings;
   print()
 *)
 

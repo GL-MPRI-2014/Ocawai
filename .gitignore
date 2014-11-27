@@ -75,3 +75,5 @@ Makefile
 
 # settings local file
 settings.json
+settings_engine.json
+settings_interface.json

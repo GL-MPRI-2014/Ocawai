@@ -3,6 +3,6 @@ type t = {
   
   map_width<ocaml mutable> : int;
   map_height<ocaml mutable> : int;
-
+  
 }
 
