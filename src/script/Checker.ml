@@ -1,11 +1,15 @@
-(** Type Checker *)
+(* Type Checker *)
 
 open Types
+
+(* Associate every variable name to its type *)
+let assignment = Hashtbl.create 97
 
 let rec deref (t:term_type) =
   match !t with
   | `Pointer v -> deref v
   | v -> v
+
 
 exception Unification_failure
 
@@ -16,46 +20,55 @@ let unify (t1:term_type) (t2:term_type) =
   | t1,t2 -> if t1 <> t2 then raise Unification_failure
 
 
+(* Assuming every variable is in assignment *)
+let rec check_prog = function
 
-
-(* let rec deref (t : term_type) = match !t with
-  | `Unifier t -> deref (!t)
-  | _ -> t
-
-(* let bind x t =
-
-let unify t1 t2 =
-  match (!t1,!t2) with
-  | `None, _ ->  *)
-
-(* let check_type term t =
-  true *)
-
-exception Unification_failure
-
-let unify t1 t2 = match (deref t1, deref t2) with
-  | `None, v -> t1 := v
-  | v, `None -> t2 := v
-  (* | `List_t t1, `List_t t2 -> (*unify t1 t2*) if t1 <> t2 raise Unification_failure
-  | `Array_t t1, `Array_t t2 -> (*unify t1 t2*) *)
-  | t1, t2 -> if t1 <> t2 then raise Unification_failure
-
-let var_type s =
-  `Int *)
-
-(* let check_prog = function
-  | Globseq ((d,k),t) ->
+  | Globseq ((d,k),l,t) ->
       check_decl d ;
-      assert (check_type t `Unit) ;
+      unify t (ref `Unit_t) ;
       check_prog k
-  | Procseq ((p,k),t) ->
+
+  | Procseq ((p,k),l,t) ->
       check_procedure p ;
-      assert (check_type t `Unit) ;
+      unify t (ref `Unit_t) ;
       check_prog k
+
   | Empty -> ()
 
 and check_decl = function
-  | Vardecl ((s,v),t) -> *)
-      (* let vart = var_type s in
-      let valt = value_type v in
-      unify vart valt *)
+
+  | Vardecl ((s,v),l,t) ->
+      unify (Hashtbl.find assignment s) (val_type v) ;
+      unify t (ref `Unit_t)
+
+  | Varset ((s,v),l,t) ->
+      unify (Hashtbl.find assignment s) (val_type v) ;
+      unify t (ref `Unit_t)
+
+  | Fundecl ((s,sl,sqt),l,t) ->
+      (* TODO *)
+      unify t (ref `Unit_t)
+
+and check_procedure = function
+
+  | Move ((sl,st),l,t) ->
+      (* TODO *)
+      unify t (ref `Unit_t)
+
+  | Attack ((sl,st),l,t) ->
+      (* TODO *)
+      unify t (ref `Unit_t)
+
+  | Main (st,l,t) ->
+      (* TODO *)
+      unify t (ref `Unit_t)
+
+  | Init (st,l,t) ->
+      (* TODO *)
+      unify t (ref `Unit_t)
+
+and val_type = function
+
+  | Int (_,l,t) -> t := `Int_t ; t
+  | Unit (l,t) -> t := `Unit_t ; t
+  | _ -> ref `None (* TODO *)
