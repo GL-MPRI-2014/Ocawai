@@ -20,8 +20,6 @@ class game_engine () = object (self)
 
   method init_local player nbplayers map_wht map_hgt =
       let config = Config.config in
-      config#init Config.default_config_files;
-      config#init_engine Config.default_engine_settings_files;
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
       players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());     
@@ -30,8 +28,6 @@ class game_engine () = object (self)
 
   method init_net port nbplayers map_wht map_hgt =
       let config = Config.config in
-      config#init Config.default_config_files;
-      config#init_engine Config.default_engine_settings_files;
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
       let connections = Network_tool.open_n_connections port nbplayers in

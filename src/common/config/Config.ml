@@ -144,6 +144,7 @@ end
 
 let config = new t
 
+let _ = config#init_default()
 (* Test *)
 
 (*
