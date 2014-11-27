@@ -189,7 +189,7 @@ Armure : Lourde
 Bâtiments
 ---------
 
-Les bâtiments sont des cases indépendantes qui produisent des unités pour le général qui en a la possession à un moment donné. Ils sont soit neutre, soit sous la possession d'un général. Un bâtiment neutre est capturé par un général si celui-ci a une unité placée dessus au début de son tour. Un bâtiment ennemi peut-être rendu neutre par la même technique. Une unité placée sur un bâtiment apppartenant au même général qu'elle profite d'un bonus de garnison diminuant de 25% les dégâts qu'elle subit.
+Les bâtiments sont des cases indépendantes qui produisent des unités pour le général qui en a la possession à un moment donné. Ils sont soit neutre, soit sous la possession d'un général. Un bâtiment neutre est capturé par un général si celui-ci a une unité terrestre placée dessus au début de son tour. Un bâtiment ennemi peut-être rendu neutre par la même technique. Une unité placée sur un bâtiment apppartenant au même général qu'elle profite d'un bonus de garnison diminuant de 25% les dégâts qu'elle subit.
 Une unité placée sur un bâtiment appartenant au même général qu'elle et capable de la construire (une caserne pour les unités terrestres, un port pour les unités maritimes, un aéroport pour les unités volantes) est réparée par lui et régénère ainsi 50% de sa vie maximale au début du tour.
 
 ### Ville 
