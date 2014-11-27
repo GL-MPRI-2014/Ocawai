@@ -44,6 +44,8 @@ class virtual player (a : Unit.t list) (b : Building.t list) =
   method virtual get_next_action :  Action.t
   method virtual set_logicPlayerList : (logicPlayer list) -> unit
   method virtual get_logicPlayerList : logicPlayer list
+  method  update (u:Types.update) =
+    ()
 end
 
 type t = player
