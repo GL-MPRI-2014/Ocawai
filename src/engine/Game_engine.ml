@@ -18,18 +18,23 @@ class game_engine () = object (self)
   method get_players =
     Array.to_list players
 
-  method init_local player nbplayers map_wht map_hgt =
-      let config = Config.config in
+  method init_local player nbplayers map_wht map_hgt = 
       config#init Config.default_config_files;
       config#init_engine Config.default_engine_settings_files;
-      config#settings.map_width <- map_wht;
-      config#settings.map_height <- map_hgt;
-      players <- Array.make nbplayers (Player.create_player ());
-      players.(0) <- player;
-      for i = 1 to nbplayers - 1 do
-        (*each player should be different*)
-        players.(i) <- Player.create_player ()
-      done;
+      Config.config#settings.battlefield_width <- map_wht;
+      Config.config#settings.battlefield_height <- map_hgt;
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());     
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
+      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+
+  method init_net port nbplayers map_wht map_hgt = 
+      config#init Config.default_config_files;
+      config#init_engine Config.default_engine_settings_files;
+      config#settings.battlefield_width <- map_wht;
+      config#settings.battlefield_height <- map_hgt;
+      let connections = Network_tool.open_n_connections port nbplayers in
+      let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
+      players <- (Array.of_list (player_list :> Player.player list));     
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 

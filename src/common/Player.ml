@@ -40,8 +40,12 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
 class virtual player (a : Unit.t list) (b : Building.t list) = 
   object (self) 
   inherit logicPlayer a b
+  val mutable logicPlayerList = [] 
   method virtual get_next_action :  Action.t
-
+  method virtual set_logicPlayerList : (logicPlayer list) -> unit
+  method virtual get_logicPlayerList : logicPlayer list
+  method  update (u:Types.update) =
+    ()
 end
 
 type t = player
@@ -57,6 +61,12 @@ class dummy_player army_ buildings_ (a: Action.t list) =
         let action= hd(actions) in
         actions<-tl(actions);
         action
+
+    method set_logicPlayerList playersList =
+	()
+
+    method get_logicPlayerList =
+	logicPlayerList
   end
 
 let create_player () = new dummy_player [] []  []
