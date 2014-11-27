@@ -11,7 +11,7 @@ object (self)
   method producible = product
   (* method get_income = income *)
   method position = pos
-  method set_owner p_id = player_id <- Some p_id
+  method set_owner (p_id : int) = player_id <- Some p_id
   method set_neutral = player_id <- None
 end
 
