@@ -27,6 +27,8 @@ val final_position : t -> Position.t
 (** @return an [Action.movement] representing the same path. *)
 val get_move : t -> Action.movement
 
+val get_path : Action.movement -> t
+  
 (** @ operator on paths *)
 val cat : t -> t -> t
 

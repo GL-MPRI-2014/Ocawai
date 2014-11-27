@@ -2,7 +2,7 @@
 (** This is the status of the cursor *)
 type cursor_state = Idle 
   | Displace of Battlefield.t * Unit.t * Logics.accessibles
-  | Action of Unit.t * Position.t
+  | Action of Unit.t * Position.t list
 
 (** This class represents the cursor on the map *)
 class cursor : position:Position.t -> object

@@ -72,3 +72,6 @@ Makefile
 
 # merlin config file
 .merlin
+
+# settings local file
+settings.json

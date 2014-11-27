@@ -29,3 +29,8 @@ let init_string n f =
   for i = 0 to n - 1 do
     s.[i] <- f i
   done; s
+
+let () =
+  Log.set_log_level Log.DEBUG;
+  Log.set_output stdout;
+  Log.color_on()

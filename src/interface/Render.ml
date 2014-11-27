@@ -15,6 +15,8 @@ let renderer = object(self)
   method init = 
     TextureLibrary.load_directory texture_library "resources/textures/";
     TilesetLibrary.load_directory tileset_library "resources/textures/";
+    font#load_from_file "resources/fonts/Roboto-Black.ttf"
+    |> ignore;
     (* Recreate-it after having initialized the window *)
     rect_vao <- new vertex_array ~primitive_type:Quads []
 
@@ -207,23 +209,31 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) 
-    camera my_unit =
-    self#draw_from_map target camera (my_unit#name) (my_unit#position) ()
+  method private draw_unit (target : render_window) camera my_unit =
+    let color = 
+      if my_unit#has_played 
+      then Color.rgb 150 150 150
+      else Color.rgb 255 255 255
+    in
+    self#draw_from_map target camera (my_unit#name) (my_unit#position) ~color();
+    let size = int_of_float (camera#zoom *. 14.) in
+    let position = (foi2D (camera#project my_unit#position)) in
+    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else 
+        string_of_int (my_unit#hp * 10 / my_unit#life_max))
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw
  
   (* Render a range (move or attack, according to cursor's state) *)
-  method private draw_range (target : render_window) 
-    camera map =
+  method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
     |Cursor.Idle -> ()
     |Cursor.Displace(_,_,(range,_)) -> begin
       List.iter (self#highlight_tile target camera 
         (Color.rgba 255 255 100 150)) range
     end
-    |Cursor.Action(my_unit, pos) -> begin
+    |Cursor.Action(my_unit, range) -> begin
       let attack_range = 
-        List.filter (self#filter_positions map)
-        (Position.range pos 1 my_unit#attack_range)
+        List.filter (self#filter_positions map) range
       in
       List.iter (self#highlight_tile target camera 
         (Color.rgba 255 50 50 255)) attack_range

@@ -1,6 +1,6 @@
 class virtual state = object(self)
 
-  method render (window : OcsfmlGraphics.render_window) = ()
+  method virtual render : OcsfmlGraphics.render_window -> unit
 
   method handle_event (e : OcsfmlWindow.Event.t) = ()
 

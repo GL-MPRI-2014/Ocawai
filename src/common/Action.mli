@@ -13,10 +13,7 @@ type action =
 
 type t = movement * action
 
-type logic_player = <
-  get_army : Unit.t list;
-  get_buildings : Building.t list
->
+
 
 (** Exception raised if the unit moving does not exist or does not belong
     to the player *)
@@ -29,11 +26,6 @@ exception Has_played
     passing through impassable terrain) *)
 exception Bad_path
 
-(** Checks if the requested action is possible.
-    If it is, the same action is returned, else the function returns another
-    action with the maximum possible path. *)
-val try_next_action : logic_player list -> logic_player -> Unit.t list -> 
-  Battlefield.t -> t -> t
-
-val find_unit : Position.t -> logic_player -> Unit.t
-
+(** Exception raised if the attack is illegal, i.e. wrong unit attacking, 
+    attacked unit not in range, or ranged attack just after moving. *)
+exception Bad_attack

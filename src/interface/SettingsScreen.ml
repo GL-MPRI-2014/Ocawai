@@ -18,9 +18,26 @@ class state = object(self)
     screen <- new Home.screen
       []
       [
-        (new Setters.slider (w /. 2., 150.) (fun i -> settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i))) "Cursor speed" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. Setters.setter_height) (fun i -> settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i))) "Zoom speed" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height) (fun i -> Sounds.set_volume (float_of_int i)) "Sounds volume" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150.)
+          ~default:(int_of_float ((settings#cursor_speed -. 1.) *. (19. /. 50.)))
+          (fun i ->
+            settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i)))
+          "Cursor speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150. +. Setters.setter_height)
+          ~default:(int_of_float ((settings#zoom_speed -. 1.) *. (9. /. 50.)))
+          (fun i ->
+            settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i)))
+          "Zoom speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
+          ~default: (int_of_float (Sounds.get_volume ()))
+          (fun i ->
+            Sounds.play_sound "click";
+            Sounds.set_volume (float_of_int i))
+            "Sounds volume" :> Home.actionnable) ;
+        (new Setters.toogle (w /. 2., 150. +. 3. *. Setters.setter_height)
+          "Fullscreen"
+          ~default: true
+          manager#set_fullscreen :> Home.actionnable) ;
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop) ;
       ]
@@ -29,16 +46,12 @@ class state = object(self)
 
     OcsfmlWindow.Event.(
       match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Back ; _ } ->
-            manager#pop
         | KeyPressed { code = kc ; _ } ->
             screen#handle_key kc
         | _ -> ()
     )
 
   method render window =
-
-    super#render window ;
 
     let color = Color.rgb 221 224 234 in
     window#clear ~color ();
