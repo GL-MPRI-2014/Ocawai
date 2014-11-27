@@ -18,7 +18,7 @@ type static = [
 type procedure_type =
     Move   of (string list * seq_type) * location * term_type
   | Attack of (string list * seq_type) * location * term_type
-  | Main of seq_type * location * term_type 
+  | Main of seq_type * location * term_type
   | Init of seq_type * location * term_type
 
 (** Type of the values manipulated by the AIs *)
@@ -51,7 +51,7 @@ and prog_type =
   | Procseq of( procedure_type * prog_type) * location * term_type
   | Empty
 
-and term_type = [static | `None] ref
+and term_type = [static | `None | `Pointer of term_type] ref
 
 type value = [
   `Int    of int              |

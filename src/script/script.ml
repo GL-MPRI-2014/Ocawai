@@ -1,17 +1,20 @@
 open Types
 open Lexing
 
+(* for testing *)
+open Checker
+
 let print_position lexbuf =
   let pos = lexbuf.lex_curr_p in
   let str = Lexing.lexeme lexbuf in
   let begchar = pos.pos_cnum - pos.pos_bol + 1 in
   Printf.printf "In %s, line %d, characters %d-%d : %s"
-    pos.pos_fname pos.pos_lnum begchar 
-    (begchar + (String.length str)) 
+    pos.pos_fname pos.pos_lnum begchar
+    (begchar + (String.length str))
     (Lexing.lexeme lexbuf)
 
-let parse_with_errors lexbuf = 
-  try 
+let parse_with_errors lexbuf =
+  try
     Parser.file Lexer.token lexbuf
   with
     |Lexer.Script_SyntaxError msg ->
@@ -25,7 +28,7 @@ let parse_with_errors lexbuf =
         print_endline "";
         Types.Empty
 
-let parse_file f = 
+let parse_file f =
   let input = open_in f in
   let lexbuf = from_channel input in
   lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};
@@ -33,6 +36,6 @@ let parse_file f =
   close_in input;
   script
 
-let () = 
+let () =
   let scr = parse_file "src/script/test.script" in
   if scr <> Types.Empty then print_endline "Script parsed"
