@@ -47,9 +47,9 @@ network_src=$(network_dir),$(common_dir),$(utils_dir)
 test_src=test,$(engine_src)
 
 #dependencies required for each target
-common_dependencies = atdgen
+common_dependencies = atdgen,dolog
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num,ocsfml.audio
+music_dependencies = bigarray,mm,threads,num,ocsfml.audio
 
 
 test_dependencies=$(engine_dependencies),oUnit
