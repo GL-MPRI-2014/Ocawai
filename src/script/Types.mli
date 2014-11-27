@@ -40,14 +40,23 @@ and prog_type =
 
 (** Static types *)
 
-(* type typed_ast = prog_type * static *)
-
-type static = [
-  `Int |
-  `Unit |
-  `String |
-  `Bool |
-  `List of static |
-  `Array of static |
-  `Fun of static * static
+and static = [
+  `Int_t    |
+  `Unit_t   |
+  `String_t |
+  `Bool_t   |
+  `List_t  of static |
+  `Array_t of static |
+  `Fun_t   of static * static |
+  `Pair_t  of static * static
 ]
+
+type value = [
+  `Int of int |
+  `Unit |
+  `String of string |
+  `Bool of bool |
+  `List of value list |
+  `Array of value array |
+  `Fun of (value -> value) |
+  `Pair of value * value]
