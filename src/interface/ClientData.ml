@@ -1,9 +1,18 @@
 class client_data ~(map:Battlefield.t) ~(camera:Camera.camera)
-  ~(players:Player.t list)= object
+  ~(players:Player.logicPlayer list)= object
+
+  val minimap = new Minimap.minimap 40 
+    (fst (Battlefield.size map))
+    (snd (Battlefield.size map))
+
+  initializer
+    minimap#compute map players (*(players : Player.player list :> Player.logicPlayer list)*)
 
   method map = map
 
   method camera = camera
+
+  method minimap = minimap
 
   (* Will be useful later *)
   method players = players

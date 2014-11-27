@@ -18,6 +18,6 @@ class ui_manager : object
   method add_widget : #Widget.widget -> unit
 
   (** Draws the UI *)
-  method draw : OcsfmlGraphics.render_target -> TextureLibrary.t -> unit
+  method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 
 end

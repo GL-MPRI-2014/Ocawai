@@ -16,20 +16,20 @@ let test2 test_ctxt = assert_equal 100 100;;
 (*check empty player*)
 let test_player_0 test_ctxt =
   let p = create_player() in
-  let u = bind (create_from_config "general") (create (10,10)) in
+  let u = bind (create_from_config "general") (create (10,10)) "0" in
   assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
 (*check an army with one unit*)
 let test_player_1 test_ctxt =
   let p = create_player() in
-  let u = bind (create_from_config "general") (create (10,10)) in
+  let u = bind (create_from_config "general") (create (10,10)) "0" in
   p#add_unit u;
     assert_equal ~printer:string_of_int 1 (length (p#get_army))
 
 (*check empty player*)
 let test_player_2 test_ctxt =
   let p = create_player() in
-  let u =bind (create_from_config "general") (create (10,10)) in
+  let u =bind (create_from_config "general") (create (10,10)) "0" in
     assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
 (*

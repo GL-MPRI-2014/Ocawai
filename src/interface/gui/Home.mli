@@ -2,27 +2,67 @@
 
 (* TODO inherit from BaseMixins *)
 
-(** A screen item
-  * [position] should be given wrt to the center of the texture *)
-class item : string -> (float * float) -> object
+(** An item for the screen
+  * It has a [position] that represents its center *)
+class virtual item : object
 
-  method draw : OcsfmlGraphics.render_window -> unit
+  method virtual draw : OcsfmlGraphics.render_window -> unit
 
-  method position : float * float
+  method virtual position : float * float
   method x : float
   method y : float
+
+  method holds_focus : bool
+  method handle_key : OcsfmlWindow.KeyCode.t -> unit
 
 end
 
 (** An actionnable item *)
-class actionnable : string -> string -> (float*float) -> (unit -> unit) ->
-object
+class virtual actionnable : object
 
   inherit item
 
-  method action : unit
+  val mutable has_focus : bool
 
-  method set_selected : bool -> unit
+  method set_focus : bool -> unit
+
+  method virtual action : unit
+
+end
+
+(** A modal item
+  * It retains the focus when activated *)
+class virtual modal : object
+
+  inherit actionnable
+
+  val mutable holds_focus : bool
+
+  method holds_focus : bool
+  method virtual handle_key : OcsfmlWindow.KeyCode.t -> unit
+
+end
+
+(** A screen item
+  * [position] should be given wrt to the center of the texture *)
+class textured_item : string -> (float * float) -> object
+
+  inherit item
+
+  method draw : OcsfmlGraphics.render_window -> unit
+
+  method position : float * float
+
+end
+
+(** An actionnable item *)
+class textured_actionnable : string -> string -> (float*float) -> (unit -> unit) ->
+object
+
+  inherit textured_item
+  inherit actionnable
+
+  method action : unit
 
   method draw : OcsfmlGraphics.render_window -> unit
 
@@ -35,11 +75,6 @@ class screen : item list -> actionnable list -> object
 
   method draw : OcsfmlGraphics.render_window -> unit
 
-  method action : unit
-
-  method left : unit
-  method right : unit
-  method up : unit
-  method down : unit
+  method handle_key : OcsfmlWindow.KeyCode.t -> unit
 
 end

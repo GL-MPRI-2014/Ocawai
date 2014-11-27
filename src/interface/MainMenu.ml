@@ -69,16 +69,16 @@ class main_menu = object(self)
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in
     screen <- new Home.screen
-      [new Home.item "title" (w/.2., h /. 2. -. 250.)]
+      [new Home.textured_item "title" (w/.2., h /. 2. -. 250.)]
       [
-        new Home.actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push_load (new LoadScreen.state :> State.state) (Game.new_game)) ;
-        new Home.actionnable "quit" "quit_hover"
+        new Home.textured_actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
+          (fun () -> manager#push (new LoadScreen.state Game.new_game :> State.state)) ;
+        new Home.textured_actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;
-        new Home.actionnable "settings" "settings_hover"
+        new Home.textured_actionnable "settings" "settings_hover"
           (w /. 2. +. 100., h /.2. +. 220.)
-          (fun () -> Printf.printf "settings\n")
+          (fun () -> new SettingsScreen.state |> manager#push)
       ]
 
   method handle_event e =
@@ -88,22 +88,12 @@ class main_menu = object(self)
     OcsfmlWindow.Event.(
       match e with
         | Resized { width = w ; height = h } -> self#set_screen w h
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
-            screen#left
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
-            screen#right
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
-            screen#up
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
-            screen#down
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Return ; _ } ->
-            screen#action
+        | KeyPressed { code = kc ; _ } ->
+            screen#handle_key kc
         | _ -> ()
     )
 
   method render window =
-
-    super#render window ;
 
     Interpolators.update ();
 

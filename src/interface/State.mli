@@ -4,7 +4,7 @@
 class virtual state : object
 
   (** Method ran every frame by the state manager *)
-  method render : OcsfmlGraphics.render_window -> unit
+  method virtual render : OcsfmlGraphics.render_window -> unit
 
   (** Method called on very event transmitted by the manager *)
   method handle_event : OcsfmlWindow.Event.t -> unit

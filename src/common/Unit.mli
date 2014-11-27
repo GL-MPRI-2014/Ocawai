@@ -7,6 +7,8 @@ type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
 type t = <
   name : string;
   position : Position.t;
+  id : string;
+  player_id : string;
   move : Position.t -> unit;
   movement_type : movement;
   vision_range : int;
@@ -27,8 +29,8 @@ type unbound_t = <
   spawn_number : int
 >
 
-(** Create a unit from a unbound unit and a position *)
-val bind : unbound_t -> Position.t -> t
+(** Create a unit from a unbound unit, a position and the controlling player id *)
+val bind : unbound_t -> Position.t -> string -> t
 
 (** Create a unit based on a json file containing a unit list*)
 val create_from_file : string -> string -> unbound_t

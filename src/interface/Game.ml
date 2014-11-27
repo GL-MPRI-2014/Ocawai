@@ -19,7 +19,7 @@ let new_game () =
   let m_cdata = (new ClientData.client_data ~camera:m_camera
       ~map:(m_generator#field)
       ~players:(List.map (fun a ->
-        let p = Player.create_player () in
+        let p = (Player.create_player () : Player.player :> Player.logicPlayer) in
         p#set_army a; p) m_generator#armies))
   in
 
@@ -89,7 +89,7 @@ let new_game () =
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "infantry" "Cancel" (fun () -> print_endline "canceled";
+    new item "cancel" "Cancel" (fun () -> print_endline "canceled";
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
@@ -238,14 +238,12 @@ let new_game () =
 
   method render window =
     self#keyboard_events;
-    super#render window ;
     Interpolators.update () ;
     window#clear ();
 
     (* Rendering goes here *)
-    Render.render_game window cdata;
-    Render.draw_hud window;
-    Render.draw_gui window ui_manager;
+    Render.renderer#render_game window cdata;
+    Render.renderer#draw_gui window ui_manager;
 
     window#display
 
