@@ -66,7 +66,10 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           if u2#hp <= 0 then 
-            (self#player_of_unit u2)#delete_unit u2
+            (
+            (self#player_of_unit u2)#delete_unit u2;
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players
+            )
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn 
@@ -83,6 +86,7 @@ class game_engine () = object (self)
     let u = Logics.find_unit (List.hd movement) 
       (player :> Player.logicPlayer) in
     player#move_unit u movement;
+    Array.iter (fun x -> x#update (Types.Move_unit(u,movement,(x#get_id))) ) players; 
     u#set_played true
 end
 
