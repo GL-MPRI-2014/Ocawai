@@ -1,21 +1,21 @@
 open List
 open Path
 
-class logicPlayer ?(id_) (a : Unit.t list) (b : Building.t list) =
+class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
     val mutable army = Hashtbl.create 97
     val mutable buildings = Hashtbl.create 23
                             
     (*Quite dirty mutable id. Can't we do without it ?*)
-    val mutable id =
-      match id_ with
+    val mutable id_ =
+      match id with
       | None -> 0
-      | Some(id) -> id 
+      | Some(id__) -> id__ 
 
     method get_army =
       Hashtbl.fold (fun id u l -> u::l) army []
         
-    method get_id = id
+    method get_id = id_
 
     method set_army a =
       List.iter (fun unit -> self#add_unit unit) a
@@ -52,8 +52,8 @@ class logicPlayer ?(id_) (a : Unit.t list) (b : Building.t list) =
       with Not_found -> raise Not_found
       
     initializer
-      match id_ with 
-      | None -> id <- Oo.id self;
+      match id with 
+      | None -> id_ <- Oo.id self;
       | _ -> ();
       List.iter (fun unit -> self#add_unit unit) a;
       List.iter (fun building -> self#add_building building) b;

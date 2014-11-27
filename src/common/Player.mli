@@ -1,4 +1,4 @@
-class logicPlayer :  ?id_:Types.id_player -> Unit.t list -> Building.t list  -> object
+class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> object
     method get_id : Types.id_player
     method get_army : Unit.t list
     method add_unit : Unit.t -> unit
