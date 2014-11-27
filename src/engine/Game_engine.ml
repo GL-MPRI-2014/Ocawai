@@ -35,6 +35,15 @@ class game_engine () = object (self)
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
+  method init_net port nbplayers map_wht map_hgt = 
+      config#settings.battlefield_width <- map_wht;
+      config#settings.battlefield_height <- map_hgt;
+      let connections = Network_tool.open_n_connections port nbplayers in
+      let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
+      players <- (Array.of_list (player_list :> Player.player list));     
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
+      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+
   method private player_of_unit u = 
     let rec aux = function
       |[] -> false
