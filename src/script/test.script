@@ -5,6 +5,9 @@ a_global = a_global + 2 * 3;
 
 fun f x y =
 {
+  var str = "Multi
+  line 
+  string";
   x == y
 }
 
