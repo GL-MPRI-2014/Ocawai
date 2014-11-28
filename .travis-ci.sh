@@ -4,7 +4,7 @@
 # either with opam or with the system manager.
 
 
-OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit"
+OPAM_DEPENDS="ocamlfind ocsfml atdgen mm oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
 
