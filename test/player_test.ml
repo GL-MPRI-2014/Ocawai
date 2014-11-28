@@ -5,7 +5,7 @@ open Position
 open List
 open Action
 
-let config = new Config.t Config.default_config_files
+let config = let c = new Config.t in c#init Config.default_config_files;c
 
 (*check empty player*)
 let test_player_0 test_ctxt =
@@ -30,7 +30,7 @@ let test_player_3 test_ctxt =
   let p = create_dummy_player [] in
   let u =bind (config#unbound_unit "general") (create (10,10)) 0 in
   p#add_unit u;
-  p#delete_unit u;
+  p#delete_unit (u#get_id);
   assert_equal ~printer:string_of_int 0 (length (p#get_army))
 
 
@@ -38,7 +38,7 @@ let test_player_3 test_ctxt =
 let test_player_4 test_ctxt =
   let p = create_dummy_player [] in
   let u =bind (config#unbound_unit "general") (create (10,10)) 0 in
-  assert_raises Not_found (fun () -> p#delete_unit u;)
+  assert_raises Not_found (fun () -> p#delete_unit (u#get_id);)
 
 (*check empty try_next_action in dummy_player*)
 let test_player_5 test_ctxt =

@@ -4,12 +4,12 @@ type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
   | Amphibious_Roll | Amphibious_Tread | All
 
 type armor = Light | Normal | Heavy
-
+type id
 (** Unit type *)
 type t = <
   name : string;
   position : Position.t;
-  id : int;
+  get_id : id;
   player_id : int;
   move : Position.t -> unit;
   movement_type : movement;

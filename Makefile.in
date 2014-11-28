@@ -30,6 +30,7 @@ documentation_dir=doc
 engine_dir=$(src_root)/engine
 common_dir=$(src_root)/common
 utils_dir=$(src_root)/common/utils
+config_dir=$(src_root)/common/config
 interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
@@ -37,12 +38,12 @@ music_dir=$(src_root)/music
 
 test_dir=test
 # $(network_dir) removed for now
-dirs = $(engine_dir) $(common_dir) $(utils_dir) $(interface_dir) $(gui_dir) $(music_dir)
+dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir)
 
 #for each target, the directories concerned for ocamlbuild
-engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir)
-interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir)
-network_src=$(network_dir),$(common_dir),$(utils_dir)
+engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir)
+interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir)
+network_src=$(network_dir),$(common_dir),$(utils_dir),$(config_dir)
 
 test_src=test,$(engine_src)
 
@@ -81,7 +82,7 @@ network_command = $(command) -Is $(network_src) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
-find_files = $(wildcard $(dir)/*.ml*)
+find_files = $(wildcard $(dir)/*.ml[^~ly])
 files := $(foreach dir,$(dirs),$(find_files))
 
 
@@ -149,6 +150,7 @@ $(distdir): FORCE
 	mkdir -p $(distdir)/src
 	mkdir $(distdir)/$(common_dir)
 	mkdir $(distdir)/$(utils_dir)
+	mkdir $(distdir)/$(config_dir)
 	mkdir $(distdir)/$(engine_dir)
 	mkdir $(distdir)/$(interface_dir)
 	mkdir $(distdir)/$(gui_dir)
@@ -164,6 +166,8 @@ $(distdir): FORCE
 	cp $(common_dir)/*.ml* $(distdir)/$(common_dir)
 	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
 	cp $(utils_dir)/*.ml* $(distdir)/$(utils_dir)
+	cp $(config_dir)/*.ml* $(distdir)/$(config_dir)
+	cp $(config_dir)/*.atd $(distdir)/$(config_dir)
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
@@ -211,9 +215,9 @@ doc: interface engine
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
-	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
+	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(config_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
 	-I _build/$(engine_dir) -I _build/$(music_dir) \
-	-I +threads -html -colorize-code $(files)
+	-I -thread -thread -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
 
@@ -225,6 +229,8 @@ clean:
 	-test \! -e doc || rmdir doc
 	rm -f documentation.html
 	rm -f resources/config/settings.json
+	rm -f resources/config/settings_engine.json
+	rm -f resources/config/settings_interface.json
 
 check_engine: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native

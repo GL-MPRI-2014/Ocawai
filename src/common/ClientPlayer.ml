@@ -10,6 +10,8 @@ class client_player (a : Unit.t list) (b : Building.t list) =
 
   val mutable event_state = Idle
 
+  val mutable logicPlayerList = [] 
+
   method event_state = event_state
 
   method set_state s = event_state <- s
@@ -23,6 +25,11 @@ class client_player (a : Unit.t list) (b : Building.t list) =
           event_state <- Idle; a
       | _ -> get_aux ()
     in get_aux ()
-    
+
+  method set_logicPlayerList playersList =
+	()
+
+  method get_logicPlayerList =
+	logicPlayerList
 
 end
