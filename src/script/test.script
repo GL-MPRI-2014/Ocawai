@@ -1,15 +1,15 @@
 var a_global = 10;
-var pair = (1,((false,true),"salut"));
 
 a_global = a_global + 2 * 3;
 
-fun f x y =
+var unit = print_int a_global;
+
+fun f s =
 {
-  var str = "Multi
-  line 
-  string";
-  x == y
+  print_string s;
 }
+
+unit = f "\ncoucou\n";
 
 attack infantry, bazooka {
   var a_local = 42;

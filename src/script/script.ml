@@ -3,6 +3,7 @@ open Lexing
 open ScriptCore
 
 open Checker
+open Interpreter
 
 let print_position lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -38,4 +39,6 @@ let parse_file f =
 
 let () =
   let scr = parse_file "src/script/test.script" in
-  if scr <> Types.Empty then print_endline "Script parsed"
+  if scr <> Types.Empty then print_endline "Script parsed";
+  Interpreter.interprete scr
+  |> ignore
