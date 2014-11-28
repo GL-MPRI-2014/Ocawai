@@ -106,6 +106,18 @@ let scr_div =
     )
   )
 
+let scr_printf = 
+  `Fun(function
+    |`String(s) -> Printf.printf "%s" s; `Unit
+    | _ -> assert false
+  )
+
+let scr_printi = 
+  `Fun(function
+    |`Int(i) -> Printf.printf "%i" i; `Unit
+    | _ -> assert false
+  )
+
 let () = 
   ScriptEngine.expose scr_or  (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_or" ;
   ScriptEngine.expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
@@ -118,7 +130,9 @@ let () =
   ScriptEngine.expose scr_add (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_add";
   ScriptEngine.expose scr_sub (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_sub";
   ScriptEngine.expose scr_div (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_div";
-  ScriptEngine.expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not"
+  ScriptEngine.expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
+  ScriptEngine.expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
+  ScriptEngine.expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
 
 
 

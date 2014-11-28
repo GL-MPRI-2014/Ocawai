@@ -17,10 +17,10 @@ attack infantry, bazooka {
   a_local = a_local / 7;
 
   if (a_local > 7) {
-    printf "Fail"
+    print_string "Fail"
   }
   else {
-    printf "Ok"
+    print_string "Ok"
   }
 }
 
