@@ -82,7 +82,7 @@ network_command = $(command) -Is $(network_src) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
-find_files = $(wildcard $(dir)/*.ml[^~])
+find_files = $(wildcard $(dir)/*.ml[^~ly])
 files := $(foreach dir,$(dirs),$(find_files))
 
 
