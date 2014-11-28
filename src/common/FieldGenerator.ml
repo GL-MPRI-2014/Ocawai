@@ -1,5 +1,6 @@
 open Position
 open Utils
+open Settings_t
 
 exception GeneratorFailure
 
@@ -11,12 +12,6 @@ exception UnitsSuperposition
 exception NoPath
 exception UnitsSpawnFail
 exception StructSpawnFail
-
-(* special tiles used by the generation *)
-let seed_tile = Tile.create_from_config "seed"
-let blank_tile = Tile.create_from_config "blank"
-let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank"
-let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed"
 
 (* functions used to get the 4 or 8 direct neighbors of a position,
   as a position list or a tile list *)
@@ -169,7 +164,7 @@ let contiguity m pos name =
 
 
 (* smooth a map by swaping random tiles iff the swap increase the local contigity *)
-let swap_smoothing m factor =
+let swap_smoothing m factor is_seed =
   let (width,height) = Battlefield.size m in
   let swap pos1 pos2 =
     let t1 = Battlefield.get_tile m pos1 in
@@ -196,7 +191,7 @@ let swap_smoothing m factor =
   done
 
 (* count neighbors to find the most occuring one, and set it at pos *)
-let smooth m tiles pos =
+let smooth m tiles pos is_seed =
   let nei = neighbors_corners m pos in
   let nb = Array.make (List.length tiles) 0 in
   let rec find_n e = function
@@ -223,7 +218,7 @@ let smooth m tiles pos =
 
 (* remove isolated tiles (isolated is defined by contiguity <= range)
   by changing them to their most occuring neighbor *)
-let hard_smoothing m tiles range =
+let hard_smoothing m tiles range is_seed =
   (* to be changed position list *)
   let to_smooth =
     Battlefield.tile_filteri
@@ -233,10 +228,10 @@ let hard_smoothing m tiles range =
     )
     m
   in
-  List.iter (smooth m tiles) to_smooth
+  List.iter (fun pos -> smooth m tiles pos is_seed) to_smooth
 
 (* does the same but there is only a chance (1- (proba/100)*(contiguity/range)) to smooth a position*)
-let random_hard_smoothing m tiles range proba =
+let random_hard_smoothing m tiles range proba is_seed =
   (* to be changed position list *)
   let to_smooth =
     Battlefield.tile_filteri
@@ -250,11 +245,15 @@ let random_hard_smoothing m tiles range proba =
     )
     m
   in
-  List.iter (smooth m tiles) to_smooth
+  List.iter (fun pos -> smooth m tiles pos is_seed) to_smooth
 
 (* generate a map randomly then uses swap_smoothing *)
-let swap_gen width height =
-  let tiles_all = Tile.create_list_from_config () in
+let swap_gen config =
+  (* special tiles used by the generation *)
+  let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
+  let width = config#settings.battlefield_width in
+  let height = config#settings.battlefield_height in
+  let tiles_all = config#tiles_list in
   let tiles =
     List.filter
     (fun a -> Tile.get_structure a = `Block)
@@ -267,16 +266,22 @@ let swap_gen width height =
   Battlefield.tile_iteri
     (fun p _ -> Battlefield.set_tile m p (get_tile_with_density total tiles))
     m;
-  swap_smoothing m 50;
+  swap_smoothing m 50 is_seed;
   (* change tiles with less than two identical neighbors *)
-  hard_smoothing m tiles (2./.8.);
+  hard_smoothing m tiles (2./.8.) is_seed;
   m
 
 (* place seeds (generation centers) and expand them until the whole map is filled *)
-let seeds_gen width height =
+let seeds_gen config =
+  (* special tiles used by the generation *)
+  let blank_tile = config#tile "blank" in
+  let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank" in
+  let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
+  let width = config#settings.battlefield_width in
+  let height = config#settings.battlefield_height in
   let nbseeds = width*height/50 in
   let dist_min_btw_seeds = 2 in
-  let tiles_all = Tile.create_list_from_config () in
+  let tiles_all = config#tiles_list in
   let tiles =
     List.filter
     (fun a -> Tile.get_structure a = `Block)
@@ -296,13 +301,14 @@ let seeds_gen width height =
         (fun pos ->
           Battlefield.in_range m pos
           && ( is_blank m pos
-              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using seed_tile instead of t on the following statement*)
+              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using 
+                                            (config#tile "seed") instead of t on the following statement*)
              )
         )
         (p::(eucl_disk m p dist_min_btw_seeds))
     then
     (
-      Battlefield.set_tile m p t; (* option : replace t by seed_tile in order to visualize the seeds on the map
+      Battlefield.set_tile m p t; (* option : replace t by (config#tile "seed") in order to visualize the seeds on the map
                                      note : the previous test is affected, use with caution *)
       (t,p)::(create_seeds (n-1))
     )
@@ -378,7 +384,7 @@ let seeds_gen width height =
   in
   grow neigh;
   (* change tiles with less than two identical neighbors *)
-  random_hard_smoothing m tiles (2./.8.) 50;
+  random_hard_smoothing m tiles (2./.8.) 50 is_seed;
   m
 
 
@@ -456,7 +462,7 @@ let init_positioning m nbplayers =
     !poslist
 
 (* positions nbplayers armies on a map m, with legit_spawns the list returned by init_positioning *)
-let positioning m playerslist legit_spawns =
+let positioning m playerslist legit_spawns config =
   let nbplayers = List.length playerslist in
   let (width,height) = Battlefield.size m in
   let rec behead = function
@@ -487,9 +493,9 @@ let positioning m playerslist legit_spawns =
   check_path (m,(),poslist);
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
-  let position_army_around spawn player other_armies_pos =
-    let unbound_list = Unit.create_list_from_config() in
-    let general = Unit.bind (Unit.create_from_config "general") spawn player#get_id in
+  let position_army_around spawn player other_armies_pos config =
+    let unbound_list = config#unbound_units_list in
+    let general = Unit.bind (config#unbound_unit "general") spawn player#get_id in
     player#add_unit general;
     let army = ref [general] in
     let army_pos = ref [spawn] in
@@ -526,19 +532,19 @@ let positioning m playerslist legit_spawns =
   | [] -> (([]:Unit.t list list),([]:Position.t list))
   | p::q ->
       let others = position_armies (n+1) q in
-      let ap = position_army_around (List.nth poslist n) p (snd others) in
+      let ap = position_army_around (List.nth poslist n) p (snd others) config in
       ((fst ap)::(fst others),snd ap)
   in
   (fst (position_armies 0 playerslist), poslist)
 
 
 (* create roads and bridges on a map*)
-let create_roads m = () (*TODO*)
+let create_roads m config = () (*TODO*)
 
 
 (* create beaches and other (?) borders of `Block *)
-let create_borders m =
-  let borders = Tile.create_list_from_config () in
+let create_borders m config =
+  let borders = config#tiles_list in
   (* create the border (water : string, rate : int (0-1000), expansion : int) composed of beach tiles *)
   let create_border (water, rate, expansion) beach =
     let poslist_water =
@@ -595,19 +601,19 @@ let create_borders m =
     borders
 
 (* create structures on a map *)
-let create_structs m =
-  create_borders m;
-  create_roads m
+let create_structs m config =
+  create_borders m config;
+  create_roads m config
 
 (* iterated tries to spawn armies *)
-let units_spawn m playerslist nbattempts legit_spawns =
+let units_spawn m playerslist legit_spawns config =
   let rec units_spawn_aux = function
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
-      print_string ("    attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^": ");
+      print_string ("    attempt "^(string_of_int (config#settings.units_spawn_attempts - n +1))^" / "^(string_of_int config#settings.units_spawn_attempts)^": ");
       try
-        let (a,sp) = positioning m playerslist legit_spawns in
+        let (a,sp) = positioning m playerslist legit_spawns config in
         let attempt = (m,a,sp) in
         print_string "armies spawned, checking... ";
         flush_all();
@@ -635,17 +641,17 @@ let units_spawn m playerslist nbattempts legit_spawns =
     end
   in
   print_endline "  Spawning armies ...";
-  units_spawn_aux nbattempts
+  units_spawn_aux config#settings.units_spawn_attempts
 
 (* iterated tries to create structures *)
-let create_structures m nbattempts =
+let create_structures m config=
   let rec create_structures_aux = function
   | 0 -> raise StructSpawnFail
   | n ->
     begin
-      print_string ("    attempt "^(string_of_int (nbattempts - n +1))^" / "^(string_of_int nbattempts)^": ");
+      print_string ("    attempt "^(string_of_int (config#settings.structs_attempts - n +1))^" / "^(string_of_int config#settings.structs_attempts)^": ");
       try
-        create_structs m;
+        create_structs m config;
         print_endline "structures spawn success"
         (* place here any checks on structures positioning*)
       with
@@ -655,21 +661,21 @@ let create_structures m nbattempts =
     end
   in
   print_endline "  Spawning structures ...";
-  create_structures_aux nbattempts
+  create_structures_aux config#settings.structs_attempts
 
 (* iterated tries to generate the map *)
-let generate width height playerslist nbattempts1 nbattempts2 nbattempts3 =
+let generate playerslist config =
   let rec generate_aux = function
   | 0 ->
     print_endline("generator failed, not enough tries? bad calling arguments?");
     raise GeneratorFailure
   | n ->
     begin
-      print_endline ("  attempt "^(string_of_int (nbattempts1 - n +1))^" / "^(string_of_int nbattempts1)^": ");
+      print_endline ("  attempt "^(string_of_int (config#settings.generate_attempts - n +1))^" / "^(string_of_int config#settings.generate_attempts)^": ");
       try
-        let m = seeds_gen width height in
-        create_structures m nbattempts2;
-        let (a,sp) = units_spawn m playerslist nbattempts3 (init_positioning m (List.length playerslist)) in
+        let m = seeds_gen config in
+        create_structures m config;
+        let (a,sp) = units_spawn m playerslist (init_positioning m (List.length playerslist)) config in
         let attempt = (m,a,sp) in
         print_endline "Generation success"(* place here any check on map generation*);
         attempt
@@ -686,12 +692,12 @@ let generate width height playerslist nbattempts1 nbattempts2 nbattempts3 =
     end
   in
   print_endline "Generating Battlefield : ";
-  generate_aux nbattempts1
+  generate_aux config#settings.generate_attempts
 
 
-class t (width:int) (height:int) (playerslist:Player.logicPlayer list) (generate_attempts:int) (*(structs_attempts:int)*) (units_spawn_attempts:int)=
+class t (playerslist:Player.logicPlayer list) config=
 object (self)
-  val g = Random.self_init();generate width height playerslist generate_attempts (*structs_attempts*) 1 units_spawn_attempts
+  val g = Random.self_init(); generate playerslist config
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp

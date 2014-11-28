@@ -1,4 +1,5 @@
 open List
+open Path
 
 class logicPlayer (a : Unit.t list) (b : Building.t list) =
   object (self)
@@ -21,12 +22,15 @@ class logicPlayer (a : Unit.t list) (b : Building.t list) =
       let rec delete unit_list =
         match unit_list with
         | [] -> raise Not_found
-        | h::d when h#id == u#id -> d
-        | _ -> delete (tl unit_list)
+        | h::d when h#id = u#id -> d
+        | h::d -> h :: (delete (tl unit_list))
       in
       army <- delete army
-        
-    method move_unit (u : Unit.t) (p : Action.movement) = ()
+
+    (*it is quite dirty*)
+    method move_unit (u : Unit.t) (p : Action.movement) = u#move (final_position (get_path p))
+
+    (*TO DO*)
     method delete_building (b : Building.t) = ()
 
     initializer id <- Oo.id self

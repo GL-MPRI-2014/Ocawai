@@ -145,6 +145,7 @@ class state = object(self)
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
             if last_move = (0,-1) then ()
             else move_dir <- (0,1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ }
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
             manager#pop
         | _ -> ()

@@ -13,5 +13,5 @@ type t = movement * action
 exception Bad_unit
 exception Has_played
 exception Bad_path
-
+exception Bad_attack
 

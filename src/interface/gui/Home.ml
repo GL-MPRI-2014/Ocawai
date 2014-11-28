@@ -88,6 +88,7 @@ class screen items actionnables = object(self)
       | Up -> self#up
       | Down -> self#down
       | Space | Return -> self#action
+      | Escape -> Manager.manager#pop
       | _ -> ()
     )
 

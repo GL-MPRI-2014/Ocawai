@@ -137,14 +137,14 @@ let try_movement unit bf player player_list mvt =
   if aux mvt_pt mvt then (mvt, true)
   else (subpath mvt (!last_viable_pos), false)
 	
-let try_next_action player_list player has_played bf order =
+let try_next_action player_list player bf order =
   let mvt = fst order and action = snd order in
   if action = End_turn then
     order
   else (
     let source = List.hd mvt in
     let u = find_unit source player in (*may raise Bad_unit*)
-    if List.mem u has_played then raise Has_played;
+    if u#has_played then raise Has_played;
     let (real_mvt, is_equal) = 
       try_movement u bf player player_list mvt (*may raise Bad_path*)
     in
@@ -155,14 +155,16 @@ let try_next_action player_list player has_played bf order =
       | Wait -> (mvt, Wait)
       | End_turn -> failwith "try_next_action: this case is not possible"
       | Attack_unit (att, def) ->
-	if att <> u then (mvt, Wait) (*only the unit that moved can attack*)
+        let dest = List.nth mvt (List.length mvt - 1) in
+	if att <> u then raise Bad_attack (*only the unit who moved can attack*)
 	else (
-	  let dist = Position.dist (att#position) (def#position) in
+	  let dist = Position.dist dest (def#position) in
 	  let range = (att#min_attack_range, att#attack_range) in
 	  if fst range > dist || snd range < dist then 
-	    (mvt, Wait) (*targeted unit not in range; do nothing*)
-	  else if snd range > 1 && List.length mvt > 1 then
-	    (mvt, Wait) (*a ranged unit must not move before firing*)
+	    raise Bad_attack (*targeted unit not in range*)
+          (*commented for testing purposes *) 
+	  (*else if snd range > 1 && List.length mvt > 1 then
+	    raise Bad_attack (*a ranged unit must not move before firing*)*)
 	  else
 	    (mvt, action) (*the attack is valid*)
 	)

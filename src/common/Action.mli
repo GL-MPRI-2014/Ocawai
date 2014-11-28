@@ -26,4 +26,6 @@ exception Has_played
     passing through impassable terrain) *)
 exception Bad_path
 
-
+(** Exception raised if the attack is illegal, i.e. wrong unit attacking, 
+    attacked unit not in range, or ranged attack just after moving. *)
+exception Bad_attack
