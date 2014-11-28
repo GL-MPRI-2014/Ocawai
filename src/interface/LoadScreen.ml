@@ -8,7 +8,7 @@ class state (build : unit -> State.state) = object(self)
 
   inherit State.state as super
 
-  val font = new font `None
+  val font = (Fonts.load_font "Roboto-Black.ttf")
 
   val mutable init = false
 
@@ -45,8 +45,6 @@ class state (build : unit -> State.state) = object(self)
     window#display
 
   initializer
-    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here";
     ignore(Interpolators.new_sine_ip
       self#set_alpha 2. 0.4 0.6);
 

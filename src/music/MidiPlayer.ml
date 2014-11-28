@@ -87,8 +87,7 @@ let play_midi_file fname run =
   done;
   print_endline "Oh BOY ! You DID reach some place !";
   sound#stop
-  
 
-let () =
-  let a = ref true in
-  play_midi_file "./bach_bourree.mid" a
+(*let () =*)
+  (*let a = ref true in*)
+  (*play_midi_file "./bach_bourree.mid" a*)
