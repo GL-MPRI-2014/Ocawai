@@ -31,19 +31,30 @@ let write_interface_settings_in_file file settings =
 
 (* default parameters *)
 
+let base = ref ""
+
+let base_folder_giver () =
+  let folder = ref "" in
+  try
+    if (Sys.is_directory "resources/textures") then
+      folder := "resources/textures/"
+    else folder := "/usr/share/GL_2014/textures/"
+  with Sys_error _ -> folder := "/usr/share/GL_2014/textures/";
+  base := !folder
+
 let default_config_files = 
-  ("resources/config/tiles.json",
-  "resources/config/units.json",
-  "resources/config/settings.json",
-  "resources/config/settings_default.json")
+  (!base ^ "config/tiles.json",
+   !base ^ "config/units.json",
+   !base ^ "config/settings.json",
+   !base ^ "config/settings_default.json")
 
 let default_engine_settings_files = 
-  ("resources/config/settings_engine.json",
-  "resources/config/settings_engine_default.json")
+  (!base ^ "config/settings_engine.json",
+   !base ^ "config/settings_engine_default.json")
 
 let default_interface_settings_files = 
-  ("resources/config/settings_interface.json",
-  "resources/config/settings_interface_default.json")
+  (!base ^ "config/settings_interface.json",
+   !base ^ "config/settings_interface_default.json")
 
 let default_files = 
   let (x1,x2,x3,x4) = default_config_files in
