@@ -78,7 +78,7 @@ operators:
   |v1 = nested_value; ADD; v2 = nested_value 
     {Types.App (("_add", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; MIN; v2 = nested_value 
-    {Types.App (("_min", [v1; v2]), loc (), ref `None)}
+    {Types.App (("_sub", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; DIV; v2 = nested_value 
     {Types.App (("_div", [v1; v2]), loc (), ref `None)}
   |NOT; v1 = nested_value {Types.App (("_not", [v1]), loc (), ref `None)}

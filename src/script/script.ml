@@ -1,5 +1,6 @@
 open Types
 open Lexing
+open ScriptCore
 
 open Checker
 

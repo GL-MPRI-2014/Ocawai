@@ -57,29 +57,3 @@ and static = [
 
 and term_type = static ref
 
-
-
-
-(* TODO : Relocate those two in a ScriptEngine module *)
-
-type value_type = [
-  `Int_t    |
-  `Unit_t   |
-  `String_t |
-  `Bool_t   |
-  `List_t  of value_type |
-  `Array_t of value_type |
-  `Fun_t   of value_type * value_type |
-  `Pair_t  of value_type * value_type
-]
-
-type value = [
-  `Int    of int              |
-  `Unit                       |
-  `String of string           |
-  `Bool   of bool             |
-  `List   of value list       |
-  `Array  of value array      |
-  `Fun    of (value -> value) |
-  `Pair   of value * value
-]
