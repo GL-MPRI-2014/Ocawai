@@ -83,8 +83,9 @@ network_command = $(command) -libs $(network_libraries) -Is $(network_src) $(out
 
 #get every source file of the project
 #needed for the target doc
-find_files = $(wildcard $(dir)/*.ml[^~ly])
-files := $(foreach dir,$(dirs),$(find_files))
+find_ml_files = $(wildcard $(dir)/*.ml)
+find_mli_files = $(wildcard $(dir)/*.mli)
+files := $(foreach dir,$(dirs),$(find_ml_files),$(find_mli_files))
 
 
 
