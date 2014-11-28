@@ -17,12 +17,9 @@ let play_midi_file fname run =
   let adsr = Audio.Mono.Effect.ADSR.make sample_rate (0.02,0.01,0.9,0.05) in
   let synth = new Synth.Multitrack.create mchannels (fun _ -> new Synth.square ~adsr sample_rate) in
   let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:0.3 () in
-  let eosound = new sound () in
-  let oosound = new sound () in
+  let osound = new sound () in
   let r = ref (-1) in
-  let i = ref 0 in
-  let timer = ref 0. in
-  let coeff = 0.95 in (* this is (exp(1)/pi) *)
+  let coeff = 0.9 in (* Magic number ... Can't seem to do better than this ! *)
   while !r <> 0 && !run do
     r := f#read sample_rate mbuf 0 blen;
     synth#play mbuf 0 buf 0 blen;
@@ -31,22 +28,10 @@ let play_midi_file fname run =
     for i = 0 to blen - 1 do
       samplesBuffer.{i} <- (to_s16le strs16le.[2*i] strs16le.[2*i + 1])
     done;
-
-    if (!i mod 2 = 0) then begin
-      let oobuf = new sound_buffer (`Samples(samplesBuffer,channels,sample_rate)) in
-      oosound#set_buffer oobuf;
-      Thread.delay (coeff *. !timer);
-      oosound#play;
-      timer := OcsfmlSystem.Time.as_seconds (oobuf#get_duration)
-    end
-    else begin
-      let eobuf = new sound_buffer (`Samples(samplesBuffer,channels,sample_rate)) in
-      eosound#set_buffer eobuf;
-      Thread.delay (coeff *. !timer);
-      eosound#play;
-      timer := OcsfmlSystem.Time.as_seconds (eobuf#get_duration)
-    end;
-
-    incr i
+    let obuf = new sound_buffer (`Samples(samplesBuffer,channels,sample_rate)) in
+    let timer = OcsfmlSystem.Time.as_seconds (obuf#get_duration) in
+    osound#set_buffer obuf;
+    osound#play;
+    Thread.delay (coeff *. timer);
   done;
   f#close

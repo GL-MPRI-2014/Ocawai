@@ -1,6 +1,8 @@
 open Action
+open Settings_t
+open Settings_engine_t
 
-let get_opt o = 
+let get_opt o =
   match o with
   |Some(s) -> s
   |None -> failwith "Failed to init game engine"
@@ -8,70 +10,80 @@ let get_opt o =
 class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
-  val mutable map_width = 0
-  val mutable map_height = 0
+  val mutable actual_player = 0
+
+  method private next_player =
+    (actual_player + 1) mod (Array.length players)
+
   method get_players =
     Array.to_list players
-  method init_local player nbplayers map_wht map_hgt = 
-      map_width <- map_wht;
-      map_height <- map_hgt;
-      players <- Array.make nbplayers (Player.create_player ());     
-      players.(0) <- player;
-      for i = 1 to nbplayers - 1 do
-        players.(i) <- Player.create_player ()
-      done;
-      field <- Some (new FieldGenerator.t map_width map_height (self#get_players : Player.player list :> Player.logicPlayer list) 10 5);
+
+  method init_local player nbplayers map_wht map_hgt =
+      let config = Config.config in
+      config#settings.map_width <- map_wht;
+      config#settings.map_height <- map_hgt;
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
-  method run = 
-    let  current_player = ref (self#init_current_players (Array.length players)) and gameover = ref false in
-    while not !gameover do
-	    let player_turn_end =  ref false and has_played = ref [] in
-	    while not (!player_turn_end) do
-            let player_turn = players.( List.hd !current_player ) in
-		    let next_wanted_action =  player_turn#get_next_action in
-		    player_turn_end := ((snd next_wanted_action) = Wait);
-		    try
-		        let (movement,action) = Logics.try_next_action
-                        (self#get_players :> Player.logicPlayer list)
-                        (player_turn:> Player.logicPlayer) !has_played (get_opt field)#field next_wanted_action in
-                if action = End_turn then
-                    self#end_turn player_turn_end current_player
-                else
-                        self#apply_movement player_turn movement has_played
-            with
-               _ -> self#end_turn player_turn_end current_player;
-	    done;
-	done
 
+  method init_net port nbplayers map_wht map_hgt =
+      let config = Config.config in
+      config#settings.map_width <- map_wht;
+      config#settings.map_height <- map_hgt;
+      let connections = Network_tool.open_n_connections port nbplayers in
+      let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
+      players <- (Array.of_list (player_list :> Player.player list));
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
+      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
-  method private init_current_players nb= 
-    let rec aux players_number =
-      if players_number = 0 then
-		    [0]
-	    else
-	      (players_number-1)::(aux (players_number -1) )
+  method private player_of_unit u =
+    let rec aux = function
+      |[] -> false
+      |t::q -> t#get_id = u#get_id || aux q
     in
-    aux nb
+    let rec player_aux = function
+      |[] -> assert false
+      |t::q -> if aux t#get_army then t else player_aux q
+    in player_aux self#get_players
 
-  method private end_turn player_turn_end current_player =
-        player_turn_end := true;
-        current_player := ((List.tl !current_player)@([List.hd !current_player]))
+  method run : unit =
+    let player = players.(actual_player) in
+    let next_wanted_action =  player#get_next_action in
+    begin try
+      let next_action = Logics.try_next_action
+          (self#get_players :> Player.logicPlayer list)
+          (player :> Player.logicPlayer)
+          (get_opt field)#field
+          next_wanted_action
+      in
+      match next_action with
+      |(_, End_turn) -> self#end_turn
+      |(move, Wait ) -> self#apply_movement move
+      |(move, Attack_unit (u1,u2)) ->
+          self#apply_movement move;
+          Logics.apply_attack u1 u2;
+          if u2#hp <= 0 then (
+            (self#player_of_unit u2)#delete_unit (u2#get_id);
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players)
+      |(move, _) -> self#apply_movement move
+    with
+      |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn
+    end;
+    if true (* test gameover here *) then self#run
 
-  method private apply_movement (player:Player.player) movement has_played =
-	    let u = Logics.find_unit (List.hd movement) (player :> Player.logicPlayer) in
-     		player#move_unit u movement;
-		    has_played := u::!has_played
+  method private end_turn =
+    let player = players.(actual_player) in
+    List.iter (fun u -> u#set_played false) player#get_army;
+    actual_player <- self#next_player
 
-  method private apply_action player action =
-	    match action with
-		    | Attack_unit a-> ()
-		    | Attack_building a-> ()
-                    | _ -> ()
+  method private apply_movement movement =
+    let player = players.(actual_player) in
+    let u = Logics.find_unit (List.hd movement)
+      (player :> Player.logicPlayer) in
 
-
-
-
-
+    player#move_unit (u#get_id) movement;
+    Array.iter (fun x -> x#update (Types.Move_unit(u,movement,(x#get_id))) ) players;
+    u#set_played true
 end
 
 
@@ -139,4 +151,3 @@ let dijkstra_test gen =
   let r = dij (List.nth gen#spawns 1) in
   print_ascii_extended gen#field gen#armies (match r with | None -> Path.empty | Some (_,b) -> b) gen#spawns;
   print_endline ("path length between spawns 1 and 2 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a))
-

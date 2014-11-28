@@ -14,10 +14,12 @@ end
 type t = building
 *)
 
+type id
+
 type t = <
   name : string;
   position : Position.t;
-  id : string;
+  get_id : id;
   player_id : string;
   producible : Unit.t list
 >

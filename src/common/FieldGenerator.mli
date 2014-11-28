@@ -9,7 +9,7 @@ exception GeneratorFailure
   The generation tries gen_attempts times, and each time tries
   units_attempts times to spawn nbplayer armies.
   raise GeneratorFailure if all attempts failed *)
-class t : int -> int -> Player.logicPlayer list -> int -> int -> object
+class t : Player.logicPlayer list -> object
   method field : Battlefield.t
   method armies : Unit.t list list
   method spawns : Position.t list

@@ -15,7 +15,7 @@ val accessible_positions : Unit.t -> Player.logicPlayer -> Player.logicPlayer li
 (** Checks if the requested action is possible.
     If it is, the same action is returned, else the function returns another
     action with the maximum possible path. *)
-val try_next_action : Player.logicPlayer list -> Player.logicPlayer -> Unit.t list -> 
+val try_next_action : Player.logicPlayer list -> Player.logicPlayer -> 
   Battlefield.t -> Action.t -> Action.t
 
 (** Returns the unit of the given player at the given position.

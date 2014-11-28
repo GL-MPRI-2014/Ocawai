@@ -1,0 +1,7 @@
+
+type t = {
+  
+  cursor_speed<ocaml mutable> : int;
+  
+}
+

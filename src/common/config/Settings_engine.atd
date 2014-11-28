@@ -1,0 +1,9 @@
+
+type t = {
+  
+  generate_attempts<ocaml mutable> : int;
+  structs_attempts<ocaml mutable> : int;
+  units_spawn_attempts<ocaml mutable> : int;
+  
+}
+
