@@ -15,10 +15,11 @@
 %token LBRACE RBRACE
 %token LBRACK RBRACK
 %token TRUE FALSE
-%token PIP ESP
+%token PIP
+%token PIPPIP ESPESP
 %token GT LT MUL ADD MIN DIV EQEQ EQUALS NOT
 
-%right PIP ESP
+%right PIPPIP ESPESP
 %left GT LT ADD MIN
 %left DIV MUL
 %left EQUALS EQEQ
@@ -63,9 +64,9 @@ nested_value:
   ;
 
 operators:
-  |v1 = nested_value; PIP; PIP; v2 = nested_value 
+  |v1 = nested_value; PIPPIP; v2 = nested_value 
     {Types.App (("_or", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; ESP; ESP; v2 = nested_value 
+  |v1 = nested_value; ESPESP; v2 = nested_value 
     {Types.App (("_and", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; GT ; v2 = nested_value 
     {Types.App (("_gt", [v1; v2]), loc (), ref `None)}
@@ -133,5 +134,6 @@ strings_comma:
 
 value_list:
   | {[]}
+  |t = value {[t]}
   |t = value; SEMICOLON; h = value_list {t::h}
   ;

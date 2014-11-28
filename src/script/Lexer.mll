@@ -57,8 +57,9 @@ rule token = parse
   | "+" {ADD}
   | "-" {MIN}
   | "/" {DIV}
+  | "||" {PIPPIP}
+  | "&&" {ESPESP}
   | "|" {PIP}
-  | "&" {ESP}
   | "(" {LEFTP}
   | ")" {RIGHTP}
   | "," {COMMA}

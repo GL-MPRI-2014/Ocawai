@@ -118,6 +118,18 @@ let scr_printi =
     | _ -> assert false
   )
 
+let scr_listhd = 
+  `Fun(function
+    |`List(t::q) -> t
+    | _ -> assert false
+  )
+
+let scr_listtl = 
+  `Fun(function
+    |`List(t::q) -> `List q
+    | _ -> assert false
+  )
+
 let () = 
   ScriptEngine.expose scr_or  (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_or" ;
   ScriptEngine.expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
@@ -133,6 +145,8 @@ let () =
   ScriptEngine.expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
   ScriptEngine.expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
   ScriptEngine.expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
+  ScriptEngine.expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
+  ScriptEngine.expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
 
 
 

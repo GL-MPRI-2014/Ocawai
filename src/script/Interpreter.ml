@@ -65,7 +65,8 @@ let rec eval_proc entries = function
 
 and create_lambda env args seq = 
   match args with
-  |[] -> eval_seq env seq 
+  |[] -> `Fun(fun _ -> eval_seq env seq)
+  |[t] -> `Fun(fun a -> eval_seq (new_value t a env) seq)
   |t::q -> `Fun(fun a -> create_lambda (new_value t a env) q seq)
 
 and apply_f env f args = 

@@ -6,6 +6,11 @@ print_int (6 / 2 + 4 / 2 * 4);
 
 var global_message = "";
 
+fun test () = 
+{
+  print_string "Ok\n";
+}
+
 fun f s1 s2 =
 {
   print_string s1;
@@ -22,6 +27,19 @@ var s2 = "Ceci non plus.";
 global_message = "Hello world !\n";
 
 flambda "It's me :)\n";
+
+test ();
+
+var l = [1;2;3;4];
+
+print_int (list_hd l);
+print_int (list_hd (list_tl l));
+
+l = list_tl (list_tl l);
+print_int (list_hd l);
+print_int (list_hd (list_tl l));
+
+print_string "\n";
 
 
 attack infantry, bazooka {

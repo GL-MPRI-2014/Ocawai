@@ -6,6 +6,7 @@ type value_type = [
   `Unit_t   |
   `String_t |
   `Bool_t   |
+  `Alpha_t of int |
   `List_t  of value_type |
   `Array_t of value_type |
   `Fun_t   of value_type * value_type |
