@@ -51,7 +51,8 @@ and static = [
   `Array_tc of term_type |
   `Fun_tc   of term_type * term_type |
   `Pair_tc  of term_type * term_type |
-  `None
+  `None |
+  `Pointer of term_type
 ]
 
 and term_type = static ref
@@ -69,7 +70,7 @@ type value_type = [
   `List_t  of value_type |
   `Array_t of value_type |
   `Fun_t   of value_type * value_type |
-  `Pair_t  of value_type * value_type 
+  `Pair_t  of value_type * value_type
 ]
 
 type value = [

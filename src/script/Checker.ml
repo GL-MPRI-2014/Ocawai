@@ -25,12 +25,12 @@ let rec check_prog = function
 
   | Globseq ((d,k),l,t) ->
       check_decl d ;
-      unify t (ref `Unit_t) ;
+      unify t (ref `Unit_tc) ;
       check_prog k
 
   | Procseq ((p,k),l,t) ->
       check_procedure p ;
-      unify t (ref `Unit_t) ;
+      unify t (ref `Unit_tc) ;
       check_prog k
 
   | Empty -> ()
@@ -39,36 +39,36 @@ and check_decl = function
 
   | Vardecl ((s,v),l,t) ->
       unify (Hashtbl.find assignment s) (val_type v) ;
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
   | Varset ((s,v),l,t) ->
       unify (Hashtbl.find assignment s) (val_type v) ;
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
   | Fundecl ((s,sl,sqt),l,t) ->
       (* TODO *)
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
 and check_procedure = function
 
   | Move ((sl,st),l,t) ->
       (* TODO *)
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
   | Attack ((sl,st),l,t) ->
       (* TODO *)
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
   | Main (st,l,t) ->
       (* TODO *)
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
   | Init (st,l,t) ->
       (* TODO *)
-      unify t (ref `Unit_t)
+      unify t (ref `Unit_tc)
 
 and val_type = function
 
-  | Int (_,l,t) -> t := `Int_t ; t
-  | Unit (l,t) -> t := `Unit_t ; t
+  | Int (_,l,t) -> t := `Int_tc ; t
+  | Unit (l,t) -> t := `Unit_tc ; t
   | _ -> ref `None (* TODO *)

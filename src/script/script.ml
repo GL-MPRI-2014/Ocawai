@@ -1,6 +1,8 @@
 open Types
 open Lexing
 
+open Checker
+
 let print_position lexbuf =
   let pos = lexbuf.lex_curr_p in
   let str = Lexing.lexeme lexbuf in
