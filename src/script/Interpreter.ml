@@ -102,18 +102,25 @@ and eval_decl env = function
       new_value s (create_lambda env args seq) env
 
 and eval_seq env = function
-  |Seq((decl, seq),_,_) -> 
+  |SeqDecl((decl, seq),_,_) -> 
       let env' = eval_decl env decl in 
       eval_seq env' seq
-  |Return(v, _, _) -> 
+  |SeqVar((v, SeqEnd),_,_) ->
       eval_value env v
+  |SeqVar((v, seq),_,_) ->
+      ignore(eval_value env v);
+      eval_seq env seq
+  |SeqEnd -> `Unit
 
 and eval_prog env entries = function
-  |Globseq ((decl, prog), _, _) -> 
+  |GlobDecl ((decl, prog), _, _) -> 
       let env' = eval_decl env decl in
       eval_prog env' entries prog
-  |Procseq ((proc, prog), _, _) -> 
+  |GlobProc ((proc, prog), _, _) -> 
       eval_proc entries proc;
+      eval_prog env entries prog
+  |GlobSeq  ((v, prog),_,_) ->
+      ignore (eval_value env v);
       eval_prog env entries prog
   |Empty -> env
 

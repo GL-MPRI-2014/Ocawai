@@ -31,14 +31,16 @@ and decl_type =
 
 (** Type of the sequences (body of a function) *)
 and seq_type =
-    Seq     of (decl_type * seq_type) * location * term_type
-  | Return  of values_type * location * term_type
+    SeqDecl of (decl_type * seq_type) * location * term_type
+  | SeqVar  of (values_type * seq_type) * location * term_type
+  | SeqEnd  
 
 (** Type of a program *)
 and prog_type =
-    Globseq of (decl_type * prog_type) * location * term_type
-  | Procseq of (procedure_type * prog_type) * location * term_type
-  | Empty
+    GlobDecl of (decl_type * prog_type) * location * term_type
+  | GlobProc of (procedure_type * prog_type) * location * term_type
+  | GlobSeq  of (values_type * prog_type) * location * term_type
+  | Empty    
 
 
 (** Unifiable types for the type-checker *)

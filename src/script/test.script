@@ -2,14 +2,27 @@ var a_global = 10;
 
 a_global = a_global + 2 * 3;
 
-var unit = print_int a_global;
+print_int (6 / 2 + 4 / 2 * 4);
 
-fun f s =
+var global_message = "";
+
+fun f s1 s2 =
 {
-  print_string s;
+  print_string s1;
+  print_string global_message;
+  print_string s2;
 }
 
-unit = f "\ncoucou\n";
+var flambda = f "\nCoucou\n";
+
+var s1 = "Ceci ne devrait pas s'afficher.";
+
+var s2 = "Ceci non plus.";
+
+global_message = "Hello world !\n";
+
+flambda "It's me :)\n";
+
 
 attack infantry, bazooka {
   var a_local = 42;

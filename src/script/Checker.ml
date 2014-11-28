@@ -27,15 +27,17 @@ let rec unify (t1:term_type) (t2:term_type) =
 (* Assuming every variable is in assignment *)
 let rec check_prog = function
 
-  | Globseq ((d,k),l,t) ->
+  | GlobDecl ((d,k),l,t) ->
       check_decl d ;
       unify t (ref `Unit_tc) ;
       check_prog k
 
-  | Procseq ((p,k),l,t) ->
+  | GlobProc ((p,k),l,t) ->
       check_procedure p ;
       unify t (ref `Unit_tc) ;
       check_prog k
+
+  | GlobSeq ((v,k),l,t) -> () (* TODO, sorry :) *)
 
   | Empty -> ()
 

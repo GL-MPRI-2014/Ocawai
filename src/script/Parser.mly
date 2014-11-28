@@ -19,7 +19,8 @@
 %token GT LT MUL ADD MIN DIV EQEQ EQUALS NOT
 
 %right PIP ESP
-%left GT LT MUL ADD MIN DIV
+%left GT LT ADD MIN
+%left DIV MUL
 %left EQUALS EQEQ
 %nonassoc NOT
 
@@ -28,14 +29,17 @@
 
 file:
   | EOF {Types.Empty}
-  | d = decl; f = file {Types.Globseq ((d,f),loc (), ref `None)}
-  | p = proc; f = file {Types.Procseq ((p,f),loc (), ref `None)}
+  | d = decl; f = file {Types.GlobDecl ((d,f),loc (), ref `None)}
+  | p = proc; f = file {Types.GlobProc ((p,f),loc (), ref `None)}
+  | v = value; SEMICOLON; f = file {Types.GlobSeq ((v,f),loc (), ref `None)}
+  | v = value; EOF {Types.GlobSeq ((v,Types.Empty),loc (), ref `None)}
   ;
 
 seqexpr:
-  |d = decl; s = seqexpr {Types.Seq ((d,s),loc (), ref `None)}
-  |v = value; SEMICOLON {Types.Return (v,loc (), ref `None)}
-  |v = value {Types.Return (v,loc (), ref `None)}
+  |d = decl; s = seqexpr {Types.SeqDecl ((d,s),loc (), ref `None)}
+  |v = value; SEMICOLON; s = seqexpr {Types.SeqVar ((v,s),loc (), ref `None)}
+  |v = value {Types.SeqVar ((v,Types.SeqEnd), loc (), ref `None)}
+  | {Types.SeqEnd}
   ;
 
 decl:
@@ -102,7 +106,7 @@ composed_value:
   |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE 
     {Types.Ifte ((v,t,e), loc (), ref `None)}
   |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE 
-    {Types.Ifte ((v,t,Types.Return (Types.Unit ( loc (), ref `None),  loc (), ref `None)),  loc (), ref `None)}
+    {Types.Ifte ((v,t,Types.SeqEnd),  loc (), ref `None)}
   ;
 
 proc:
