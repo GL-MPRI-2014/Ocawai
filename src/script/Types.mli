@@ -1,18 +1,7 @@
-(** Basic types for the script parser *)
+(** Basic types for the script parser and interpreter *)
 
+(** Type of locations in the script *)
 type location = Lexing.position * Lexing.position
-
-(** Static types *)
-type static = [
-  `Int_t    |
-  `Unit_t   |
-  `String_t |
-  `Bool_t   |
-  `List_t  of static |
-  `Array_t of static |
-  `Fun_t   of static * static |
-  `Pair_t  of static * static
-]
 
 (** Type of procedures called by the interpreter *)
 type procedure_type =
@@ -48,10 +37,40 @@ and seq_type =
 (** Type of a program *)
 and prog_type =
     Globseq of (decl_type * prog_type) * location * term_type
-  | Procseq of( procedure_type * prog_type) * location * term_type
+  | Procseq of (procedure_type * prog_type) * location * term_type
   | Empty
 
-and term_type = [static | `None | `Pointer of term_type] ref
+
+(** Unifiable types for the type-checker *)
+and static = [
+  `Int_tc    |
+  `Unit_tc   |
+  `String_tc |
+  `Bool_tc   |
+  `List_tc  of term_type |
+  `Array_tc of term_type |
+  `Fun_tc   of term_type * term_type |
+  `Pair_tc  of term_type * term_type |
+  `None
+]
+
+and term_type = static ref
+
+
+
+
+(* TODO : Relocate those two in a ScriptEngine module *)
+
+type value_type = [
+  `Int_t    |
+  `Unit_t   |
+  `String_t |
+  `Bool_t   |
+  `List_t  of value_type |
+  `Array_t of value_type |
+  `Fun_t   of value_type * value_type |
+  `Pair_t  of value_type * value_type 
+]
 
 type value = [
   `Int    of int              |
