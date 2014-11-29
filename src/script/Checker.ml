@@ -2,7 +2,7 @@
 
 open ScriptTypes
 
-(* Associate every variable name to its type *)
+(* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
 let rec deref (t:term_type) =
@@ -11,6 +11,7 @@ let rec deref (t:term_type) =
   | v -> v
 
 
+(* TODO: make the error more precise *)
 exception Unification_failure
 
 let rec unify (t1:term_type) (t2:term_type) =
@@ -24,6 +25,23 @@ let rec unify (t1:term_type) (t2:term_type) =
   | `Fun_tc (t1,t1'), `Fun_tc (t2,t2')   -> unify t1 t2 ; unify t1' t2'
   | `Pair_tc (t1,t1'), `Pair_tc (t2,t2') -> unify t1 t2 ; unify t1' t2'
   | t1,t2 -> if t1 <> t2 then raise Unification_failure
+
+
+(* Unifies a function with a list of arguments types *)
+(* Returns the return type of the function *)
+(* It can still be a function if applied to too few arguments *)
+let rec unify_func (ftype : term_type) = function
+  | []      -> ftype
+  | e :: r  ->
+      (match (deref ftype) with
+        | `Fun_tc (a,b) ->
+            unify e a ;
+            unify_func b r
+        | _ ->
+            if r <> [] then raise Unification_failure ;
+            unify e ftype ;
+            ftype
+      )
 
 
 (* Assuming every variable is in assignment *)
@@ -54,6 +72,7 @@ and check_decl = function
       unify t (ref `Unit_tc)
 
   | Fundecl ((s,sl,sqt),l,t) ->
+      (* unify_func (Hashtbl.find assignment s) sl *)
       (* TODO *)
       unify t (ref `Unit_tc)
 
@@ -77,6 +96,33 @@ and check_procedure = function
 
 and val_type = function
 
-  | Int (_,l,t) -> t := `Int_tc ; t
-  | Unit (l,t) -> t := `Unit_tc ; t
+  | Int (_,l,t)    -> unify t (ref `Int_tc)    ; t
+  | Unit (l,t)     -> unify t (ref `Unit_tc)   ; t
+  | String (_,l,t) -> unify t (ref `String_tc) ; t
+  | Bool (_,l,t)   -> unify t (ref `Bool_tc)   ; t
+  | List (vl,l,t)  ->
+      let alpha = ref `None in
+      List.iter (fun v -> unify (val_type v) alpha) vl ;
+      unify t (ref (`List_tc alpha)) ; t
+  | Array (va,l,t) ->
+      let alpha = ref `None in
+      Array.iter (fun v -> unify (val_type v) alpha) va ;
+      unify t (ref (`Array_tc alpha)) ; t
+  | Var (s,l,t)    -> unify (Hashtbl.find assignment s) t ; t
+  | App ((s,vl),l,t) ->
+      let rt = unify_func
+                (Hashtbl.find assignment s)
+                (List.map val_type vl)
+      in
+      unify t rt ; t
+  | Ifte ((v,s1,s2),l,t) ->
+      unify (val_type v) (ref `Bool_tc) ;
+      unify t (seq_type s1) ;
+      unify t (seq_type s2) ;
+      t
+  | Pair ((v1,v2),l,t) ->
+      unify t (ref (`Pair_tc (val_type v1, val_type v2))) ; t
+
+and seq_type = function
+
   | _ -> ref `None (* TODO *)

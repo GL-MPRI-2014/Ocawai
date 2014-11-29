@@ -53,7 +53,7 @@ and static = [
   `Array_tc of term_type |
   `Fun_tc   of term_type * term_type |
   `Pair_tc  of term_type * term_type |
-  `Alpha_tc  |
+  `Alpha_tc  | (* behaves like ANY for now *)
   `None      |
   `Pointer of term_type
 ]
