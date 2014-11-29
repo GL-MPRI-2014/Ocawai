@@ -177,6 +177,8 @@ let main_script (env, ep) =
 
 let move_script (env, ep) u =
   ScriptValues.expose (`Soldier u) `Soldier_t "selected_unit";
+  Checker.expose `Soldier_t "selected_unit" ;
+  (* Shouldn't it be hidden somewhere? *)
   match eval_seq env (ep#move u#name) with
   |`List(l) -> List.map pair_to_pos l
   | _ -> assert false

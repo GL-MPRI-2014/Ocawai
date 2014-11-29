@@ -10,7 +10,7 @@ type value_type = [
   `List_t  of value_type |
   `Array_t of value_type |
   `Fun_t   of value_type * value_type |
-  `Pair_t  of value_type * value_type 
+  `Pair_t  of value_type * value_type
 ]
 
 type value = [
@@ -33,23 +33,22 @@ module ScriptLoadingLog = Log.Make (struct let section = "Script" end)
 
 let value_table = Hashtbl.create 13
 
-let expose f t s = 
+let expose f t s =
   ScriptLoadingLog.infof "[exposed] %s" s;
   Hashtbl.replace value_table s (f,t)
 
-let hide s = 
+let hide s =
   ScriptLoadingLog.infof "[hide] %s" s;
   Hashtbl.remove value_table s
 
-let type_of s = 
-  try 
+let type_of s =
+  try
     snd (Hashtbl.find value_table s)
   with
     |Not_found -> raise (Script_value_not_found s)
 
-let value_of s = 
+let value_of s =
   try
     fst (Hashtbl.find value_table s)
   with
     |Not_found -> raise (Script_value_not_found s)
-

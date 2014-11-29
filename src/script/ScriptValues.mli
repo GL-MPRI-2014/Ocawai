@@ -34,10 +34,10 @@ type value = [
 exception Script_value_not_found of string
 
 (** [expose f t s] exposes a value f of type t to the script system.
-  * The value will be refered as s in the language *)
+  * The value will be refered as [s] in the language *)
 val expose : value -> value_type -> string -> unit
 
-(** [hide s] hides a previously exposed value. Does nothing if no value 
+(** [hide s] hides a previously exposed value. Does nothing if no value
   * has been exposed under the name [s].*)
 val hide : string -> unit
 

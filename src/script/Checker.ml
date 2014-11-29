@@ -156,3 +156,25 @@ and seq_type = function
       seq_type k
 
   | SeqEnd -> ref `None
+
+
+(* Translates a ScriptValues.value_type to a term_type *)
+let rec vt_to_tt = function
+  | `Int_t        -> ref `Int_tc
+  | `Unit_t       -> ref `Unit_tc
+  | `String_t     -> ref `String_tc
+  | `Bool_t       -> ref `Bool_tc
+  | `Soldier_t    -> failwith "not handled by the type checker" (*TODO*)
+  | `Map_t        -> failwith "not handled by the type checker" (*TODO*)
+  | `Player_t     -> failwith "not handled by the type checker" (*TODO*)
+  | `Alpha_t i    -> ref `Alpha_tc (*TODO*)
+  | `List_t v     -> ref (`List_tc (vt_to_tt v))
+  | `Array_t v    -> ref (`Array_tc (vt_to_tt v))
+  | `Fun_t (a,b)  -> ref (`Fun_tc (vt_to_tt a, vt_to_tt b))
+  | `Pair_t (a,b) -> ref (`Pair_tc (vt_to_tt a, vt_to_tt b))
+
+let expose (v:ScriptValues.value_type) s =
+  Hashtbl.add assignment s (vt_to_tt v)
+
+let hide s =
+  Hashtbl.remove assignment s
