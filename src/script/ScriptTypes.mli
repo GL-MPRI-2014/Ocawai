@@ -45,16 +45,19 @@ and prog_type =
 
 (** Unifiable types for the type-checker *)
 and static = [
-  `Int_tc    |
-  `Unit_tc   |
-  `String_tc |
-  `Bool_tc   |
+  `Int_tc     |
+  `Unit_tc    |
+  `String_tc  |
+  `Bool_tc    |
+  `Soldier_tc |
+  `Map_tc     |
+  `Player_tc  |
   `List_tc  of term_type |
   `Array_tc of term_type |
   `Fun_tc   of term_type * term_type |
   `Pair_tc  of term_type * term_type |
-  `Alpha_tc  | (* behaves like ANY for now *)
-  `None      |
+  `Alpha_tc   | (* behaves like ANY for now *)
+  `None       |
   `Pointer of term_type
 ]
 

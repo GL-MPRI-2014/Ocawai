@@ -164,9 +164,9 @@ let rec vt_to_tt = function
   | `Unit_t       -> ref `Unit_tc
   | `String_t     -> ref `String_tc
   | `Bool_t       -> ref `Bool_tc
-  | `Soldier_t    -> failwith "not handled by the type checker" (*TODO*)
-  | `Map_t        -> failwith "not handled by the type checker" (*TODO*)
-  | `Player_t     -> failwith "not handled by the type checker" (*TODO*)
+  | `Soldier_t    -> ref `Soldier_tc
+  | `Map_t        -> ref `Map_tc
+  | `Player_t     -> ref `Player_tc
   | `Alpha_t i    -> ref `Alpha_tc (*TODO*)
   | `List_t v     -> ref (`List_tc (vt_to_tt v))
   | `Array_t v    -> ref (`Array_tc (vt_to_tt v))

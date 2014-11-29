@@ -1,8 +1,8 @@
 (** Exposes some functions to the script engine *)
 
 let expose f t s =
-  ScriptValues.expose f t s
-  (* Checker.expose t s *)
+  ScriptValues.expose f t s ;
+  Checker.expose t s
 
 let scr_or =
   `Fun(fun a ->
