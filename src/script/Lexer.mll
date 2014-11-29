@@ -6,7 +6,7 @@
   let h_add k e t = Hashtbl.add t k e; t
 
   let keywords_table =
-    Hashtbl.create 20
+    Hashtbl.create 19 
     |> h_add "var"      VAR
     |> h_add "fun"      FUN
     |> h_add "if"       IF
