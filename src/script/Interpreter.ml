@@ -170,16 +170,16 @@ let pair_to_pos = function
   | _ -> assert false
 
 let main_script (env, ep) = 
-  eval_seq env ep#main
-  |> pair_to_pos
+  match eval_seq env ep#main with
+  |`Soldier(u) -> u
+  | _ -> assert false
 
-let action_script (env, ep) u = 
-  let mov = 
-    match eval_seq env (ep#move u#name) with
-    |`List(l) -> List.map pair_to_pos l
-    | _ -> assert false
-  in 
-  let atk = 
-    eval_seq env (ep#attack u#name)
-    |> pair_to_pos
-  in (mov,atk)
+let move_script (env, ep) u = 
+  match eval_seq env (ep#move u#name) with
+  |`List(l) -> List.map pair_to_pos l
+  | _ -> assert false
+
+let attack_script (env, ep) u = 
+  match eval_seq env (ep#attack u#name) with
+  |`Soldier(u) -> u
+  | _ -> assert false
