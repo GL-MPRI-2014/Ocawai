@@ -44,21 +44,24 @@ let rec unify_func (ftype : term_type) = function
             ftype
       )
 
-(* Note : for prog_type / decl_type / procedure_type / SeqDecl, t is useless *)
+
 let rec check_prog = function
 
-  | GlobDecl ((d,k),l,t) ->
+  | GlobDecl ((d,k),l) ->
       check_decl d ;
-      unify t (ref `Unit_tc) ;
       check_prog k
 
-  | GlobProc ((p,k),l,t) ->
+  | GlobProc ((p,k),l) ->
       check_procedure p ;
-      unify t (ref `Unit_tc) ;
       check_prog k
+
+  (* It seems that all these are unit *)
+  (* | GlobSeq ((v,Empty),l,t) ->
+      unify t (val_type v) ;
+      unify t (ref `Unit_tc) *)
 
   | GlobSeq ((v,k),l,t) ->
-      (* TODO *)
+      unify t (val_type v) ;
       unify t (ref `Unit_tc) ;
       check_prog k
 
@@ -66,15 +69,13 @@ let rec check_prog = function
 
 and check_decl = function
 
-  | Vardecl ((s,v),l,t) ->
-      Hashtbl.add assignment s (val_type v) ;
-      unify t (ref `Unit_tc)
+  | Vardecl ((s,v),l) ->
+      Hashtbl.add assignment s (val_type v)
 
-  | Varset ((s,v),l,t) ->
-      unify (Hashtbl.find assignment s) (val_type v) ;
-      unify t (ref `Unit_tc)
+  | Varset ((s,v),l) ->
+      unify (Hashtbl.find assignment s) (val_type v)
 
-  | Fundecl ((s,sl,sqt),l,t) ->
+  | Fundecl ((s,sl,sqt),l) ->
       (* First, for each variable, we associate a type *)
       List.iter (fun s -> Hashtbl.add assignment s (ref `None)) sl ;
       let tl = List.map (fun s -> Hashtbl.find assignment s) sl in
@@ -85,8 +86,7 @@ and check_decl = function
       (* We precise these types by checking the sequence *)
       unify return_type (seq_type sqt) ;
       (* Out of this scope, the variables are no more *)
-      List.iter (fun s -> Hashtbl.remove assignment s) sl ;
-      unify t (ref `Unit_tc)
+      List.iter (fun s -> Hashtbl.remove assignment s) sl
 
 and check_procedure = function
 

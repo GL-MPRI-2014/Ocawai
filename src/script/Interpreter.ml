@@ -25,35 +25,35 @@ class entrypoints = object(self)
 
   method add_init t = main <- Some(t)
 
-  method add_move (sl, t) = 
+  method add_move (sl, t) =
     List.iter (fun s -> Hashtbl.add moves s t) sl
 
-  method add_attack (sl, t) = 
+  method add_attack (sl, t) =
     List.iter (fun s -> Hashtbl.add attacks s t) sl
 
-  method main = 
+  method main =
     match main with
     |None -> raise (Entry_point_missing "Missing main")
     |Some(m) -> m
 
-  method init = 
+  method init =
     match init with
     |None -> raise (Entry_point_missing "Missing init")
     |Some(m) -> m
 
-  method move s = 
-    try Hashtbl.find moves s 
+  method move s =
+    try Hashtbl.find moves s
     with |Not_found -> begin
       try Hashtbl.find moves "default"
-      with |Not_found -> raise (Entry_point_missing 
+      with |Not_found -> raise (Entry_point_missing
         ("No move method for " ^ s ^ " or default."))
     end
 
-  method attack s = 
-    try Hashtbl.find attacks s 
+  method attack s =
+    try Hashtbl.find attacks s
     with |Not_found -> begin
       try Hashtbl.find attacks "default"
-      with |Not_found -> raise (Entry_point_missing 
+      with |Not_found -> raise (Entry_point_missing
         ("No attack method for " ^ s ^ " or default."))
     end
 
@@ -62,28 +62,28 @@ end
 type script = var_environment * entrypoints
 
 
-let get_value s (env : var_environment) = 
+let get_value s (env : var_environment) =
   let rec aux = function
     |[] -> raise (Unbound_variable s)
     |(n,v)::q -> if n = s then !v else aux q
   in aux env
 
-let set_value s v (env : var_environment) = 
+let set_value s v (env : var_environment) =
   let rec aux = function
     |[] -> raise (Unbound_variable s)
-    |(n,v')::q  -> 
+    |(n,v')::q  ->
       if n = s then v' := v
       else aux q
   in aux env; env
 
-let new_value s v (env : var_environment) = 
+let new_value s v (env : var_environment) =
   (s, ref v) :: env
 
-let get_global_value s (env : var_environment) = 
-  try get_value s env 
+let get_global_value s (env : var_environment) =
+  try get_value s env
   with |Unbound_variable(_) -> begin
-    try ScriptValues.value_of s 
-    with |ScriptValues.Script_value_not_found(_) -> 
+    try ScriptValues.value_of s
+    with |ScriptValues.Script_value_not_found(_) ->
       raise (Unbound_variable s)
   end
 
@@ -93,13 +93,13 @@ let rec eval_proc entries = function
   |Main(p,_,_) -> entries#add_main p
   |Init(p,_,_) -> entries#add_init p
 
-and create_lambda env args seq = 
+and create_lambda env args seq =
   match args with
   |[] -> `Fun(fun _ -> eval_seq env seq)
   |[t] -> `Fun(fun a -> eval_seq (new_value t a env) seq)
   |t::q -> `Fun(fun a -> create_lambda (new_value t a env) q seq)
 
-and apply_f env f args = 
+and apply_f env f args =
   match (f,args) with
   |(`Fun(f), h::t) -> apply_f env (f h) t
   |( v     , [] ) -> v
@@ -113,7 +113,7 @@ and eval_value env = function
   |List(l,_,_)   -> `List(List.map (eval_value env) l)
   |Array(a,_,_)  -> `Array(Array.map (eval_value env) a)
   |Var(s,_,_)    -> get_global_value s env
-  |App((f,args),_,_) -> apply_f env (get_global_value f env) 
+  |App((f,args),_,_) -> apply_f env (get_global_value f env)
     (List.map (eval_value env) args)
   |Ifte((v,seq1,seq2),_,_) -> begin
     match eval_value env v with
@@ -123,19 +123,19 @@ and eval_value env = function
   |Pair((v1,v2),_,_) -> `Pair(eval_value env v1, eval_value env v2)
 
 and eval_decl env = function
-  |Vardecl((s,v),_,_) -> 
-      let v' = eval_value env v in 
+  |Vardecl((s,v),_) ->
+      let v' = eval_value env v in
       new_value s v' env
-  |Varset ((s,v),_,_) -> 
+  |Varset ((s,v),_) ->
       let v' = eval_value env v in
       set_value s v' env
-  |Fundecl ((s,args,seq),_,_) -> 
+  |Fundecl ((s,args,seq),_) ->
       let env' = new_value s (`Fun(fun _ -> assert false)) env in
       set_value s (create_lambda env' args seq) env'
 
 and eval_seq env = function
-  |SeqDecl((decl, seq),_,_) -> 
-      let env' = eval_decl env decl in 
+  |SeqDecl((decl, seq),_,_) ->
+      let env' = eval_decl env decl in
       eval_seq env' seq
   |SeqVar((v, SeqEnd),_,_) ->
       eval_value env v
@@ -145,10 +145,10 @@ and eval_seq env = function
   |SeqEnd -> `Unit
 
 and eval_prog env entries = function
-  |GlobDecl ((decl, prog), _, _) -> 
+  |GlobDecl ((decl, prog), _) ->
       let env' = eval_decl env decl in
       eval_prog env' entries prog
-  |GlobProc ((proc, prog), _, _) -> 
+  |GlobProc ((proc, prog), _) ->
       eval_proc entries proc;
       eval_prog env entries prog
   |GlobSeq  ((v, prog),_,_) ->
@@ -157,12 +157,12 @@ and eval_prog env entries = function
   |Empty -> env
 
 
-let new_script prog = 
+let new_script prog =
   let ep = new entrypoints in
   let env = eval_prog [] ep prog in
   (env, ep)
 
-let init_script (env, ep) = 
+let init_script (env, ep) =
   eval_seq env ep#init
   |> ignore
 
@@ -170,18 +170,18 @@ let pair_to_pos = function
   |`Pair(`Int(a), `Int(b)) -> Position.create (a,b)
   | _ -> assert false
 
-let main_script (env, ep) = 
+let main_script (env, ep) =
   match eval_seq env ep#main with
   |`Soldier(u) -> u
   | _ -> assert false
 
-let move_script (env, ep) u = 
+let move_script (env, ep) u =
   ScriptValues.expose (`Soldier u) `Soldier_t "selected_unit";
   match eval_seq env (ep#move u#name) with
   |`List(l) -> List.map pair_to_pos l
   | _ -> assert false
 
-let attack_script (env, ep) u = 
+let attack_script (env, ep) u =
   match eval_seq env (ep#attack u#name) with
   |`Soldier(u) -> u
   | _ -> assert false

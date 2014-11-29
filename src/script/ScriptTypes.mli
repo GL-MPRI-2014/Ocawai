@@ -25,9 +25,9 @@ and values_type =
 
 (** Type of a variable/function declaration *)
 and decl_type =
-    Vardecl of (string * values_type) * location * term_type
-  | Varset  of (string * values_type) * location * term_type
-  | Fundecl of (string * string list * seq_type) * location * term_type
+    Vardecl of (string * values_type) * location
+  | Varset  of (string * values_type) * location
+  | Fundecl of (string * string list * seq_type) * location
 
 (** Type of the sequences (body of a function) *)
 and seq_type =
@@ -37,8 +37,8 @@ and seq_type =
 
 (** Type of a program *)
 and prog_type =
-    GlobDecl of (decl_type * prog_type) * location * term_type
-  | GlobProc of (procedure_type * prog_type) * location * term_type
+    GlobDecl of (decl_type * prog_type) * location
+  | GlobProc of (procedure_type * prog_type) * location
   | GlobSeq  of (values_type * prog_type) * location * term_type
   | Empty
 

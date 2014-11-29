@@ -30,8 +30,8 @@
 
 file:
   | EOF {ScriptTypes.Empty}
-  | d = decl; f = file {ScriptTypes.GlobDecl ((d,f),loc (), ref `None)}
-  | p = proc; f = file {ScriptTypes.GlobProc ((p,f),loc (), ref `None)}
+  | d = decl; f = file {ScriptTypes.GlobDecl ((d,f),loc ())}
+  | p = proc; f = file {ScriptTypes.GlobProc ((p,f),loc ())}
   | v = value; SEMICOLON; f = file {ScriptTypes.GlobSeq ((v,f),loc (), ref `None)}
   | v = value; EOF {ScriptTypes.GlobSeq ((v,ScriptTypes.Empty),loc (), ref `None)}
   ;
@@ -44,12 +44,12 @@ seqexpr:
   ;
 
 decl:
-  |VAR; s = LIDENT; EQUALS; v = value; SEMICOLON {ScriptTypes.Vardecl ((s,v), loc (), ref `None)}
-  |s = LIDENT; EQUALS; v = value; SEMICOLON {ScriptTypes.Varset ((s,v), loc (), ref `None)}
-  |FUN; s = LIDENT; args = strings; EQUALS; LBRACE; e = seqexpr; RBRACE 
-    {ScriptTypes.Fundecl ((s,args,e), loc (),ref `None)}
+  |VAR; s = LIDENT; EQUALS; v = value; SEMICOLON {ScriptTypes.Vardecl ((s,v), loc ())}
+  |s = LIDENT; EQUALS; v = value; SEMICOLON {ScriptTypes.Varset ((s,v), loc ())}
+  |FUN; s = LIDENT; args = strings; EQUALS; LBRACE; e = seqexpr; RBRACE
+    {ScriptTypes.Fundecl ((s,args,e), loc ())}
   |FUN; s = LIDENT; LEFTP; RIGHTP; EQUALS; LBRACE; e = seqexpr; RBRACE
-    {ScriptTypes.Fundecl ((s,[],e),loc (), ref `None)}
+    {ScriptTypes.Fundecl ((s,[],e),loc ())}
   ;
 
 value:
@@ -64,27 +64,27 @@ nested_value:
   ;
 
 operators:
-  |v1 = nested_value; PIPPIP; v2 = nested_value 
+  |v1 = nested_value; PIPPIP; v2 = nested_value
     {ScriptTypes.App (("_or", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; ESPESP; v2 = nested_value 
+  |v1 = nested_value; ESPESP; v2 = nested_value
     {ScriptTypes.App (("_and", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; GT ; v2 = nested_value 
+  |v1 = nested_value; GT ; v2 = nested_value
     {ScriptTypes.App (("_gt", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; LT ; v2 = nested_value 
+  |v1 = nested_value; LT ; v2 = nested_value
     {ScriptTypes.App (("_lt", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; EQEQ ; v2 = nested_value 
+  |v1 = nested_value; EQEQ ; v2 = nested_value
     {ScriptTypes.App (("_eq", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; LT ; EQUALS ; v2 = nested_value 
+  |v1 = nested_value; LT ; EQUALS ; v2 = nested_value
     {ScriptTypes.App (("_le", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; GT ; EQUALS ; v2 = nested_value 
+  |v1 = nested_value; GT ; EQUALS ; v2 = nested_value
     {ScriptTypes.App (("_ge", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; MUL; v2 = nested_value 
+  |v1 = nested_value; MUL; v2 = nested_value
     {ScriptTypes.App (("_mul", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; ADD; v2 = nested_value 
+  |v1 = nested_value; ADD; v2 = nested_value
     {ScriptTypes.App (("_add", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; MIN; v2 = nested_value 
+  |v1 = nested_value; MIN; v2 = nested_value
     {ScriptTypes.App (("_sub", [v1; v2]), loc (), ref `None)}
-  |v1 = nested_value; DIV; v2 = nested_value 
+  |v1 = nested_value; DIV; v2 = nested_value
     {ScriptTypes.App (("_div", [v1; v2]), loc (), ref `None)}
   |NOT; v1 = nested_value {ScriptTypes.App (("_not", [v1]), loc (), ref `None)}
   ;
@@ -104,9 +104,9 @@ simple_value:
 
 composed_value:
   |s = LIDENT; v = values {ScriptTypes.App ((s,v), loc (), ref `None)}
-  |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE 
+  |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE
     {ScriptTypes.Ifte ((v,t,e), loc (), ref `None)}
-  |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE 
+  |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE
     {ScriptTypes.Ifte ((v,t,ScriptTypes.SeqEnd),  loc (), ref `None)}
   ;
 
