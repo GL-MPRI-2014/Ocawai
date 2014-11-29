@@ -141,4 +141,18 @@ and val_type = function
 
 and seq_type = function
 
-  | _ -> ref `None (* TODO *)
+  | SeqDecl ((d,k),l,t) ->
+      check_decl d ;
+      unify t (ref `Unit_tc) ;
+      seq_type k
+
+  | SeqVar ((v,SeqEnd),l,t) ->
+      unify t (val_type v) ;
+      t
+
+  | SeqVar ((v,k),l,t) ->
+      unify t (val_type v) ;
+      unify t (ref `Unit_tc) ;
+      seq_type k
+
+  | SeqEnd -> ref `None
