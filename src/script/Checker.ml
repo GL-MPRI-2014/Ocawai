@@ -5,6 +5,7 @@ open ScriptTypes
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 (* TODO catch Not_found *)
+exception Unboud_variable of string
 
 let rec deref (t:term_type) =
   match !t with
@@ -73,7 +74,8 @@ and check_decl = function
       Hashtbl.add assignment s (val_type v)
 
   | Varset ((s,v),l) ->
-      unify (Hashtbl.find assignment s) (val_type v)
+      (try unify (Hashtbl.find assignment s) (val_type v)
+      with Not_found -> raise (Unboud_variable s))
 
   | Fundecl ((s,sl,sqt),l) ->
       (* First, for each variable, we associate a type *)
@@ -124,13 +126,16 @@ and val_type = function
       let alpha = ref `None in
       Array.iter (fun v -> unify (val_type v) alpha) va ;
       unify t (ref (`Array_tc alpha)) ; t
-  | Var (s,l,t)    -> unify (Hashtbl.find assignment s) t ; t
+  | Var (s,l,t)    ->
+      (try unify (Hashtbl.find assignment s) t ; t
+      with Not_found -> raise (Unboud_variable s))
   | App ((s,vl),l,t) ->
-      let rt = unify_func
+      (try let rt = unify_func
                 (Hashtbl.find assignment s)
                 (List.map val_type vl)
-      in
-      unify t rt ; t
+        in
+        unify t rt ; t
+      with Not_found -> raise (Unboud_variable s))
   | Ifte ((v,s1,s2),l,t) ->
       unify (val_type v) (ref `Bool_tc) ;
       unify t (seq_type s1) ;
@@ -156,6 +161,15 @@ and seq_type = function
       seq_type k
 
   | SeqEnd -> ref `None
+
+
+let type_check prog =
+  try check_prog prog
+  with
+  | Unification_failure ->
+      Printf.printf "Error: Couldn't unify (more precisions soon)\n"
+  | Unboud_variable s ->
+      Printf.printf "Error: Variable/Function %s is unbound\n" s
 
 
 (* Translates a ScriptValues.value_type to a term_type *)
