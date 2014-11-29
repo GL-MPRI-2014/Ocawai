@@ -1,24 +1,43 @@
+exception Config_error of string
+
+let check_error file f p t = 
+begin
+  match f p t with
+  | None -> t 
+  | Some e -> raise (Config_error (file^" : "^Ag_util.Validation.string_of_error e))
+end
 
 (* Tiles config *)
 
+let create_valid_parsed_tile_list file =
+  let t = Ag_util.Json.from_file Tile_j.read_t_list file in 
+  check_error file Tile_v.validate_t_list [] t
+
 let create_tile_list_from_file file =
-  List.map Tile.parsed_tile_to_tile (Ag_util.Json.from_file Tile_j.read_t_list file)
+  List.map Tile.parsed_tile_to_tile (create_valid_parsed_tile_list file)
 
 (* Units config *)
 
+let create_valid_parsed_unit_list file =
+  let t = Ag_util.Json.from_file Unit_j.read_t_list file in 
+  check_error file Unit_v.validate_t_list [] t
+
 let create_unbound_unit_list_from_file file =
-  List.map Unit.create_unbound_from_parsed_unit (Ag_util.Json.from_file Unit_j.read_t_list file)
+  List.map Unit.create_unbound_from_parsed_unit (create_valid_parsed_unit_list file)
 
 (* Settings config *)
 
 let create_settings_from_file file =
-  Ag_util.Json.from_file Settings_j.read_t file
+  let t = Ag_util.Json.from_file Settings_j.read_t file in
+  check_error file Settings_v.validate_t [] t
 
 let create_engine_settings_from_file file =
-  Ag_util.Json.from_file Settings_engine_j.read_t file
+  let t = Ag_util.Json.from_file Settings_engine_j.read_t file in
+  check_error file Settings_engine_v.validate_t [] t
 
 let create_interface_settings_from_file file =
-  Ag_util.Json.from_file Settings_interface_j.read_t file
+  let t = Ag_util.Json.from_file Settings_interface_j.read_t file in
+  check_error file Settings_interface_v.validate_t [] t
 
 let write_settings_in_file file settings =
   Ag_util.Json.to_file Settings_j.write_t file settings
@@ -121,7 +140,7 @@ object (self)
             "" ""
             interface_settings_temp_file interface_settings_default_file
   
-  method init_default () =
+  method init_default =
     self#init_all default_files
   
   method tiles_list = match t_list with Some a -> a | None -> failwith("no valid tiles file provided so far, call init before")
@@ -154,7 +173,7 @@ end
 
 let config = new t
 
-let _ = config#init_default()
+let _ = config#init_default
 (* Test *)
 
 (*

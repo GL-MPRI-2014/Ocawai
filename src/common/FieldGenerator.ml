@@ -351,11 +351,7 @@ let seed_fill m config =
             List.map
             (fun (t,s) ->
               (
-                t, grow_seed t
-                  (max
-                    1
-                    (Tile.get_grow_speed t)
-                  ) s
+                t, grow_seed t (Tile.get_grow_speed t) s
               )
             )
             ll

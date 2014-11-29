@@ -1,16 +1,21 @@
 
 type structure = [ Block | Road | Border of (string * int * int) ]
 
+type cost_v = int <ocaml validator="Utils.check_validity Tile.check_cost_validity">
+type density_v = int <ocaml validator="Utils.check_validity Tile.check_density_validity">
+type grow_speed_v = int <ocaml validator="Utils.check_validity Tile.check_grow_speed_validity">
+type structure_v = structure <ocaml validator="Utils.check_validity Tile.check_structure_validity">
+
 type t = {
   name: string;
-  ~walk_cost<ocaml default="-1">: int;
-  ~roll_cost<ocaml default="-1">: int;
-  ~tread_cost<ocaml default="-1">: int;
-  ~swim_cost<ocaml default="-1">: int;
-  ~fly_cost<ocaml default="-1">: int;
-  ~density<ocaml default="0">: int;
-  ~grow_speed<ocaml default="1">:int;
-  ~structure<ocaml default="`Block">: structure;
+  ~walk_cost<ocaml default="-1">: cost_v;
+  ~roll_cost<ocaml default="-1">: cost_v;
+  ~tread_cost<ocaml default="-1">: cost_v;
+  ~swim_cost<ocaml default="-1">: cost_v;
+  ~fly_cost<ocaml default="-1">: cost_v;
+  ~density<ocaml default="0">: density_v;
+  ~grow_speed<ocaml default="1">: grow_speed_v;
+  ~structure<ocaml default="`Block">: structure_v;
 }
 
 type t_list = t list

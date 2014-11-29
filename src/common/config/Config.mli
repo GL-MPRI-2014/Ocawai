@@ -20,7 +20,7 @@ object
   (** Initialize the interface settings files *)
   method init_interface : string * string -> unit
   (** Initialize everything by default*)
-  method init_default : unit -> unit
+  method init_default : unit
   
   (** Tiles list obtained by reading the json config file *)
   method tiles_list : Tile.t list
