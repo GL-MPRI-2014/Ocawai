@@ -40,8 +40,10 @@ type t_list = t list
 type t_valid_list = { list : t_list}
   <ocaml validator="Utils.check_validity (
     fun lr ->
-      (* contains at least a blank tile and a water tile *)
-      List.exists (fun t -> t.name = \"blank\") lr.list && List.exists (fun t -> t.name = \"water\") lr.list
+      (* contains at least a blank tile, a plain tile and a water tile *)
+      List.exists (fun t -> t.name = \"blank\") lr.list
+      && List.exists (fun t -> t.name = \"plain\") lr.list
+      && List.exists (fun t -> t.name = \"water\") lr.list
       (* if not a Block, density and grow_speed are set to default *)
       && List.for_all (fun t -> t.structure = `Block || (t.density = 0 && t.grow_speed = 1)) lr.list
       (* all borders are refering to existing tiles *)

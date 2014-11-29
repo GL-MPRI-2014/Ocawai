@@ -1,7 +1,12 @@
 
+type f_s_positive = float
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0. < x
+  )">
+
 type t = {
   
-  cursor_speed<ocaml mutable> : int;
+  cursor_speed<ocaml mutable> : f_s_positive;
   
 }
 

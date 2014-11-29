@@ -1,8 +1,12 @@
 {
+    "generation_method": "Island",
+    
     "generate_attempts": 10,
     "structs_attempts": 1,
     "units_spawn_attempts": 5,
+    
     "nb_seeds_ratio": 50,
     "dist_min_between_seeds": 2,
+    
     "island_expansion": 50
 }
