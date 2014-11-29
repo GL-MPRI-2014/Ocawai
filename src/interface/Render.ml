@@ -14,11 +14,11 @@ let renderer = object(self)
 
   method init = 
     let folder = ref "" in
-    try
+    (try
       if (Sys.is_directory "resources/textures") then
         folder := "resources/textures/"
       else folder := "/usr/share/GL_2014/textures/"
-    with Sys_error _ -> folder := "/usr/share/GL_2014/textures/";
+    with Sys_error _ -> folder := "/usr/share/GL_2014/textures/";);
 
     TextureLibrary.load_directory texture_library (!folder);
     TilesetLibrary.load_directory tileset_library (!folder);
