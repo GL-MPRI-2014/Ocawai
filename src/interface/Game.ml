@@ -12,7 +12,7 @@ let new_game () =
 
   let m_engine =new Game_engine.game_engine () in
 
-  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 50 50 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 70 70 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50

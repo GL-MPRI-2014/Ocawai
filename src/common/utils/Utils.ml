@@ -34,3 +34,7 @@ let () =
   Log.set_log_level Log.DEBUG;
   Log.set_output stdout;
   Log.color_on()
+
+let check_validity f path x =
+  if f x then None
+  else Some (Ag_util.Validation.error path)

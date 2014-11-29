@@ -1,24 +1,47 @@
+(* Config validity checking*)
+
+exception Config_error of string
+
+let check_error file f p t = 
+begin
+  match f p t with
+  | None -> t 
+  | Some err -> raise (Config_error (file^" : "^Ag_util.Validation.string_of_error err))
+end
 
 (* Tiles config *)
 
+let create_valid_parsed_tile_list file =
+  let open Tile_t in
+  let t = Ag_util.Json.from_file Tile_j.read_t_list file in 
+  (check_error file Tile_v.validate_t_valid_list [] {list = t;}).list
+
 let create_tile_list_from_file file =
-  List.map Tile.parsed_tile_to_tile (Ag_util.Json.from_file Tile_j.read_t_list file)
+  List.map Tile.parsed_tile_to_tile (create_valid_parsed_tile_list file)
 
 (* Units config *)
 
+let create_valid_parsed_unit_list file =
+  let open Unit_t in
+  let t = Ag_util.Json.from_file Unit_j.read_t_list file in 
+  (check_error file Unit_v.validate_t_valid_list [] {list = t;}).list
+
 let create_unbound_unit_list_from_file file =
-  List.map Unit.create_unbound_from_parsed_unit (Ag_util.Json.from_file Unit_j.read_t_list file)
+  List.map Unit.create_unbound_from_parsed_unit (create_valid_parsed_unit_list file)
 
 (* Settings config *)
 
 let create_settings_from_file file =
-  Ag_util.Json.from_file Settings_j.read_t file
+  let t = Ag_util.Json.from_file Settings_j.read_t file in
+  check_error file Settings_v.validate_t [] t
 
 let create_engine_settings_from_file file =
-  Ag_util.Json.from_file Settings_engine_j.read_t file
+  let t = Ag_util.Json.from_file Settings_engine_j.read_t file in
+  check_error file Settings_engine_v.validate_t [] t
 
 let create_interface_settings_from_file file =
-  Ag_util.Json.from_file Settings_interface_j.read_t file
+  let t = Ag_util.Json.from_file Settings_interface_j.read_t file in
+  check_error file Settings_interface_v.validate_t [] t
 
 let write_settings_in_file file settings =
   Ag_util.Json.to_file Settings_j.write_t file settings
@@ -96,32 +119,30 @@ object (self)
     if Sys.file_exists engine_settings_default_file then engine_settings_default <- engine_settings_default_file;
     if interface_settings_temp_file <> "" then interface_settings_temp <- interface_settings_temp_file;
     if Sys.file_exists interface_settings_default_file then interface_settings_default <- interface_settings_default_file;
-    self#reload
+    self#reload_all;
+    print_endline "Config loading success"
   
-  method private init_all (x1,x2,x3,x4,x5,x6,x7,x8) = self#init_names x1 x2 x3 x4 x5 x6 x7 x8
-  
+  method private init_all (x1,x2,x3,x4,x5,x6,x7,x8) =
+    self#init_names x1 x2 x3 x4 x5 x6 x7 x8
   method init (tiles_file, units_file, settings_temp_file, settings_default_file) =
     self#init_names
           tiles_file units_file
           settings_temp_file settings_default_file
           "" ""
           "" ""
-  
   method init_engine (engine_settings_temp_file, engine_settings_default_file) =
     self#init_names
           "" ""
           "" ""
           engine_settings_temp_file engine_settings_default_file
           "" ""
-  
   method init_interface (interface_settings_temp_file, interface_settings_default_file) =
     self#init_names
             "" ""
             "" ""
             "" ""
             interface_settings_temp_file interface_settings_default_file
-  
-  method init_default () =
+  method init_default =
     self#init_all default_files
   
   method tiles_list = match t_list with Some a -> a | None -> failwith("no valid tiles file provided so far, call init before")
@@ -133,28 +154,75 @@ object (self)
   method tile name = List.find (fun t -> Tile.get_name t = name) self#tiles_list
   method unbound_unit name = List.find (fun uni -> uni#name = name) self#unbound_units_list
 
-  method reload =
+  method reload_settings =
+    if self#available_settings <> "" then s <- Some (create_settings_from_file self#available_settings)
+  method reload_settings_engine =
+    if self#available_engine_settings <> "" then engine_s <- Some (create_engine_settings_from_file self#available_engine_settings)
+  method reload_settings_interface =
+    if self#available_interface_settings <> "" then interface_s <- Some (create_interface_settings_from_file self#available_interface_settings)
+  method reload_all =
     if tiles_config <> "" then t_list <- Some (create_tile_list_from_file tiles_config);
     if units_config <> "" then u_list <- Some (create_unbound_unit_list_from_file units_config);
-    if self#available_settings <> "" then s <- Some (create_settings_from_file self#available_settings);
-    if self#available_engine_settings <> "" then engine_s <- Some (create_engine_settings_from_file self#available_engine_settings);
-    if self#available_interface_settings <> "" then interface_s <- Some (create_interface_settings_from_file self#available_interface_settings)
+    self#reload_settings;
+    self#reload_settings_engine;
+    self#reload_settings_interface
   
-  method reset_to_default =
-    if settings_default <> "" then s <- Some (create_settings_from_file settings_default);
-    if engine_settings_default <> "" then engine_s <- Some (create_engine_settings_from_file engine_settings_default);
+  method reset_settings =
+    if settings_default <> "" then s <- Some (create_settings_from_file settings_default)
+  method reset_settings_engine =
+    if engine_settings_default <> "" then engine_s <- Some (create_engine_settings_from_file engine_settings_default)
+  method reset_settings_interface =
     if interface_settings_default <> "" then interface_s <- Some (create_interface_settings_from_file interface_settings_default)
+  method reset_all =
+    self#reset_settings;
+    self#reset_settings_engine;
+    self#reset_settings_interface
   
   method save_settings =
-    if s <> None then write_settings_in_file settings_temp self#settings;
-    if engine_s <> None then write_engine_settings_in_file engine_settings_temp self#settings_engine;
+    if s <> None then write_settings_in_file settings_temp self#settings
+  method save_settings_engine =
+    if engine_s <> None then write_engine_settings_in_file engine_settings_temp self#settings_engine
+  method save_settings_interface =
     if interface_s <> None then write_interface_settings_in_file interface_settings_temp self#settings_interface
+  method save_all =
+    self#save_settings;
+    self#save_settings_engine;
+    self#save_settings_interface
+
+  method private check_settings =
+    (try
+      begin 
+        let _ = if s <> None then
+          (let _ = check_error self#available_settings Settings_v.validate_t [] self#settings in ()) else () in 
+        true
+      end
+     with | Config_error (msg) -> false)
+  method private check_settings_engine =
+    (try
+      begin
+        let _ = if s <> None then
+          (let _ = check_error self#available_engine_settings Settings_engine_v.validate_t [] self#settings_engine in ()) else () in 
+        true
+      end
+     with | Config_error (msg) -> false)
+  method private check_settings_interface =
+    (try
+      begin
+        let _ = if s <> None then
+          (let _ = check_error self#available_interface_settings Settings_interface_v.validate_t [] self#settings_interface in ()) else () in 
+        true
+      end
+     with | Config_error (msg) -> false)
+  method check_all =
+    self#check_settings
+    && self#check_settings_engine
+    && self#check_settings_interface
 
 end
 
 let config = new t
 
-let _ = config#init_default()
+let _ = config#init_default
 (* Test *)
 
 (*
