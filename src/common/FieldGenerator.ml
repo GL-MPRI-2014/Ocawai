@@ -554,7 +554,7 @@ let positioning m playerslist legit_spawns config =
   let rec test_dist_spawns p = function
     | [] -> true
     | p1::q ->
-        (Position.dist p p1 > (90*(width + height)*sqrt_expansion)/(1000*nbplayers))
+        (Position.dist p p1 > ((width + height)*sqrt_expansion)/(10*nbplayers))
         && test_dist_spawns p q
   in
   (* extract a random valid sequence of spawns *)
