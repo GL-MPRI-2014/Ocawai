@@ -49,14 +49,3 @@ val parsed_tile_to_tile : Tile_t.t -> t
 (** Creates a parsed tile from a tile*)
 val tile_to_parsed_tile : t -> Tile_t.t
 
-(** test if a cost is valid*)
-val check_cost_validity : int -> bool
-
-(** test if a density is valid*)
-val check_density_validity : int -> bool
-
-(** test if a grow_speed is valid*)
-val check_grow_speed_validity : int -> bool
-
-(** test if a structure is valid*)
-val check_structure_validity : structure -> bool

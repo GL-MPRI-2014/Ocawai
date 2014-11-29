@@ -79,15 +79,3 @@ let parsed_tile_to_tile t = t
 
 let tile_to_parsed_tile t = t
 
-let check_cost_validity c = c >= -1
-
-let check_density_validity d = d >= 0
-
-let check_grow_speed_validity g = g >= 1
-
-let check_structure_validity st =
-  match st with
-  | `Border (_,rate,expansion) -> ( rate >= 0 || rate <= 1000 || expansion >= 0)
-  | _ -> true
-
-

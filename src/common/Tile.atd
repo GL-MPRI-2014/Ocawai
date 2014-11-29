@@ -1,22 +1,49 @@
 
-type structure = [ Block | Road | Border of (string * int * int) ]
+type structure = [ Block | Road | Border of (string * int * int) ] 
+  <ocaml validator="Utils.check_validity (
+    fun st -> match st with
+    | `Border (_,rate,expansion) -> rate >= 0 && rate <= 1000 && expansion >= 0
+    | _ -> true
+  )">
 
-type cost_v = int <ocaml validator="Utils.check_validity Tile.check_cost_validity">
-type density_v = int <ocaml validator="Utils.check_validity Tile.check_density_validity">
-type grow_speed_v = int <ocaml validator="Utils.check_validity Tile.check_grow_speed_validity">
-type structure_v = structure <ocaml validator="Utils.check_validity Tile.check_structure_validity">
+type name_v = string
+  <ocaml validator="Utils.check_validity (
+    fun s -> s <> \"\"
+  )">
+type cost_v = int
+  <ocaml validator="Utils.check_validity (
+    fun c -> -1 <= c
+  )">
+type positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 <= x
+  )">
+type s_positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 < x
+  )">
 
 type t = {
-  name: string;
+  name: name_v;
   ~walk_cost<ocaml default="-1">: cost_v;
   ~roll_cost<ocaml default="-1">: cost_v;
   ~tread_cost<ocaml default="-1">: cost_v;
   ~swim_cost<ocaml default="-1">: cost_v;
   ~fly_cost<ocaml default="-1">: cost_v;
-  ~density<ocaml default="0">: density_v;
-  ~grow_speed<ocaml default="1">: grow_speed_v;
-  ~structure<ocaml default="`Block">: structure_v;
+  ~density<ocaml default="0">: positive;
+  ~grow_speed<ocaml default="1">: s_positive;
+  ~structure<ocaml default="`Block">: structure;
 }
 
 type t_list = t list
 
+type t_valid_list = { list : t_list}
+  <ocaml validator="Utils.check_validity (
+    fun lr ->
+      (* contains at least a blank tile and a water tile *)
+      List.exists (fun t -> t.name = \"blank\") lr.list && List.exists (fun t -> t.name = \"water\") lr.list
+      (* if not a Block, density and grow_speed are set to default *)
+      && List.for_all (fun t -> t.structure = `Block || (t.density = 0 && t.grow_speed = 1)) lr.list
+      (* all borders are refering to existing tiles *)
+      && List.for_all (fun t -> match t.structure with | `Border(s,_,_) -> List.exists (fun t -> t.name = s) lr.list | _ -> true) lr.list
+    )">

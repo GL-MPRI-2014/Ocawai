@@ -66,24 +66,22 @@ let bind uu pos p_id =
 
 let create_unbound_from_parsed_unit u = new unbound_soldier (u.Unit_t.name)
 (match (u.Unit_t.movement_type) with
-| "walk" -> Walk
-| "roll" -> Roll
-| "tread" -> Tread
-| "swim" -> Swim
-| "fly" -> Fly
-| "amphibious_walk" -> Amphibious_Walk
-| "amphibious_roll" -> Amphibious_Roll
-| "amphibious_tread" -> Amphibious_Tread
-| "all" -> All
-| a -> failwith("create_unbound_from_unit_t : "^a^" is not a movement\n")
+| `Walk -> Walk
+| `Roll -> Roll
+| `Tread -> Tread
+| `Swim -> Swim
+| `Fly -> Fly
+| `Amphibious_Walk -> Amphibious_Walk
+| `Amphibious_Roll -> Amphibious_Roll
+| `Amphibious_Tread -> Amphibious_Tread
+| `All -> All
 ) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) 
 (u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base)
 (match u.Unit_t.armor with
-| "light" -> Light
-| "normal" -> Normal
-| "heavy" -> Heavy
-| a -> failwith("create_unbound_from_unit_t : "^a^" is not an armor type\n"))
-(u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
+| `Light -> Light
+| `Normal -> Normal
+| `Heavy -> Heavy
+) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
 (u.Unit_t.price) (u.Unit_t.life_max)
 
 
