@@ -28,6 +28,9 @@ let create_listener port =
     | Unix.Unix_error (Unix.EADDRINUSE, _, _) ->
       Unix.close fd_listen ;
         failwith "port already in use"
+    | Unix.Unix_error (_, "bind", _) ->
+      Unix.close fd_listen ;
+         failwith "Port illegal"
 	
 (**
  * This function initializes the connection with
