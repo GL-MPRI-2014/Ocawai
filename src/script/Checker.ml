@@ -4,6 +4,7 @@ open ScriptTypes
 
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
+(* TODO catch Not_found *)
 
 let rec deref (t:term_type) =
   match !t with
@@ -43,8 +44,7 @@ let rec unify_func (ftype : term_type) = function
             ftype
       )
 
-
-(* Assuming every variable is in assignment *)
+(* Note : for prog_type / decl_type / procedure_type, t is useless *)
 let rec check_prog = function
 
   | GlobDecl ((d,k),l,t) ->
@@ -57,14 +57,17 @@ let rec check_prog = function
       unify t (ref `Unit_tc) ;
       check_prog k
 
-  | GlobSeq ((v,k),l,t) -> () (* TODO, sorry :) *)
+  | GlobSeq ((v,k),l,t) ->
+      (* TODO *)
+      unify t (ref `Unit_tc) ;
+      check_prog k
 
   | Empty -> ()
 
 and check_decl = function
 
   | Vardecl ((s,v),l,t) ->
-      unify (Hashtbl.find assignment s) (val_type v) ;
+      Hashtbl.add assignment s (val_type v) ;
       unify t (ref `Unit_tc)
 
   | Varset ((s,v),l,t) ->
@@ -72,8 +75,17 @@ and check_decl = function
       unify t (ref `Unit_tc)
 
   | Fundecl ((s,sl,sqt),l,t) ->
-      (* unify_func (Hashtbl.find assignment s) sl *)
-      (* TODO *)
+      (* First, for each variable, we associate a type *)
+      List.iter (fun s -> Hashtbl.add assignment s (ref `None)) sl ;
+      let tl = List.map (fun s -> Hashtbl.find assignment s) sl in
+      let return_type = ref `None in
+      (* We deduce the function type *)
+      List.fold_right (fun a b -> ref (`Fun_tc (a,b))) tl return_type |>
+      Hashtbl.add assignment s ;
+      (* We precise these types by checking the sequence *)
+      unify return_type (seq_type sqt) ;
+      (* Out of this scope, the variables are no more *)
+      List.iter (fun s -> Hashtbl.remove assignment s) sl ;
       unify t (ref `Unit_tc)
 
 and check_procedure = function
