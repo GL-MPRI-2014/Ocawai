@@ -58,14 +58,14 @@ let accessible_positions unit player player_list bf =
   if not (List.mem unit player#get_army) then
     failwith "accessible_positions: wrong player";
   let visible_pos = player_vision player bf in
-  let unit_pos = Hashtbl.create 50 in
+  let unit_pos = Hashtbl.create 101 in
   List.iter
     (fun player -> List.iter
       (fun unit -> Hashtbl.add unit_pos unit#position (unit,player))
       player#get_army
     )
     player_list;
-  let h = Hashtbl.create 50 in
+  let h = Hashtbl.create 101 in
   let l = ref [unit#position] in
   let path_init = Path.init unit#position in
   Hashtbl.add h unit#position path_init;
