@@ -146,7 +146,7 @@ let () =
   ScriptValues.expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
   ScriptValues.expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
   ScriptValues.expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
-  ScriptValues.expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
+  ScriptValues.expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl"
 
 
 

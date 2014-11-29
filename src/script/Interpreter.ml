@@ -130,7 +130,8 @@ and eval_decl env = function
       let v' = eval_value env v in
       set_value s v' env
   |Fundecl ((s,args,seq),_,_) -> 
-      new_value s (create_lambda env args seq) env
+      let env' = new_value s (`Fun(fun _ -> assert false)) env in
+      set_value s (create_lambda env' args seq) env'
 
 and eval_seq env = function
   |SeqDecl((decl, seq),_,_) -> 

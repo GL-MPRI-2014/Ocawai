@@ -1,63 +1,19 @@
-var a_global = 10;
-
-a_global = a_global + 2 * 3;
-
-print_int (6 / 2 + 4 / 2 * 4);
-
-var global_message = "";
-
-fun test () = 
-{
-  print_string "Ok\n";
+fun fact n = {
+  if (n <= 0) { 1 }
+  else {n * (fact (n-1))}
 }
 
-fun f s1 s2 =
-{
-  print_string s1;
-  print_string global_message;
-  print_string s2;
-}
-
-var flambda = f "\nCoucou\n";
-
-var s1 = "Ceci ne devrait pas s'afficher.";
-
-var s2 = "Ceci non plus.";
-
-global_message = "Hello world !\n";
-
-flambda "It's me :)\n";
-
-test ();
-
-var l = [1;2;3;4];
-
-print_int (list_hd l);
-print_int (list_hd (list_tl l));
-
-l = list_tl (list_tl l);
-print_int (list_hd l);
-print_int (list_hd (list_tl l));
-
+print_int (fact 10);
 print_string "\n";
 
-
-attack infantry, bazooka {
-  var a_local = 42;
-
-  a_local = a_local / 7;
-
-  if (a_local > 7) {
-    print_string "Fail"
-  }
-  else {
-    print_string "Ok"
-  }
+move default {
 }
 
-a_global = a_global + 12;
+attack default {
+}
+
+init {
+}
 
 main {
-  print_int a_global;
-  (5,3)
 }

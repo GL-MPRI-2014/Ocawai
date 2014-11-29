@@ -34,7 +34,7 @@ let expose f t s =
   Hashtbl.add value_table s (f,t)
 
 let hide s = 
-  print_endline ("  [\027[32mhide\027[0m] " ^ s);  
+  print_endline ("  [\027[31mhide\027[0m] " ^ s);  
   Hashtbl.remove value_table s
 
 let type_of s = 
