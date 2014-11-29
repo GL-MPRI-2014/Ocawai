@@ -43,7 +43,7 @@ dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $
 
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir)
-interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir)
+interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir),$(script_dir)
 network_src=$(network_dir),$(common_dir),$(utils_dir),$(config_dir)
 script_src=$(common_dir),$(utils_dir),$(script_dir),$(config_dir)
 
@@ -77,9 +77,11 @@ output_engine = dummy_serv.native
 
 command = ocamlbuild -use-ocamlfind -cflags $(cflags)
 
-interface_command =	$(command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+menhir_command = -use-menhir -yaccflag --explain
 
-script_command = $(command) -use-menhir -yaccflag --explain -Is $(script_src) -package $(script_dependencies) $(output_script)
+interface_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script)
 
 engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 

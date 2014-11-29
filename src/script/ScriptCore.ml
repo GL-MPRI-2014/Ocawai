@@ -133,8 +133,17 @@ let scr_listtl =
 let scr_listempty = 
   `Fun(function
     |`List([]) -> `Bool(true)
-    |`List(_ ) -> `Bool(false)
+    |`List(_::_) -> `Bool(false)
     | _ -> assert false
+  )
+
+let scr_listmem = 
+  `Fun(fun l ->
+    `Fun(fun m ->
+      match l with
+      |`List(l) -> `Bool(List.mem m l)
+      | _ -> assert false
+    )
   )
 
 let scr_fst = 
@@ -234,6 +243,26 @@ let scr_armyof =
     | _ -> assert false
   )
 
+let scr_dijkstra = 
+  `Fun(function
+    |`Soldier(u) -> `Fun(function
+      |`Pair(`Int(a), `Int(b)) -> 
+          let map = 
+            match ScriptValues.value_of "map" with
+            |`Map(m) -> m
+            | _      -> assert false
+          in
+          Path.dijkstra map u#position u#movement_type (Position.create (a,b))
+          |> (function 
+              |Some(i,p) -> Path.get_move p 
+              | _ -> assert false)
+          |> List.map position_to_pair
+          |> fun l -> `List l
+      | _ -> assert false
+    )
+    | _ -> assert false
+  )
+
 let intpair = `Pair_t (`Int_t, `Int_t)
 
 let init () = 
@@ -254,6 +283,7 @@ let init () =
   ScriptValues.expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
   ScriptValues.expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
   ScriptValues.expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
+  ScriptValues.expose scr_listmem(`Fun_t(`List_t (`Alpha_t(0)), `Fun_t(`Alpha_t(0), `Bool_t))) "list_mem";
   ScriptValues.expose scr_fst    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(0))) "fst";
   ScriptValues.expose scr_snd    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(1))) "snd";
   ScriptValues.expose scr_add2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "add2D";
@@ -264,7 +294,9 @@ let init () =
   ScriptValues.expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   ScriptValues.expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
   ScriptValues.expose scr_accessibles (`Fun_t(`Soldier_t, `List_t(intpair))) "accessible_positions";
-  ScriptValues.expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t))) "army_of"
+  ScriptValues.expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t)))
+  "army_of";
+  ScriptValues.expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(intpair,`List_t(intpair)))) "dijkstra_to"
 
 
 

@@ -83,7 +83,7 @@ let get_global_value s (env : var_environment) =
   try get_value s env 
   with |Unbound_variable(_) -> begin
     try ScriptValues.value_of s 
-    with |ScriptValues.Script_value_not_found -> 
+    with |ScriptValues.Script_value_not_found(_) -> 
       raise (Unbound_variable s)
   end
 
@@ -176,6 +176,7 @@ let main_script (env, ep) =
   | _ -> assert false
 
 let move_script (env, ep) u = 
+  ScriptValues.expose (`Soldier u) `Soldier_t "selected_unit";
   match eval_seq env (ep#move u#name) with
   |`List(l) -> List.map pair_to_pos l
   | _ -> assert false

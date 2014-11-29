@@ -27,7 +27,7 @@ type value = [
   `Player  of Player.logicPlayer
 ]
 
-exception Script_value_not_found
+exception Script_value_not_found of string
 
 module ScriptLoadingLog = Log.Make (struct let section = "Script" end)
 
@@ -35,7 +35,7 @@ let value_table = Hashtbl.create 13
 
 let expose f t s = 
   ScriptLoadingLog.infof "[exposed] %s" s;
-  Hashtbl.add value_table s (f,t)
+  Hashtbl.replace value_table s (f,t)
 
 let hide s = 
   ScriptLoadingLog.infof "[hide] %s" s;
@@ -45,11 +45,11 @@ let type_of s =
   try 
     snd (Hashtbl.find value_table s)
   with
-    |Not_found -> raise Script_value_not_found
+    |Not_found -> raise (Script_value_not_found s)
 
 let value_of s = 
   try
     fst (Hashtbl.find value_table s)
   with
-    |Not_found -> raise Script_value_not_found
+    |Not_found -> raise (Script_value_not_found s)
 

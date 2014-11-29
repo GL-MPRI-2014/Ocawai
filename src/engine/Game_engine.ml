@@ -22,9 +22,12 @@ class game_engine () = object (self)
       let config = Config.config in
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
-      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else new ScriptedPlayer.scripted_player "src/script/test.script" [] []);
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in
+      ScriptValues.expose (`List(List.map (fun p -> `Player(p)) players)) (`List_t(`Player_t)) "players";
+      ScriptValues.expose (`Map(map)) `Map_t "map";
+      (players, map)
 
   method init_net port nbplayers map_wht map_hgt =
       let config = Config.config in

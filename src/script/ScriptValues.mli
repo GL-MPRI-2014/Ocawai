@@ -31,7 +31,7 @@ type value = [
   `Player  of Player.logicPlayer
 ]
 
-exception Script_value_not_found
+exception Script_value_not_found of string
 
 (** [expose f t s] exposes a value f of type t to the script system.
   * The value will be refered as s in the language *)
