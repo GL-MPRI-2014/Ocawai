@@ -131,22 +131,22 @@ let scr_listtl =
   )
 
 let () = 
-  ScriptEngine.expose scr_or  (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_or" ;
-  ScriptEngine.expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
-  ScriptEngine.expose scr_gt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_gt" ;
-  ScriptEngine.expose scr_lt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_lt" ;
-  ScriptEngine.expose scr_eq  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_eq" ;
-  ScriptEngine.expose scr_ge  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_ge" ;
-  ScriptEngine.expose scr_le  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_le" ;
-  ScriptEngine.expose scr_mul (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_mul";
-  ScriptEngine.expose scr_add (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_add";
-  ScriptEngine.expose scr_sub (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_sub";
-  ScriptEngine.expose scr_div (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_div";
-  ScriptEngine.expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
-  ScriptEngine.expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
-  ScriptEngine.expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
-  ScriptEngine.expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
-  ScriptEngine.expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
+  ScriptValues.expose scr_or  (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_or" ;
+  ScriptValues.expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
+  ScriptValues.expose scr_gt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_gt" ;
+  ScriptValues.expose scr_lt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_lt" ;
+  ScriptValues.expose scr_eq  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_eq" ;
+  ScriptValues.expose scr_ge  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_ge" ;
+  ScriptValues.expose scr_le  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_le" ;
+  ScriptValues.expose scr_mul (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_mul";
+  ScriptValues.expose scr_add (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_add";
+  ScriptValues.expose scr_sub (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_sub";
+  ScriptValues.expose scr_div (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_div";
+  ScriptValues.expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
+  ScriptValues.expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
+  ScriptValues.expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
+  ScriptValues.expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
+  ScriptValues.expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
 
 
 

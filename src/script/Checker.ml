@@ -1,6 +1,6 @@
 (* Type Checker *)
 
-open Types
+open ScriptTypes
 
 (* Associate every variable name to its type *)
 let assignment = Hashtbl.create 97

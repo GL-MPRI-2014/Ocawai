@@ -53,6 +53,7 @@ test_src=test,$(engine_src)
 common_dependencies = atdgen,dolog,unix
 engine_dependencies = $(common_dependencies)
 music_dependencies = bigarray,mm,threads,num,ocsfml.audio
+script_dependencies = $(common_dependencies)
 
 
 test_dependencies=$(engine_dependencies),oUnit
@@ -77,6 +78,8 @@ output_engine = dummy_serv.native
 command = ocamlbuild -use-ocamlfind -cflags $(cflags)
 
 interface_command =	$(command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+script_command = $(command) -use-menhir -yaccflag --explain -Is $(script_src) -package $(script_dependencies) $(output_script)
 
 engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
 
@@ -122,8 +125,8 @@ run: interface
 engine:  $(files_atd_ml)
 	$(engine_command)
 
-script:
-	ocamlbuild -use-ocamlfind -use-menhir -yaccflag --explain -cflags $(cflags) -Is $(script_src) $(output_script)
+script: $(files_atd_ml)
+	$(script_command)
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:

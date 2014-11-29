@@ -1,43 +1,39 @@
-type value_type = [
-  `Int_t    |
-  `Unit_t   |
-  `String_t |
-  `Bool_t   |
-  `Alpha_t of int |
-  `List_t  of value_type |
-  `Array_t of value_type |
-  `Fun_t   of value_type * value_type |
-  `Pair_t  of value_type * value_type
-]
+open ScriptTypes
+open Lexing
+open ScriptCore
+open Checker
+open Interpreter
 
-type value = [
-  `Int    of int              |
-  `Unit                       |
-  `String of string           |
-  `Bool   of bool             |
-  `List   of value list       |
-  `Array  of value array      |
-  `Fun    of (value -> value) |
-  `Pair   of value * value
-]
+let print_position lexbuf =
+  let pos = lexbuf.lex_curr_p in
+  let str = Lexing.lexeme lexbuf in
+  let begchar = pos.pos_cnum - pos.pos_bol + 1 in
+  Printf.printf "In %s, line %d, characters %d-%d : %s"
+    pos.pos_fname pos.pos_lnum begchar
+    (begchar + (String.length str))
+    (Lexing.lexeme lexbuf)
 
-exception Script_value_not_found
-
-let value_table = Hashtbl.create 13
-
-let expose f t s = 
-  print_endline ("  [\027[33mexposed\027[0m] " ^ s);  
-  Hashtbl.add value_table s (f,t)
-
-let type_of s = 
-  try 
-    snd (Hashtbl.find value_table s)
-  with
-    |Not_found -> raise Script_value_not_found
-
-let value_of s = 
+let parse_with_errors lexbuf =
   try
-    fst (Hashtbl.find value_table s)
+    Parser.file Lexer.token lexbuf
   with
-    |Not_found -> raise Script_value_not_found
+    |Lexer.Script_SyntaxError msg ->
+        print_position lexbuf;
+        Printf.printf " : %s" msg;
+        print_endline "";
+        ScriptTypes.Empty
+    |Parser.Error ->
+        print_position lexbuf;
+        Printf.printf " : Syntax Error";
+        print_endline "";
+        ScriptTypes.Empty
+
+let script_from_file f =
+  let input = open_in f in
+  let lexbuf = from_channel input in
+  lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};
+  let script = parse_with_errors lexbuf in
+  close_in input;
+  Interpreter.new_script script
+
 

@@ -1,5 +1,5 @@
-open Types
-open ScriptEngine
+open ScriptTypes
+open ScriptValues
 
 type var_environment = (string * value ref) list
 
@@ -7,6 +7,8 @@ type var_environment = (string * value ref) list
 exception Unbound_variable of string
 
 exception Unbound_function of string
+
+exception Entry_point_missing of string
 
 
 class entrypoints = object(self)
@@ -29,7 +31,35 @@ class entrypoints = object(self)
   method add_attack (sl, t) = 
     List.iter (fun s -> Hashtbl.add attacks s t) sl
 
+  method main = 
+    match main with
+    |None -> raise (Entry_point_missing "Missing main")
+    |Some(m) -> m
+
+  method init = 
+    match init with
+    |None -> raise (Entry_point_missing "Missing init")
+    |Some(m) -> m
+
+  method move s = 
+    try Hashtbl.find moves s 
+    with |Not_found -> begin
+      try Hashtbl.find moves "default"
+      with |Not_found -> raise (Entry_point_missing 
+        ("No move method for " ^ s ^ " or default."))
+    end
+
+  method attack s = 
+    try Hashtbl.find attacks s 
+    with |Not_found -> begin
+      try Hashtbl.find attacks "default"
+      with |Not_found -> raise (Entry_point_missing 
+        ("No attack method for " ^ s ^ " or default."))
+    end
+
 end
+
+type script = var_environment * entrypoints
 
 
 let get_value s (env : var_environment) = 
@@ -52,8 +82,8 @@ let new_value s v (env : var_environment) =
 let get_global_value s (env : var_environment) = 
   try get_value s env 
   with |Unbound_variable(_) -> begin
-    try ScriptEngine.value_of s 
-    with |ScriptEngine.Script_value_not_found -> 
+    try ScriptValues.value_of s 
+    with |ScriptValues.Script_value_not_found -> 
       raise (Unbound_variable s)
   end
 
@@ -126,4 +156,30 @@ and eval_prog env entries = function
   |Empty -> env
 
 
-let interprete prog = eval_prog [] (new entrypoints) prog
+let new_script prog = 
+  let ep = new entrypoints in
+  let env = eval_prog [] ep prog in
+  (env, ep)
+
+let init_script (env, ep) = 
+  eval_seq env ep#init
+  |> ignore
+
+let pair_to_pos = function
+  |`Pair(`Int(a), `Int(b)) -> Position.create (a,b)
+  | _ -> assert false
+
+let main_script (env, ep) = 
+  eval_seq env ep#main
+  |> pair_to_pos
+
+let action_script (env, ep) u = 
+  let mov = 
+    match eval_seq env (ep#move u#name) with
+    |`List(l) -> List.map pair_to_pos l
+    | _ -> assert false
+  in 
+  let atk = 
+    eval_seq env (ep#attack u#name)
+    |> pair_to_pos
+  in (mov,atk)

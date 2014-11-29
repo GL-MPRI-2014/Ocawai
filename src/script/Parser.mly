@@ -25,31 +25,31 @@
 %left EQUALS EQEQ
 %nonassoc NOT
 
-%start <Types.prog_type> file
+%start <ScriptTypes.prog_type> file
 %%
 
 file:
-  | EOF {Types.Empty}
-  | d = decl; f = file {Types.GlobDecl ((d,f),loc (), ref `None)}
-  | p = proc; f = file {Types.GlobProc ((p,f),loc (), ref `None)}
-  | v = value; SEMICOLON; f = file {Types.GlobSeq ((v,f),loc (), ref `None)}
-  | v = value; EOF {Types.GlobSeq ((v,Types.Empty),loc (), ref `None)}
+  | EOF {ScriptTypes.Empty}
+  | d = decl; f = file {ScriptTypes.GlobDecl ((d,f),loc (), ref `None)}
+  | p = proc; f = file {ScriptTypes.GlobProc ((p,f),loc (), ref `None)}
+  | v = value; SEMICOLON; f = file {ScriptTypes.GlobSeq ((v,f),loc (), ref `None)}
+  | v = value; EOF {ScriptTypes.GlobSeq ((v,ScriptTypes.Empty),loc (), ref `None)}
   ;
 
 seqexpr:
-  |d = decl; s = seqexpr {Types.SeqDecl ((d,s),loc (), ref `None)}
-  |v = value; SEMICOLON; s = seqexpr {Types.SeqVar ((v,s),loc (), ref `None)}
-  |v = value {Types.SeqVar ((v,Types.SeqEnd), loc (), ref `None)}
-  | {Types.SeqEnd}
+  |d = decl; s = seqexpr {ScriptTypes.SeqDecl ((d,s),loc (), ref `None)}
+  |v = value; SEMICOLON; s = seqexpr {ScriptTypes.SeqVar ((v,s),loc (), ref `None)}
+  |v = value {ScriptTypes.SeqVar ((v,ScriptTypes.SeqEnd), loc (), ref `None)}
+  | {ScriptTypes.SeqEnd}
   ;
 
 decl:
-  |VAR; s = LIDENT; EQUALS; v = value; SEMICOLON {Types.Vardecl ((s,v), loc (), ref `None)}
-  |s = LIDENT; EQUALS; v = value; SEMICOLON {Types.Varset ((s,v), loc (), ref `None)}
+  |VAR; s = LIDENT; EQUALS; v = value; SEMICOLON {ScriptTypes.Vardecl ((s,v), loc (), ref `None)}
+  |s = LIDENT; EQUALS; v = value; SEMICOLON {ScriptTypes.Varset ((s,v), loc (), ref `None)}
   |FUN; s = LIDENT; args = strings; EQUALS; LBRACE; e = seqexpr; RBRACE 
-    {Types.Fundecl ((s,args,e), loc (),ref `None)}
+    {ScriptTypes.Fundecl ((s,args,e), loc (),ref `None)}
   |FUN; s = LIDENT; LEFTP; RIGHTP; EQUALS; LBRACE; e = seqexpr; RBRACE
-    {Types.Fundecl ((s,[],e),loc (), ref `None)}
+    {ScriptTypes.Fundecl ((s,[],e),loc (), ref `None)}
   ;
 
 value:
@@ -65,56 +65,56 @@ nested_value:
 
 operators:
   |v1 = nested_value; PIPPIP; v2 = nested_value 
-    {Types.App (("_or", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_or", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; ESPESP; v2 = nested_value 
-    {Types.App (("_and", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_and", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; GT ; v2 = nested_value 
-    {Types.App (("_gt", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_gt", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; LT ; v2 = nested_value 
-    {Types.App (("_lt", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_lt", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; EQEQ ; v2 = nested_value 
-    {Types.App (("_eq", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_eq", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; LT ; EQUALS ; v2 = nested_value 
-    {Types.App (("_le", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_le", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; GT ; EQUALS ; v2 = nested_value 
-    {Types.App (("_ge", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_ge", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; MUL; v2 = nested_value 
-    {Types.App (("_mul", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_mul", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; ADD; v2 = nested_value 
-    {Types.App (("_add", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_add", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; MIN; v2 = nested_value 
-    {Types.App (("_sub", [v1; v2]), loc (), ref `None)}
+    {ScriptTypes.App (("_sub", [v1; v2]), loc (), ref `None)}
   |v1 = nested_value; DIV; v2 = nested_value 
-    {Types.App (("_div", [v1; v2]), loc (), ref `None)}
-  |NOT; v1 = nested_value {Types.App (("_not", [v1]), loc (), ref `None)}
+    {ScriptTypes.App (("_div", [v1; v2]), loc (), ref `None)}
+  |NOT; v1 = nested_value {ScriptTypes.App (("_not", [v1]), loc (), ref `None)}
   ;
 
 simple_value:
-  |i = INT {Types.Int (i, loc (), ref `None)}
+  |i = INT {ScriptTypes.Int (i, loc (), ref `None)}
   |o = operators {o}
-  |LEFTP; RIGHTP {Types.Unit ( loc (), ref `None)}
-  |LEFTP; v1 = value; COMMA; v2 = value; RIGHTP; {Types.Pair ((v1, v2), loc (), ref `None)}
-  |s = STRING {Types.String (s, loc (), ref `None)}
-  |TRUE  {Types.Bool (true, loc (), ref `None)}
-  |FALSE {Types.Bool (false, loc (), ref `None)}
-  |LBRACK; v = value_list; RBRACK {Types.List (v, loc (), ref `None)}
-  |LBRACK; PIP; v = value_list; PIP; RBRACK {Types.Array ((Array.of_list v), loc (), ref `None)}
-  |s = LIDENT {Types.Var (s, loc (), ref `None)}
+  |LEFTP; RIGHTP {ScriptTypes.Unit ( loc (), ref `None)}
+  |LEFTP; v1 = value; COMMA; v2 = value; RIGHTP; {ScriptTypes.Pair ((v1, v2), loc (), ref `None)}
+  |s = STRING {ScriptTypes.String (s, loc (), ref `None)}
+  |TRUE  {ScriptTypes.Bool (true, loc (), ref `None)}
+  |FALSE {ScriptTypes.Bool (false, loc (), ref `None)}
+  |LBRACK; v = value_list; RBRACK {ScriptTypes.List (v, loc (), ref `None)}
+  |LBRACK; PIP; v = value_list; PIP; RBRACK {ScriptTypes.Array ((Array.of_list v), loc (), ref `None)}
+  |s = LIDENT {ScriptTypes.Var (s, loc (), ref `None)}
   ;
 
 composed_value:
-  |s = LIDENT; v = values {Types.App ((s,v), loc (), ref `None)}
+  |s = LIDENT; v = values {ScriptTypes.App ((s,v), loc (), ref `None)}
   |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE 
-    {Types.Ifte ((v,t,e), loc (), ref `None)}
+    {ScriptTypes.Ifte ((v,t,e), loc (), ref `None)}
   |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE 
-    {Types.Ifte ((v,t,Types.SeqEnd),  loc (), ref `None)}
+    {ScriptTypes.Ifte ((v,t,ScriptTypes.SeqEnd),  loc (), ref `None)}
   ;
 
 proc:
-  |MOVE; s = strings_comma; LBRACE; e = seqexpr; RBRACE {Types.Move ((s,e), loc (), ref `None)}
-  |ATK;  s = strings_comma; LBRACE; e = seqexpr; RBRACE {Types.Attack ((s,e), loc (), ref `None)}
-  |MAIN; LBRACE; e = seqexpr; RBRACE {Types.Main (e, loc (), ref `None)}
-  |INIT; LBRACE; e = seqexpr; RBRACE {Types.Init (e, loc (), ref `None)}
+  |MOVE; s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Move ((s,e), loc (), ref `None)}
+  |ATK;  s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Attack ((s,e), loc (), ref `None)}
+  |MAIN; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Main (e, loc (), ref `None)}
+  |INIT; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Init (e, loc (), ref `None)}
   ;
 
 values:
