@@ -272,23 +272,26 @@ let swap_gen config =
   hard_smoothing m tiles (2./.8.) is_seed;
   m
 
-(* place seeds (generation centers) and expand them until the whole map is filled *)
-let seeds_gen config =
+(* place seeds (generation centers) on blank tiles, and expand them until the whole map is filled *)
+let seed_fill m config =
   (* special tiles used by the generation *)
-  let blank_tile = config#tile "blank" in
   let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank" in
   let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
   let width = config#settings.map_width in
   let height = config#settings.map_height in
-  let nbseeds = width*height/50 in
-  let dist_min_btw_seeds = 2 in
+  let nb_blank = width*height in(*
+    count 
+      (fun _ -> true)
+      (Battlefield.tile_filter (fun t -> Tile.get_name t = "blank") m)
+  in*)
+  let nbseeds = nb_blank / config#settings_engine.nb_seeds_ratio in
+  let dist_min_btw_seeds = config#settings_engine.dist_min_between_seeds in
   let tiles_all = config#tiles_list in
   let tiles =
     List.filter
     (fun a -> Tile.get_structure a = `Block)
     tiles_all in
   if (List.length tiles = 0) then failwith("no `Block tiles in config") else
-  let m = Battlefield.create width height blank_tile in
   let total = total_density tiles in
   (* initial seeds creation *)
   let rec create_seeds = function
@@ -306,7 +309,7 @@ let seeds_gen config =
                                             (config#tile "seed") instead of t on the following statement*)
              )
         )
-        (p::(eucl_disk m p dist_min_btw_seeds))
+        (eucl_disk m p dist_min_btw_seeds)
     then
     (
       Battlefield.set_tile m p t; (* option : replace t by (config#tile "seed") in order to visualize the seeds on the map
@@ -315,14 +318,6 @@ let seeds_gen config =
     )
     else
       create_seeds (n-1)
-  in
-  (* grows seed t on a position list *)
-  let rec grow_list m t = function
-  | [] -> ()
-  | p::q ->
-    if is_blank m p then
-      Battlefield.set_tile m p t;
-    grow_list m t q
   in
   (* extract at most n elements of a list*)
   let rec behead = function
@@ -334,7 +329,7 @@ let seeds_gen config =
   (* grow seed t on nb_grow tiles of its neighbors position set setpos*)
   let grow_seed t nb_grow setpos =
     let sl = behead (nb_grow,Utils.shuffle (SetPos.fold (fun e l -> e::l) setpos [])) in
-    grow_list m t sl;
+    List.iter (fun p -> if is_blank m p then Battlefield.set_tile m p t) sl;
     SetPos.filter
       (fun p -> is_blank m p)
       (SetPos.union
@@ -386,7 +381,89 @@ let seeds_gen config =
   grow neigh;
   (* change tiles with less than two identical neighbors *)
   random_hard_smoothing m tiles (2./.8.) 50 is_seed;
+  hard_smoothing m tiles (1./.8.) is_seed;
+  hard_smoothing m tiles (1./.8.) is_seed;
   m
+
+(* place seeds (generation centers) and expand them until the whole map is filled *)
+let seeds_gen config =
+  (* special tiles used by the generation *)
+  let blank_tile = config#tile "blank" in
+  let width = config#settings.map_width in
+  let height = config#settings.map_height in
+  let m = Battlefield.create width height blank_tile in
+  seed_fill m config
+
+let seeds_island config =
+  (* special tiles used by the generation *)
+  let blank_tile = config#tile "blank" in
+  let water_tile = config#tile "water" in
+  let is_water m p = Tile.get_name (Battlefield.get_tile m p) = "water" in
+  let width = config#settings.map_width in
+  let height = config#settings.map_height in
+  let m = Battlefield.create width height water_tile in
+  let seed_pos = create(width/2,height/2) in
+  let seeds = [(blank_tile,seed_pos)] in
+  Battlefield.set_tile m seed_pos blank_tile;
+  (* extract at most n elements of a list*)
+  let rec behead = function
+  | 0,_ -> []
+  | n,_ when n<0 -> assert false
+  | n,[] -> []
+  | n,p::q -> p::(behead (n-1,q))
+  in
+  (* grow seed t on nb_grow tiles of its neighbors position set setpos*)
+  let grow_seed t nb_grow setpos =
+    let sl = behead (nb_grow,Utils.shuffle (SetPos.fold (fun e l -> e::l) setpos [])) in
+    List.iter (fun p -> if is_water m p then Battlefield.set_tile m p t) sl;
+    SetPos.filter
+      (fun p -> is_water m p)
+      (SetPos.union
+        (SetPos.filter
+          (fun p -> Battlefield.in_range m p)
+          (neighbours_set sl)
+        )
+        setpos
+      )
+  in
+  (* grow every seed simultaneously, remove the ones that can't be expanded, until no seed can grow*)
+  let rec grow = function
+  | [],_ -> ()
+  | _,0 -> ()
+  | ll,n ->
+    grow ((
+        List.filter
+          (fun (t,l) -> l <> SetPos.empty )
+          (
+            List.map
+            (fun (t,s) ->
+              (
+                t, grow_seed t
+                  (max
+                    1
+                    (Tile.get_grow_speed t)
+                  ) s
+              )
+            )
+            ll
+          )
+        ),n-1)
+  in
+  let neigh =
+    List.map
+      (fun (t,p) ->
+        (t, SetPos.filter
+              (fun pos ->
+                Battlefield.in_range m pos
+                && is_water m pos
+              )
+              (neighbours_set [p])
+        )
+      )
+      seeds
+  in
+  grow (neigh,width*height*config#settings_engine.island_expansion/100);
+  seed_fill m config
 
 
 (* armies are in valid positions only if their units are placed on tiles where they can move *)
@@ -471,12 +548,13 @@ let positioning m playerslist legit_spawns config =
   | n,[] -> raise BadSpawnsSequence
   | n,p::q -> p::(behead (n-1,q))
   in
+  let sqrt_expansion = int_of_float (sqrt (float_of_int config#settings_engine.island_expansion)) in
   (* test if a given position is far enough for all the previously selected positions.
     Far enough means that the distance between the two positions is at least 90% of the map size, on the number of player. *)
   let rec test_dist_spawns p = function
     | [] -> true
     | p1::q ->
-        (Position.dist p p1 > (90*width + 90*height)/(100*nbplayers))
+        (Position.dist p p1 > (90*(width + height)*sqrt_expansion)/(1000*nbplayers))
         && test_dist_spawns p q
   in
   (* extract a random valid sequence of spawns *)
@@ -677,7 +755,7 @@ let generate playerslist config =
     begin
       print_endline ("  attempt "^(string_of_int (generate_attempts - n +1))^" / "^(string_of_int generate_attempts)^": ");
       try
-        let m = seeds_gen config in
+        let m = seeds_island config in
         create_structures m config;
         let (a,sp) = units_spawn m playerslist (init_positioning m (List.length playerslist)) config in
         let attempt = (m,a,sp) in

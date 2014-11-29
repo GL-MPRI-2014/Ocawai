@@ -126,21 +126,43 @@ let renderer = object(self)
     let is_ground name =
       name = "plain" || name = "forest" || name = "mountain"
     in
+    let is_water name =
+      name = "water" || name = "lake"
+    in
+    let is_beach name =
+      name = "beach" || name = "lake_beach"
+    in
     if self#filter_positions map up then
     begin
       let upname = Tile.get_name (Battlefield.get_tile map up) in
-      if texture_name = "water" && is_ground upname then
+      if is_water texture_name && is_ground upname then
         draw_v "ground_water_v" pos ()
-      else if is_ground texture_name && upname = "water" then
+      else if is_ground texture_name && is_water upname then
         draw_v "water_ground_v" pos ()
-    end ;
+      else if is_beach texture_name && is_ground upname then
+        draw_v "ground_beach_v" pos ()
+      else if is_ground texture_name && is_beach upname then
+        draw_v "beach_ground_v" pos ()
+      else if is_water texture_name && is_beach upname then
+        draw_v "beach_water_v" pos ()
+      else if is_beach texture_name && is_water upname then
+        draw_v "water_beach_v" pos ()
+    end;
     if self#filter_positions map left then
     begin
       let leftname = Tile.get_name (Battlefield.get_tile map left) in
-      if texture_name = "water" && is_ground leftname then
+      if is_water texture_name && is_ground leftname then
         draw_h ~offset:(2.,0.) "water_ground_hr" left ()
-      else if is_ground texture_name && leftname = "water" then
+      else if is_ground texture_name && is_water leftname then
         draw_h ~offset:(-2.,0.) "water_ground_h" pos ()
+      else if is_beach texture_name && is_ground leftname then
+        draw_h ~offset:(2.,0.) "beach_ground_hr" left ()
+      else if is_ground texture_name && is_beach leftname then
+        draw_h ~offset:(-2.,0.) "beach_ground_h" pos ()
+      else if is_water texture_name && is_beach leftname then
+        draw_h ~offset:(2.,0.) "water_beach_hr" left ()
+      else if is_beach texture_name && is_water leftname then
+        draw_h ~offset:(-2.,0.) "water_beach_h" pos ()
     end
 
   (* Highlight a tile *)

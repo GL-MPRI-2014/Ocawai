@@ -4,6 +4,8 @@ type t = {
   generate_attempts<ocaml mutable> : int;
   structs_attempts<ocaml mutable> : int;
   units_spawn_attempts<ocaml mutable> : int;
-  
+  nb_seeds_ratio<ocaml mutable> : int;
+  dist_min_between_seeds<ocaml mutable> : int;
+  island_expansion<ocaml mutable> : int;
 }
 
