@@ -33,14 +33,14 @@ and decl_type =
 and seq_type =
     SeqDecl of (decl_type * seq_type) * location * term_type
   | SeqVar  of (values_type * seq_type) * location * term_type
-  | SeqEnd  
+  | SeqEnd
 
 (** Type of a program *)
 and prog_type =
     GlobDecl of (decl_type * prog_type) * location * term_type
   | GlobProc of (procedure_type * prog_type) * location * term_type
   | GlobSeq  of (values_type * prog_type) * location * term_type
-  | Empty    
+  | Empty
 
 
 (** Unifiable types for the type-checker *)
@@ -53,9 +53,9 @@ and static = [
   `Array_tc of term_type |
   `Fun_tc   of term_type * term_type |
   `Pair_tc  of term_type * term_type |
-  `None |
+  `Alpha_tc  |
+  `None      |
   `Pointer of term_type
 ]
 
 and term_type = static ref
-

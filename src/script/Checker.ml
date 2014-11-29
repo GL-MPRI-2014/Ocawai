@@ -15,11 +15,13 @@ exception Unification_failure
 
 let rec unify (t1:term_type) (t2:term_type) =
   match (deref t1, deref t2) with
-  | `None, _ -> t1 := `Pointer t2
-  | _, `None -> t2 := `Pointer t1
-  | `List_tc t1, `List_tc t2 -> unify t1 t2
+  | `Alpha_tc, _ -> ()
+  | _, `Alpha_tc -> ()
+  | `None, _     -> t1 := `Pointer t2
+  | _, `None     -> t2 := `Pointer t1
+  | `List_tc t1, `List_tc t2   -> unify t1 t2
   | `Array_tc t1, `Array_tc t2 -> unify t1 t2
-  | `Fun_tc (t1,t1'), `Fun_tc (t2,t2') -> unify t1 t2 ; unify t1' t2'
+  | `Fun_tc (t1,t1'), `Fun_tc (t2,t2')   -> unify t1 t2 ; unify t1' t2'
   | `Pair_tc (t1,t1'), `Pair_tc (t2,t2') -> unify t1 t2 ; unify t1' t2'
   | t1,t2 -> if t1 <> t2 then raise Unification_failure
 
