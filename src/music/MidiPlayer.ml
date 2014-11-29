@@ -5,6 +5,8 @@ let to_s16le c1 c2 =
   let b2 = int_of_char c2 in
   (b2 * 256) + b1
 
+module Bytes = String
+
 let my_int_to_string i size =
   let result = Bytes.create size in
   for j = (size) downto 1 do
@@ -87,7 +89,3 @@ let play_midi_file fname run =
   done;
   print_endline "Oh BOY ! You DID reach some place !";
   sound#stop
-
-(*let () =*)
-  (*let a = ref true in*)
-  (*play_midi_file "./bach_bourree.mid" a*)
