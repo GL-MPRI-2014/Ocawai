@@ -8,6 +8,7 @@ type value_type = [
   `Bool_t   |
   `Soldier_t|
   `Map_t    |
+  `Player_t |
   `Alpha_t of int |
   `List_t  of value_type |
   `Array_t of value_type |
@@ -26,7 +27,8 @@ type value = [
   `Fun    of (value -> value) |
   `Pair   of value * value    |
   `Soldier of Unit.t          |
-  `Map     of Battlefield.t
+  `Map     of Battlefield.t   |
+  `Player  of Player.logicPlayer
 ]
 
 exception Script_value_not_found

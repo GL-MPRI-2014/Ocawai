@@ -1,12 +1,14 @@
-fun fact n = {
-  if (n <= 0) { 1 }
-  else {n * (fact (n-1))}
+fun next_playable l = {
+  var u = list_hd l;
+  var acc = accessible_positions u;
+  if (unit_has_played u || list_empty acc) {
+    next_playable (list_tl l)
+  } else { u }
 }
 
-print_int (fact 10);
-print_string "\n";
-
 move default {
+  var acc = accessible_positions selected_unit;
+  list_hd acc
 }
 
 attack default {
@@ -16,4 +18,5 @@ init {
 }
 
 main {
+  next_playable (army_of self)
 }

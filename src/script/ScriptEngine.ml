@@ -1,6 +1,5 @@
 open ScriptTypes
 open Lexing
-open ScriptCore
 open Checker
 open Interpreter
 
@@ -36,4 +35,5 @@ let script_from_file f =
   close_in input;
   Interpreter.new_script script
 
+let () = ScriptCore.init ()
 
