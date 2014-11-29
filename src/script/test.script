@@ -58,5 +58,6 @@ attack infantry, bazooka {
 a_global = a_global + 12;
 
 main {
-  print_int a_global
+  print_int a_global;
+  (5,3)
 }

@@ -17,7 +17,7 @@ val init_script : script -> unit
 
 (** Calls the main method of a script. 
   * This should return the position of the next unit to play *)
-val main_script : script -> Position.t
+val main_script : script -> Position.t 
 
 (** [action_script s u] calls the move and attack methods of the script [s]
   * @return a move for the unit [u] and a position to attack *)

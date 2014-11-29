@@ -3,11 +3,13 @@ type value_type = [
   `Unit_t   |
   `String_t |
   `Bool_t   |
+  `Soldier_t|
+  `Map_t    |
   `Alpha_t of int |
   `List_t  of value_type |
   `Array_t of value_type |
   `Fun_t   of value_type * value_type |
-  `Pair_t  of value_type * value_type
+  `Pair_t  of value_type * value_type 
 ]
 
 type value = [
@@ -18,7 +20,9 @@ type value = [
   `List   of value list       |
   `Array  of value array      |
   `Fun    of (value -> value) |
-  `Pair   of value * value
+  `Pair   of value * value    |
+  `Soldier of Unit.t          |
+  `Map     of Battlefield.t
 ]
 
 exception Script_value_not_found
