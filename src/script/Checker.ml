@@ -91,19 +91,23 @@ and check_decl = function
 and check_procedure = function
 
   | Move ((sl,st),l,t) ->
-      (* TODO *)
+      unify t (seq_type st) ;
+      (* TODO : Change Unit for the correct type *)
       unify t (ref `Unit_tc)
 
   | Attack ((sl,st),l,t) ->
-      (* TODO *)
+      unify t (seq_type st) ;
+      (* TODO : Change Unit for the correct type *)
       unify t (ref `Unit_tc)
 
   | Main (st,l,t) ->
-      (* TODO *)
+      unify t (seq_type st) ;
+      (* TODO : Change Unit for the correct type *)
       unify t (ref `Unit_tc)
 
   | Init (st,l,t) ->
-      (* TODO *)
+      unify t (seq_type st) ;
+      (* TODO : Change Unit for the correct type *)
       unify t (ref `Unit_tc)
 
 and val_type = function
