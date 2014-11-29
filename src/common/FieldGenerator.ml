@@ -1,6 +1,7 @@
 open Position
 open Utils
 open Settings_t
+open Settings_engine_t
 
 exception GeneratorFailure
 
@@ -251,8 +252,8 @@ let random_hard_smoothing m tiles range proba is_seed =
 let swap_gen config =
   (* special tiles used by the generation *)
   let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
-  let width = config#settings.battlefield_width in
-  let height = config#settings.battlefield_height in
+  let width = config#settings.map_width in
+  let height = config#settings.map_height in
   let tiles_all = config#tiles_list in
   let tiles =
     List.filter
@@ -277,8 +278,8 @@ let seeds_gen config =
   let blank_tile = config#tile "blank" in
   let is_blank m p = Tile.get_name (Battlefield.get_tile m p) = "blank" in
   let is_seed m p = Tile.get_name (Battlefield.get_tile m p) = "seed" in
-  let width = config#settings.battlefield_width in
-  let height = config#settings.battlefield_height in
+  let width = config#settings.map_width in
+  let height = config#settings.map_height in
   let nbseeds = width*height/50 in
   let dist_min_btw_seeds = 2 in
   let tiles_all = config#tiles_list in
@@ -301,7 +302,7 @@ let seeds_gen config =
         (fun pos ->
           Battlefield.in_range m pos
           && ( is_blank m pos
-              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using 
+              || Tile.get_name (Battlefield.get_tile m p) = Tile.get_name t (* remove this line if using
                                             (config#tile "seed") instead of t on the following statement*)
              )
         )
@@ -607,11 +608,12 @@ let create_structs m config =
 
 (* iterated tries to spawn armies *)
 let units_spawn m playerslist legit_spawns config =
+  let units_spawn_attempts = config#settings_engine.units_spawn_attempts in
   let rec units_spawn_aux = function
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
-      print_string ("    attempt "^(string_of_int (config#settings.units_spawn_attempts - n +1))^" / "^(string_of_int config#settings.units_spawn_attempts)^": ");
+      print_string ("    attempt "^(string_of_int (units_spawn_attempts - n +1))^" / "^(string_of_int units_spawn_attempts)^": ");
       try
         let (a,sp) = positioning m playerslist legit_spawns config in
         let attempt = (m,a,sp) in
@@ -641,15 +643,16 @@ let units_spawn m playerslist legit_spawns config =
     end
   in
   print_endline "  Spawning armies ...";
-  units_spawn_aux config#settings.units_spawn_attempts
+  units_spawn_aux units_spawn_attempts
 
 (* iterated tries to create structures *)
 let create_structures m config=
+  let structs_attempts = config#settings_engine.structs_attempts in
   let rec create_structures_aux = function
   | 0 -> raise StructSpawnFail
   | n ->
     begin
-      print_string ("    attempt "^(string_of_int (config#settings.structs_attempts - n +1))^" / "^(string_of_int config#settings.structs_attempts)^": ");
+      print_string ("    attempt "^(string_of_int (structs_attempts - n +1))^" / "^(string_of_int structs_attempts)^": ");
       try
         create_structs m config;
         print_endline "structures spawn success"
@@ -661,17 +664,18 @@ let create_structures m config=
     end
   in
   print_endline "  Spawning structures ...";
-  create_structures_aux config#settings.structs_attempts
+  create_structures_aux structs_attempts
 
 (* iterated tries to generate the map *)
 let generate playerslist config =
+  let generate_attempts = config#settings_engine.generate_attempts in
   let rec generate_aux = function
   | 0 ->
     print_endline("generator failed, not enough tries? bad calling arguments?");
     raise GeneratorFailure
   | n ->
     begin
-      print_endline ("  attempt "^(string_of_int (config#settings.generate_attempts - n +1))^" / "^(string_of_int config#settings.generate_attempts)^": ");
+      print_endline ("  attempt "^(string_of_int (generate_attempts - n +1))^" / "^(string_of_int generate_attempts)^": ");
       try
         let m = seeds_gen config in
         create_structures m config;
@@ -692,12 +696,12 @@ let generate playerslist config =
     end
   in
   print_endline "Generating Battlefield : ";
-  generate_aux config#settings.generate_attempts
+  generate_aux generate_attempts
 
 
-class t (playerslist:Player.logicPlayer list) config=
+class t (playerslist:Player.logicPlayer list)=
 object (self)
-  val g = Random.self_init(); generate playerslist config
+  val g = Random.self_init(); generate playerslist Config.config
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
   method spawns = let _,_,sp = g in sp

@@ -5,7 +5,7 @@ open GuiTools
 open Widget
 
 (* Put it in the theme ? *)
-let bold_font = new font (`File "resources/fonts/Roboto-Black.ttf")
+let bold_font = Fonts.load_font "Roboto-Black.ttf"
 
 
 class virtual ['a] widget_container = object(self)

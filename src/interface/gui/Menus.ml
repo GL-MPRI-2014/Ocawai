@@ -5,7 +5,7 @@ open Widget
 open BaseMixins
 open Utils
 
-let my_font = new font (`File "resources/fonts/Roboto-Regular.ttf")
+let my_font = Fonts.load_font "Roboto-Regular.ttf"
 
 class item icon text (action : unit -> unit) = object(self)
 

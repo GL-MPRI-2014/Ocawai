@@ -5,7 +5,6 @@
 type error = Wrong_id_player
 
 type id_player = int
-
 (** Type of the data sent from the engine to the player/client *)
 type update =
     Game_over

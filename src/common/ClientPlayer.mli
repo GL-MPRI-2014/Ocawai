@@ -10,4 +10,7 @@ class client_player : Unit.t list -> Building.t list -> object
 
   method get_next_action : Action.t
 
+  method set_logicPlayerList : (Player.logicPlayer list) -> unit
+
+  method get_logicPlayerList : Player.logicPlayer list
 end
