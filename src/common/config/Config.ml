@@ -35,11 +35,11 @@ let base = ref ""
 
 (*let baise_folder_giver () =*)let _= (
   let folder = ref "" in
-  try
+  (try
     if (Sys.is_directory "resources/config") then
       folder := "resources/config/"
     else folder := "/usr/share/GL_2014/config/"
-  with Sys_error _ -> folder := "/usr/share/GL_2014/config/";
+  with Sys_error _ -> folder := "/usr/share/GL_2014/config/";);
   base := !folder)
 
 let default_config_files = 
