@@ -44,7 +44,7 @@ let rec unify_func (ftype : term_type) = function
             ftype
       )
 
-(* Note : for prog_type / decl_type / procedure_type, t is useless *)
+(* Note : for prog_type / decl_type / procedure_type / SeqDecl, t is useless *)
 let rec check_prog = function
 
   | GlobDecl ((d,k),l,t) ->

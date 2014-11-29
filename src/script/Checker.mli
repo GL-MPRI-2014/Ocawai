@@ -7,4 +7,4 @@ val deref : ScriptTypes.term_type -> ScriptTypes.static
 
 exception Unification_failure
 
-val unify : ScriptTypes.term_type -> ScriptTypes.term_type -> unit
+val check_prog : ScriptTypes.prog_type -> unit

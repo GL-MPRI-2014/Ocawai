@@ -33,7 +33,7 @@ let script_from_file f =
   lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};
   let script = parse_with_errors lexbuf in
   close_in input;
+  (* check_prog script ; *)
   Interpreter.new_script script
 
 let () = ScriptCore.init ()
-
