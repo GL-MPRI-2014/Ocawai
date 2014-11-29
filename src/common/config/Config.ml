@@ -31,19 +31,30 @@ let write_interface_settings_in_file file settings =
 
 (* default parameters *)
 
+let base = ref ""
+
+(*let baise_folder_giver () =*)let _= (
+  let folder = ref "" in
+  try
+    if (Sys.is_directory "resources/config") then
+      folder := "resources/config/"
+    else folder := "/usr/share/GL_2014/config/"
+  with Sys_error _ -> folder := "/usr/share/GL_2014/config/";
+  base := !folder)
+
 let default_config_files = 
-  ("resources/config/tiles.json",
-  "resources/config/units.json",
-  "resources/config/settings.json",
-  "resources/config/settings_default.json")
+  (!base ^ "tiles.json",
+   !base ^ "units.json",
+   !base ^ "settings.json",
+   !base ^ "settings_default.json")
 
 let default_engine_settings_files = 
-  ("resources/config/settings_engine.json",
-  "resources/config/settings_engine_default.json")
+  (!base ^ "settings_engine.json",
+   !base ^ "settings_engine_default.json")
 
 let default_interface_settings_files = 
-  ("resources/config/settings_interface.json",
-  "resources/config/settings_interface_default.json")
+  (!base ^ "settings_interface.json",
+   !base ^ "settings_interface_default.json")
 
 let default_files = 
   let (x1,x2,x3,x4) = default_config_files in
@@ -54,7 +65,6 @@ let default_files =
 (* config class *)
 class t =
 object (self)
-
   val mutable tiles_config = ""
   val mutable units_config = ""
   val mutable settings_temp = ""

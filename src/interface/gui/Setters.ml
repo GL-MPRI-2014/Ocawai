@@ -5,7 +5,7 @@ open Home
 open GuiTools
 open Utils
 
-let font = new font (`File "resources/fonts/Roboto-Regular.ttf")
+let font = Fonts.load_font "Roboto-Regular.ttf"
 
 let setter_width = 800.
 let setting_width = 300.

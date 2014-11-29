@@ -11,7 +11,7 @@ class state = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val font = new font `None
+  val font = Fonts.load_font "Roboto-Black.ttf"
 
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in
@@ -67,8 +67,6 @@ class state = object(self)
     window#display
 
   initializer
-    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here";
     let window = manager#window in
     let (w,h) = window#get_size in
     self#set_screen w h
