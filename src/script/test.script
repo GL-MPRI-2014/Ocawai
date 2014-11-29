@@ -8,7 +8,7 @@ fun next_playable l = {
 
 move default {
   var acc = accessible_positions selected_unit;
-  list_hd acc
+  [list_hd acc]
 }
 
 attack default {

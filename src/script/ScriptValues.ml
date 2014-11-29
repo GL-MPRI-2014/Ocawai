@@ -29,14 +29,16 @@ type value = [
 
 exception Script_value_not_found
 
+module ScriptLoadingLog = Log.Make (struct let section = "Script" end)
+
 let value_table = Hashtbl.create 13
 
 let expose f t s = 
-  print_endline ("  [\027[33mexposed\027[0m] " ^ s);  
+  ScriptLoadingLog.infof "[exposed] %s" s;
   Hashtbl.add value_table s (f,t)
 
 let hide s = 
-  print_endline ("  [\027[31mhide\027[0m] " ^ s);  
+  ScriptLoadingLog.infof "[hide] %s" s;
   Hashtbl.remove value_table s
 
 let type_of s = 
