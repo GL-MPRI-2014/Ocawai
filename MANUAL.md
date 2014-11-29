@@ -8,7 +8,9 @@ Déplacement : prairie/route/sable/forêt/montagne/eau peu profonde/eau profonde
 Attaque : contre armure légère/moyenne/lourde (en % des dégâts de base de l'unité). Ne dépend pas du terrain.
 Portée : minimale-maximale
 Carburant : Les unités aériennes consomment 1 de carburant par tour hors base/porte avion.
+Toute  unité apparaît sur la carte avec 100 points de vie, et meurt (en disparaissant de la carte) quand elle tombe à 0 points de vie.
 Si une unité se fait attaquer au corps à corps par une unité qu'elle a la possibilité d'attaquer, elle répond avec 50% des dégâts qu'elle ferait en initialisant l'attaque.
+Les attaques du jeu ont toutes une composante aléatoire.
 
 ### Infanterie
 
@@ -187,10 +189,16 @@ Armure : Lourde
 Bâtiments
 ---------
 
-Les bâtiments sont des cases indépendantes qui produisent des unités pour le général qui en a la possession à un moment donné. Ils peuvent être initialement capturés par placement d'une unité dessus quand ils sont neutres, puis peuvent être attaqués comme des unités normales (et redeviennent neutres quand ils "meurent"). Si une unité est sur un bâtiment alors que celui-ci est "rendu neutre" par un général ennemi, l'unité meure en tant que dommage collatéral à la prise de la position. Les bâtiments sont considérés comme des routes pour le déplacement des unités.
+Les bâtiments sont des cases indépendantes qui produisent des unités pour le général qui en a la possession à un moment donné. Ils sont soit neutre, soit sous la possession d'un général. Un bâtiment neutre est capturé par un général si celui-ci a une unité terrestre placée dessus au début de son tour. Un bâtiment ennemi peut-être rendu neutre par la même technique. Une unité placée sur un bâtiment apppartenant au même général qu'elle profite d'un bonus de garnison diminuant de 25% les dégâts qu'elle subit.
+Une unité placée sur un bâtiment appartenant au même général qu'elle et capable de la construire (une caserne pour les unités terrestres, un port pour les unités maritimes, un aéroport pour les unités volantes) est réparée par lui et régénère ainsi 50% de sa vie maximale au début du tour.
+
+### Ville 
+Description : Bâtiment de base, ramenant un peu de ressources au général le contrôlant.
+Ressources par tour : 10
+Unités crées : -
 
 ### Puits de pétrole
-Description : Point stratégique ramenant beaucoup de ressources au général le contrôlant.
+Description : Point stratégique ramenant beaucoup de ressources au général le contrôlant, souvent la scène d'âpres affrontements.
 Ressources par tour : 70
 Unités créées : -
 
@@ -241,7 +249,7 @@ Actions
 On peut créer une unité à condition de pouvoir payer les ressources nécessaires. Elle apparaît alors sur son bâtiment parent mais ne peut rien faire jusqu'à la fin du tour. En particulier, chaque bâtiment ne peut créer qu'une unité par tour (sauf pouvoir spécial ?). Une unité placée sur un bâtiment du même type que son parent regagnera 50% de sa vie à chaque tour.
 
 ### Combat
-Si une unité attaque au corps à corps une autre unité capable de répondre, un combat s'engage. Si l'unité attaquée survit, elle aura rendu en moyenne 50% de ce qu'elle aurait infligé si elle avait été l'attaquante. Si elle meurt, on suppose qu'elle a eu le temps de faire moins de dégâts. Elle ne rendra alors que 25% des dégâts normaux (sauf pouvoir spécial d'un général japonais ?).
+Si une unité attaque au corps à corps une autre unité capable de répondre, un combat s'engage. Si l'unité attaquée survit, elle aura rendu en moyenne 50% de ce qu'elle aurait infligé si elle avait été l'attaquante. Si elle meurt, on suppose qu'elle a eu le temps de faire moins de dégâts. Elle ne rendra alors que 25% des dégâts normaux (sauf pouvoir spécial d'un général japonais ?). L'unité attaquante infligera autant de dégâts si elle meure que si elle survit à son attaque. (Règles pouvant être changées par la suite mais semblant raisonnables ainsi énoncées. Schématiquement, l'unite attaquante opère son attaque normalement, puis reçoit une contre-attaque dépendante de si elle a tué ou pas son adversaire)
 
 ### Tir
 Si une unité attaque à distance, l'unité attaquée ne peut pas lui répondre (pour des raisons d'informations et de temps de calcul balistique). Dans ce cas, l'attaque ne se fait que dans un sens.

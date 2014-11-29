@@ -29,47 +29,60 @@ resources_dir=resources
 documentation_dir=doc
 engine_dir=$(src_root)/engine
 common_dir=$(src_root)/common
+utils_dir=$(src_root)/common/utils
+config_dir=$(src_root)/common/config
 interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
 music_dir=$(src_root)/music
-music_tools_dir=$(music_dir)/tools
 
 test_dir=test
-
-dirs = $(engine_dir) $(common_dir) $(interface_dir) $(network_dir) $(gui_dir) $(music_dir) $(music_tools_dir)
+# $(network_dir) removed for now
+dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir)
 
 #for each target, the directories concerned for ocamlbuild
-engine_src=$(engine_dir),$(common_dir)
-interface_src=$(engine_dir),$(common_dir),$(interface_dir),$(gui_dir),$(music_dir),$(music_tools_dir)
-network_src=$(network_dir)
+engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir)
+interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir)
+network_src=$(network_dir),$(common_dir),$(utils_dir),$(config_dir)
 
 test_src=test,$(engine_src)
 
 #dependencies required for each target
-common_dependencies = atdgen
+common_dependencies = atdgen,dolog,unix
 engine_dependencies = $(common_dependencies)
-music_dependencies = bigarray,mm,pulseaudio,threads,num
+music_dependencies = bigarray,mm,threads,num,ocsfml.audio
 
 
 test_dependencies=$(engine_dependencies),oUnit
 
-#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail. 
+#music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
 interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
-network_libraries = unix
+#network_libraries = unix
 
 #tags needed for each target
 interface_tags = thread
 
+#compiler flags
+cflags = -w,-3
+
 #name of the target for ocamlbuild
 output_interface = main.native
-output_engine = main_engine.native
-output_network = server.native
+#output_network = dealer.native
+output_engine = dummy_serv.native
 
+
+
+command = ocamlbuild -use-ocamlfind -cflags $(cflags)
+
+interface_command =	$(command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+
+network_command = $(command) -Is $(network_src) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
-find_files = $(wildcard $(dir)/*.ml*)
+find_files = $(wildcard $(dir)/*.ml[^~ly])
 files := $(foreach dir,$(dirs),$(find_files))
 
 
@@ -96,27 +109,26 @@ files_atd := $(foreach dir,$(dirs),$(find_files_atd))
 files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
 files_atd_mli := $(files_atd_ml:.ml=.mli)
 
-all: interface engine network
+all: interface engine 
 
 interface: $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+	$(interface_command)
 
 run: interface
 	./$(output_interface)
 
 engine:  $(files_atd_ml)
-	ocamlbuild -use-ocamlfind -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+	$(engine_command)
 
-network:
-	ocamlbuild -use-ocamlfind -libs $(network_libraries) -Is $(network_src) $(output_network)
-
+#network:
+#	$(network_command)
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
 	install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
 	install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
-	install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
+	#install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 
 uninstall:
 	-rm $(bindir)/$(output_interface)
@@ -137,13 +149,14 @@ $(distdir).tar.gz: $(distdir)
 $(distdir): FORCE
 	mkdir -p $(distdir)/src
 	mkdir $(distdir)/$(common_dir)
+	mkdir $(distdir)/$(utils_dir)
+	mkdir $(distdir)/$(config_dir)
 	mkdir $(distdir)/$(engine_dir)
 	mkdir $(distdir)/$(interface_dir)
 	mkdir $(distdir)/$(gui_dir)
 	mkdir $(distdir)/$(network_dir)
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
-	mkdir $(distdir)/$(music_tools_dir)
 	mkdir $(distdir)/$(test_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
@@ -152,11 +165,13 @@ $(distdir): FORCE
 	cp install-sh $(distdir)
 	cp $(common_dir)/*.ml* $(distdir)/$(common_dir)
 	cp $(common_dir)/*.atd $(distdir)/$(common_dir)
+	cp $(utils_dir)/*.ml* $(distdir)/$(utils_dir)
+	cp $(config_dir)/*.ml* $(distdir)/$(config_dir)
+	cp $(config_dir)/*.atd $(distdir)/$(config_dir)
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
-	cp $(music_tools_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
@@ -165,7 +180,7 @@ $(distdir): FORCE
 distcheck: $(distdir).tar.gz
 	gzip -cd $(distdir).tar.gz | tar xvf -
 	cd $(distdir) && ./configure
-	cd $(distdir) && $(MAKE) network
+	#cd $(distdir) && $(MAKE) network
 	cd $(distdir) && $(MAKE) engine
 	cd $(distdir) && $(MAKE) interface
 	cd $(distdir) && $(MAKE) check
@@ -195,14 +210,14 @@ config.status: configure
 	./config.status --recheck
 
 
-#Generate documentation
+#Generate documentation -I _builld/$(network_dir) removed for now 
 doc: interface engine
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
-	-I _build/src/common -I _build/$(interface_dir) -I _build/$(gui_dir) \
-	-I _build/$(engine_dir) -I _builld/$(network_dir) -I _build/$(music_dir) \
-	-I _build/$(music_tools_dir) -I +threads -html -colorize-code $(files)
+	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(config_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
+	-I _build/$(engine_dir) -I _build/$(music_dir) \
+	-I -thread -thread -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
 
@@ -213,9 +228,12 @@ clean:
 	-rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
 	-test \! -e doc || rmdir doc
 	rm -f documentation.html
+	rm -f resources/config/settings.json
+	rm -f resources/config/settings_engine.json
+	rm -f resources/config/settings_interface.json
 
 check_engine: engine
-	ocamlbuild -use-ocamlfind -Is $(test_src) -package $(test_dependencies) player_test.native
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
 	./player_test.native
 

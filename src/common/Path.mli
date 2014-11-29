@@ -18,9 +18,17 @@ val init : Position.t -> t
   * It takes care of validity. *)
 val reach : t -> Position.t -> t
 
+(** @return the start position of a path*)
+val start_position : t -> Position.t
+
+(** @return the final position of a path *)
+val final_position : t -> Position.t
+             
 (** @return an [Action.movement] representing the same path. *)
 val get_move : t -> Action.movement
 
+val get_path : Action.movement -> t
+  
 (** @ operator on paths *)
 val cat : t -> t -> t
 
@@ -30,6 +38,8 @@ val cost : Unit.movement -> Battlefield.t -> t -> int
 
 (** [dijkstra m pos1 Unit.Walk pos2] return [Some cost * path] for going to pos2 from pos1, or [None] if pos2 is not reachable from pos1 *)
 val dijkstra : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option
+
+val a_star : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option
 
 (** Printing for debug purposes *)
 val print_path : t -> unit

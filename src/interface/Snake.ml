@@ -8,7 +8,7 @@ class state = object(self)
 
   inherit State.state as super
 
-  val font = new font `None
+  val font = Fonts.load_font "Roboto-Black.ttf"
 
   val map = Array.make_matrix 16 10 false
   val goods = Array.make_matrix 16 10 false
@@ -17,7 +17,6 @@ class state = object(self)
 
   val mutable current_pos = Position.create (0,0)
   val mutable snake = [Position.create (0,0)]
-  val mutable last_dir = (1,0)
   val mutable size = 5
 
   val tl = Position.create (0,0)
@@ -26,9 +25,13 @@ class state = object(self)
   val mutable musicThread = None
   val mutable runMusic = ref true
 
-  method private move diff =
-    let new_pos = add2D (Position.topair current_pos) diff in
+  val mutable last_move = (1,0)
+  val mutable move_dir = (1,0)
+
+  method private move =
+    let new_pos = add2D (Position.topair current_pos) move_dir in
     current_pos <- Position.create new_pos;
+    last_move <- move_dir;
     if Position.out_of_bounds current_pos tl br then
       running <- false
     else begin
@@ -37,7 +40,6 @@ class state = object(self)
         running <- false
       else begin
         map.(x).(y) <- true;
-        last_dir <- diff;
         if goods.(x).(y) then begin
           size <- size + 1;
           goods.(x).(y) <- false
@@ -55,18 +57,12 @@ class state = object(self)
 
   (* Inspired by @VLanvin *)
   val mutable last_event = 0.
+
   method private handle_keys =
     let act_time = Unix.gettimeofday () in
     if act_time -. last_event >= 0.1 then OcsfmlWindow.(
       last_event <- act_time;
-      let diff = if Keyboard.is_key_pressed KeyCode.Right then (1,0)
-        else if Keyboard.is_key_pressed KeyCode.Left then (-1,0)
-        else if Keyboard.is_key_pressed KeyCode.Up then (0,-1)
-        else if Keyboard.is_key_pressed KeyCode.Down then (0,1)
-        else last_dir
-      in
-      if add2D diff last_dir = (0,0) then self#move last_dir
-      else self#move diff;
+      self#move;
       let p = Random.int 100 in
       if p >= 95 then
       begin
@@ -84,7 +80,8 @@ class state = object(self)
     (x *. 50. +. dx, y *. 50. +. dy)
 
   method private draw_path (target : OcsfmlGraphics.render_window) path =
-    let draw pos rot name = Render.draw_txr target name (self#topos pos) rot in
+    let draw pos rot name = Render.renderer#draw_txr target name
+    ~position:(self#topos pos) ~rotation:rot () in
     let angle s t =
       match Position.diff t s with
         | pos when pos = Position.create (1,0)  -> 0.
@@ -131,18 +128,30 @@ class state = object(self)
               done;
               snake <- [Position.create (0,0)];
               current_pos <- Position.create (0,0);
-              last_dir <- (1,0);
+              move_dir <- (1,0);
+              last_move <- (1,0);
               size <- 5;
               running <- true
             end
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Right ; _ } ->
+            if last_move = (-1,0) then ()
+            else move_dir <- (1,0)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Left ; _ } ->
+            if last_move = (1,0) then ()
+            else move_dir <- (-1,0)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Up ; _ } ->
+            if last_move = (0,1) then ()
+            else move_dir <- (0,-1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
+            if last_move = (0,-1) then ()
+            else move_dir <- (0,1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ }
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
             manager#pop
         | _ -> ()
     )
 
   method render window =
-
-    super#render window ;
 
     let color = Color.rgb 19 42 69 in
     window#clear ~color ();
@@ -167,7 +176,7 @@ class state = object(self)
       for y = 0 to 9 do
         if goods.(x).(y) then
           let pos = self#topos (Position.create (x,y)) in
-          Render.draw_txr window "infantry" pos (Random.float 360.)
+          Render.renderer#draw_txr window "infantry" ~position:pos ~rotation:(Random.float 360.) ()
       done
     done;
 
@@ -186,10 +195,11 @@ class state = object(self)
     window#display
 
   initializer
-    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here";
     Random.self_init ();
-    musicThread <- Some (Thread.create (MidiPlayer.play_midi_file "resources/music/tetris.mid") runMusic)
+    Sounds.play_sound "lets_do_this";
+    musicThread <-
+      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file "resources/music/tetris.mid" x) runMusic)
+
 
   method destroy =
     runMusic := false

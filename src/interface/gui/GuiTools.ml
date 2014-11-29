@@ -1,7 +1,5 @@
 open OcsfmlGraphics
 
-open Manager
-
 type alignment = Center | Left | Right
 type quantity = Pix of int | Pt of float
 

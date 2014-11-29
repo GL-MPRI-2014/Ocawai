@@ -6,6 +6,9 @@
 (** The type of the positions *)
 type t
 
+(** in order to use Sets *)
+val compare : t -> t -> int
+
 (** Creates a position *)
 val create : int * int -> t
 
@@ -58,4 +61,10 @@ val project : t -> t -> int -> (int * int)
 
 (**  [dist a b] returns the Manhattan distance between a and b *)
 val dist : t -> t -> int
+
+(** [eucl_dist a b] returns the Euclidian distance between a and b *)
+val eucl_dist : t -> t -> int
+
+(** [get_eucl_disk p d] returns the list of pos with an Euclidian distance to p <= d *)
+val get_eucl_disk : t -> int -> t list
 

@@ -3,9 +3,17 @@ type t = {
   name : string;
   movement_type : string;
   vision_range : int;
-  attack_range : int;
+  attack_range_min : int;
+  attack_range_max : int;
   move_range : int;
-  ~spawn_number<ocaml default="0"> : int
+  ~spawn_number<ocaml default="0"> : int;
+  ~attack_base<ocaml default="50"> : int;
+  ~armor<ocaml default="\"normal\""> : string;
+  ~percentage_light<ocaml default="100"> : int;
+  ~percentage_normal<ocaml default="100"> : int;
+  ~percentage_heavy<ocaml default="0"> : int;
+  ~price<ocaml default="50"> : int;
+  ~life_max<ocaml default="100"> : int;
 }
 
 type t_list = t list
