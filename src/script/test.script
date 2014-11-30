@@ -3,14 +3,14 @@ fun next_playable l = {
   var acc = accessible_positions u;
   if ((unit_has_played u) || (list_empty acc)) {
     next_playable (list_tl l)
-  } else { 
-    u 
+  } else {
+    u
   }
 }
 
 move default {
   var acc = accessible_positions selected_unit;
-  dijkstra_to selected_unit (list_hd acc)
+  dijkstra_t selected_unit (list_hd acc)
 }
 
 attack default {
