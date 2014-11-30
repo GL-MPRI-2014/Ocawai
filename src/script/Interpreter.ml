@@ -181,9 +181,8 @@ let main_script (env, ep) =
   | _ -> assert false
 
 let move_script (env, ep) u =
-  ScriptValues.expose (`Soldier u) `Soldier_t "selected_unit";
-  (* Shouldn't it be hidden somewhere? *)
-  match eval_seq env (ep#move u#name) with
+  match eval_seq (("selected_unit", ref (`Soldier u)) :: env) 
+    (ep#move u#name) with
   |`List(l) -> List.map pair_to_pos l
   | _ -> assert false
 

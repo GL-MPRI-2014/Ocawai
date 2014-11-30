@@ -5,7 +5,7 @@ open ScriptTypes
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 (* TODO catch Not_found *)
-exception Unboud_variable of string * location
+exception Unbound_variable of string * location
 
 let rec deref (t:term_type) =
   match !t with
@@ -75,7 +75,7 @@ and check_decl = function
 
   | Varset ((s,v),l) ->
       (try unify (Hashtbl.find assignment s) (val_type v)
-      with Not_found -> raise (Unboud_variable (s,l)))
+      with Not_found -> raise (Unbound_variable (s,l)))
 
   | Fundecl ((s,sl,sqt),l) ->
       (* First, for each variable, we associate a type *)
@@ -127,14 +127,14 @@ and val_type = function
       unify t (ref (`Array_tc alpha)) ; t
   | Var (s,l,t)    ->
       (try unify (Hashtbl.find assignment s) t ; t
-      with Not_found -> raise (Unboud_variable (s,l)))
+      with Not_found -> raise (Unbound_variable (s,l)))
   | App ((s,vl),l,t) ->
       (try let rt = unify_func
                 (Hashtbl.find assignment s)
                 (List.map val_type vl)
         in
         unify t rt ; t
-      with Not_found -> raise (Unboud_variable (s,l)))
+      with Not_found -> raise (Unbound_variable (s,l)))
   | Ifte ((v,s1,s2),l,t) ->
       unify (val_type v) (ref `Bool_tc) ;
       unify t (seq_type s1) ;
@@ -176,11 +176,14 @@ let print_location (l,l') =
 let type_check prog =
   (* TODO: find a better place? *)
   Hashtbl.add assignment "self" (ref `Player_tc) ;
+  Hashtbl.add assignment "players" (ref (`List_tc (ref `Player_tc))) ;
+  Hashtbl.add assignment "map" (ref `Map_tc) ;
+  Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
   try check_prog prog
   with
   | Unification_failure ->
       Printf.printf "Error: Couldn't unify (more precisions soon)\n"
-  | Unboud_variable (s,l) ->
+  | Unbound_variable (s,l) ->
       print_location l ;
       Printf.printf "variable/function %s is unbound\n" s
 
