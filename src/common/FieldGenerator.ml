@@ -434,6 +434,7 @@ let check_movement attempt =
 (* test connexity between armies *)
 let check_path attempt =
   let (m,_,sp) = attempt in
+  if List.length sp > 0 then
   let sp1 = List.hd sp in
   let dij = Path.dijkstra m sp1 Unit.Tread in
   let b =
@@ -506,7 +507,7 @@ let positioning m playerslist legit_spawns =
   let rec test_dist_spawns p = function
     | [] -> true
     | p1::q ->
-        (Position.dist p p1 > ((width + height)*sqrt_expansion)/(10*nbplayers))
+        (Position.dist p p1 > ((width + height)*sqrt_expansion)/(10*(max 1 nbplayers)))
         && test_dist_spawns p q
   in
   (* extract a random valid sequence of spawns *)
