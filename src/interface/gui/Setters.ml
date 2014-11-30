@@ -1,6 +1,5 @@
 open OcsfmlGraphics
 
-open Settings
 open Home
 open GuiTools
 open Utils

@@ -1,5 +1,7 @@
 (** Config files and settings gestion module*)
 
+exception Missing_config of string
+
 (** default tiles, units, settings,and settings_default paths*)
 val default_config_files : string * string * string * string
 
@@ -13,21 +15,25 @@ val default_interface_settings_files : string * string
 class t : 
 object
 
-  (** Initialize the tiles, units, settings,and settings_default files*)
+  (** Initialize the tiles, units, settings,and settings_default files
+      Can raise Config_error(msg) if files are not valid *)
   method init : string * string * string * string -> unit
-  (** Initialize the engine settings files *)
+  (** Initialize the engine settings files
+      Can raise Config_error(msg) if files are not valid *)
   method init_engine : string * string -> unit
-  (** Initialize the interface settings files *)
+  (** Initialize the interface settings files*)
   method init_interface : string * string -> unit
   (** Initialize everything by default*)
   method init_default : unit
   
   (** Tiles list obtained by reading the json config file *)
   method tiles_list : Tile.t list
+  (** Create a tile from its name by searching in tile_list*)
   method tile : string -> Tile.t
   
   (** Units.unbound_t list obtained by reading the json config file*)
   method unbound_units_list : Unit.unbound_t list
+  (** Create an unbound_unit from its name by searching in unbond_units_list *)
   method unbound_unit : string -> Unit.unbound_t
   
   (** settings obtained by reading the settings json file if present, settings-default if not*)
@@ -55,17 +61,14 @@ object
   (** Load the settings from the settings_default files*)
   method reset_all : unit
   
-  (** Save currents settings in settings file, persistent until make clean *)
+  (** Save currents settings in settings file, persistent until make clean*)
   method save_settings : unit
-  (** Save currents settings_engine in settings_engine file, persistent until make clean *)
+  (** Save currents settings_engine in settings_engine file, persistent until make clean*)
   method save_settings_engine : unit
-  (** Save currents settings_interface in settings_interface file, persistent until make clean *)
+  (** Save currents settings_interface in settings_interface file, persistent until make clean*)
   method save_settings_interface : unit
-  (** Save currents settings in settings files, persistents until make clean *)
+  (** Save currents settings in settings files, persistents until make clean*)
   method save_all : unit
-  
-  (** check settings validity*)
-  method check_all : bool
   
 end
 
