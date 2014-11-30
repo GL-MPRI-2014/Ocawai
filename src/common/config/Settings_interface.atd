@@ -4,7 +4,7 @@ type f_s_positive = float
     fun x -> 0. < x
   )">
 
-type t = {
+type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with none=()} *)">  : unit;
   
   cursor_speed<ocaml mutable> : f_s_positive;
   

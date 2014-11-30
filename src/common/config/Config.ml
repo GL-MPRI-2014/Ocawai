@@ -1,3 +1,8 @@
+open Settings_t
+open Settings_engine_t
+open Settings_interface_t
+
+exception Missing_config of string
 (* Config validity checking*)
 
 exception Config_error of string
@@ -56,14 +61,12 @@ let write_interface_settings_in_file file settings =
 
 let base = ref ""
 
-(*let baise_folder_giver () =*)let _= (
-  let folder = ref "" in
+let _ = 
   (try
     if (Sys.is_directory "resources/config") then
-      folder := "resources/config/"
-    else folder := "/usr/share/GL_2014/config/"
-  with Sys_error _ -> folder := "/usr/share/GL_2014/config/";);
-  base := !folder)
+      base := "resources/config/"
+    else base := "/usr/share/GL_2014/config/"
+  with Sys_error _ -> base := "/usr/share/GL_2014/config/";)
 
 let default_config_files = 
   (!base ^ "tiles.json",
@@ -99,9 +102,21 @@ object (self)
   
   val mutable t_list = (None: (Tile.t list) option)
   val mutable u_list = (None: (Unit.unbound_t list) option)
+  
   val mutable s = (None: Settings_t.t option)
   val mutable engine_s = (None: Settings_engine_t.t option)
   val mutable interface_s = (None: Settings_interface_t.t option)
+  
+  val mutable safe_s = (None: Settings_t.t option)
+  val mutable safe_engine_s = (None: Settings_engine_t.t option)
+  val mutable safe_interface_s = (None: Settings_interface_t.t option)
+  
+  method private update_safe_s = safe_s <- match s with | None -> None | Some ss -> Some {ss with none=()}
+  method private revert_s = s <- match safe_s with | None -> None | Some ss -> Some {ss with none=()}
+  method private update_safe_engine_s = safe_engine_s <- match engine_s with | None -> None | Some ss -> Some {ss with none=()}
+  method private revert_engine_s = engine_s <- match safe_engine_s with | None -> None | Some ss -> Some {ss with none=()}
+  method private update_safe_interface_s = safe_interface_s <- match interface_s with | None -> None | Some ss -> Some {ss with none=()}
+  method private revert_interface_s = interface_s <- match safe_interface_s with | None -> None | Some ss -> Some {ss with none=()}
   
   method private available_settings = if Sys.file_exists settings_temp then settings_temp else settings_default
   method private available_engine_settings = if Sys.file_exists engine_settings_temp then engine_settings_temp else engine_settings_default
@@ -142,24 +157,42 @@ object (self)
             "" ""
             "" ""
             interface_settings_temp_file interface_settings_default_file
-  method init_default =
-    self#init_all default_files
+  method init_default = self#init_all default_files
   
-  method tiles_list = match t_list with Some a -> a | None -> failwith("no valid tiles file provided so far, call init before")
-  method unbound_units_list = match u_list with Some a -> a | None -> failwith("no valid units file provided so far, call init before")
-  method settings = match s with Some a -> a | None -> failwith("no valid settings file provided so far, call init before")
-  method settings_engine = match engine_s with Some a -> a | None -> failwith("no valid engine settings file provided so far, call init_engine before")
-  method settings_interface = match interface_s with Some a -> a | None -> failwith("no valid interface settings file provided so far, call init_interface before")
+  method tiles_list = match t_list with
+    | Some a -> a
+    | None -> raise (Missing_config "no valid tiles file provided so far, did you call init?")
+  method unbound_units_list = match u_list with
+    | Some a -> a
+    | None -> raise (Missing_config "no valid units file provided so far, did you call init?")
+  method private settings_unsafe = match s with
+    | Some a -> a
+    | None -> raise (Missing_config "no valid settings file provided so far, did you call init?")
+  method private settings_engine_unsafe = match engine_s with
+    | Some a -> a
+    | None -> raise (Missing_config "no valid engine settings file provided so far, did you call init_engine?")
+  method private settings_interface_unsafe = match interface_s with
+    | Some a -> a 
+    | None -> raise (Missing_config "no valid interface settings file provided so far, did you call init_interface?")
+  method settings = self#fix_settings;self#settings_unsafe
+  method settings_engine = self#fix_settings_engine;self#settings_engine_unsafe
+  method settings_interface = self#fix_settings_interface;self#settings_interface_unsafe
   
   method tile name = List.find (fun t -> Tile.get_name t = name) self#tiles_list
   method unbound_unit name = List.find (fun uni -> uni#name = name) self#unbound_units_list
 
   method reload_settings =
-    if self#available_settings <> "" then s <- Some (create_settings_from_file self#available_settings)
+    if self#available_settings <> "" then 
+      (s <- Some (create_settings_from_file self#available_settings);
+      self#update_safe_s)
   method reload_settings_engine =
-    if self#available_engine_settings <> "" then engine_s <- Some (create_engine_settings_from_file self#available_engine_settings)
+    if self#available_engine_settings <> "" then 
+      (engine_s <- Some (create_engine_settings_from_file self#available_engine_settings);
+      self#update_safe_engine_s)
   method reload_settings_interface =
-    if self#available_interface_settings <> "" then interface_s <- Some (create_interface_settings_from_file self#available_interface_settings)
+    if self#available_interface_settings <> "" then
+      (interface_s <- Some (create_interface_settings_from_file self#available_interface_settings);
+      self#update_safe_interface_s)
   method reload_all =
     if tiles_config <> "" then t_list <- Some (create_tile_list_from_file tiles_config);
     if units_config <> "" then u_list <- Some (create_unbound_unit_list_from_file units_config);
@@ -168,55 +201,61 @@ object (self)
     self#reload_settings_interface
   
   method reset_settings =
-    if settings_default <> "" then s <- Some (create_settings_from_file settings_default)
+    if settings_default <> "" then
+      (s <- Some (create_settings_from_file settings_default);
+      self#update_safe_s)
   method reset_settings_engine =
-    if engine_settings_default <> "" then engine_s <- Some (create_engine_settings_from_file engine_settings_default)
+    if engine_settings_default <> "" then
+      (engine_s <- Some (create_engine_settings_from_file engine_settings_default);
+      self#update_safe_engine_s)
   method reset_settings_interface =
-    if interface_settings_default <> "" then interface_s <- Some (create_interface_settings_from_file interface_settings_default)
+    if interface_settings_default <> "" then
+    (interface_s <- Some (create_interface_settings_from_file interface_settings_default);
+    self#update_safe_interface_s)
   method reset_all =
     self#reset_settings;
     self#reset_settings_engine;
     self#reset_settings_interface
   
-  method save_settings =
-    if s <> None then write_settings_in_file settings_temp self#settings
-  method save_settings_engine =
-    if engine_s <> None then write_engine_settings_in_file engine_settings_temp self#settings_engine
-  method save_settings_interface =
-    if interface_s <> None then write_interface_settings_in_file interface_settings_temp self#settings_interface
+  method save_settings = self#fix_settings;
+    if s <> None then write_settings_in_file settings_temp self#settings_unsafe
+  method save_settings_engine = self#fix_settings_engine;
+    if engine_s <> None then write_engine_settings_in_file engine_settings_temp self#settings_engine_unsafe
+  method save_settings_interface = self#fix_settings_interface;
+    if interface_s <> None then write_interface_settings_in_file interface_settings_temp self#settings_interface_unsafe
   method save_all =
     self#save_settings;
     self#save_settings_engine;
     self#save_settings_interface
 
   method private check_settings =
-    (try
-      begin 
-        let _ = if s <> None then
-          (let _ = check_error self#available_settings Settings_v.validate_t [] self#settings in ()) else () in 
-        true
-      end
-     with | Config_error (msg) -> false)
+    if s <> None then
+      (let _ = check_error self#available_settings Settings_v.validate_t [] self#settings_unsafe in
+      self#update_safe_s)
   method private check_settings_engine =
-    (try
-      begin
-        let _ = if s <> None then
-          (let _ = check_error self#available_engine_settings Settings_engine_v.validate_t [] self#settings_engine in ()) else () in 
-        true
-      end
-     with | Config_error (msg) -> false)
+    if engine_s <> None then
+      (let _ = check_error self#available_engine_settings Settings_engine_v.validate_t [] self#settings_engine_unsafe in
+      self#update_safe_engine_s)
   method private check_settings_interface =
-    (try
-      begin
-        let _ = if s <> None then
-          (let _ = check_error self#available_interface_settings Settings_interface_v.validate_t [] self#settings_interface in ()) else () in 
-        true
-      end
-     with | Config_error (msg) -> false)
-  method check_all =
-    self#check_settings
-    && self#check_settings_engine
-    && self#check_settings_interface
+    if interface_s <> None then
+      (let _ = check_error self#available_interface_settings Settings_interface_v.validate_t [] self#settings_interface_unsafe in
+      self#update_safe_interface_s)
+  
+  method private fix_settings = 
+  (try self#check_settings 
+  with | Config_error (msg) -> 
+    self#revert_s;
+    print_endline ("Config test failed : "^msg^"\n  reverting to last valid settings"))
+  method private fix_settings_engine = 
+  (try self#check_settings_engine 
+  with | Config_error (msg) -> 
+    self#revert_engine_s;
+    print_endline ("Config test failed : "^msg^"\n  reverting to last valid engine settings"))
+  method private fix_settings_interface = 
+  (try self#check_settings_interface 
+  with | Config_error (msg) -> 
+    self#revert_interface_s;
+    print_endline ("Config test failed : "^msg^"\n  reverting to last valid interface settings"))
 
 end
 
