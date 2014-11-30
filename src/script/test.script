@@ -10,7 +10,7 @@ fun next_playable l = {
 
 move default {
   var acc = accessible_positions selected_unit;
-  dijkstra_t selected_unit (list_hd acc)
+  dijkstra_to selected_unit (list_hd acc)
 }
 
 attack default {
