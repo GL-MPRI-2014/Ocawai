@@ -3,11 +3,17 @@ type s_positive = int
   <ocaml validator="Utils.check_validity (
     fun x -> 0 < x
   )">
+type offset = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 <= x && x <256
+  )">
 
 type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with none=()} *)">  : unit;
 
   map_width<ocaml mutable> : s_positive;
   map_height<ocaml mutable> : s_positive;
   
+  string_compression_offset<ocaml mutable> : offset;
+  serializer_offset<ocaml mutable> : offset;
 }
 
