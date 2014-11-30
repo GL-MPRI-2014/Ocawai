@@ -10,7 +10,9 @@ fun next_playable l = {
 
 move default {
   var acc = accessible_positions selected_unit self players map;
-  dijkstra_to selected_unit map (list_hd acc)
+  var n = list_length acc;
+  var rnd = rand n;
+  dijkstra_to selected_unit map (list_nth acc rnd)
 }
 
 attack default {

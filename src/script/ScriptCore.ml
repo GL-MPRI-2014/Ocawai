@@ -4,6 +4,14 @@ let expose f t s =
   ScriptValues.expose f t s ;
   Checker.expose t s
 
+(** Various functions *)
+let scr_rand = 
+  `Fun(function
+    |`Int(n) -> `Int(Random.int n)
+    | _ -> assert false
+  )
+
+(** Boolean functions *)
 let scr_or =
   `Fun(fun a ->
     `Fun (fun b ->
@@ -74,6 +82,8 @@ let scr_ge =
     )
   )
 
+
+(** Arithmetics functions *)
 let scr_mul =
   `Fun(fun a ->
     `Fun (fun b ->
@@ -110,6 +120,8 @@ let scr_div =
     )
   )
 
+
+(** Printing functions *)
 let scr_printf =
   `Fun(function
     |`String(s) -> Printf.printf "%s" s; `Unit
@@ -122,6 +134,8 @@ let scr_printi =
     | _ -> assert false
   )
 
+
+(** List funtions *)
 let scr_listhd =
   `Fun(function
     |`List(t::q) -> t
@@ -150,6 +164,23 @@ let scr_listmem =
     )
   )
 
+let scr_listnth = 
+  `Fun(fun l ->
+    `Fun(fun n ->
+      match (l,n) with
+      |`List(l), `Int(n) -> List.nth l n
+      | _ -> assert false
+    )
+  )
+
+let scr_listlength = 
+  `Fun(function
+    |`List(l) -> `Int(List.length l)
+    | _ -> assert false
+  )
+
+
+(** Pair functions *)
 let scr_fst =
   `Fun(function
     |`Pair(a,b) -> a
@@ -193,6 +224,7 @@ let scr_prop2 =
   )
 
 
+(** Gameplay functions *)
 let scr_hasplayed =
   `Fun(function
     |`Soldier(u) -> `Bool u#has_played
@@ -281,17 +313,19 @@ let init () =
   expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
   expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
   expose scr_listmem(`Fun_t(`List_t (`Alpha_t(0)), `Fun_t(`Alpha_t(0), `Bool_t))) "list_mem";
+  expose scr_listnth(`Fun_t(`List_t (`Alpha_t(0)), `Fun_t(`Int_t, `Alpha_t(0)))) "list_nth";
   expose scr_fst    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(0))) "fst";
   expose scr_snd    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(1))) "snd";
   expose scr_add2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "add2D";
   expose scr_sub2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "sub2D";
   expose scr_prop2  (`Fun_t(`Int_t, `Fun_t(intpair, intpair))) "prop2D";
   expose scr_listempty (`Fun_t(`List_t (`Alpha_t(0)), `Bool_t)) "list_empty";
+  expose scr_listlength(`Fun_t(`List_t (`Alpha_t(0)), `Int_t)) "list_length";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
   expose scr_accessibles (`Fun_t(`Soldier_t, `Fun_t(`Player_t,
     `Fun_t(`List_t(`Player_t), `Fun_t(`Map_t, `List_t(intpair)))))) "accessible_positions";
-  expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t)))
-  "army_of";
-  expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(`Map_t, `Fun_t(intpair,`List_t(intpair))))) "dijkstra_to"
+  expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t))) "army_of";
+  expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(`Map_t, `Fun_t(intpair,`List_t(intpair))))) "dijkstra_to";
+  expose scr_rand (`Fun_t(`Int_t, `Int_t)) "rand"
