@@ -103,6 +103,8 @@ files := $(foreach dir,$(dirs),$(find_ml_files) $(find_mli_files))
 	atdgen -t $<
 %_j.ml: %.atd
 	atdgen -j $<
+%_v.ml: %.atd
+	atdgen -v $<
 
 
 ###########################################
@@ -113,10 +115,13 @@ files := $(foreach dir,$(dirs),$(find_ml_files) $(find_mli_files))
 find_files_atd = $(wildcard $(dir)/*.atd)
 
 files_atd := $(foreach dir,$(dirs),$(find_files_atd))
-files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml)
+files_atd_ml := $(files_atd:.atd=_t.ml) $(files_atd:.atd=_j.ml) $(files_atd:.atd=_v.ml)
 files_atd_mli := $(files_atd_ml:.ml=.mli)
 
-all: interface engine
+find_files_t_ml = $(wildcard $(dir)/*_t.ml)
+files_atd_t := $(foreach dir,$(dirs),$(find_files_t_ml))
+all_files_atd_ml := $(files_atd_t) $(files_atd_t:_t.ml=_j.ml) $(files_atd_t:_t.ml=_v.ml)
+all_files_atd_mli := $(files_atd_ml:.ml=.mli)
 
 interface: $(files_atd_ml)
 	$(interface_command)
@@ -232,7 +237,7 @@ doc: interface engine
 
 clean:
 	ocamlbuild -clean
-	rm -f $(files_atd_ml) $(files_atd_mli)
+	rm -f $(all_files_atd_ml) $(all_files_atd_mli)
 	-rm -f $(documentation_dir)/*.html $(documentation_dir)/*.css
 	-test \! -e doc || rmdir doc
 	rm -f documentation.html

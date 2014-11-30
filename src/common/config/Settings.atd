@@ -1,8 +1,13 @@
 
+type s_positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 < x
+  )">
+
 type t = {
   
-  map_width<ocaml mutable> : int;
-  map_height<ocaml mutable> : int;
+  map_width<ocaml mutable> : s_positive;
+  map_height<ocaml mutable> : s_positive;
   
 }
 

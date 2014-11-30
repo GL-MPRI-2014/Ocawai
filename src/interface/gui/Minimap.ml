@@ -84,7 +84,7 @@ class minimap def width height = object(self)
         |"plain" ->
             majority_map.(px).(py).(2) <-
               majority_map.(px).(py).(2) + 1
-        |"water" ->
+        |"water" | "lake" ->
             majority_map.(px).(py).(3) <-
               majority_map.(px).(py).(3) + 1
         | _ -> ()
