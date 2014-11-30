@@ -4,8 +4,9 @@ open ScriptTypes
 
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
-(* TODO catch Not_found *)
+
 exception Unbound_variable of string * location
+exception Unbound_function of string * location
 
 let rec deref (t:term_type) =
   match !t with
@@ -134,7 +135,7 @@ and val_type = function
                 (List.map val_type vl)
         in
         unify t rt ; t
-      with Not_found -> raise (Unbound_variable (s,l)))
+      with Not_found -> raise (Unbound_function (s,l)))
   | Ifte ((v,s1,s2),l,t) ->
       unify (val_type v) (ref `Bool_tc) ;
       unify t (seq_type s1) ;
@@ -185,7 +186,10 @@ let type_check prog =
       Printf.printf "Error: Couldn't unify (more precisions soon)\n"
   | Unbound_variable (s,l) ->
       print_location l ;
-      Printf.printf "variable/function %s is unbound\n" s
+      Printf.printf "variable %s is unbound\n" s
+  | Unbound_function (s,l) ->
+      print_location l ;
+      Printf.printf "function %s is unbound\n" s
 
 
 (* Translates a ScriptValues.value_type to a term_type *)

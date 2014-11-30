@@ -12,7 +12,7 @@ move default {
   var acc = accessible_positions selected_unit self players map;
   var n = list_length acc;
   var rnd = rand n;
-  dijkstra_t selected_unit map (list_nth acc rnd)
+  dijkstra_to selected_unit map (list_nth acc rnd)
 }
 
 attack default {
