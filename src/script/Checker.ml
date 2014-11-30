@@ -93,9 +93,9 @@ and check_decl = function
 and check_procedure = function
 
   | Move ((sl,st),l,t) ->
+      Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
       unify t (seq_type st) ;
-      (* TODO : Change Unit for the correct type *)
-      unify t (ref `Unit_tc)
+      unify t (ref (`List_tc (ref (`Pair_tc (ref `Int_tc, ref `Int_tc)))))
 
   | Attack ((sl,st),l,t) ->
       unify t (seq_type st) ;
@@ -104,8 +104,7 @@ and check_procedure = function
 
   | Main (st,l,t) ->
       unify t (seq_type st) ;
-      (* TODO : Change Unit for the correct type *)
-      unify t (ref `Unit_tc)
+      unify t (ref `Soldier_tc)
 
   | Init (st,l,t) ->
       unify t (seq_type st) ;
@@ -164,6 +163,8 @@ and seq_type = function
 
 
 let type_check prog =
+  (* TODO: find a better place? *)
+  Hashtbl.add assignment "self" (ref `Player_tc) ;
   try check_prog prog
   with
   | Unification_failure ->
