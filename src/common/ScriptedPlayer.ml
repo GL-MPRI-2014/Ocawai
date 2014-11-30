@@ -8,11 +8,16 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
 
   val mutable logicPlayerList = [] 
 
-  val mutable script = ScriptEngine.script_from_file scr
+  val mutable script = Interpreter.empty_script ()
+
+  method init_script map players = 
+    script <- ScriptEngine.script_from_file scr 
+      [("self", `Player(self :> Player.logicPlayer));
+       ("players", (`List(List.map (fun p -> `Player(p)) players)));
+       ("map", (`Map(map)))]
 
   method get_next_action = 
     Thread.delay 0.50;
-    ScriptValues.expose (`Player(self :> Player.logicPlayer)) `Player_t "self";
     try 
       let u = Interpreter.main_script script in
       let m = Interpreter.move_script script u in

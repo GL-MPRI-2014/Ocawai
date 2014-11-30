@@ -27,13 +27,13 @@ let parse_with_errors lexbuf =
         print_endline "";
         ScriptTypes.Empty
 
-let script_from_file f =
+let script_from_file f env =
   let input = open_in f in
   let lexbuf = from_channel input in
   lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};
   let script = parse_with_errors lexbuf in
   close_in input;
   type_check script ;
-  Interpreter.new_script script
+  Interpreter.new_script script env
 
 let () = ScriptCore.init ()

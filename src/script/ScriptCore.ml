@@ -217,24 +217,19 @@ let position_to_pair p =
 
 let scr_accessibles =
   `Fun(function
-    |`Soldier(u) ->
-      let self =
-        ScriptValues.value_of "self"
-        |> get_logic_player
-      in
-      let plist =
-        match ScriptValues.value_of "players" with
-        |`List(l) -> List.map get_logic_player l
-        | _       -> assert false
-      in
-      let map =
-        match ScriptValues.value_of "map" with
-        |`Map(m) -> m
-        | _      -> assert false
-      in
-      fst (Logics.accessible_positions u self plist map)
-      |> List.map position_to_pair
-      |> fun l -> `List l
+    |`Soldier(u) -> `Fun(function
+      |`Player(s) -> `Fun(function
+        |`List(l) -> `Fun(function
+          |`Map(m) -> 
+            fst (Logics.available_positions u s (List.map get_logic_player l) m)
+            |> List.map position_to_pair
+            |> fun l -> `List l
+          | _ -> assert false
+        )
+        | _ -> assert false
+      )
+      | _ -> assert false
+    )
     | _ -> assert false
   )
 
@@ -250,22 +245,20 @@ let scr_armyof =
 let scr_dijkstra =
   `Fun(function
     |`Soldier(u) -> `Fun(function
-      |`Pair(`Int(a), `Int(b)) ->
-          let map =
-            match ScriptValues.value_of "map" with
-            |`Map(m) -> m
-            | _      -> assert false
-          in
-          Path.dijkstra map u#position u#movement_type (Position.create (a,b))
-          |> (function
-              |Some(i,p) -> Path.get_move p
-              | _ -> assert false)
-          |> List.map position_to_pair
-          |> fun l -> `List l
+      |`Map(m) -> `Fun(function
+        |`Pair(`Int(a), `Int(b)) ->
+            Path.dijkstra m u#position u#movement_type (Position.create (a,b))
+            |> (function
+                |Some(i,p) -> Path.get_move p
+                | _ -> assert false)
+            |> List.map position_to_pair
+            |> fun l -> `List l
+        | _ -> assert false
+        )
       | _ -> assert false
-    )
+      )
     | _ -> assert false
-  )
+    )
 
 let intpair = `Pair_t (`Int_t, `Int_t)
 
@@ -297,7 +290,8 @@ let init () =
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
-  expose scr_accessibles (`Fun_t(`Soldier_t, `List_t(intpair))) "accessible_positions";
+  expose scr_accessibles (`Fun_t(`Soldier_t, `Fun_t(`Player_t,
+    `Fun_t(`List_t(`Player_t), `Fun_t(`Map_t, `List_t(intpair)))))) "accessible_positions";
   expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t)))
   "army_of";
-  expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(intpair,`List_t(intpair)))) "dijkstra_to"
+  expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(`Map_t, `Fun_t(intpair,`List_t(intpair))))) "dijkstra_to"

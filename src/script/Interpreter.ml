@@ -157,10 +157,15 @@ and eval_prog env entries = function
   |Empty -> env
 
 
-let new_script prog =
+let list_to_env l = List.map (fun (n,v) -> (n,ref v)) l
+
+let new_script prog env =
   let ep = new entrypoints in
-  let env = eval_prog [] ep prog in
+  let env = eval_prog (list_to_env env) ep prog in
   (env, ep)
+
+let empty_script () = 
+  ([], new entrypoints)
 
 let init_script (env, ep) =
   eval_seq env ep#init
@@ -186,3 +191,4 @@ let attack_script (env, ep) u =
   match eval_seq env (ep#attack u#name) with
   |`Soldier(u) -> u
   | _ -> assert false
+

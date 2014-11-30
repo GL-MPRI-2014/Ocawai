@@ -1,6 +1,6 @@
 fun next_playable l = {
   var u = list_hd l;
-  var acc = accessible_positions u;
+  var acc = accessible_positions u self players map;
   if ((unit_has_played u) || (list_empty acc)) {
     next_playable (list_tl l)
   } else {
@@ -9,8 +9,8 @@ fun next_playable l = {
 }
 
 move default {
-  var acc = accessible_positions selected_unit;
-  dijkstra_to selected_unit (list_hd acc)
+  var acc = accessible_positions selected_unit self players map;
+  dijkstra_to selected_unit map (list_hd acc)
 }
 
 attack default {
