@@ -31,3 +31,6 @@ val shuffle : 'a list -> 'a list
   * character is f i *)
 val init_string : int -> (int -> char) -> string
 
+(** test the validity of a json file parameter according to a test function*)
+val check_validity : ('a -> bool) -> Ag_util.Validation.path -> 'a -> Ag_util.Validation.error option
+
