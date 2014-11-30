@@ -168,10 +168,10 @@ let print_location (l,l') =
     l.pos_fname
     l.pos_lnum
     l.pos_bol
-    (l.pos_bol + l.pos_cnum)
+    l.pos_bol
     l'.pos_lnum
     l'.pos_bol
-    (l'.pos_bol + l'.pos_cnum))
+    l'.pos_bol)
 
 let type_check prog =
   (* TODO: find a better place? *)
