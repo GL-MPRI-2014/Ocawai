@@ -1,10 +1,15 @@
 fun next_playable l = {
-  var u = list_hd l;
-  var acc = accessible_positions u self players map;
-  if ((unit_has_played u) || (list_empty acc)) {
-    next_playable (list_tl l)
-  } else {
-    u
+  if (list_empty l) {
+    end_turn ()
+  }
+  else {
+    var u = list_hd l;
+    var acc = accessible_positions u self players map;
+    if ((unit_has_played u) || (list_empty acc)) {
+      next_playable (list_tl l)
+    } else {
+      u
+    }
   }
 }
 

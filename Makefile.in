@@ -39,7 +39,7 @@ script_dir=$(src_root)/script
 
 test_dir=test
 # $(network_dir) removed for now
-dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir)
+dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir) $(script_dir)
 
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(script_dir)
@@ -228,7 +228,7 @@ doc: interface engine
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
 	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(config_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
-	-I _build/$(engine_dir) -I _build/$(music_dir) \
+	-I _build/$(engine_dir) -I _build/$(music_dir) -I _build/$(script_dir) -I _build/$(network_dir) \
 	-I -thread -thread -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
@@ -251,4 +251,4 @@ check_engine: engine
 
 check: check_engine
 
-.PHONY: FORCE all clean dist distcheck engine interface network
+.PHONY: FORCE all clean dist distcheck engine interface network script

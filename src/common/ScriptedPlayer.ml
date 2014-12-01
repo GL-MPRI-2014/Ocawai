@@ -23,7 +23,10 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
       let m = Interpreter.move_script script u in
       (m, Action.Wait)
     with
-    | _ -> ([], Action.End_turn)
+    | ScriptCore.End_turn -> ([], Action.End_turn)
+    | Invalid_argument(s) -> 
+        print_endline ("Warning, script invalid argument : " ^ s);
+        ([], Action.End_turn)
 
   method set_logicPlayerList playersList =
 	()
