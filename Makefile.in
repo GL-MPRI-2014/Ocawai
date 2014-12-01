@@ -50,8 +50,8 @@ script_src=$(common_dir),$(utils_dir),$(script_dir),$(config_dir)
 test_src=test,$(engine_src)
 
 #dependencies required for each target
-common_dependencies = atdgen,dolog,unix,threads
-engine_dependencies = $(common_dependencies)
+common_dependencies = atdgen,dolog,unix
+engine_dependencies = $(common_dependencies),threads
 music_dependencies = bigarray,mm,threads,num,ocsfml.audio
 script_dependencies = $(common_dependencies)
 
