@@ -734,7 +734,7 @@ let generate playerslist =
           generate_aux (n-1)
     end
   in
-  GenLog.infof "Generating Battlefield ...";
+  GenLog.debugf "Generating Battlefield ...";
   generate_aux generate_attempts
 
 

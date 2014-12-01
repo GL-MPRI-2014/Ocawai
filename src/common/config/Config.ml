@@ -195,14 +195,15 @@ object (self)
                     settings_temp_file settings_default_file
                     engine_settings_temp_file engine_settings_default_file
                     interface_settings_temp_file interface_settings_default_file =
-    if Sys.file_exists tiles_file then tiles_config <- tiles_file;
-    if Sys.file_exists units_file then units_config <- units_file;
+    let aux a b = if a <> "" then (if Sys.file_exists a then a else (ConfigLog.errorf "[missing] %s" a; b)) else b in
+    tiles_config <- aux tiles_file tiles_config;
+    units_config <- aux units_file units_config;
     if settings_temp_file <> "" then settings_temp <- settings_temp_file;
-    if Sys.file_exists settings_default_file then settings_default <- settings_default_file;
+    settings_default <- aux settings_default_file settings_default;
     if engine_settings_temp_file <> "" then engine_settings_temp <- engine_settings_temp_file;
-    if Sys.file_exists engine_settings_default_file then engine_settings_default <- engine_settings_default_file;
+    engine_settings_default <- aux engine_settings_default_file engine_settings_default;
     if interface_settings_temp_file <> "" then interface_settings_temp <- interface_settings_temp_file;
-    if Sys.file_exists interface_settings_default_file then interface_settings_default <- interface_settings_default_file;
+    interface_settings_default <- aux interface_settings_default_file interface_settings_default;
     self#reload_all
   
   method private init_all (x1,x2,x3,x4,x5,x6,x7,x8) =
@@ -230,19 +231,19 @@ object (self)
   
   method tiles_list = match t_list with
     | Some a -> a
-    | None -> ConfigLog.fatalf "[missing] tiles";raise (Missing_config "no valid tiles file provided so far, did you call init?")
+    | None -> ConfigLog.fatalf "[missing] tiles";raise (Missing_config "no valid tiles file loaded so far, did you call init?")
   method unbound_units_list = match u_list with
     | Some a -> a
-    | None -> ConfigLog.fatalf "[missing] units";raise (Missing_config "no valid units file provided so far, did you call init?")
+    | None -> ConfigLog.fatalf "[missing] units";raise (Missing_config "no valid units file loaded so far, did you call init?")
   method private settings_unsafe = match s with
     | Some a -> a
-    | None -> ConfigLog.fatalf "[missing] settings";raise (Missing_config "no valid settings file provided so far, did you call init?")
+    | None -> ConfigLog.fatalf "[missing] settings";raise (Missing_config "no valid settings file loaded so far, did you call init?")
   method private settings_engine_unsafe = match engine_s with
     | Some a -> a
-    | None -> ConfigLog.fatalf "[missing] settings_engine";raise (Missing_config "no valid engine settings file provided so far, did you call init_engine?")
+    | None -> ConfigLog.fatalf "[missing] settings_engine";raise (Missing_config "no valid engine settings file loaded so far, did you call init_engine?")
   method private settings_interface_unsafe = match interface_s with
     | Some a -> a 
-    | None -> ConfigLog.fatalf "[missing] settings_interface";raise (Missing_config "no valid interface settings file provided so far, did you call init_interface?")
+    | None -> ConfigLog.fatalf "[missing] settings_interface";raise (Missing_config "no valid interface settings file loaded so far, did you call init_interface?")
   method settings = self#fix_settings;self#settings_unsafe
   method settings_engine = self#fix_settings_engine;self#settings_engine_unsafe
   method settings_interface = self#fix_settings_interface;self#settings_interface_unsafe
