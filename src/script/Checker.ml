@@ -276,8 +276,8 @@ and seq_type = function
   | SeqEnd -> debug (lazy "sequence end"); ref `Unit_tc
 
 
-let print_location (l,l') =
-  Lexing.(errorf
+let printable_location (l,l') =
+  Lexing.(Printf.sprintf
     "Error in %s, from line %d characters %d-%d to line %d characters %d-%d: "
     l.pos_fname
     l.pos_lnum
@@ -287,6 +287,9 @@ let print_location (l,l') =
     l'.pos_bol
     l'.pos_bol)
 
+
+exception Type_checking_failure
+
 let type_check prog =
   (* TODO: find a better place? *)
   Hashtbl.add assignment "self" (ref `Player_tc) ;
@@ -295,65 +298,70 @@ let type_check prog =
   Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
   (* Simplifying a bit *)
   let pp = errorf in
-  try check_prog prog
-  with
-  | Unification_failure ->
-      pp "Error: Couldn't unify (more precisions soon)\n"
-  | Unbound_variable (s,l) ->
-      print_location l ;
-      pp "variable %s is unbound\n" s
-  | Unbound_function (s,l) ->
-      print_location l ;
-      pp "function %s is unbound\n" s
-  | Not_unit_seq (v,l) ->
-      print_location l ;
-      pp "expected type unit in sequence, got %s\n" (type_to_string v)
-  | Wrong_type_set (s,st,vt,l) ->
-      print_location l ;
-      pp
-        "variable %s of type %s cannot be set to type %s\n"
-        s
-        (type_to_string st)
-        (type_to_string vt)
-  | Move_return (t,l) ->
-      print_location l ;
-      pp
-        "Move block should return a path of type (int * int) list, received %s\n"
-        (type_to_string t)
-  | Main_return (t,l) ->
-      print_location l ;
-      pp "Main should return the next unit to be played of type soldier, received %s\n" (type_to_string t)
-  | Hetero_list (a,t,l) ->
-      print_location l ;
-      pp
-        "heterogenous list of type %s list cannot contain element of type %s\n"
+  let okay = ref false in
+  begin
+    try check_prog prog ; okay := true
+    with
+    | Unification_failure ->
+        pp "Couldn't unify (more precisions soon)\n"
+    | Unbound_variable (s,l) ->
+        pp "%svariable %s is unbound\n" (printable_location l) s
+    | Unbound_function (s,l) ->
+        pp "%sfunction %s is unbound\n" (printable_location l) s
+    | Not_unit_seq (v,l) ->
+        pp
+          "%sexpected type unit in sequence, got %s\n"
+          (printable_location l) (type_to_string v)
+    | Wrong_type_set (s,st,vt,l) ->
+        pp
+          "%svariable %s of type %s cannot be set to type %s\n"
+          (printable_location l)
+          s
+          (type_to_string st)
+          (type_to_string vt)
+    | Move_return (t,l) ->
+        pp
+          "%sMove block should return a path of type (int * int) list, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Main_return (t,l) ->
+        pp
+          "%sMain should return the next unit to be played of type soldier, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Hetero_list (a,t,l) ->
+        pp
+          "%sheterogenous list of type %s list cannot contain element of type %s\n"
+          (printable_location l)
+          (type_to_string a)
+          (type_to_string t)
+    | Hetero_array (a,t,l) ->
+        pp
+        "%sheterogenous array of type %s array cannot contain element of type %s\n"
+        (printable_location l)
         (type_to_string a)
         (type_to_string t)
-  | Hetero_array (a,t,l) ->
-      print_location l ;
-      pp
-      "heterogenous array of type %s array cannot contain element of type %s\n"
-      (type_to_string a)
-      (type_to_string t)
-  | Apply_args (s,ft,tl,l) ->
-      print_location l ;
-      pp
-        "function %s of type %s cannot be applied to parameters of types "
-        s
-        (type_to_string ft) ;
-      List.iter (fun t -> pp "%s, " (type_to_string t)) tl;
-      pp "it doesn't match\n"
-  | Not_bool_if (t,l) ->
-      print_location l ;
-      pp
-        "If statement's condition should be of type bool, received %s\n"
-        (type_to_string t)
-  | Different_type_else (t1,t2,l) ->
-      print_location l ;
-      pp
-        "Else statement returns a value of type %s when the If statement returned a value of type %s\n"
-        (type_to_string t2)
-        (type_to_string t1)
+    | Apply_args (s,ft,tl,l) ->
+        pp
+          "%sfunction %s of type %s cannot be applied to parameters of types "
+          (printable_location l)
+          s
+          (type_to_string ft) ;
+        List.iter (fun t -> pp "%s, " (type_to_string t)) tl;
+        pp "it doesn't match\n"
+    | Not_bool_if (t,l) ->
+        pp
+          "%sIf statement's condition should be of type bool, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Different_type_else (t1,t2,l) ->
+        pp
+          "%sElse statement returns a value of type %s when the If statement returned a value of type %s\n"
+          (printable_location l)
+          (type_to_string t2)
+          (type_to_string t1)
+  end ;
+  if not (!okay) then raise Type_checking_failure
 
 
 
