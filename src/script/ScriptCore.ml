@@ -1,5 +1,8 @@
 (** Exposes some functions to the script engine *)
 
+exception Do_nothing
+exception End_turn
+
 let expose f t s =
   ScriptValues.expose f t s ;
   Checker.expose t s
@@ -139,12 +142,14 @@ let scr_printi =
 let scr_listhd =
   `Fun(function
     |`List(t::q) -> t
+    |`List([]) -> raise (Invalid_argument "Script : List.hd")
     | _ -> assert false
   )
 
 let scr_listtl =
   `Fun(function
     |`List(t::q) -> `List q
+    |`List([]) -> raise (Invalid_argument "Script : List.tl")
     | _ -> assert false
   )
 
@@ -292,6 +297,18 @@ let scr_dijkstra =
     | _ -> assert false
     )
 
+let scr_donothing = 
+  `Fun(function
+    |`Unit -> raise Do_nothing
+    | _ -> assert false
+  )
+
+let scr_endturn = 
+  `Fun(function
+    |`Unit -> raise End_turn
+    | _ -> assert false
+  )
+
 let intpair = `Pair_t (`Int_t, `Int_t)
 
 let init () =
@@ -328,4 +345,6 @@ let init () =
     `Fun_t(`List_t(`Player_t), `Fun_t(`Map_t, `List_t(intpair)))))) "accessible_positions";
   expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t))) "army_of";
   expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(`Map_t, `Fun_t(intpair,`List_t(intpair))))) "dijkstra_to";
-  expose scr_rand (`Fun_t(`Int_t, `Int_t)) "rand"
+  expose scr_rand (`Fun_t(`Int_t, `Int_t)) "rand";
+  expose scr_endturn (`Fun_t(`Unit_t, `Alpha_t(0))) "end_turn";
+  expose scr_donothing (`Fun_t(`Unit_t, `Alpha_t(0))) "do_nothing";

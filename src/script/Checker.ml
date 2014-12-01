@@ -100,8 +100,7 @@ and check_procedure = function
 
   | Attack ((sl,st),l,t) ->
       unify t (seq_type st) ;
-      (* TODO : Change Unit for the correct type *)
-      unify t (ref `Unit_tc)
+      unify t (ref `Soldier_tc)
 
   | Main (st,l,t) ->
       unify t (seq_type st) ;
@@ -109,7 +108,6 @@ and check_procedure = function
 
   | Init (st,l,t) ->
       unify t (seq_type st) ;
-      (* TODO : Change Unit for the correct type *)
       unify t (ref `Unit_tc)
 
 and val_type = function

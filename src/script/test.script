@@ -16,6 +16,7 @@ move default {
 }
 
 attack default {
+  do_nothing ()
 }
 
 init {
