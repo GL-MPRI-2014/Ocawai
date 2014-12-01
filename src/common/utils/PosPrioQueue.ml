@@ -14,7 +14,7 @@ let is_empty (r,_) = !r = Empty
 
 let set_empty (r,_) = r := Empty
 
-let p_none = -1
+let p_none = max_int
 
 (* Manipulate an array indexed by positions *)
 let get a p = let (a1,a2) = Position.topair p in a.(a1).(a2)
@@ -24,13 +24,6 @@ let add a p b = set a p (Some (b::(match get a p with | None -> assert false | S
 let rem a p = set a p None
 let behead a p = set a p (match get a p with | None | Some [] -> assert false | Some(p::q) -> Some q)
 let path a p = List.rev (match get a p with | None -> assert false | Some l -> l)
-
-(* compare positions, with p_none = +infinity *)
-let compare_si p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> false | _,b when b = p_none -> true | a,_ when a = p_none -> false | _ -> p1 < p2
-let compare_i p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> true | _,b when b = p_none -> true | a,_ when a = p_none -> false | _ -> p1 <= p2
-let compare_ss p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> false | _,b when b = p_none -> false | a,_ when a = p_none -> true | _ -> p1 > p2
-let compare_s p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> true | _,b when b = p_none -> false | a,_ when a = p_none -> true | _ -> p1 >= p2
-let min_p p1 p2 = match (p1,p2) with | a,b when a = b && b = p_none -> p_none | _,b when b = p_none -> p1 | a,_ when a = p_none -> p2 | _ -> min p1 p2
 
 let matrix_foreach f =
   Array.iteri (fun x -> Array.iteri (f x))
@@ -57,11 +50,11 @@ let push (refqueue,ind) prio elt =
     match queue with
     | Empty -> Node(prio, elt, Empty, Empty, true)
     | Node(p, e, Empty, Empty, true) ->
-        let (p1,e1,p2,e2) = if compare_i prio p then (prio,elt,p,e) else (p,e,prio,elt) in
+        let (p1,e1,p2,e2) = if prio <= p then (prio,elt,p,e) else (p,e,prio,elt) in
         add ind e2 false;
         Node(p1, e1, push_aux Empty p2 e2, Empty, false)
     | Node(p, e, (Node(_,_,_,_,cl) as left), right, complete) ->
-        let (p1,e1,p2,e2) = if compare_i prio p then (prio,elt,p,e) else (p,e,prio,elt) in
+        let (p1,e1,p2,e2) = if prio <= p then (prio,elt,p,e) else (p,e,prio,elt) in
         if complete then
         begin
           add ind e2 false;
@@ -103,7 +96,7 @@ let pop (refqueue,ind) =
   | Empty -> assert false
   | Node(prio, elt, Empty, Empty, c) as n -> n
   | Node(prio, elt, (Node(lprio, lelt, ll, lr, lc)), Empty, c) as n ->
-      if compare_ss prio lprio then
+      if prio > lprio then
       begin
         behead ind lelt;
         add ind elt false;
@@ -111,7 +104,7 @@ let pop (refqueue,ind) =
       end
       else n
   | Node(prio, elt, Empty, (Node(rprio, relt, rl, rr, rc)), c) as n ->
-      if compare_ss prio rprio then
+      if prio > rprio then
       begin
         behead ind relt;
         add ind elt true;
@@ -120,9 +113,9 @@ let pop (refqueue,ind) =
       else n
   | Node(prio, elt, (Node(lprio, lelt, ll, lr, lc) as left),
                     (Node(rprio, relt, rl, rr, rc) as right), c) as n ->
-      if compare_ss prio (min_p rprio lprio) then
+      if prio > (min rprio lprio) then
       begin
-        if compare_i lprio rprio then
+        if lprio <= rprio then
         begin
           behead ind lelt;
           add ind elt false;
@@ -157,7 +150,7 @@ let decrease_priority (refqueue,ind) prio elt =
         match aux (q,left) with
         | Empty -> assert false
         | Node(lp,le,ll,lr,lc) as n ->
-            if compare_si lp p then
+            if lp < p then
             begin
               behead ind le;
               add ind e false;
@@ -171,7 +164,7 @@ let decrease_priority (refqueue,ind) prio elt =
         match aux (q,right) with
         | Empty -> assert false
         | Node(rp,re,rl,rr,rc) as n->
-            if compare_si rp p then
+            if rp < p then
             begin
               behead ind re;
               add ind e true;

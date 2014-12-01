@@ -368,6 +368,34 @@ object (self)
     List.nth units (((int_of_char c - offset) +256) mod 256)
   method unbound_unit_of_char c = self#unbound_unit_of_char_off c self#settings.serializer_offset
   
+  method string_of_unit (u:Unit.t) =
+    let s0 = let s = "0" in s.[0] <- (self#char_of_unbound_unit (u:> Unit.unbound_t));s in
+    let (s1,s2) = let (a,b) = Position.topair u#position in (string_of_int a,string_of_int b) in
+    let s3 = string_of_int u#player_id in
+    let s4 = string_of_int u#get_id in
+    let s5 = string_of_int u#hp in
+    let s6 = if u#has_played then "0" else "1" in
+    s0^","^s1^","^s2^","^s3^","^s4^","^s5^","^s6
+    
+  method unit_of_string s =
+  print_endline s;
+    let s_size = String.length s in
+    let rec to_list_aux = function
+    | n when n = s_size -> []
+    | n when s.[n] < '0' || s.[n] > '9' -> n::(to_list_aux (n+1))
+    | n -> to_list_aux (n+1)
+    in
+    let rec to_list = function
+    | [] -> assert false
+    | [p] -> let ss = String.sub s (p+1) 1 in [ss]
+    | p::q::l -> let ss = String.sub s (p+1) (q-p-1) in ss::(to_list (q::l))
+    in
+    let l = to_list ((-1)::1::(to_list_aux 2)) in
+    if List.length l <> 7 then failwith "not a valid unit" else
+    let al = Array.of_list l in
+    let (u,p,pid,id,hp,h_p) = (self#unbound_unit_of_char al.(0).[0], Position.create(int_of_string al.(1),int_of_string al.(2)), int_of_string al.(3), int_of_string al.(4), int_of_string al.(5), al.(6)="1") in
+    Unit.bind_extended u p pid id hp h_p
+  
   method private string_of_battlefield_off m off2 =
     let (w,h) = Battlefield.size m in
     let s = Utils.init_string
@@ -428,39 +456,11 @@ object (self)
       ) m;
     m
   method battlefield_of_string s = self#battlefield_of_string_off self#settings.map_width self#settings.map_height s self#settings.string_compression_offset
-
+  
 end
 
 let config = new t
 
 let _ = config#init_default
-(* Test *)
 
-(*
-open Settings_j
-let test game = 
-  let print () = print_int game#config#settings.cursor_speed;print_newline() in
-  
-  print();
-  
-  game#config#settings.cursor_speed <- 50;
-  print();
-  
-  game#config#reload;
-  print();
-  
-  game#config#settings.cursor_speed <- 50;
-  game#config#save_settings;
-  print();
-  
-  game#config#reload;
-  print();
-  
-  game#config#reset_to_default;
-  print();
-  
-  game#config#settings.cursor_speed <- 50;
-  game#config#save_settings;
-  print()
-*)
 
