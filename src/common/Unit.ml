@@ -18,10 +18,10 @@ object (self)
   method spawn_number = sp
   method attack_base = ab
   method armor = ar
-  method price = price
   method percentage_light = pl
   method percentage_normal = pn
   method percentage_heavy = ph
+  method price = price
   method life_max = l_m
 end
 
@@ -84,5 +84,34 @@ let create_unbound_from_parsed_unit u = new unbound_soldier (u.Unit_t.name)
 ) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
 (u.Unit_t.price) (u.Unit_t.life_max)
 
-
+open Unit_t 
+let create_parsed_unit_from_unbound (u :unbound_t) =
+  {
+    name = u#name;
+    movement_type = (match u#movement_type with
+    | Walk -> `Walk
+    | Roll -> `Roll
+    | Tread -> `Tread
+    | Swim -> `Swim
+    | Fly -> `Fly
+    | Amphibious_Walk -> `Amphibious_Walk
+    | Amphibious_Roll -> `Amphibious_Roll
+    | Amphibious_Tread -> `Amphibious_Tread
+    | All -> `All);
+    vision_range = u#vision_range;
+    attack_range_min = u#min_attack_range;
+    attack_range_max = u#attack_range;
+    move_range = u#move_range;
+    spawn_number = u#spawn_number;
+    attack_base = u#attack_base;
+    armor = (match u#armor with
+    | Light -> `Light
+    | Normal -> `Normal
+    | Heavy -> `Heavy);
+    percentage_light = u#percentage_light;
+    percentage_normal = u#percentage_normal;
+    percentage_heavy = u#percentage_heavy;
+    price = u#price;
+    life_max = u#life_max;
+  }
 

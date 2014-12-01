@@ -1,6 +1,5 @@
 (** Menu items for settings *)
 
-open Settings
 open Home
 
 (** Height of a setter *)
