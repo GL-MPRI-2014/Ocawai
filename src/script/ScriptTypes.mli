@@ -56,9 +56,9 @@ and static = [
   `Array_tc of term_type |
   `Fun_tc   of term_type * term_type |
   `Pair_tc  of term_type * term_type |
-  `Alpha_tc   | (* behaves like ANY for now *)
+  `Alpha_tc of int       |
   `None       |
-  `Pointer of term_type
+  `Pointer  of term_type
 ]
 
 and term_type = static ref

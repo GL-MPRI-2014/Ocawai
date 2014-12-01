@@ -5,6 +5,17 @@ open ScriptTypes
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
+(* For the alphae *)
+(* Allows to unify them in a given context *)
+let alpha_env = Hashtbl.create 97
+let get_alpha i =
+  if Hashtbl.mem alpha_env i then Hashtbl.find alpha_env i
+  else begin
+    let t = ref `None in
+    Hashtbl.add alpha_env i t ;
+    t
+  end
+
 exception Unbound_variable of string * location
 exception Unbound_function of string * location
 
@@ -18,8 +29,8 @@ exception Unification_failure
 
 let rec unify (t1:term_type) (t2:term_type) =
   match (deref t1, deref t2) with
-  | `Alpha_tc, _ -> ()
-  | _, `Alpha_tc -> ()
+  | `Alpha_tc i, _ -> unify (get_alpha i) t2
+  | _, `Alpha_tc i -> unify t1 (get_alpha i)
   | `None, _     -> t1 := `Pointer t2
   | _, `None     -> t2 := `Pointer t1
   | `List_tc t1, `List_tc t2   -> unify t1 t2
@@ -171,6 +182,9 @@ and val_type = function
           try unify_func ftype argst
           with Unification_failure -> raise (Apply_args (s,ftype,argst,l))
         in
+        (* We don't want the alpha_i to remain bound *)
+        (* TODO Check if it works for higher order *)
+        Hashtbl.clear alpha_env ;
         unify t return_type ; t
       end
   | Ifte ((v,s1,s2),l,t) ->
@@ -232,7 +246,7 @@ let rec type_to_string t =
   | `Soldier_tc    -> "soldier"
   | `Map_tc        -> "map"
   | `Player_tc     -> "player"
-  | `Alpha_tc      -> "alpha" (*TODO*)
+  | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
   | `List_tc v     -> (type_to_string v) ^ " list"
   | `Array_tc v    -> (type_to_string v) ^ " array"
   | `Fun_tc (a,b)  -> (type_to_string a) ^ " -> (" ^ (type_to_string b) ^ ")"
@@ -319,7 +333,7 @@ let rec vt_to_tt = function
   | `Soldier_t    -> ref `Soldier_tc
   | `Map_t        -> ref `Map_tc
   | `Player_t     -> ref `Player_tc
-  | `Alpha_t i    -> ref `Alpha_tc (*TODO*)
+  | `Alpha_t i    -> ref (`Alpha_tc i)
   | `List_t v     -> ref (`List_tc (vt_to_tt v))
   | `Array_t v    -> ref (`Array_tc (vt_to_tt v))
   | `Fun_t (a,b)  -> ref (`Fun_tc (vt_to_tt a, vt_to_tt b))
