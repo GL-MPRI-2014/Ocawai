@@ -221,7 +221,7 @@ and seq_type = function
       end ;
       seq_type k
 
-  | SeqEnd -> ref `None
+  | SeqEnd -> ref `Unit_tc
 
 
 let print_location (l,l') =
