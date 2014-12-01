@@ -33,7 +33,7 @@ let script_from_file f env =
   lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};
   let script = parse_with_errors lexbuf in
   close_in input;
-(*   type_check script; *)
+  type_check script;
   Interpreter.new_script script env
 
 let () = ScriptCore.init ()

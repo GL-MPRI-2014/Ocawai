@@ -2,6 +2,10 @@
 
 open ScriptTypes
 
+(* For debug *)
+module CheckerLog = Log.Make (struct let section = "Type Checker" end)
+open CheckerLog
+
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
@@ -25,9 +29,32 @@ let rec deref (t:term_type) =
   | v -> v
 
 
+(* Translates a type to a string *)
+let rec type_to_string t =
+  match (deref t) with
+  | `Int_tc        -> "int"
+  | `Unit_tc       -> "unit"
+  | `String_tc     -> "string"
+  | `Bool_tc       -> "bool"
+  | `Soldier_tc    -> "soldier"
+  | `Map_tc        -> "map"
+  | `Player_tc     -> "player"
+  | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
+  | `List_tc v     -> (type_to_string v) ^ " list"
+  | `Array_tc v    -> (type_to_string v) ^ " array"
+  | `Fun_tc (a,b)  -> (type_to_string a) ^ " -> (" ^ (type_to_string b) ^ ")"
+  | `Pair_tc (a,b) -> "(" ^ (type_to_string a) ^ " * " ^ (type_to_string b) ^ ")"
+  | `Pointer t     -> assert false
+  | `None          -> "any_type"
+
+
 exception Unification_failure
 
 let rec unify (t1:term_type) (t2:term_type) =
+  debugf
+    "[unifying] types\t(%s)\tand\t(%s)"
+    (type_to_string t1) (type_to_string t2) ;
+  if t1 <> t2 then
   match (deref t1, deref t2) with
   | `Alpha_tc i, _ -> unify (get_alpha i) t2
   | _, `Alpha_tc i -> unify t1 (get_alpha i)
@@ -73,28 +100,33 @@ exception Different_type_else of term_type * term_type * location
 let rec check_prog = function
 
   | GlobDecl ((d,k),l) ->
+      debug (lazy "global decleration");
       check_decl d ;
       check_prog k
 
   | GlobProc ((p,k),l) ->
+      debug (lazy "global procedure");
       check_procedure p ;
       check_prog k
 
   | GlobSeq ((v,k),l,t) ->
+      debug (lazy "global sequence");
       let vt = val_type v in
       unify t vt ;
       (try unify t (ref `Unit_tc)
       with Unification_failure -> raise (Not_unit_seq (vt,l)));
       check_prog k
 
-  | Empty -> ()
+  | Empty -> debug (lazy "empty prog")
 
 and check_decl = function
 
   | Vardecl ((s,v),l) ->
+      debug (lazy "var decleration");
       Hashtbl.add assignment s (val_type v)
 
   | Varset ((s,v),l) ->
+      debug (lazy "var set");
       begin
         let st =
           try Hashtbl.find assignment s
@@ -105,6 +137,7 @@ and check_decl = function
       end
 
   | Fundecl ((s,sl,sqt),l) ->
+      debug (lazy "function decleration");
       (* First, for each variable, we associate a type *)
       List.iter (fun s -> Hashtbl.add assignment s (ref `None)) sl ;
       let tl = List.map (fun s -> Hashtbl.find assignment s) sl in
@@ -120,6 +153,7 @@ and check_decl = function
 and check_procedure = function
 
   | Move ((sl,st),l,t) ->
+      debug (lazy "move");
       Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
       unify t (seq_type st) ;
       begin
@@ -128,10 +162,12 @@ and check_procedure = function
       end
 
   | Attack ((sl,st),l,t) ->
+      debug (lazy "attack");
       unify t (seq_type st) ;
       unify t (ref `Soldier_tc)
 
   | Main (st,l,t) ->
+      debug (lazy "main");
       unify t (seq_type st) ;
       begin
         try unify t (ref `Soldier_tc)
@@ -139,16 +175,18 @@ and check_procedure = function
       end
 
   | Init (st,l,t) ->
+      debug (lazy "init");
       unify t (seq_type st) ;
       unify t (ref `Unit_tc)
 
 and val_type = function
 
-  | Int (_,l,t)    -> unify t (ref `Int_tc)    ; t
-  | Unit (l,t)     -> unify t (ref `Unit_tc)   ; t
-  | String (_,l,t) -> unify t (ref `String_tc) ; t
-  | Bool (_,l,t)   -> unify t (ref `Bool_tc)   ; t
+  | Int (_,l,t)    -> debug (lazy "int"); unify t (ref `Int_tc)    ; t
+  | Unit (l,t)     -> debug (lazy "unit"); unify t (ref `Unit_tc)   ; t
+  | String (_,l,t) -> debug (lazy "string"); unify t (ref `String_tc) ; t
+  | Bool (_,l,t)   -> debug (lazy "bool"); unify t (ref `Bool_tc)   ; t
   | List (vl,l,t)  ->
+      debug (lazy "list");
       let alpha = ref `None in
       List.iter
         (fun v ->
@@ -159,6 +197,7 @@ and val_type = function
         vl ;
       unify t (ref (`List_tc alpha)) ; t
   | Array (va,l,t) ->
+      debug (lazy "array");
       let alpha = ref `None in
       Array.iter
         (fun v ->
@@ -168,14 +207,17 @@ and val_type = function
         ) va ;
       unify t (ref (`Array_tc alpha)) ; t
   | Var (s,l,t)    ->
+      debug (lazy "var");
       (try unify (Hashtbl.find assignment s) t ; t
       with Not_found -> raise (Unbound_variable (s,l)))
   | App ((s,vl),l,t) ->
+      debug (lazy "application");
       begin
         let ftype =
           try Hashtbl.find assignment s
           with Not_found -> raise (Unbound_function (s,l))
         and argst = List.map val_type vl in
+        debug (lazy "return type");
         let return_type =
           try unify_func ftype argst
           with Unification_failure -> raise (Apply_args (s,ftype,argst,l))
@@ -183,37 +225,47 @@ and val_type = function
         (* We don't want the alpha_i to remain bound *)
         (* TODO Check if it works for higher order *)
         Hashtbl.clear alpha_env ;
-        unify t return_type ; t
+        unify t return_type ; debug (lazy "end application") ; t
       end
   | Ifte ((v,s1,s2),l,t) ->
+      debug (lazy "if condition");
       let vt = val_type v in
       begin
         try unify vt (ref `Bool_tc)
         with Unification_failure -> raise (Not_bool_if (vt,l))
       end;
-      let st1 = seq_type s1
-      and st2 = seq_type s2 in
+      debug (lazy "if statement");
+      let st1 = seq_type s1 in
+      debugf "if returns %s" (type_to_string st1);
+      debug (lazy "else statement");
+      let st2 = seq_type s2 in
+      debugf "else returns %s" (type_to_string st1);
       unify t st1 ;
       begin
         try unify t st2
         with Unification_failure -> raise (Different_type_else (st1,st2,l))
       end;
+      debug (lazy "end if");
       t
   | Pair ((v1,v2),l,t) ->
+      debug (lazy "pair");
       unify t (ref (`Pair_tc (val_type v1, val_type v2))) ; t
 
 and seq_type = function
 
   | SeqDecl ((d,k),l,t) ->
+      debug (lazy "sequence declaration");
       check_decl d ;
       unify t (ref `Unit_tc) ;
       seq_type k
 
   | SeqVar ((v,SeqEnd),l,t) ->
+      debug (lazy "sequence value (terminating)");
       unify t (val_type v) ;
       t
 
   | SeqVar ((v,k),l,t) ->
+      debug (lazy "sequence value (with continuation)");
       unify t (val_type v) ;
       begin
         try unify t (ref `Unit_tc)
@@ -221,11 +273,11 @@ and seq_type = function
       end ;
       seq_type k
 
-  | SeqEnd -> ref `Unit_tc
+  | SeqEnd -> debug (lazy "sequence end"); ref `Unit_tc
 
 
 let print_location (l,l') =
-  Lexing.(Printf.printf
+  Lexing.(errorf
     "Error in %s, from line %d characters %d-%d to line %d characters %d-%d: "
     l.pos_fname
     l.pos_lnum
@@ -235,23 +287,6 @@ let print_location (l,l') =
     l'.pos_bol
     l'.pos_bol)
 
-let rec type_to_string t =
-  match (deref t) with
-  | `Int_tc        -> "int"
-  | `Unit_tc       -> "unit"
-  | `String_tc     -> "string"
-  | `Bool_tc       -> "bool"
-  | `Soldier_tc    -> "soldier"
-  | `Map_tc        -> "map"
-  | `Player_tc     -> "player"
-  | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
-  | `List_tc v     -> (type_to_string v) ^ " list"
-  | `Array_tc v    -> (type_to_string v) ^ " array"
-  | `Fun_tc (a,b)  -> (type_to_string a) ^ " -> (" ^ (type_to_string b) ^ ")"
-  | `Pair_tc (a,b) -> "(" ^ (type_to_string a) ^ " * " ^ (type_to_string b) ^ ")"
-  | `Pointer t     -> assert false
-  | `None          -> "any_type"
-
 let type_check prog =
   (* TODO: find a better place? *)
   Hashtbl.add assignment "self" (ref `Player_tc) ;
@@ -259,7 +294,7 @@ let type_check prog =
   Hashtbl.add assignment "map" (ref `Map_tc) ;
   Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
   (* Simplifying a bit *)
-  let pp = Printf.printf in
+  let pp = errorf in
   try check_prog prog
   with
   | Unification_failure ->
