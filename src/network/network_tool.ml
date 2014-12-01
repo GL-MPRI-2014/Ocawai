@@ -27,10 +27,10 @@ let create_listener port =
   with
     | Unix.Unix_error (Unix.EADDRINUSE, _, _) ->
       Unix.close fd_listen ;
-        failwith "port already in use"
+        failwith "The server port already in use : give another port to start the server"
     | Unix.Unix_error (_, "bind", _) ->
       Unix.close fd_listen ;
-         failwith "Port illegal"
+         failwith "The server port illegal : give another port to start the server"
 	
 (**
  * This function initializes the connection with
@@ -123,7 +123,7 @@ let open_connection ip port =
   with 
     | Unix.Unix_error (_, "connect", _) -> 
       Unix.close sock;
-      failwith "connexion fail"
+      failwith "The server connection attempt failed : Check the address and listening port"
 
 
 (* COMUNNICATION *)

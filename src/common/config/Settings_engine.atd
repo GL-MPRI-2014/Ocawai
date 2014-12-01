@@ -10,7 +10,7 @@ type s_positive = int
     fun x -> 0 < x
   )">
 
-type t = {
+type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with none=()} *)">  : unit;
   
   generation_method<ocaml mutable> : generation_type;
   

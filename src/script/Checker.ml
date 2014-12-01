@@ -5,6 +5,17 @@ open ScriptTypes
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
+(* For the alphae *)
+(* Allows to unify them in a given context *)
+let alpha_env = Hashtbl.create 97
+let get_alpha i =
+  if Hashtbl.mem alpha_env i then Hashtbl.find alpha_env i
+  else begin
+    let t = ref `None in
+    Hashtbl.add alpha_env i t ;
+    t
+  end
+
 exception Unbound_variable of string * location
 exception Unbound_function of string * location
 
@@ -14,13 +25,12 @@ let rec deref (t:term_type) =
   | v -> v
 
 
-(* TODO: make the error more precise *)
 exception Unification_failure
 
 let rec unify (t1:term_type) (t2:term_type) =
   match (deref t1, deref t2) with
-  | `Alpha_tc, _ -> ()
-  | _, `Alpha_tc -> ()
+  | `Alpha_tc i, _ -> unify (get_alpha i) t2
+  | _, `Alpha_tc i -> unify t1 (get_alpha i)
   | `None, _     -> t1 := `Pointer t2
   | _, `None     -> t2 := `Pointer t1
   | `List_tc t1, `List_tc t2   -> unify t1 t2
@@ -47,6 +57,19 @@ let rec unify_func (ftype : term_type) = function
       )
 
 
+(* Exceptions regarding errors *)
+exception Not_unit_seq of term_type * location
+exception Wrong_type_set of string * term_type * term_type * location
+exception Move_return of term_type * location
+exception Main_return of term_type * location
+(* TODO Add Init and Attack errors *)
+exception Hetero_list of term_type * term_type * location
+exception Hetero_array of term_type * term_type * location
+exception Apply_args of string * term_type * (term_type list) * location
+exception Not_bool_if of term_type * location
+exception Different_type_else of term_type * term_type * location
+
+
 let rec check_prog = function
 
   | GlobDecl ((d,k),l) ->
@@ -57,14 +80,11 @@ let rec check_prog = function
       check_procedure p ;
       check_prog k
 
-  (* It seems that all these are unit *)
-  (* | GlobSeq ((v,Empty),l,t) ->
-      unify t (val_type v) ;
-      unify t (ref `Unit_tc) *)
-
   | GlobSeq ((v,k),l,t) ->
-      unify t (val_type v) ;
-      unify t (ref `Unit_tc) ;
+      let vt = val_type v in
+      unify t vt ;
+      (try unify t (ref `Unit_tc)
+      with Unification_failure -> raise (Not_unit_seq (vt,l)));
       check_prog k
 
   | Empty -> ()
@@ -75,8 +95,14 @@ and check_decl = function
       Hashtbl.add assignment s (val_type v)
 
   | Varset ((s,v),l) ->
-      (try unify (Hashtbl.find assignment s) (val_type v)
-      with Not_found -> raise (Unbound_variable (s,l)))
+      begin
+        let st =
+          try Hashtbl.find assignment s
+          with Not_found -> raise (Unbound_variable (s,l))
+        and vt = val_type v in
+        try unify st vt
+        with Unification_failure -> raise (Wrong_type_set (s,st,vt,l))
+      end
 
   | Fundecl ((s,sl,sqt),l) ->
       (* First, for each variable, we associate a type *)
@@ -96,7 +122,10 @@ and check_procedure = function
   | Move ((sl,st),l,t) ->
       Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
       unify t (seq_type st) ;
-      unify t (ref (`List_tc (ref (`Pair_tc (ref `Int_tc, ref `Int_tc)))))
+      begin
+        try unify t (ref (`List_tc (ref (`Pair_tc (ref `Int_tc, ref `Int_tc)))))
+        with Unification_failure -> raise (Move_return (t,l))
+      end
 
   | Attack ((sl,st),l,t) ->
       unify t (seq_type st) ;
@@ -104,7 +133,10 @@ and check_procedure = function
 
   | Main (st,l,t) ->
       unify t (seq_type st) ;
-      unify t (ref `Soldier_tc)
+      begin
+        try unify t (ref `Soldier_tc)
+        with Unification_failure -> raise (Main_return (t,l))
+      end
 
   | Init (st,l,t) ->
       unify t (seq_type st) ;
@@ -118,26 +150,54 @@ and val_type = function
   | Bool (_,l,t)   -> unify t (ref `Bool_tc)   ; t
   | List (vl,l,t)  ->
       let alpha = ref `None in
-      List.iter (fun v -> unify (val_type v) alpha) vl ;
+      List.iter
+        (fun v ->
+          let vt = val_type v in
+          try unify vt alpha
+          with Unification_failure -> raise (Hetero_list (alpha,vt,l))
+        )
+        vl ;
       unify t (ref (`List_tc alpha)) ; t
   | Array (va,l,t) ->
       let alpha = ref `None in
-      Array.iter (fun v -> unify (val_type v) alpha) va ;
+      Array.iter
+        (fun v ->
+          let vt = val_type v in
+          try unify vt alpha
+          with Unification_failure -> raise (Hetero_array (alpha,vt,l))
+        ) va ;
       unify t (ref (`Array_tc alpha)) ; t
   | Var (s,l,t)    ->
       (try unify (Hashtbl.find assignment s) t ; t
       with Not_found -> raise (Unbound_variable (s,l)))
   | App ((s,vl),l,t) ->
-      (try let rt = unify_func
-                (Hashtbl.find assignment s)
-                (List.map val_type vl)
+      begin
+        let ftype =
+          try Hashtbl.find assignment s
+          with Not_found -> raise (Unbound_function (s,l))
+        and argst = List.map val_type vl in
+        let return_type =
+          try unify_func ftype argst
+          with Unification_failure -> raise (Apply_args (s,ftype,argst,l))
         in
-        unify t rt ; t
-      with Not_found -> raise (Unbound_function (s,l)))
+        (* We don't want the alpha_i to remain bound *)
+        (* TODO Check if it works for higher order *)
+        Hashtbl.clear alpha_env ;
+        unify t return_type ; t
+      end
   | Ifte ((v,s1,s2),l,t) ->
-      unify (val_type v) (ref `Bool_tc) ;
-      unify t (seq_type s1) ;
-      unify t (seq_type s2) ;
+      let vt = val_type v in
+      begin
+        try unify vt (ref `Bool_tc)
+        with Unification_failure -> raise (Not_bool_if (vt,l))
+      end;
+      let st1 = seq_type s1
+      and st2 = seq_type s2 in
+      unify t st1 ;
+      begin
+        try unify t st2
+        with Unification_failure -> raise (Different_type_else (st1,st2,l))
+      end;
       t
   | Pair ((v1,v2),l,t) ->
       unify t (ref (`Pair_tc (val_type v1, val_type v2))) ; t
@@ -155,7 +215,10 @@ and seq_type = function
 
   | SeqVar ((v,k),l,t) ->
       unify t (val_type v) ;
-      unify t (ref `Unit_tc) ;
+      begin
+        try unify t (ref `Unit_tc)
+        with Unification_failure -> raise (Not_unit_seq (t,l))
+      end ;
       seq_type k
 
   | SeqEnd -> ref `None
@@ -172,22 +235,91 @@ let print_location (l,l') =
     l'.pos_bol
     l'.pos_bol)
 
+let rec type_to_string t =
+  match (deref t) with
+  | `Int_tc        -> "int"
+  | `Unit_tc       -> "unit"
+  | `String_tc     -> "string"
+  | `Bool_tc       -> "bool"
+  | `Soldier_tc    -> "soldier"
+  | `Map_tc        -> "map"
+  | `Player_tc     -> "player"
+  | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
+  | `List_tc v     -> (type_to_string v) ^ " list"
+  | `Array_tc v    -> (type_to_string v) ^ " array"
+  | `Fun_tc (a,b)  -> (type_to_string a) ^ " -> (" ^ (type_to_string b) ^ ")"
+  | `Pair_tc (a,b) -> "(" ^ (type_to_string a) ^ " * " ^ (type_to_string b) ^ ")"
+  | `Pointer t     -> assert false
+  | `None          -> "any_type"
+
 let type_check prog =
   (* TODO: find a better place? *)
   Hashtbl.add assignment "self" (ref `Player_tc) ;
   Hashtbl.add assignment "players" (ref (`List_tc (ref `Player_tc))) ;
   Hashtbl.add assignment "map" (ref `Map_tc) ;
   Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
+  (* Simplifying a bit *)
+  let pp = Printf.printf in
   try check_prog prog
   with
   | Unification_failure ->
-      Printf.printf "Error: Couldn't unify (more precisions soon)\n"
+      pp "Error: Couldn't unify (more precisions soon)\n"
   | Unbound_variable (s,l) ->
       print_location l ;
-      Printf.printf "variable %s is unbound\n" s
+      pp "variable %s is unbound\n" s
   | Unbound_function (s,l) ->
       print_location l ;
-      Printf.printf "function %s is unbound\n" s
+      pp "function %s is unbound\n" s
+  | Not_unit_seq (v,l) ->
+      print_location l ;
+      pp "expected type unit in sequence, got %s\n" (type_to_string v)
+  | Wrong_type_set (s,st,vt,l) ->
+      print_location l ;
+      pp
+        "variable %s of type %s cannot be set to type %s\n"
+        s
+        (type_to_string st)
+        (type_to_string vt)
+  | Move_return (t,l) ->
+      print_location l ;
+      pp
+        "Move block should return a path of type (int * int) list, received %s\n"
+        (type_to_string t)
+  | Main_return (t,l) ->
+      print_location l ;
+      pp "Main should return the next unit to be played of type soldier, received %s\n" (type_to_string t)
+  | Hetero_list (a,t,l) ->
+      print_location l ;
+      pp
+        "heterogenous list of type %s list cannot contain element of type %s\n"
+        (type_to_string a)
+        (type_to_string t)
+  | Hetero_array (a,t,l) ->
+      print_location l ;
+      pp
+      "heterogenous array of type %s array cannot contain element of type %s\n"
+      (type_to_string a)
+      (type_to_string t)
+  | Apply_args (s,ft,tl,l) ->
+      print_location l ;
+      pp
+        "function %s of type %s cannot be applied to parameters of types "
+        s
+        (type_to_string ft) ;
+      List.iter (fun t -> pp "%s, " (type_to_string t)) tl;
+      pp "it doesn't match\n"
+  | Not_bool_if (t,l) ->
+      print_location l ;
+      pp
+        "If statement's condition should be of type bool, received %s\n"
+        (type_to_string t)
+  | Different_type_else (t1,t2,l) ->
+      print_location l ;
+      pp
+        "Else statement returns a value of type %s when the If statement returned a value of type %s\n"
+        (type_to_string t2)
+        (type_to_string t1)
+
 
 
 (* Translates a ScriptValues.value_type to a term_type *)
@@ -199,7 +331,7 @@ let rec vt_to_tt = function
   | `Soldier_t    -> ref `Soldier_tc
   | `Map_t        -> ref `Map_tc
   | `Player_t     -> ref `Player_tc
-  | `Alpha_t i    -> ref `Alpha_tc (*TODO*)
+  | `Alpha_t i    -> ref (`Alpha_tc i)
   | `List_t v     -> ref (`List_tc (vt_to_tt v))
   | `Array_t v    -> ref (`Array_tc (vt_to_tt v))
   | `Fun_t (a,b)  -> ref (`Fun_tc (vt_to_tt a, vt_to_tt b))
