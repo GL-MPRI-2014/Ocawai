@@ -35,22 +35,25 @@ interface_dir=$(src_root)/interface
 gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
 music_dir=$(src_root)/music
+script_dir=$(src_root)/script
 
 test_dir=test
 # $(network_dir) removed for now
-dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir)
+dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir) $(script_dir)
 
 #for each target, the directories concerned for ocamlbuild
-engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir)
-interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir)
+engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(script_dir)
+interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface_dir),$(gui_dir),$(music_dir),$(network_dir),$(script_dir)
 network_src=$(network_dir),$(common_dir),$(utils_dir),$(config_dir)
+script_src=$(common_dir),$(utils_dir),$(script_dir),$(config_dir)
 
 test_src=test,$(engine_src)
 
 #dependencies required for each target
 common_dependencies = atdgen,dolog,unix
-engine_dependencies = $(common_dependencies)
+engine_dependencies = $(common_dependencies),threads
 music_dependencies = bigarray,mm,threads,num,ocsfml.audio
+script_dependencies = $(common_dependencies)
 
 
 test_dependencies=$(engine_dependencies),oUnit
@@ -61,30 +64,33 @@ interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependen
 
 #tags needed for each target
 interface_tags = thread
+engine_tags = thread
 
 #compiler flags
 cflags = -w,-3
 
 #name of the target for ocamlbuild
 output_interface = main.native
-#output_network = dealer.native
+output_script = script.native
 output_engine = dummy_serv.native
 
 
 
-command = ocamlbuild -use-ocamlfind -cflags $(cflags)
+command = ocamlbuild -use-ocamlfind -cflags $(cflags) -use-menhir -yaccflag --explain
 
-interface_command =	$(command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+interface_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
 
-engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine)
+script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script) 
+
+engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine) -tag $(engine_tags)
 
 network_command = $(command) -Is $(network_src) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
-find_files = $(wildcard $(dir)/*.ml[^~ly])
-files := $(foreach dir,$(dirs),$(find_files))
-
+find_ml_files = $(wildcard $(dir)/*.ml)
+find_mli_files = $(wildcard $(dir)/*.mli)
+files := $(foreach dir,$(dirs),$(find_ml_files) $(find_mli_files))
 
 
 ###########################################
@@ -116,8 +122,6 @@ files_atd_t := $(foreach dir,$(dirs),$(find_files_t_ml))
 all_files_atd_ml := $(files_atd_t) $(files_atd_t:_t.ml=_j.ml) $(files_atd_t:_t.ml=_v.ml)
 all_files_atd_mli := $(files_atd_ml:.ml=.mli)
 
-all: interface engine 
-
 interface: $(files_atd_ml)
 	$(interface_command)
 
@@ -127,8 +131,8 @@ run: interface
 engine:  $(files_atd_ml)
 	$(engine_command)
 
-#network:
-#	$(network_command)
+script: $(files_atd_ml)
+	$(script_command)
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
@@ -141,6 +145,7 @@ uninstall:
 	-rm $(bindir)/$(output_interface)
 	-rm $(bindir)/$(output_engine)
 	-rm $(bindir)/$(output_network)
+	-rm $(bindir)/$(output_script)
 
 
 
@@ -165,6 +170,7 @@ $(distdir): FORCE
 	mkdir $(distdir)/$(resources_dir)
 	mkdir $(distdir)/$(music_dir)
 	mkdir $(distdir)/$(test_dir)
+	mkdir $(distdir)/$(script_dir)
 	cp Makefile.in $(distdir)
 	cp README.md $(distdir)
 	cp configure.ac $(distdir)
@@ -177,6 +183,8 @@ $(distdir): FORCE
 	cp $(config_dir)/*.atd $(distdir)/$(config_dir)
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
+	cp $(script_dir)/*.ml* $(distdir)/$(script_dir)
+	cp $(script_dir)/*.script $(distdir)/$(script_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
@@ -217,13 +225,13 @@ config.status: configure
 	./config.status --recheck
 
 
-#Generate documentation -I _builld/$(network_dir) removed for now 
+#Generate documentation -I _builld/$(network_dir) removed for now
 doc: interface engine
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
 	-I _build/$(common_dir) -I _build/$(utils_dir) -I _build/$(config_dir) -I _build/$(interface_dir) -I _build/$(gui_dir) \
-	-I _build/$(engine_dir) -I _build/$(music_dir) \
+	-I _build/$(engine_dir) -I _build/$(music_dir) -I _build/$(script_dir) -I _build/$(network_dir) \
 	-I -thread -thread -html -colorize-code $(files)
 	rm -f documentation.html
 	ln -s doc/index.html documentation.html
@@ -240,10 +248,10 @@ clean:
 	rm -f resources/config/settings_interface.json
 
 check_engine: engine
-	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native -tag $(engine_tags)
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
 	./player_test.native
 
 check: check_engine
 
-.PHONY: FORCE all clean dist distcheck engine interface network
+.PHONY: FORCE all clean dist distcheck engine interface network script

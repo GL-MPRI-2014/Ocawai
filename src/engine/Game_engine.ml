@@ -18,13 +18,21 @@ class game_engine () = object (self)
   method get_players =
     Array.to_list players
 
+  method private create_n_scripted = function
+    |0 -> []
+    |n -> (new ScriptedPlayer.scripted_player "src/script/test.script" [] [])
+      ::(self#create_n_scripted (n-1))
+
   method init_local player nbplayers map_wht map_hgt =
       let config = Config.config in
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
-      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());
+      let sc_players = self#create_n_scripted (nbplayers - 1) in
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in 
+      List.iter (fun p -> p#init_script map players) sc_players;
+      (players, map)
 
   method init_net port nbplayers map_wht map_hgt =
       let config = Config.config in
