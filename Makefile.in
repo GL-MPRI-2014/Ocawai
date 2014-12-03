@@ -13,6 +13,7 @@ distdir = $(tarname)-$(version)
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir = @bindir@
+resourcesdir = @datadir@
 
 #VPATH variable
 #VPATH allow to build the project in other tree than were
@@ -137,15 +138,18 @@ script: $(files_atd_ml)
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
-	install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
-	install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
-	#install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
+	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
+	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
+	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
+	mkdir -p $(resourcesdir)/GL_2014/
+	cp -Rf ./resources/* $(resourcesdir)/GL_2014/
 
 uninstall:
 	-rm $(bindir)/$(output_interface)
 	-rm $(bindir)/$(output_engine)
 	-rm $(bindir)/$(output_network)
 	-rm $(bindir)/$(output_script)
+	-rm -Rf -- $(resourcesdir)/GL_2014
 
 
 
