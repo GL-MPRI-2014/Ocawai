@@ -13,15 +13,9 @@ let renderer = object(self)
   val mutable rect_vao = new vertex_array ~primitive_type:Quads []
 
   method init = 
-    let folder = ref "" in
-    (try
-      if (Sys.is_directory "resources/textures") then
-        folder := "resources/textures/"
-      else folder := "/usr/share/GL_2014/textures/"
-    with Sys_error _ -> folder := "/usr/share/GL_2014/textures/";);
-
-    TextureLibrary.load_directory texture_library (!folder);
-    TilesetLibrary.load_directory tileset_library (!folder);
+    let folder = (Utils.base_path ()) ^ "textures/" in
+    TextureLibrary.load_directory texture_library (folder);
+    TilesetLibrary.load_directory tileset_library (folder);
 
     (* Recreate-it after having initialized the window *)
     rect_vao <- new vertex_array ~primitive_type:Quads []

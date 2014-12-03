@@ -128,28 +128,21 @@ let string_of_interface_settings settings =
 
 (* default parameters *)
 
-let base = ref ""
-
-let _ = 
-  (try
-    if (Sys.is_directory "resources/config") then
-      base := "resources/config/"
-    else base := "/usr/share/GL_2014/config/"
-  with Sys_error _ -> base := "/usr/share/GL_2014/config/";)
+let base = Utils.base_path () ^ "config/"
 
 let default_config_files = 
-  (!base ^ "tiles.json",
-   !base ^ "units.json",
-   !base ^ "settings.json",
-   !base ^ "settings_default.json")
+  (base ^ "tiles.json",
+   base ^ "units.json",
+   base ^ "settings.json",
+   base ^ "settings_default.json")
 
 let default_engine_settings_files = 
-  (!base ^ "settings_engine.json",
-   !base ^ "settings_engine_default.json")
+  (base ^ "settings_engine.json",
+   base ^ "settings_engine_default.json")
 
 let default_interface_settings_files = 
-  (!base ^ "settings_interface.json",
-   !base ^ "settings_interface_default.json")
+  (base ^ "settings_interface.json",
+   base ^ "settings_interface_default.json")
 
 let default_files = 
   let (x1,x2,x3,x4) = default_config_files in

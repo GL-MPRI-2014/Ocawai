@@ -197,8 +197,9 @@ class state = object(self)
   initializer
     Random.self_init ();
     Sounds.play_sound "lets_do_this";
+    let tetris_path = (Utils.base_path ()) ^ "music/tetris.mid" in
     musicThread <-
-      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file "resources/music/tetris.mid" x) runMusic)
+      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file tetris_path x) runMusic)
 
 
   method destroy =

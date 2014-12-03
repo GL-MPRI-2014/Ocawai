@@ -35,6 +35,11 @@ let () =
   Log.set_output stdout;
   Log.color_on()
 
+let base_path () =
+  try
+    if Sys.is_directory "./resources/" then "./resources/" else "/usr/share/GL_2014/"
+  with Sys_error _ -> "/usr/share/GL_2014/"
+
 let check_validity f path x =
   if f x then None
   else Some (Ag_util.Validation.error path)
