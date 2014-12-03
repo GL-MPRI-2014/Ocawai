@@ -189,7 +189,6 @@ $(distdir): FORCE
 	cp $(engine_dir)/*.ml* $(distdir)/$(engine_dir)
 	cp $(interface_dir)/*.ml* $(distdir)/$(interface_dir)
 	cp $(script_dir)/*.ml* $(distdir)/$(script_dir)
-	cp $(script_dir)/*.script $(distdir)/$(script_dir)
 	cp $(gui_dir)/*.ml* $(distdir)/$(gui_dir)
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
