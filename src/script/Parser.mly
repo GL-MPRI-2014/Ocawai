@@ -27,14 +27,14 @@ file:
   | EOF {ScriptTypes.Empty}
   | d = decl; f = file {ScriptTypes.GlobDecl ((d,f),($startpos(d),$endpos(d)))}
   | p = proc; f = file {ScriptTypes.GlobProc ((p,f),($startpos(p),$endpos(p)))}
-  | v = value; SEMICOLON; f = file {ScriptTypes.GlobSeq ((v,f),($startpos(v),$endpos(v)), ref `None)}
-  | v = value; EOF {ScriptTypes.GlobSeq ((v,ScriptTypes.Empty),($startpos(v),$endpos(v)), ref `None)}
+  | v = value; SEMICOLON; f = file {ScriptTypes.GlobSeq ((v,f),($startpos(v),$endpos(v)))}
+  | v = value; EOF {ScriptTypes.GlobSeq ((v,ScriptTypes.Empty),($startpos(v),$endpos(v)))}
   ;
 
 seqexpr:
-  |d = decl; s = seqexpr {ScriptTypes.SeqDecl ((d,s),($startpos(d),$endpos(d)), ref `None)}
-  |v = value; SEMICOLON; s = seqexpr {ScriptTypes.SeqVar ((v,s),($startpos(v),$endpos(v)), ref `None)}
-  |v = value {ScriptTypes.SeqVar ((v,ScriptTypes.SeqEnd), ($startpos(v),$endpos(v)), ref `None)}
+  |d = decl; s = seqexpr {ScriptTypes.SeqDecl ((d,s),($startpos(d),$endpos(d)))}
+  |v = value; SEMICOLON; s = seqexpr {ScriptTypes.SeqVar ((v,s),($startpos(v),$endpos(v)))}
+  |v = value {ScriptTypes.SeqVar ((v,ScriptTypes.SeqEnd), ($startpos(v),$endpos(v)))}
   | {ScriptTypes.SeqEnd}
   ;
 
@@ -60,56 +60,56 @@ nested_value:
 
 operators:
   |v1 = nested_value; PIPPIP; v2 = nested_value
-    {ScriptTypes.App (("_or", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_or", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; ESPESP; v2 = nested_value
-    {ScriptTypes.App (("_and", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_and", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; GT ; v2 = nested_value
-    {ScriptTypes.App (("_gt", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_gt", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; LT ; v2 = nested_value
-    {ScriptTypes.App (("_lt", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_lt", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; EQEQ ; v2 = nested_value
-    {ScriptTypes.App (("_eq", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_eq", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; LT ; EQUALS ; v2 = nested_value
-    {ScriptTypes.App (("_le", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_le", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; GT ; EQUALS ; v2 = nested_value
-    {ScriptTypes.App (("_ge", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_ge", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; MUL; v2 = nested_value
-    {ScriptTypes.App (("_mul", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_mul", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; ADD; v2 = nested_value
-    {ScriptTypes.App (("_add", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_add", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; MIN; v2 = nested_value
-    {ScriptTypes.App (("_sub", [v1; v2]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_sub", [v1; v2]), ($startpos,$endpos))}
   |v1 = nested_value; DIV; v2 = nested_value
-    {ScriptTypes.App (("_div", [v1; v2]), ($startpos,$endpos), ref `None)}
-  |NOT; v1 = nested_value {ScriptTypes.App (("_not", [v1]), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.App (("_div", [v1; v2]), ($startpos,$endpos))}
+  |NOT; v1 = nested_value {ScriptTypes.App (("_not", [v1]), ($startpos,$endpos))}
   ;
 
 simple_value:
-  |i = INT {ScriptTypes.Int (i, ($startpos,$endpos), ref `None)}
+  |i = INT {ScriptTypes.Int (i, ($startpos,$endpos))}
   |o = operators {o}
-  |LEFTP; RIGHTP {ScriptTypes.Unit ( ($startpos,$endpos), ref `None)}
-  |LEFTP; v1 = value; COMMA; v2 = value; RIGHTP; {ScriptTypes.Pair ((v1, v2), ($startpos,$endpos), ref `None)}
-  |s = STRING {ScriptTypes.String (s, ($startpos,$endpos), ref `None)}
-  |TRUE  {ScriptTypes.Bool (true, ($startpos,$endpos), ref `None)}
-  |FALSE {ScriptTypes.Bool (false, ($startpos,$endpos), ref `None)}
-  |LBRACK; v = value_list; RBRACK {ScriptTypes.List (v, ($startpos,$endpos), ref `None)}
-  |LBRACK; PIP; v = value_list; PIP; RBRACK {ScriptTypes.Array ((Array.of_list v), ($startpos,$endpos), ref `None)}
-  |s = LIDENT {ScriptTypes.Var (s, ($startpos,$endpos), ref `None)}
+  |LEFTP; RIGHTP {ScriptTypes.Unit ( ($startpos,$endpos))}
+  |LEFTP; v1 = value; COMMA; v2 = value; RIGHTP; {ScriptTypes.Pair ((v1, v2), ($startpos,$endpos))}
+  |s = STRING {ScriptTypes.String (s, ($startpos,$endpos))}
+  |TRUE  {ScriptTypes.Bool (true, ($startpos,$endpos))}
+  |FALSE {ScriptTypes.Bool (false, ($startpos,$endpos))}
+  |LBRACK; v = value_list; RBRACK {ScriptTypes.List (v, ($startpos,$endpos))}
+  |LBRACK; PIP; v = value_list; PIP; RBRACK {ScriptTypes.Array ((Array.of_list v), ($startpos,$endpos))}
+  |s = LIDENT {ScriptTypes.Var (s, ($startpos,$endpos))}
   ;
 
 composed_value:
-  |s = LIDENT; v = values {ScriptTypes.App ((s,v), ($startpos,$endpos), ref `None)}
+  |s = LIDENT; v = values {ScriptTypes.App ((s,v), ($startpos,$endpos))}
   |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE; ELSE; LBRACE; e = seqexpr; RBRACE
-    {ScriptTypes.Ifte ((v,t,e), ($startpos,$endpos), ref `None)}
+    {ScriptTypes.Ifte ((v,t,e), ($startpos,$endpos))}
   |IF; LEFTP; v = value; RIGHTP; LBRACE; t = seqexpr; RBRACE
-    {ScriptTypes.Ifte ((v,t,ScriptTypes.SeqEnd),  ($startpos,$endpos), ref `None)}
+    {ScriptTypes.Ifte ((v,t,ScriptTypes.SeqEnd),  ($startpos,$endpos))}
   ;
 
 proc:
-  |MOVE; s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Move ((s,e), ($startpos(s),$endpos(s)), ref `None)}
-  |ATK;  s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Attack ((s,e), ($startpos(s),$endpos(s)), ref `None)}
-  |MAIN; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Main (e, ($startpos(e),$endpos(e)), ref `None)}
-  |INIT; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Init (e, ($startpos(e),$endpos(e)), ref `None)}
+  |MOVE; s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Move ((s,e), ($startpos(s),$endpos(s)))}
+  |ATK;  s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Attack ((s,e), ($startpos(s),$endpos(s)))}
+  |MAIN; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Main (e, ($startpos(e),$endpos(e)))}
+  |INIT; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Init (e, ($startpos(e),$endpos(e)))}
   ;
 
 values:

@@ -88,10 +88,10 @@ let get_global_value s (env : var_environment) =
   end
 
 let rec eval_proc entries = function
-  |Move (p,_,_) -> entries#add_move p
-  |Attack (p,_,_) -> entries#add_attack p
-  |Main(p,_,_) -> entries#add_main p
-  |Init(p,_,_) -> entries#add_init p
+  |Move (p,_) -> entries#add_move p
+  |Attack (p,_) -> entries#add_attack p
+  |Main(p,_) -> entries#add_main p
+  |Init(p,_) -> entries#add_init p
 
 and create_lambda env args seq =
   match args with
@@ -106,21 +106,21 @@ and apply_f env f args =
   | _ -> assert false
 
 and eval_value env = function
-  |Int(i,_,_)    -> `Int(i)
-  |Unit(_,_)     -> `Unit
-  |String(s,_,_) -> `String(s)
-  |Bool(b,_,_)   -> `Bool(b)
-  |List(l,_,_)   -> `List(List.map (eval_value env) l)
-  |Array(a,_,_)  -> `Array(Array.map (eval_value env) a)
-  |Var(s,_,_)    -> get_global_value s env
-  |App((f,args),_,_) -> apply_f env (get_global_value f env)
+  |Int(i,_)    -> `Int(i)
+  |Unit(_)     -> `Unit
+  |String(s,_) -> `String(s)
+  |Bool(b,_)   -> `Bool(b)
+  |List(l,_)   -> `List(List.map (eval_value env) l)
+  |Array(a,_)  -> `Array(Array.map (eval_value env) a)
+  |Var(s,_)    -> get_global_value s env
+  |App((f,args),_) -> apply_f env (get_global_value f env)
     (List.map (eval_value env) args)
-  |Ifte((v,seq1,seq2),_,_) -> begin
+  |Ifte((v,seq1,seq2),_) -> begin
     match eval_value env v with
     |`Bool(b) -> if b then eval_seq env seq1 else eval_seq env seq2
     | _ -> assert false
   end
-  |Pair((v1,v2),_,_) -> `Pair(eval_value env v1, eval_value env v2)
+  |Pair((v1,v2),_) -> `Pair(eval_value env v1, eval_value env v2)
 
 and eval_decl env = function
   |Vardecl((s,v),_) ->
@@ -134,12 +134,12 @@ and eval_decl env = function
       set_value s (create_lambda env' args seq) env'
 
 and eval_seq env = function
-  |SeqDecl((decl, seq),_,_) ->
+  |SeqDecl((decl, seq),_) ->
       let env' = eval_decl env decl in
       eval_seq env' seq
-  |SeqVar((v, SeqEnd),_,_) ->
+  |SeqVar((v, SeqEnd),_) ->
       eval_value env v
-  |SeqVar((v, seq),_,_) ->
+  |SeqVar((v, seq),_) ->
       ignore(eval_value env v);
       eval_seq env seq
   |SeqEnd -> `Unit
@@ -151,7 +151,7 @@ and eval_prog env entries = function
   |GlobProc ((proc, prog), _) ->
       eval_proc entries proc;
       eval_prog env entries prog
-  |GlobSeq  ((v, prog),_,_) ->
+  |GlobSeq  ((v, prog),_) ->
       ignore (eval_value env v);
       eval_prog env entries prog
   |Empty -> env
@@ -164,7 +164,7 @@ let new_script prog env =
   let env = eval_prog (list_to_env env) ep prog in
   (env, ep)
 
-let empty_script () = 
+let empty_script () =
   ([], new entrypoints)
 
 let init_script (env, ep) =
@@ -181,7 +181,7 @@ let main_script (env, ep) =
   | _ -> assert false
 
 let move_script (env, ep) u =
-  match eval_seq (("selected_unit", ref (`Soldier u)) :: env) 
+  match eval_seq (("selected_unit", ref (`Soldier u)) :: env)
     (ep#move u#name) with
   |`List(l) -> List.map pair_to_pos l
   | _ -> assert false
@@ -190,4 +190,3 @@ let attack_script (env, ep) u =
   match eval_seq env (ep#attack u#name) with
   |`Soldier(u) -> u
   | _ -> assert false
-

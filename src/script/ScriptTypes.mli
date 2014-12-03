@@ -5,23 +5,23 @@ type location = Lexing.position * Lexing.position
 
 (** Type of procedures called by the interpreter *)
 type procedure_type =
-    Move   of (string list * seq_type) * location * term_type
-  | Attack of (string list * seq_type) * location * term_type
-  | Main of seq_type * location * term_type
-  | Init of seq_type * location * term_type
+    Move   of (string list * seq_type) * location
+  | Attack of (string list * seq_type) * location
+  | Main of seq_type * location
+  | Init of seq_type * location
 
 (** Type of the values manipulated by the AIs *)
 and values_type =
-    Int     of int * location * term_type
-  | Unit    of location * term_type
-  | String  of string * location * term_type
-  | Bool    of bool * location * term_type
-  | List    of values_type list * location * term_type
-  | Array   of values_type array * location * term_type
-  | Var     of string * location * term_type
-  | App     of (string * values_type list) * location * term_type
-  | Ifte    of (values_type * seq_type * seq_type) * location * term_type
-  | Pair    of (values_type * values_type) * location * term_type
+    Int     of int * location
+  | Unit    of location
+  | String  of string * location
+  | Bool    of bool * location
+  | List    of values_type list * location
+  | Array   of values_type array * location
+  | Var     of string * location
+  | App     of (string * values_type list) * location
+  | Ifte    of (values_type * seq_type * seq_type) * location
+  | Pair    of (values_type * values_type) * location
 
 (** Type of a variable/function declaration *)
 and decl_type =
@@ -31,15 +31,15 @@ and decl_type =
 
 (** Type of the sequences (body of a function) *)
 and seq_type =
-    SeqDecl of (decl_type * seq_type) * location * term_type
-  | SeqVar  of (values_type * seq_type) * location * term_type
+    SeqDecl of (decl_type * seq_type) * location
+  | SeqVar  of (values_type * seq_type) * location
   | SeqEnd
 
 (** Type of a program *)
 and prog_type =
     GlobDecl of (decl_type * prog_type) * location
   | GlobProc of (procedure_type * prog_type) * location
-  | GlobSeq  of (values_type * prog_type) * location * term_type
+  | GlobSeq  of (values_type * prog_type) * location
   | Empty
 
 
