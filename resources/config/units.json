@@ -42,6 +42,22 @@
     "attack_range_max": 2,
     "move_range": 9,
     "spawn_number": 3
+  },
+  {
+    "name": "test1",
+    "movement_type": "Walk",
+    "vision_range": 10,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 5
+  },
+  {
+    "name": "test2",
+    "movement_type": "Walk",
+    "vision_range": 1,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 5
   }
 ]
 

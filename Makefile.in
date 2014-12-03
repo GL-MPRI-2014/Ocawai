@@ -261,6 +261,10 @@ check_player: engine
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
 	./player_test.native
 
+check_logics: engine
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) logics_test.native -tag $(engine_tags)
+	./logics_test.native
+
 check: check_player
 
 .PHONY: FORCE all clean dist distcheck engine interface network script
