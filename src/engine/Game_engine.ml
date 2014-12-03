@@ -94,14 +94,13 @@ class game_engine () = object (self)
     u#set_played true
 end
 
-
 type t = game_engine
-
 
 let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
-  for i = 0 to w-1 do
-    for j = 0 to h-1 do
+  let str = "??" in
+  for j = 0 to h-1 do
+    for i = 0 to w-1 do
     let pos = Position.create (i,j) in
     let t = Battlefield.get_tile m pos in
     let name =
@@ -113,30 +112,28 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
           then "path"
         else "") , Tile.get_name t )
     in
-    print_string (let str = "??" in
-      begin
-        match fst name with
-        | "spawn" -> str.[1] <- 'S';
-        | "unit" -> str.[1] <- '@';
-        | "path" -> str.[1] <- '#';
-        | "" -> str.[1] <- ' ';
-        | _ -> ()
-      end;
-      begin
-      match snd name with
-        | "water" -> str.[0] <- ' ';
-        | "shallow" -> str.[0] <- '%';
-        | "sand" -> str.[0] <- '~';
-        | "beach" -> str.[0] <- '_';
-        | "road" -> str.[0] <- '=';
-        | "plain" -> str.[0] <- '.';
-        | "forest" -> str.[0] <- ':';
-        | "concrete" -> str.[0] <- 'X';
-        | "mountain" -> str.[0] <- '/'; if str.[1] = ' ' then str.[1] <- '\\';
-        | _ -> ()
-      end;
-      str
-    )
+    begin
+      match fst name with
+      | "spawn" -> str.[1] <- 'S'
+      | "unit" -> str.[1] <- '@'
+      | "path" -> str.[1] <- '#'
+      | "" -> str.[1] <- ' '
+      | _ -> str.[1] <- '?'
+    end;
+    begin
+    match snd name with
+      | "water" | "lake" -> str.[0] <- ' '
+      | "shallow" -> str.[0] <- '%'
+      | "sand" -> str.[0] <- '~'
+      | "beach" | "lake_beach" -> str.[0] <- '_'
+      | "road" -> str.[0] <- '='
+      | "plain" -> str.[0] <- '.'
+      | "forest" -> str.[0] <- ':'
+      | "concrete" -> str.[0] <- 'X'
+      | "mountain" -> str.[0] <- '/'; if str.[1] = ' ' then str.[1] <- '\\'
+      | _ -> str.[0] <- '?'
+    end;
+    print_string str
     done;
     print_endline ""
   done

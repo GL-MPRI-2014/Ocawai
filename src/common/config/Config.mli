@@ -10,6 +10,8 @@ object
 
 (** {6 Initializers} *)
 
+  method set_config_name : string -> unit
+  
   (** Initialize the tiles, units, settings,and settings_default files*)
   method init : string * string * string * string -> unit
   

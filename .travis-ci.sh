@@ -43,6 +43,7 @@ make interface
 make engine
 make doc
 make check
+make check_generation
 make clean
 make dist
 make distcheck
