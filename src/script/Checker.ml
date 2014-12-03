@@ -30,29 +30,37 @@ let rec deref (t:term_type) =
 
 
 (* Translates a type to a string *)
-let rec type_to_string t =
-  match (deref t) with
-  | `Int_tc        -> "int"
-  | `Unit_tc       -> "unit"
-  | `String_tc     -> "string"
-  | `Bool_tc       -> "bool"
-  | `Soldier_tc    -> "soldier"
-  | `Map_tc        -> "map"
-  | `Player_tc     -> "player"
-  | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
-  | `List_tc v     -> (type_to_string v) ^ " list"
-  | `Array_tc v    -> (type_to_string v) ^ " array"
-  | `Fun_tc (a,b)  -> "(" ^ (type_to_string a) ^ ") -> (" ^ (type_to_string b) ^ ")"
-  | `Pair_tc (a,b) -> "(" ^ (type_to_string a) ^ " * " ^ (type_to_string b) ^ ")"
-  | `Pointer t     -> assert false
-  | `None          -> "any_type"
+let type_to_string t =
+  let rec aux parenthesis t =
+    match (deref t) with
+    | `Int_tc        -> "int"
+    | `Unit_tc       -> "unit"
+    | `String_tc     -> "string"
+    | `Bool_tc       -> "bool"
+    | `Soldier_tc    -> "soldier"
+    | `Map_tc        -> "map"
+    | `Player_tc     -> "player"
+    | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
+    | `List_tc v     -> (aux true v) ^ " list"
+    | `Array_tc v    -> (aux true v) ^ " array"
+    | `Fun_tc (a,b)  ->
+        let s = (aux true a) ^ " -> " ^ (aux false b) in
+        if parenthesis then
+          "(" ^ s ^ ")"
+        else
+          s
+    | `Pair_tc (a,b) -> "(" ^ (aux true a) ^ " * " ^ (aux true b) ^ ")"
+    | `Pointer t     -> assert false
+    | `None          -> "any_type"
+    in
+  aux false t
 
 
 exception Unification_failure
 
 let rec unify (t1:term_type) (t2:term_type) =
   debugf
-    "[unifying] types\t(%s)\tand\t(%s)"
+    "[unifying] types\t%s\tand\t%s"
     (type_to_string t1) (type_to_string t2) ;
   if t1 <> t2 then
   match (deref t1, deref t2) with
