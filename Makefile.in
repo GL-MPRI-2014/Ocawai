@@ -251,11 +251,16 @@ clean:
 	rm -f resources/config/settings_engine.json
 	rm -f resources/config/settings_interface.json
 
-check_engine: engine
+check_generation: engine
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
+	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
+	./generation_test.native
+
+check_player: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) player_test.native -tag $(engine_tags)
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
 	./player_test.native
 
-check: check_engine
+check: check_player
 
 .PHONY: FORCE all clean dist distcheck engine interface network script
