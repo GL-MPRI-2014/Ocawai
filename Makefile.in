@@ -141,9 +141,9 @@ install:
 	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
-	mkdir -p $(resourcesdir)/GL_2014/
-	cp -R ./resources/* $(resourcesdir)/GL_2014/
-	chmod 755 -R $(resourcesdir)/GL_2014
+	mkdir -p $(DESTDIR)$(resourcesdir)/GL_2014/
+	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/GL_2014/
+	chmod 755 -R $(DESTDIR)$(resourcesdir)/GL_2014
 
 uninstall:
 	-rm $(bindir)/$(output_interface)
