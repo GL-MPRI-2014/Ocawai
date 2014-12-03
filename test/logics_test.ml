@@ -25,7 +25,7 @@ let test_logics_move_2 test_ctxt =
   let u1 = bind (config#unbound_unit "test1") (Position.create (4,4)) p1id in
   p1#add_unit u1;
   let (_, h) = Logics.accessible_positions u1 p1 [p1] m in
-  assert_equal true (not (Hashtbl.mem h (Position.create (8,4))))
+  assert_equal false (Hashtbl.mem h (Position.create (8,4)))
 
 (*move through ally unit*)
 let test_logics_move_3 test_ctxt =
@@ -54,7 +54,7 @@ let test_logics_move_4 test_ctxt =
   let u5 = bind (config#unbound_unit "test1") (Position.create (9,4)) p2id in
   p2#set_army [u2; u3; u4; u5];
   let (_, h) = Logics.accessible_positions u1 p1 [p1; p2] m in
-  assert_equal true (not (Hashtbl.mem h (Position.create (8,4))))
+  assert_equal false (Hashtbl.mem h (Position.create (8,4)))
 
 (*same situation, but no vision on enemy*)
 let test_logics_move_5 test_ctxt =
@@ -73,6 +73,29 @@ let test_logics_move_5 test_ctxt =
   let (_, h) = Logics.accessible_positions u1 p1 [p1; p2] m in
   assert_equal true (Hashtbl.mem h (Position.create (8,4)))
 
+(*a position with an ally is accessible*)
+let test_logics_move_6 test_ctxt =
+  let p1 = (Player.create_dummy_player [] :> Player.logicPlayer) in
+  let p1id = p1#get_id in
+  let m = Battlefield.create 10 10 (Config.config#tile "plain") in
+  let u1 = bind (config#unbound_unit "test1") (Position.create (4,4)) p1id in
+  let u2 = bind (config#unbound_unit "test1") (Position.create (8,4)) p1id in
+  p1#add_unit u1;
+  p1#add_unit u2;
+  let (_, h) = Logics.accessible_positions u1 p1 [p1] m in
+  assert_equal true (Hashtbl.mem h (Position.create (8,4)))
+
+(*a position with an ally is NOT available*)
+let test_logics_move_7 test_ctxt =
+  let p1 = (Player.create_dummy_player [] :> Player.logicPlayer) in
+  let p1id = p1#get_id in
+  let m = Battlefield.create 10 10 (Config.config#tile "plain") in
+  let u1 = bind (config#unbound_unit "test1") (Position.create (4,4)) p1id in
+  let u2 = bind (config#unbound_unit "test1") (Position.create (8,4)) p1id in
+  p1#add_unit u1;
+  p1#add_unit u2;
+  let (_, h) = Logics.available_positions u1 p1 [p1] m in
+  assert_equal false (Hashtbl.mem h (Position.create (8,4)))
 
 let suite_logics_move =
   "Movement tests">:::
@@ -80,7 +103,9 @@ let suite_logics_move =
      "Blocked by terrain">:: test_logics_move_2;
      "Movement through ally">:: test_logics_move_3;
      "Blocked by enemy unit">:: test_logics_move_4;
-     "Movement throuh enemy with no vision">:: test_logics_move_5
+     "Movement through enemy with no vision">:: test_logics_move_5;
+     "Position with an ally: accessible">:: test_logics_move_6;
+     "Position with an ally: not available">:: test_logics_move_7
     ]
 
 
