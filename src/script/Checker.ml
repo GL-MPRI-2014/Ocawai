@@ -42,7 +42,7 @@ let rec type_to_string t =
   | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
   | `List_tc v     -> (type_to_string v) ^ " list"
   | `Array_tc v    -> (type_to_string v) ^ " array"
-  | `Fun_tc (a,b)  -> (type_to_string a) ^ " -> (" ^ (type_to_string b) ^ ")"
+  | `Fun_tc (a,b)  -> "(" ^ (type_to_string a) ^ ") -> (" ^ (type_to_string b) ^ ")"
   | `Pair_tc (a,b) -> "(" ^ (type_to_string a) ^ " * " ^ (type_to_string b) ^ ")"
   | `Pointer t     -> assert false
   | `None          -> "any_type"
@@ -89,7 +89,8 @@ exception Not_unit_seq of term_type * location
 exception Wrong_type_set of string * term_type * term_type * location
 exception Move_return of term_type * location
 exception Main_return of term_type * location
-(* TODO Add Init and Attack errors *)
+exception Attack_return of term_type * location
+exception Init_return of term_type * location
 exception Hetero_list of term_type * term_type * location
 exception Hetero_array of term_type * term_type * location
 exception Apply_args of string * term_type * (term_type list) * location
@@ -148,7 +149,10 @@ and check_decl = function
       (* We precise these types by checking the sequence *)
       unify return_type (seq_type sqt) ;
       (* Out of this scope, the variables are no more *)
-      List.iter (fun s -> Hashtbl.remove assignment s) sl
+      List.iter (fun s -> Hashtbl.remove assignment s) sl ;
+      (* Debug *)
+      debugf "declared function %s of type %s"
+        s (type_to_string (Hashtbl.find assignment s))
 
 and check_procedure = function
 
@@ -164,7 +168,10 @@ and check_procedure = function
   | Attack ((sl,st),l,t) ->
       debug (lazy "attack");
       unify t (seq_type st) ;
-      unify t (ref `Soldier_tc)
+      begin
+        try unify t (ref `Soldier_tc)
+        with Unification_failure -> raise (Attack_return (t,l))
+      end
 
   | Main (st,l,t) ->
       debug (lazy "main");
@@ -177,7 +184,10 @@ and check_procedure = function
   | Init (st,l,t) ->
       debug (lazy "init");
       unify t (seq_type st) ;
-      unify t (ref `Unit_tc)
+      begin
+        try unify t (ref `Unit_tc)
+        with Unification_failure -> raise (Init_return (t,l))
+      end
 
 and val_type = function
 
@@ -327,6 +337,16 @@ let type_check prog =
     | Main_return (t,l) ->
         pp
           "%sMain should return the next unit to be played of type soldier, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Attack_return (t,l) ->
+        pp
+          "%sAttack should return the unit to be attacked of type soldier, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Init_return (t,l) ->
+        pp
+          "%sInit return type should be unit, received %s\n"
           (printable_location l)
           (type_to_string t)
     | Hetero_list (a,t,l) ->

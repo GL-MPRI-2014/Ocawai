@@ -184,6 +184,25 @@ let scr_listlength =
     | _ -> assert false
   )
 
+let scr_listmap = 
+  `Fun(function
+    |`Fun(f) -> `Fun(function
+      |`List(l) -> `List (List.map f l)
+      | _ -> assert false)
+    | _ -> assert false)
+
+let scr_listiter = 
+  `Fun(function
+    |`Fun(f) -> `Fun(function
+      |`List(l) -> 
+          let rec iter_aux = function 
+            |[] -> `Unit
+            |t::q -> f t; iter_aux q
+          in iter_aux l
+      | _ -> assert false)
+    | _ -> assert false)
+
+
 
 (** Pair functions *)
 let scr_fst =
@@ -338,6 +357,10 @@ let init () =
   expose scr_prop2  (`Fun_t(`Int_t, `Fun_t(intpair, intpair))) "prop2D";
   expose scr_listempty (`Fun_t(`List_t (`Alpha_t(0)), `Bool_t)) "list_empty";
   expose scr_listlength(`Fun_t(`List_t (`Alpha_t(0)), `Int_t)) "list_length";
+  expose scr_listmap (`Fun_t(`Fun_t(`Alpha_t(0), `Alpha_t(1)),
+    `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(1))))) "list_map";
+  expose scr_listiter (`Fun_t(`Fun_t(`Alpha_t(0), `Unit_t),
+    `Fun_t(`List_t(`Alpha_t(0)), `Unit_t))) "list_iter";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
