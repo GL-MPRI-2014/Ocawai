@@ -89,7 +89,8 @@ exception Not_unit_seq of term_type * location
 exception Wrong_type_set of string * term_type * term_type * location
 exception Move_return of term_type * location
 exception Main_return of term_type * location
-(* TODO Add Init and Attack errors *)
+exception Attack_return of term_type * location
+exception Init_return of term_type * location
 exception Hetero_list of term_type * term_type * location
 exception Hetero_array of term_type * term_type * location
 exception Apply_args of string * term_type * (term_type list) * location
@@ -164,7 +165,10 @@ and check_procedure = function
   | Attack ((sl,st),l,t) ->
       debug (lazy "attack");
       unify t (seq_type st) ;
-      unify t (ref `Soldier_tc)
+      begin
+        try unify t (ref `Soldier_tc)
+        with Unification_failure -> raise (Attack_return (t,l))
+      end
 
   | Main (st,l,t) ->
       debug (lazy "main");
@@ -177,7 +181,10 @@ and check_procedure = function
   | Init (st,l,t) ->
       debug (lazy "init");
       unify t (seq_type st) ;
-      unify t (ref `Unit_tc)
+      begin
+        try unify t (ref `Unit_tc)
+        with Unification_failure -> raise (Init_return (t,l))
+      end
 
 and val_type = function
 
@@ -327,6 +334,16 @@ let type_check prog =
     | Main_return (t,l) ->
         pp
           "%sMain should return the next unit to be played of type soldier, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Attack_return (t,l) ->
+        pp
+          "%sAttack should return the unit to be attacked of type soldier, received %s\n"
+          (printable_location l)
+          (type_to_string t)
+    | Init_return (t,l) ->
+        pp
+          "%sInit return type should be unit, received %s\n"
           (printable_location l)
           (type_to_string t)
     | Hetero_list (a,t,l) ->
