@@ -42,7 +42,7 @@ let rec type_to_string t =
   | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
   | `List_tc v     -> (type_to_string v) ^ " list"
   | `Array_tc v    -> (type_to_string v) ^ " array"
-  | `Fun_tc (a,b)  -> (type_to_string a) ^ " -> (" ^ (type_to_string b) ^ ")"
+  | `Fun_tc (a,b)  -> "(" ^ (type_to_string a) ^ ") -> (" ^ (type_to_string b) ^ ")"
   | `Pair_tc (a,b) -> "(" ^ (type_to_string a) ^ " * " ^ (type_to_string b) ^ ")"
   | `Pointer t     -> assert false
   | `None          -> "any_type"
