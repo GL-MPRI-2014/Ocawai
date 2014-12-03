@@ -149,7 +149,10 @@ and check_decl = function
       (* We precise these types by checking the sequence *)
       unify return_type (seq_type sqt) ;
       (* Out of this scope, the variables are no more *)
-      List.iter (fun s -> Hashtbl.remove assignment s) sl
+      List.iter (fun s -> Hashtbl.remove assignment s) sl ;
+      (* Debug *)
+      debugf "declared function %s of type %s"
+        s (type_to_string (Hashtbl.find assignment s))
 
 and check_procedure = function
 
