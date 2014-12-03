@@ -23,8 +23,6 @@ list_iter print_int l;
 
 print_string "\n";
 
-var l = list_map addone ["a";"b";"c"];
-
 var l = list_map fst [(1,2);(4,5);(9,8)];
 
 list_iter print_int l;
