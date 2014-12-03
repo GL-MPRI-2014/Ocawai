@@ -20,7 +20,7 @@ class game_engine () = object (self)
 
   method private create_n_scripted = function
     |0 -> []
-    |n -> (new ScriptedPlayer.scripted_player "src/script/test.script" [] [])
+    |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
       ::(self#create_n_scripted (n-1))
 
   method init_local player nbplayers map_wht map_hgt =
