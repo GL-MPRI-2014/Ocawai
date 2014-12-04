@@ -31,6 +31,14 @@ fun closest_to pos l = {
   actual_pos
 }
 
+fun log_position p = {
+  log_str "(";
+  log_int (fst p);
+  log_str ",";
+  log_int (snd p);
+  log_str ")";
+}
+
 move default {
   var acc = accessible_positions selected_unit self players map;
   var ptarget = list_hd players;
@@ -39,7 +47,11 @@ move default {
   var rnd = rand n;
   var target = list_nth parmy rnd;
   var pos_target = unit_position target;
-  dijkstra_to selected_unit map (closest_to pos_target acc)
+  var select_pos = closest_to pos_target acc;
+  log_str "Moving unit to : ";
+  log_position select_pos;
+  log_str "\n";
+  dijkstra_to selected_unit map select_pos
 }
 
 attack default {
@@ -48,7 +60,11 @@ attack default {
   if (list_empty inrange) {
     do_nothing ()
   } else {
-    list_hd inrange
+    var atkunit = list_hd inrange;
+    log_str "Attacking unit at : ";
+    log_position (unit_position atkunit);
+    log_str "\n";
+    atkunit;
   }
 }
 
