@@ -150,19 +150,19 @@ profile: $(files_atd_ml)
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
-	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
+	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)/ocawai"
 	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 	mkdir -p $(DESTDIR)$(resourcesdir)/ocawai/
 	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/ocawai/
-	chmod 766 -R $(DESTDIR)$(resourcesdir)/ocawai/
+	chmod 777 -R $(DESTDIR)$(resourcesdir)/ocawai/
 
 uninstall:
-	-rm $(DESTDIR)$(bindir)/$(output_interface)
+	-rm $(DESTDIR)$(bindir)/ocawai
 	-rm $(DESTDIR)$(bindir)/$(output_engine)
 	-rm $(DESTDIR)$(bindir)/$(output_network)
 	-rm $(DESTDIR)$(bindir)/$(output_script)
-	-rm -Rf -- $(DESTDIR)$(resourcesdir)/GL_2014
+	-rm -Rf -- $(DESTDIR)$(resourcesdir)/ocawai
 
 
 
