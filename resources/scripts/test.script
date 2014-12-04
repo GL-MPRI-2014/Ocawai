@@ -13,23 +13,6 @@ fun next_playable l = {
   }
 }
 
-fun addone a = {a + 1}
-
-var l = list_map addone [1;2;3;4];
-
-var l = list_map addone l;
-
-list_iter print_int l;
-
-print_string "\n";
-
-var l = list_map fst [(1,2);(4,5);(9,8)];
-
-list_iter print_int l;
-
-print_string "\n";
-
-
 move default {
   var acc = accessible_positions selected_unit self players map;
   var n = list_length acc;

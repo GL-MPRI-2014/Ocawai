@@ -53,14 +53,14 @@ test_src=test,$(engine_src)
 #dependencies required for each target
 common_dependencies = atdgen,dolog,unix
 engine_dependencies = $(common_dependencies),threads
-music_dependencies = bigarray,mm,threads,num,ocsfml.audio
+music_dependencies = num,ocsfml.audio,mm,pulseaudio
 script_dependencies = $(common_dependencies)
 
 
 test_dependencies=$(engine_dependencies),oUnit
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
-interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
+interface_dependencies = bigarray,threads,$(music_dependencies),ocsfml.graphics,$(common_dependencies)
 #network_libraries = unix
 
 #tags needed for each target
@@ -72,14 +72,20 @@ cflags = -w,-3
 
 #name of the target for ocamlbuild
 output_interface = main.native
+output_profile = main.p.native
 output_script = script.native
 output_engine = dummy_serv.native
+output_gprof = profile
 
 
 
 command = ocamlbuild -use-ocamlfind -cflags $(cflags) -use-menhir -yaccflag --explain
 
 interface_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+profile_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_profile) -tag $(interface_tags)
+
+gprof_command = gprof $(output_profile) gmon.out >> $(output_gprof)
 
 script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script) 
 
@@ -135,22 +141,28 @@ engine:  $(files_atd_ml)
 script: $(files_atd_ml)
 	$(script_command)
 
+profile: $(files_atd_ml)
+	$(profile_command)
+	./$(output_profile)
+	$(gprof_command)
+
+
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
-	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
+	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)/ocawai"
 	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
-	mkdir -p $(DESTDIR)$(resourcesdir)/GL_2014/
-	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/GL_2014/
-	chmod 755 -R $(DESTDIR)$(resourcesdir)/GL_2014
+	mkdir -p $(DESTDIR)$(resourcesdir)/ocawai/
+	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/ocawai/
+	chmod 777 -R $(DESTDIR)$(resourcesdir)/ocawai/
 
 uninstall:
-	-rm $(bindir)/$(output_interface)
-	-rm $(bindir)/$(output_engine)
-	-rm $(bindir)/$(output_network)
-	-rm $(bindir)/$(output_script)
-	-rm -Rf -- $(resourcesdir)/GL_2014
+	-rm $(DESTDIR)$(bindir)/ocawai
+	-rm $(DESTDIR)$(bindir)/$(output_engine)
+	-rm $(DESTDIR)$(bindir)/$(output_network)
+	-rm $(DESTDIR)$(bindir)/$(output_script)
+	-rm -Rf -- $(DESTDIR)$(resourcesdir)/ocawai
 
 
 
@@ -250,6 +262,8 @@ clean:
 	rm -f resources/config/settings.json
 	rm -f resources/config/settings_engine.json
 	rm -f resources/config/settings_interface.json
+	rm -f $(output_gprof)
+	rm -r gmon.out
 
 check_generation: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
