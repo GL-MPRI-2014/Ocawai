@@ -1,18 +1,15 @@
-class unbound_building (s : string) (prod : Unit.t list) (inc : int) =
+class unbound_building (s : string) (prod : string list) (inc : int) =
 object (self)
-  val name = s
-  val product = prod
-  val income = inc
-  method name = name
-  method producible = product
-  method get_income = income
+  method name = s
+  method product = prod
+  method income = inc
 end
 
 
 class building (ub : unbound_building) (p : Position.t) (p_id : int option) 
   (id0 : int) =
 object (self)
-  inherit unbound_building ub#s ub#prod ub#inc
+  inherit unbound_building ub#name ub#product ub#income
   val position = p
   val mutable player_id = p_id
   val mutable id = id0
@@ -39,15 +36,15 @@ let bind_extended ub pos p_id id =
 
 
 let create_unbound_from_parsed_building pb =
-  new unbound_building (pb.Building_t.name) (pb.Building_t.product) 
-    (pb.Building_t.get_income)
+  new unbound_building (pb.Building_t.name) pb.Building_t.product
+    (pb.Building_t.income)
 
-let create_parsed_unit_from_unbound ub =
+let create_parsed_building_from_unbound ub =
   let open Building_t in
   {
     name = ub#name;
     product = ub#product;
-    get_income = ub#get_income
+    income = ub#income
   }
 
 

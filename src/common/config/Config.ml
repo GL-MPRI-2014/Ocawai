@@ -66,6 +66,31 @@ let create_unbound_units_list_from_string s config_name =
 let string_of_unbound_units_list units_list =
   Unit_j.string_of_t_list (List.map Unit.create_parsed_unit_from_unbound units_list)
 
+(* Buildings config *)
+
+let create_valid_parsed_buildings_list file config_name =
+  let open Building_t in
+  let t = Ag_util.Json.from_file Building_j.read_t_list file in
+  let tr = check_error file Building_v.validate_t_valid_list [] {list = t;} in
+  ConfigLog.infof "%s[loaded] unbound_buildings_list : %s" config_name file;
+  tr.list
+
+let create_unbound_buildings_list_from_file file config_name =
+  List.map Building.create_unbound_from_parsed_building (create_valid_parsed_buildings_list file config_name)
+
+let create_valid_parsed_buildings_list_from_string s config_name =
+  let open Building_t in
+  let t = Building_j.t_list_of_string s in
+  let tr = check_error "buildings" Building_v.validate_t_valid_list [] {list = t;} in
+  ConfigLog.infof "%s[loaded] unbound_buildings_list" config_name;
+  tr.list
+
+let create_unbound_buildings_list_from_string s config_name =
+  List.map Building.create_unbound_from_parsed_building (create_valid_parsed_buildings_list_from_string s config_name)
+
+let string_of_unbound_buildings_list buildings_list =
+  Building_j.string_of_t_list (List.map Building.create_parsed_building_from_unbound buildings_list)
+
 (* Settings config *)
 
 let create_settings_from_file file config_name =
@@ -133,6 +158,7 @@ let base = Utils.base_path () ^ "config/"
 let default_config_files =
   (base ^ "tiles.json",
    base ^ "units.json",
+   base ^ "buildings.json",
    base ^ "settings.json",
    base ^ "settings_default.json")
 
@@ -145,10 +171,10 @@ let default_interface_settings_files =
    base ^ "settings_interface_default.json")
 
 let default_files =
-  let (x1,x2,x3,x4) = default_config_files in
+  let (x1,x2,x22,x3,x4) = default_config_files in
   let (x5,x6) = default_engine_settings_files in
   let (x7,x8) = default_interface_settings_files in
-  (x1,x2,x3,x4,x5,x6,x7,x8)
+  (x1,x2,x22,x3,x4,x5,x6,x7,x8)
 
 (* config class *)
 class t =
@@ -159,6 +185,7 @@ object (self)
 
   val mutable tiles_config = ""
   val mutable units_config = ""
+  val mutable buildings_config = ""
   val mutable settings_temp = ""
   val mutable settings_default = ""
   val mutable interface_settings_temp = ""
@@ -168,7 +195,8 @@ object (self)
 
   val mutable t_list = (None: (Tile.t list) option)
   val mutable u_list = (None: (Unit.unbound_t list) option)
-
+  val mutable b_list = (None: (Building.unbound_t list) option)
+  
   val mutable s = (None: Settings_t.t option)
   val mutable engine_s = (None: Settings_engine_t.t option)
   val mutable interface_s = (None: Settings_interface_t.t option)
@@ -188,13 +216,14 @@ object (self)
   method private available_engine_settings = if Sys.file_exists engine_settings_temp then engine_settings_temp else engine_settings_default
   method private available_interface_settings = if Sys.file_exists interface_settings_temp then interface_settings_temp else interface_settings_default
 
-  method private init_names tiles_file units_file
+  method private init_names tiles_file units_file buildings_file
                     settings_temp_file settings_default_file
                     engine_settings_temp_file engine_settings_default_file
                     interface_settings_temp_file interface_settings_default_file =
     let aux a b = if a <> "" then (if Sys.file_exists a then a else (ConfigLog.errorf "%s[missing] %s" config_name a; b)) else b in
     tiles_config <- aux tiles_file tiles_config;
     units_config <- aux units_file units_config;
+    buildings_config <- aux buildings_file buildings_config;
     if settings_temp_file <> "" then settings_temp <- settings_temp_file;
     settings_default <- aux settings_default_file settings_default;
     if engine_settings_temp_file <> "" then engine_settings_temp <- engine_settings_temp_file;
@@ -203,23 +232,23 @@ object (self)
     interface_settings_default <- aux interface_settings_default_file interface_settings_default;
     self#reload_all
 
-  method private init_all (x1,x2,x3,x4,x5,x6,x7,x8) =
-    self#init_names x1 x2 x3 x4 x5 x6 x7 x8
-  method init (tiles_file, units_file, settings_temp_file, settings_default_file) =
+  method private init_all (x1,x2,x22,x3,x4,x5,x6,x7,x8) =
+    self#init_names x1 x2 x22 x3 x4 x5 x6 x7 x8
+  method init (tiles_file, units_file, buildings_file, settings_temp_file, settings_default_file) =
     self#init_names
-          tiles_file units_file
+          tiles_file units_file buildings_file
           settings_temp_file settings_default_file
           "" ""
           "" ""
   method init_engine (engine_settings_temp_file, engine_settings_default_file) =
     self#init_names
-          "" ""
+          "" "" ""
           "" ""
           engine_settings_temp_file engine_settings_default_file
           "" ""
   method init_interface (interface_settings_temp_file, interface_settings_default_file) =
     self#init_names
-            "" ""
+            "" "" ""
             "" ""
             "" ""
             interface_settings_temp_file interface_settings_default_file
@@ -232,6 +261,9 @@ object (self)
   method unbound_units_list = match u_list with
     | Some a -> a
     | None -> ConfigLog.fatalf "%s[missing] units" config_name;raise (Missing_config "no valid units file loaded so far, did you call init?")
+  method unbound_buildings_list = match b_list with
+    | Some a -> a
+    | None -> ConfigLog.fatalf "%s[missing] buildings" config_name;raise (Missing_config "no valid buildings file loaded so far, did you call init?")
   method private settings_unsafe = match s with
     | Some a -> a
     | None -> ConfigLog.fatalf "%s[missing] settings" config_name;raise (Missing_config "no valid settings file loaded so far, did you call init?")
@@ -247,6 +279,7 @@ object (self)
 
   method tile config_name = List.find (fun t -> Tile.get_name t = config_name) self#tiles_list
   method unbound_unit config_name = List.find (fun uni -> uni#name = config_name) self#unbound_units_list
+  method unbound_building config_name = List.find (fun uni -> uni#name = config_name) self#unbound_buildings_list
 
   method private load_settings str =
     if str <> "" then
@@ -267,6 +300,7 @@ object (self)
   method reload_all =
     if tiles_config <> "" then t_list <- ( try Some (create_tiles_list_from_file tiles_config config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None );
     if units_config <> "" then u_list <- ( try Some (create_unbound_units_list_from_file units_config config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None );
+    if buildings_config <> "" then b_list <- ( try Some (create_unbound_buildings_list_from_file buildings_config config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None );
     self#reload_settings;
     self#reload_settings_engine;
     self#reload_settings_interface
@@ -279,13 +313,15 @@ object (self)
     self#reset_settings_engine;
     self#reset_settings_interface
 
-  method load_from_strings tiles_s unbound_units_s settings_s =
+  method load_from_strings tiles_s unbound_units_s unbound_buildings_s settings_s =
     t_list <- ( try Some (create_tiles_list_from_string tiles_s config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None );
     u_list <- ( try Some (create_unbound_units_list_from_string unbound_units_s config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None );
+    b_list <- ( try Some (create_unbound_buildings_list_from_string unbound_buildings_s config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None );
     s <- ( try Some (create_settings_from_string settings_s config_name) with Config_error (msg) -> ConfigLog.errorf "%s" msg;None )
 
   method string_of_tiles_list = string_of_tiles_list self#tiles_list
   method string_of_unbound_units_list = string_of_unbound_units_list self#unbound_units_list
+  method string_of_unbound_buildings_list = string_of_unbound_buildings_list self#unbound_buildings_list
   method string_of_settings = string_of_settings self#settings
 
   method save_settings = self#fix_settings;
@@ -364,6 +400,23 @@ object (self)
     if List.length units > 256 then failwith("more than 255 units in config, char_of_unbound_unit can't be applied") else
     List.nth units (((int_of_char c - offset) +256) mod 256)
   method unbound_unit_of_char c = self#unbound_unit_of_char_off c self#settings.serializer_offset
+  
+  method private char_of_unbound_building_off (u:Building.unbound_t) offset =
+    let buildings = self#unbound_buildings_list in
+    if List.length buildings > 256 then failwith("more than 255 buildings in config, char_of_unbound_building can't be applied") else
+    let rec mempos e = function
+    | n,[] -> failwith("building not in config")
+    | n,p::q when p#name = e#name -> n
+    | n,p::q -> mempos e (n+1,q)
+    in
+    char_of_int((mempos u (offset,buildings)) mod 256)
+  method char_of_unbound_building u = self#char_of_unbound_building_off u self#settings.serializer_offset
+
+  method private unbound_building_of_char_off c offset =
+    let buildings = self#unbound_buildings_list in
+    if List.length buildings > 256 then failwith("more than 255 buildings in config, char_of_unbound_building can't be applied") else
+    List.nth buildings (((int_of_char c - offset) +256) mod 256)
+  method unbound_building_of_char c = self#unbound_building_of_char_off c self#settings.serializer_offset
 
   method string_of_unit (u:Unit.t) =
     let s0 = let s = "0" in s.[0] <- (self#char_of_unbound_unit (u:> Unit.unbound_t));s in
