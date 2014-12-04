@@ -155,7 +155,7 @@ install:
 	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 	mkdir -p $(DESTDIR)$(resourcesdir)/ocawai/
 	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/ocawai/
-	chmod 755 -R $(DESTDIR)$(resourcesdir)/ocawai/
+	chmod 766 -R $(DESTDIR)$(resourcesdir)/ocawai/
 
 uninstall:
 	-rm $(DESTDIR)$(bindir)/$(output_interface)
