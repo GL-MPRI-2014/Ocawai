@@ -39,6 +39,9 @@ object
   (** Create an unbound_unit from its name by searching in unbond_units_list *)
   method unbound_unit : string -> Unit.unbound_t
   
+  (** Return the price of a given unit name *)
+  method price : string -> int
+  
   
   (** Tiles list obtained by reading the json config file *)
   method unbound_buildings_list : Building.unbound_t list

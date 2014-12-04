@@ -279,6 +279,7 @@ object (self)
 
   method tile config_name = List.find (fun t -> Tile.get_name t = config_name) self#tiles_list
   method unbound_unit config_name = List.find (fun uni -> uni#name = config_name) self#unbound_units_list
+  method price unit_name = (self#unbound_unit unit_name)#price
   method unbound_building config_name = List.find (fun uni -> uni#name = config_name) self#unbound_buildings_list
 
   method private load_settings str =

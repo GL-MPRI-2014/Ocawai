@@ -73,6 +73,12 @@ class game_engine () = object (self)
           if u2#hp <= 0 then (
             (self#player_of_unit u2)#delete_unit (u2#get_id);
             Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players)
+      |(_, Create_unit (b,uu)) ->
+          if true(*Logics.is_empty b#position*) then
+          if player#use_resource uu#price then (
+          let u = Unit.bind uu b#position player#get_id in
+          player#add_unit u;
+          u#set_played true)
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn
@@ -82,6 +88,7 @@ class game_engine () = object (self)
   method private end_turn =
     let player = players.(actual_player) in
     List.iter (fun u -> u#set_played false) player#get_army;
+    player#harvest_buildings_income;
     actual_player <- self#next_player
 
   method private apply_movement movement =
