@@ -191,7 +191,7 @@ let rec headTail_tuple : t -> headTail =
               (sync (headTuple2.to_events /+/ headTuple2.to_next)) /::/
               headTuple2.tailT
 	  )
-      | _ -> failwith "Check UR logics m8."
+      | _ -> failwith "Cannot happen."
 
 let headTail : t -> t * t =
   (* Return the head and the tail of the input tile, with all the plumbing
