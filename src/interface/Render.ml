@@ -289,7 +289,7 @@ let renderer = object(self)
         List.iter (self#draw_building target data#camera) p#get_buildings
       ) data#players;
     (* Ugly: to alternate characters *)
-    let characters = [|"flatman";"blub"|] in
+    let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
       let ret = characters.(!x) in
       incr x ;
