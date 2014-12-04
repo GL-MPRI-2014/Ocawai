@@ -6,7 +6,7 @@ object (self)
   val mutable pos = p
   val mutable player_id = None
   method name = name
-  method id = Oo.id self
+  method get_id = Oo.id self
   method player_id = player_id
   method producible = product
   (* method get_income = income *)
