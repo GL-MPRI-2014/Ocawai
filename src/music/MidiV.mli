@@ -3,8 +3,14 @@
    MIDI buffers within the framework defined by the mm-library
 *)
 
+(**
+   Default samplerate to use for the MIDI conversion
+ *)
 val samplerate : int
 
+(**
+   Default MIDI-division value to use for the MIDI conversion
+ *)
 val division : MIDI.division
 
 (**
