@@ -49,6 +49,12 @@ if test "$OCAML_PKG_mm" = "no"; then
    AC_MSG_ERROR([Please install OCaml findlib module 'mm'.])
 fi
 
+#pulseaudio for music
+AC_CHECK_OCAML_PKG([pulseaudio])
+if test "$OCAML_PKG_mm" = "no"; then
+   AC_MSG_ERROR([Please install OCaml findlib module 'pulseaudio'.])
+fi
+
 
 
 
