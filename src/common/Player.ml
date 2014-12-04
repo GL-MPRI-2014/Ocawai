@@ -1,39 +1,62 @@
 open List
 open Path
 
-class logicPlayer (a : Unit.t list) (b : Building.t list) =
+class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
-    val mutable army = (a : Unit.t list)
-    val mutable buildings = (b : Building.t list)
+    val mutable army = Hashtbl.create 97
+    val mutable buildings = Hashtbl.create 23
                             
     (*Quite dirty mutable id. Can't we do without it ?*)
-    val mutable id = 0
-    method get_army = army
-    method get_id = id
-    method set_army a = army <- a
-    method add_unit u = army <- u::army
-    method set_buildings b = buildings <- b
-    method get_buildings = buildings
-    method add_building b = buildings <- b::buildings
+    val mutable id_ =
+      match id with
+      | None -> 0
+      | Some(id__) -> id__ 
+
+    method get_army =
+      Hashtbl.fold (fun id u l -> u::l) army []
+        
+    method get_id = id_
+
+    method set_army a =
+      List.iter (fun unit -> self#add_unit unit) a
+        
+    method add_unit u = Hashtbl.add army u#get_id u
+        (*TODO*)
+    method set_buildings b = 
+      List.iter (fun building -> self#add_building building) b
+    method get_buildings =
+      Hashtbl.fold (fun id b l -> b::l) buildings []
+
+    method add_building b = Hashtbl.add buildings b#get_id b
 
 
-    (* TODO : implement these methods *)
-    method delete_unit (u : Unit.t) =
-      let rec delete unit_list =
-        match unit_list with
-        | [] -> raise Not_found
-        | h::d when h#id = u#id -> d
-        | h::d -> h :: (delete (tl unit_list))
-      in
-      army <- delete army
-
+    method delete_unit (id_unit : Unit.id) =
+      try
+        ignore(Hashtbl.find army id_unit);
+          Hashtbl.remove army id_unit
+      with Not_found -> raise Not_found
+      
+    method get_unit_by_id (id_unit : Unit.id) = Hashtbl.find army id_unit
+    method get_building_by_id (id_building : Building.id) = Hashtbl.find buildings id_building
+        
     (*it is quite dirty*)
-    method move_unit (u : Unit.t) (p : Action.movement) = u#move (final_position (get_path p))
+    method move_unit (id_unit : Unit.id) (p : Action.movement) =
+      let u = self#get_unit_by_id id_unit in
+      u#move (final_position (get_path p))
 
-    (*TO DO*)
-    method delete_building (b : Building.t) = ()
 
-    initializer id <- Oo.id self
+    method delete_building (id_building : Building.id) =
+      try
+        ignore(Hashtbl.find buildings id_building);
+          Hashtbl.remove buildings id_building
+      with Not_found -> raise Not_found
+      
+    initializer
+      match id with 
+      | None -> id_ <- Oo.id self;
+      | _ -> ();
+      List.iter (fun unit -> self#add_unit unit) a;
+      List.iter (fun building -> self#add_building building) b;
   end
 
 
@@ -49,7 +72,8 @@ class virtual player (a : Unit.t list) (b : Building.t list) =
 end
 
 type t = player
-  
+
+
 class dummy_player army_ buildings_ (a: Action.t list) =
   object
     inherit player army_ buildings_

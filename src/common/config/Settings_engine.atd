@@ -1,0 +1,27 @@
+
+type generation_type = [ Dummy | Swap | Seeds | Island ]
+
+type positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 <= x
+  )">
+type s_positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 < x
+  )">
+
+type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with none=()} *)">  : unit;
+  
+  generation_method<ocaml mutable> : generation_type;
+  
+  generate_attempts<ocaml mutable> : s_positive;
+  structs_attempts<ocaml mutable> : s_positive;
+  units_spawn_attempts<ocaml mutable> : s_positive;
+  
+  nb_seeds_ratio<ocaml mutable> : s_positive;
+  dist_min_between_seeds<ocaml mutable> : positive;
+  
+  island_expansion<ocaml mutable> : positive;
+}
+
+
