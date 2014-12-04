@@ -265,6 +265,6 @@ check_logics: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) logics_test.native -tag $(engine_tags)
 	./logics_test.native
 
-check: check_player
+check: check_player check_generation check_logics
 
 .PHONY: FORCE all clean dist distcheck engine interface network script
