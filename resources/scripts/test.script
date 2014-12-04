@@ -41,7 +41,12 @@ fun log_position p = {
 
 move default {
   var acc = accessible_positions selected_unit self players map;
-  var ptarget = list_hd players;
+  fun has_army player = {
+    !(list_empty (army_of player));
+  }
+  var undead_players = list_filter has_army players ;
+  if (list_empty undead_players) { end_turn (); };
+  var ptarget = list_hd undead_players;
   var parmy = army_of ptarget;
   var n = list_length parmy;
   var rnd = rand n;
