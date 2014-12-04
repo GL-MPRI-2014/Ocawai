@@ -11,7 +11,7 @@ class state = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val font = Fonts.load_font "Roboto-Black.ttf"
+  val font = Fonts.load_font "FreeSansBold.ttf"
 
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in

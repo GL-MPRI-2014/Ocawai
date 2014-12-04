@@ -8,7 +8,7 @@ class state = object(self)
 
   inherit State.state as super
 
-  val font = Fonts.load_font "Roboto-Black.ttf"
+  val font = Fonts.load_font "FreeSansBold.ttf"
 
   val map = Array.make_matrix 16 10 false
   val goods = Array.make_matrix 16 10 false

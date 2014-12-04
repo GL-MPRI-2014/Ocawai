@@ -14,7 +14,7 @@
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 4,
-    "spawn_number": 5
+    "spawn_number": 2
   },
   {
     "name": "tank",
@@ -32,7 +32,7 @@
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 4,
-    "spawn_number": 15
+    "spawn_number": 2
   },
   {
     "name": "recon",
