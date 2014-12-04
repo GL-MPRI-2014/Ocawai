@@ -527,11 +527,11 @@ let positioning m playerslist legit_spawns =
   check_path (m,(),poslist);
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
-  let position_army_around spawn player other_armies_pos =
+  let position_army_around spawn (player:Player.logicPlayer) other_armies_pos =
     let unbound_list = Config.config#unbound_units_list in
-    let general = Unit.bind (Config.config#unbound_unit "general") spawn player#get_id in
-    player#add_unit general;
-    let army = ref [general] in
+    let base = Building.bind (Config.config#unbound_building "base") spawn (Some player#get_id) in
+    player#add_building base;
+    let army = ref [] in
     let army_pos = ref [spawn] in
     List.iter
       (
