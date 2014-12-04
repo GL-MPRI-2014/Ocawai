@@ -31,19 +31,19 @@ let getDur : 'a t -> time = function
 
 (** {2 MIDI conversion} *)
 
-(**
-To-Do
-    
-let toMidi : ?samplerate:int -> ?division:MIDI.division -> ~tempo:Time.t -> 'a t -> MIDI.buffer
+let toMidi : ?samplerate:int -> ?division:MIDI.division ->
+	     ~tempo:Time.Tempo.t -> 'a t -> MIDI.buffer
   = fun ?samplerate:(sr = MidiV.samplerate) ?division:(div = MidiV.division)
+	~tempo
   -> function  
-  | Rest(dur) -> MIDI.create(Time.toFloat )
-  | Music(dur, a) -> 
-    let conversion =
-      
-    in Some conversion
-*)
-
+  | Rest(dur) -> MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
+						      ~tempo dur)
+  | Note(dur, a) ->
+     let buffer = MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
+						       ~tempo dur)
+     in
+     
+     
 (** {2 Testing functions} *)
 
 (** {3 Pretty-printing} *)

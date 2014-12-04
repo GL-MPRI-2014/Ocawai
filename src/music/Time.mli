@@ -68,6 +68,34 @@ val dden : t (** double-dotted eighth note *)
    @return a floating-point approximation of the input [t]
 *)
 val toFloat : t -> float 
+val toInt : t -> int
+
+(** {2 Tempo definition and management} *)
+
+module Tempo : sig
+  (**
+   Tempo definition module.
+
+   A tempo is seen as a ratio between the wanted value of tempo and
+   a base tempo, defined as 120 BPM.
+   This model allows compositional management of tempi and straightforward
+   accelerations / decelerations.
+   *)
+
+  type t = Num.num
+
+  (** {2 Basic values} *)
+
+  (** The basic tempo value, defined as 120BPM *)
+  val base : t
+
+  (** {2 Tempo conversions} *)
+
+  (**
+   @return the conversion to milliseconds per quarter of the inupt [tempo] ratio
+   *)
+  val tempoToMspq : t -> int
+end
 
 (** {2 Testing functions} *)
 

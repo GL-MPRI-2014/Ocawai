@@ -44,6 +44,41 @@ let ddhn : t = fromPair (7, 8)
 let ddqn : t = fromPair (7, 16)
 let dden : t = fromPair (7, 32)
 
+(** {2 Time conversions} *)
+
+(**
+   @return a floating-point approximation of the input [t]
+ *)
+let toFloat : t -> float = Num.float_of_num
+let toInt : t -> int = Num.int_of_num
+
+(** {2 Tempo definition and management} *)
+
+module Tempo = struct
+  (**
+   Tempo module
+   *)
+
+  open Num
+
+  type t = Num.num
+
+  (** {2 Basic values} *)
+
+  (** The basic tempo ratio 1, defines a tempo of 120BPM *)
+  let base : t = Num.Int 1
+
+  (** {2 Tempo conversions} *)
+
+  let tempoToMspq : t -> int = function
+    | tempo ->
+       Num.int_of_num
+	 (let baseTempo = Num.Int 120 in
+	  baseTempo */ tempo
+	 )
+
+end
+
 (** {2 Testing functions} *)
 
 (** {3 Pretty-printing} *)
@@ -51,4 +86,4 @@ let dden : t = fromPair (7, 32)
 let fprintf : Format.formatter -> t -> unit = fun fmt ->
   function
   | num ->
-    Format.fprintf fmt "@[%s@]" (Num.string_of_num num)
+     Format.fprintf fmt "@[%s@]" (Num.string_of_num num)

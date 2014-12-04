@@ -60,7 +60,8 @@ val getDur : 'a t -> Time.t
 
    Used for the rendering of music
 *)
-val toMidi : ?samplerate:int -> ?division:MIDI.division -> 'a t -> MIDI.buffer
+val toMidi : ?samplerate:int -> ?division:MIDI.division ->
+	     ~tempo:Time.Tempo.t -> 'a t -> MIDI.buffer
 
 (** {2 Testing functions} *)
 
