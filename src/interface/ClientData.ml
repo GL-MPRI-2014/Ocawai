@@ -4,7 +4,7 @@ class client_data
   ~(players:Player.logicPlayer list)
   ~(actual_player:ClientPlayer.client_player) = object(self)
 
-  val minimap = new Minimap.minimap 40 
+  val minimap = new Minimap.minimap 30 
     (fst (Battlefield.size map))
     (snd (Battlefield.size map))
 

@@ -17,11 +17,15 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
        ("map", (`Map(map)))]
 
   method get_next_action = 
-    Thread.delay 0.50;
+    Thread.delay 0.10;
     try 
       let u = Interpreter.main_script script in
       let m = Interpreter.move_script script u in
-      (m, Action.Wait)
+      try 
+        let t = Interpreter.attack_script script m u in
+        (m, Action.Attack_unit(u,t))
+      with
+      | ScriptCore.Do_nothing -> (m, Action.Wait)
     with
     | ScriptCore.End_turn -> ([], Action.End_turn)
     | Invalid_argument(s) -> 

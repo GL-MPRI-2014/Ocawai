@@ -150,19 +150,19 @@ profile: $(files_atd_ml)
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
 	install -d "$(DESTDIR)$(bindir)"
-	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
+	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)/ocawai"
 	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 	mkdir -p $(DESTDIR)$(resourcesdir)/ocawai/
 	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/ocawai/
-	chmod 766 -R $(DESTDIR)$(resourcesdir)/ocawai/
+	chmod 777 -R $(DESTDIR)$(resourcesdir)/ocawai/
 
 uninstall:
-	-rm $(DESTDIR)$(bindir)/$(output_interface)
+	-rm $(DESTDIR)$(bindir)/ocawai
 	-rm $(DESTDIR)$(bindir)/$(output_engine)
 	-rm $(DESTDIR)$(bindir)/$(output_network)
 	-rm $(DESTDIR)$(bindir)/$(output_script)
-	-rm -Rf -- $(DESTDIR)$(resourcesdir)/GL_2014
+	-rm -Rf -- $(DESTDIR)$(resourcesdir)/ocawai
 
 
 
@@ -263,7 +263,7 @@ clean:
 	rm -f resources/config/settings_engine.json
 	rm -f resources/config/settings_interface.json
 	rm -f $(output_gprof)
-	rm -r gmon.out
+	rm -f gmon.out
 
 check_generation: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
@@ -279,6 +279,6 @@ check_logics: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) logics_test.native -tag $(engine_tags)
 	./logics_test.native
 
-check: check_player
+check: check_player check_generation check_logics
 
 .PHONY: FORCE all clean dist distcheck engine interface network script

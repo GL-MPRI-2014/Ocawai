@@ -247,6 +247,16 @@ let scr_prop2 =
     )
   )
 
+let scr_dist2 = 
+  `Fun(fun a ->
+    `Fun(fun b ->
+      match (a,b) with
+      |(`Pair(`Int(i),`Int(j)), `Pair(`Int(i'), `Int(j'))) ->
+          `Int(abs (i' - i) + abs (j' - j))
+      | _ -> assert false
+    )
+  )
+
 
 (** Gameplay functions *)
 let scr_hasplayed =
@@ -316,6 +326,31 @@ let scr_dijkstra =
     | _ -> assert false
     )
 
+let scr_inrange = 
+  `Fun(function 
+    |`Pair(`Int(a), `Int(b)) -> `Fun(function
+      |`Int(r) -> `Fun(function
+        |`Player(p) -> `Fun(function
+          |`List(l) -> 
+            List.map (function |`Player(p) -> p |_ -> assert false) l
+            |> Logics.units_inrange (Position.create (a,b)) r p
+            |> List.map (function u -> `Soldier(u))
+            |> (fun l -> `List l)
+          | _ -> assert false
+          )
+        | _ -> assert false
+        )
+      | _ -> assert false
+      )
+    | _ -> assert false
+    )
+
+let scr_range = 
+  `Fun(function
+    |`Soldier(u) -> `Int(u#attack_range)
+    | _ -> assert false
+  )
+
 let scr_donothing = 
   `Fun(function
     |`Unit -> raise Do_nothing
@@ -354,6 +389,7 @@ let init () =
   expose scr_snd    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(1))) "snd";
   expose scr_add2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "add2D";
   expose scr_sub2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "sub2D";
+  expose scr_dist2  (`Fun_t(intpair, `Fun_t(intpair, `Int_t))) "dist2D";
   expose scr_prop2  (`Fun_t(`Int_t, `Fun_t(intpair, intpair))) "prop2D";
   expose scr_listempty (`Fun_t(`List_t (`Alpha_t(0)), `Bool_t)) "list_empty";
   expose scr_listlength(`Fun_t(`List_t (`Alpha_t(0)), `Int_t)) "list_length";
@@ -363,7 +399,10 @@ let init () =
     `Fun_t(`List_t(`Alpha_t(0)), `Unit_t))) "list_iter";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
+  expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
+  expose scr_inrange (`Fun_t(intpair, `Fun_t(`Int_t, `Fun_t(`Player_t,
+  `Fun_t(`List_t(`Player_t), `List_t(`Soldier_t)))))) "ennemies_in_range";
   expose scr_accessibles (`Fun_t(`Soldier_t, `Fun_t(`Player_t,
     `Fun_t(`List_t(`Player_t), `Fun_t(`Map_t, `List_t(intpair)))))) "accessible_positions";
   expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t))) "army_of";

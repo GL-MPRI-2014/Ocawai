@@ -36,3 +36,8 @@ val apply_attack : Unit.t -> Unit.t -> unit
 (** Computes owner changes for buildings at the start of a turn *)
 val capture_buildings : Player.logicPlayer list -> Player.logicPlayer ->
   Building.t list -> (Building.t * (Player.logicPlayer option)) list
+
+(** Returns the list of the ennemy units in range *)
+val units_inrange : Position.t -> int -> Player.logicPlayer -> 
+  Player.logicPlayer list -> Unit.t list
+  

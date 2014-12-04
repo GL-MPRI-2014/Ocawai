@@ -232,4 +232,13 @@ let capture_buildings player_list player building_list =
   in
   List.iter aux unit_list;
   (!changed)
-  
+
+let units_inrange pos range player pl = 
+  let ennemy_list = List.filter (fun p -> p <> player) pl in
+  List.map (fun p ->
+    List.filter (fun u ->
+      Position.dist pos u#position <= range
+    ) p#get_army
+  ) ennemy_list
+  |> List.flatten
+
