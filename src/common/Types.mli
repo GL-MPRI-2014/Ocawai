@@ -17,8 +17,13 @@ type update =
   | Delete_unit of Unit.t *id_player (*Fog or kill*)
   | Delete_building of Building.t * id_player(*fog or kill*)
   | Move_unit of Unit.t * Action.movement * id_player
-                       
+  | Set_unit_hp of Unit.t * id_player * int
+(* for initialization only *)
+  | Set_client_player of id_player
+  | Set_logic_player_list of id_player list
+  | Map of string
 
+                       
 
 (*what a NetPlayer send to a client player*)
 type  send = Get_next_action | Update of update

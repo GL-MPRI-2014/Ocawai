@@ -3,8 +3,7 @@ open Marshal
 open Types
 
 
-
-class dealer (s : file_descr) (tablogp : Player.logicPlayer list) (clip : CliPlayer.cliPlayer) =
+class dealer (s : file_descr) (clip : ClientPlayer.client_player) =
 object (self)
 	 
   (* The socket we read from and write into to communicate with the net player over the network *)
@@ -15,12 +14,18 @@ object (self)
   val mutable out_channel = out_channel_of_descr s
 
   (* list of all the other (logical) players *)
-  val tab_players = tablogp
+  val mutable logicPlayerList = []
 
   (* my client player *)
   val cli_player = clip
 		
 
+
+  method set_logicPlayerList lpl = 
+    logicPlayerList <- lpl
+
+  method get_logicPlayerList = 
+    logicPlayerList
 
 
   (* Mazzocchi asked for it *)
@@ -41,7 +46,7 @@ object (self)
       | t::q when t#get_id = id -> t 
       | _::q -> fonction_a_la_con id q
     in
-    fonction_a_la_con id tab_players
+    fonction_a_la_con id logicPlayerList
 
   (* give the player which id is id - or send Wrong_id_player and give cli_player *)
 

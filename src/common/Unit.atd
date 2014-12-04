@@ -25,8 +25,8 @@ type t = {
   name : name_v;
   movement_type : movement;
   vision_range : positive;
-  attack_range_min : positive;
-  attack_range_max : positive;
+  ~attack_range_min<ocaml default="0"> : positive;
+  ~attack_range_max<ocaml default="0"> : positive;
   move_range : positive;
   ~spawn_number<ocaml default="0"> : positive;
   ~attack_base<ocaml default="50"> : positive;
