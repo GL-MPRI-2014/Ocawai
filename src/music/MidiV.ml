@@ -7,6 +7,9 @@
 *)
 let samplerate = 44100
 
+(**
+   Standard MIDI-division value
+ *)
 let division = MIDI.Ticks_per_quarter 96
 
 (**
@@ -38,7 +41,7 @@ let samples_of_delta samplerate division tempo delta =
      (samplerate * delta) / (fps * res)
 
 let timeToMidiDuration : ?samplerate:int -> ?division:MIDI.division ->
-	       ?tempo:Time.Tempo.t -> duration:Time.t -> int =
+			 ?tempo:Time.Tempo.t -> duration:Time.t -> int =
   fun ?samplerate:(sr = samplerate) ?division:(div = division)
       ?tempo:(tempo = Time.Tempo.base) ~duration ->
   let tempo_mspq = Time.Tempo.tempoToMspq tempo
