@@ -246,8 +246,13 @@ let renderer = object(self)
     |> target#draw
 
   (* Draw a building *)
-  method private draw_building (target : render_window) camera building =
-    self#draw_from_map target camera (building#name) (building#position) ()
+  method private draw_building (target : render_window) camera resource building =
+    self#draw_from_map target camera (building#name) (building#position) ();
+    if (building#name = "base") then (let size = int_of_float (camera#zoom *. 14.) in
+    let position = (foi2D (camera#project building#position)) in
+    new text ~string:(string_of_int resource)
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw)
 
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
@@ -285,7 +290,7 @@ let renderer = object(self)
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
     List.iter (fun p ->
-        List.iter (self#draw_building target data#camera) p#get_buildings
+        List.iter (self#draw_building target data#camera p#get_value_resource) p#get_buildings
       ) data#players;
     List.iter (fun p ->
       List.iter (self#draw_unit target data#camera) p#get_army

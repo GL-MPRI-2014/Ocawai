@@ -11,7 +11,7 @@ type positive = int
 type t = {
   name : name_v;
   product : name_v list;
-  income : positive;
+  income : int;
 } 
 
 type t_list = t list
