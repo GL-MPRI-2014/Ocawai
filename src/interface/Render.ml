@@ -252,7 +252,10 @@ let renderer = object(self)
     let name = character ^ "_" ^ building#name in
     self#draw_from_map target camera name (building#position) ();
     if (building#name = "base") then (let size = int_of_float (camera#zoom *. 14.) in
-    let position = (foi2D (camera#project building#position)) in
+    let position = addf2D
+      (foi2D (camera#project building#position))
+      (camera#zoom *. 5.,camera#zoom *. 10.)
+    in
     new text ~string:(string_of_int resource)
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw)
@@ -304,12 +307,14 @@ let renderer = object(self)
     (* It probably shouldn't be done here *)
     let character_of = Hashtbl.create 13 in
     List.iter (fun p -> Hashtbl.add character_of p (get_chara ())) data#players;
+    (* Printing buildings *)
     List.iter (fun p ->
       let chara = Hashtbl.find character_of p in
       List.iter
         (self#draw_building target data#camera p#get_value_resource chara)
         p#get_buildings
       ) data#players;
+    (* Printing armies *)
     List.iter (fun p ->
       let chara = Hashtbl.find character_of p in
       List.iter (self#draw_unit target data#camera chara) p#get_army
