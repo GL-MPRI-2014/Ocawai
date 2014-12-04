@@ -7,8 +7,8 @@ type time = Time.t
 type 'a t = Note of (time * 'a)
 	    | Rest of time
 
-type velocity = int (** To-Do : is there a special mm.int
-			type for MIDI values in mm ? *)
+type velocity = int (** Should be between 0 and 127 for MIDI *)
+
 type octave = int
 type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Ef | Fff | Dss | E | Ff | Es | F | Gff | Ess | Fs
@@ -16,8 +16,25 @@ type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
 
-type param = pitch * velocity
-    
+(**
+   The class [param] defines an instantiation for the type ['a t]
+
+   We use a class here for extensivity.
+*)
+class param pitch velocity =
+object (self)
+  val mutable pitch : pitch = pitch (** The note's pitch *)
+  val mutable velocity : velocity = velocity (** The note's velocity *)
+				
+  method getPitch : pitch = pitch
+  method getVelocity : velocity = velocity
+				      
+  method setPitch : pitch -> unit = fun newPitch ->
+    pitch <- newPitch
+  method setVelocity : velocity -> unit = fun newVelocity ->
+    velocity <- newVelocity
+end
+
 type event = param t
 
 let note : time -> 'a -> 'a t = fun dur a ->
@@ -27,24 +44,9 @@ let rest : time -> 'a t = fun dur -> Rest (dur)
 
 let getDur : 'a t -> time = function
   | Note(dur, _) -> dur
-  | Rest(dur) -> dur
+  | Rest(dur) -> dur		 
 
-(** {2 MIDI conversion} *)
-
-let toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     ~tempo:Time.Tempo.t -> 'a t -> MIDI.buffer
-  = fun ?samplerate:(sr = MidiV.samplerate) ?division:(div = MidiV.division)
-	~tempo
-  -> function  
-  | Rest(dur) -> MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
-						      ~tempo dur)
-  | Note(dur, a) ->
-     let buffer = MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
-						       ~tempo dur)
-     in
-     
-     
-(** {2 Testing functions} *)
+(** {2 Various utilities} *)
 
 (** {3 Pretty-printing} *)
 
@@ -57,8 +59,10 @@ let rec fprintf : Format.formatter -> event -> unit = fun fmt ->
 
 and fprint_param : Format.formatter -> param -> unit = fun fmt ->
   function
-  | (pitch, velocity) ->
-    Format.fprintf fmt "@[<1>(pitch =@ %a,@ velocity =@ %d@,)@]"
+  | param ->
+     let pitch = param#getPitch
+     and velocity = param#getVelocity in
+     Format.fprintf fmt "@[<1>(pitch =@ %a,@ velocity =@ %d@,)@]"
       fprint_pitch pitch velocity
 
 and fprint_pitch : Format.formatter -> pitch -> unit = fun fmt ->
@@ -83,3 +87,30 @@ and fprint_pitchClass : Format.formatter -> pitchClass -> unit = fun fmt pitch_c
   in Format.fprintf fmt "@[%s@]" pitchClass_name
 
 let printf = fprintf Format.std_formatter
+
+let pitch_to_string : pitch -> string = function
+  | pitch -> fprint_pitch Format.str_formatter pitch;
+	     Format.flush_str_formatter ()
+
+(** {3 MIDI conversion} *)
+
+let toMidi : ?samplerate:int -> ?division:MIDI.division ->
+	     tempo:Time.Tempo.t -> event -> MIDI.buffer
+  = fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
+	~tempo
+  -> function  
+  | Rest(duration) -> MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
+						      ~tempo ~duration)
+  | Note(duration, a) ->
+     let midi_duration = MidiV.timeToMidiDuration ~samplerate ~division
+						       ~tempo ~duration
+     in
+     let buffer = MIDI.create(midi_duration)
+     and note = Audio.Note.of_string (pitch_to_string (a#getPitch))
+     (** To-Do : Requires patching mm.Audio.Note to read sharp
+                                 and flat notes *)
+     and velocity = MidiV.velocityFromInt (a#getVelocity)
+     in
+     MIDI.insert buffer (0, MIDI.Note_on(note, velocity));
+     MIDI.insert buffer (midi_duration-1, MIDI.Note_off(note, velocity));
+     buffer

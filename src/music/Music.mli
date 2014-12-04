@@ -21,11 +21,25 @@ type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
 type velocity = int
+
+val pitch_to_string : pitch -> string 
   
 (**
-   One specific type for ['a] in ['a t], used in other modules
+   The class [param] defines an instantiation for the type ['a t]
+
+   We use a class here for extensivity.
 *)
-type param = pitch * velocity
+class param : pitch -> velocity ->
+	      object
+		val mutable pitch : pitch (** The note's pitch *)
+		val mutable velocity : velocity (** The note's velocity *)
+		
+		method getPitch : pitch (** Get note's pitch *)
+		method getVelocity : velocity (** Get note's velocity *)
+
+		method setPitch : pitch -> unit  (** Set note's pitch *)
+		method setVelocity : velocity -> unit  (** Set note's velocity *)
+	      end
 
 (**
    The instantiation of ['a t] used in other modules
@@ -61,7 +75,7 @@ val getDur : 'a t -> Time.t
    Used for the rendering of music
 *)
 val toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     ~tempo:Time.Tempo.t -> 'a t -> MIDI.buffer
+	     tempo:Time.Tempo.t -> event -> MIDI.buffer
 
 (** {2 Testing functions} *)
 
@@ -72,3 +86,4 @@ val toMidi : ?samplerate:int -> ?division:MIDI.division ->
    defined by the [Format.formatter]
 *)
 val fprintf : Format.formatter -> event -> unit
+val fprint_pitch : Format.formatter -> pitch -> unit
