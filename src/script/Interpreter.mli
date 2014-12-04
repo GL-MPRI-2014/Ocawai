@@ -27,7 +27,7 @@ val main_script : script -> Unit.t
   * @return a move for the unit [u] *)
 val move_script : script -> Unit.t -> Action.movement
 
-(** [attack_script s u] calls the attack methods of the script [s]
-  * @return a unit attacked by the unit [u] *)
-val attack_script : script -> Unit.t -> Unit.t
+(** [attack_script s m u] calls the attack methods of the script [s]
+  * @return a unit attacked by the unit [u] after the movement [m] *)
+val attack_script : script -> Action.movement -> Unit.t -> Unit.t
 

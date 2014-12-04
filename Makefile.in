@@ -263,7 +263,7 @@ clean:
 	rm -f resources/config/settings_engine.json
 	rm -f resources/config/settings_interface.json
 	rm -f $(output_gprof)
-	rm -r gmon.out
+	rm -f gmon.out
 
 check_generation: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
