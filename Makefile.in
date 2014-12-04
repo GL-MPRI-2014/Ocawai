@@ -153,16 +153,16 @@ install:
 	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
-	mkdir -p $(DESTDIR)$(resourcesdir)/GL_2014/
-	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/GL_2014/
-	chmod 755 -R $(DESTDIR)$(resourcesdir)/GL_2014
+	mkdir -p $(DESTDIR)$(resourcesdir)/ocawai/
+	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/ocawai/
+	chmod 766 -R $(DESTDIR)$(resourcesdir)/ocawai/
 
 uninstall:
-	-rm $(bindir)/$(output_interface)
-	-rm $(bindir)/$(output_engine)
-	-rm $(bindir)/$(output_network)
-	-rm $(bindir)/$(output_script)
-	-rm -Rf -- $(resourcesdir)/GL_2014
+	-rm $(DESTDIR)$(bindir)/$(output_interface)
+	-rm $(DESTDIR)$(bindir)/$(output_engine)
+	-rm $(DESTDIR)$(bindir)/$(output_network)
+	-rm $(DESTDIR)$(bindir)/$(output_script)
+	-rm -Rf -- $(DESTDIR)$(resourcesdir)/GL_2014
 
 
 
