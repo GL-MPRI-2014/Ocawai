@@ -247,8 +247,9 @@ let renderer = object(self)
     |> target#draw
 
   (* Draw a building *)
-  method private draw_building (target : render_window) camera building =
-    self#draw_from_map target camera (building#name) (building#position) ()
+  method private draw_building (target : render_window) camera chara building =
+    let name = chara ^ "_" ^ building#name in
+    self#draw_from_map target camera name (building#position) ()
 
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
@@ -285,9 +286,6 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    List.iter (fun p ->
-        List.iter (self#draw_building target data#camera) p#get_buildings
-      ) data#players;
     (* Ugly: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
@@ -296,8 +294,16 @@ let renderer = object(self)
       if !x = Array.length characters then x := 0 ;
       ret
     in
+    (* Associate every player to a character *)
+    (* It probably shouldn't be done here *)
+    let character_of = Hashtbl.create 13 in
+    List.iter (fun p -> Hashtbl.add character_of p (get_chara ())) data#players;
     List.iter (fun p ->
-      let chara = get_chara () in
+      let chara = Hashtbl.find character_of p in
+      List.iter (self#draw_building target data#camera chara) p#get_buildings
+      ) data#players;
+    List.iter (fun p ->
+      let chara = Hashtbl.find character_of p in
       List.iter (self#draw_unit target data#camera chara) p#get_army
       ) data#players;
     data#minimap#draw target data#camera#cursor;
