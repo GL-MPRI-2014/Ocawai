@@ -245,6 +245,10 @@ let renderer = object(self)
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
 
+  (* Draw a building *)
+  method private draw_building (target : render_window) camera building =
+    self#draw_from_map target camera (building#name) (building#position) ()
+
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
@@ -280,6 +284,9 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
+    List.iter (fun p ->
+        List.iter (self#draw_building target data#camera) p#get_buildings
+      ) data#players;
     List.iter (fun p ->
       List.iter (self#draw_unit target data#camera) p#get_army
       ) data#players;
