@@ -36,7 +36,7 @@ type t = {
   ~percentage_heavy<ocaml default="0"> : percentage;
   ~price<ocaml default="50"> : positive;
   ~life_max<ocaml default="100"> : s_positive;
-} 
+}
   <ocaml validator="Utils.check_validity (
     fun u -> u.attack_range_min <= u.attack_range_max
   )">
