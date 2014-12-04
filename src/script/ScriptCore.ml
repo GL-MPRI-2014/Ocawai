@@ -8,7 +8,7 @@ let expose f t s =
   Checker.expose t s
 
 (** Various functions *)
-let scr_rand = 
+let scr_rand =
   `Fun(function
     |`Int(n) -> `Int(Random.int n)
     | _ -> assert false
@@ -169,7 +169,7 @@ let scr_listmem =
     )
   )
 
-let scr_listnth = 
+let scr_listnth =
   `Fun(fun l ->
     `Fun(fun n ->
       match (l,n) with
@@ -178,30 +178,37 @@ let scr_listnth =
     )
   )
 
-let scr_listlength = 
+let scr_listlength =
   `Fun(function
     |`List(l) -> `Int(List.length l)
     | _ -> assert false
   )
 
-let scr_listmap = 
+let scr_listmap =
   `Fun(function
     |`Fun(f) -> `Fun(function
       |`List(l) -> `List (List.map f l)
       | _ -> assert false)
     | _ -> assert false)
 
-let scr_listiter = 
+let scr_listiter =
   `Fun(function
     |`Fun(f) -> `Fun(function
-      |`List(l) -> 
-          let rec iter_aux = function 
+      |`List(l) ->
+          let rec iter_aux = function
             |[] -> `Unit
             |t::q -> f t; iter_aux q
           in iter_aux l
       | _ -> assert false)
     | _ -> assert false)
 
+let scr_listfilter =
+  `Fun(function
+    | `Fun(f) -> `Fun(function
+      | `List(l) -> `List (List.filter
+          (fun x -> match f x with `Bool b -> b | _ -> assert false) l)
+      | _ -> assert false)
+    | _ -> assert false)
 
 
 (** Pair functions *)
@@ -247,7 +254,7 @@ let scr_prop2 =
     )
   )
 
-let scr_dist2 = 
+let scr_dist2 =
   `Fun(fun a ->
     `Fun(fun b ->
       match (a,b) with
@@ -286,7 +293,7 @@ let scr_accessibles =
     |`Soldier(u) -> `Fun(function
       |`Player(s) -> `Fun(function
         |`List(l) -> `Fun(function
-          |`Map(m) -> 
+          |`Map(m) ->
             fst (Logics.available_positions u s (List.map get_logic_player l) m)
             |> List.map position_to_pair
             |> fun l -> `List l
@@ -326,12 +333,12 @@ let scr_dijkstra =
     | _ -> assert false
     )
 
-let scr_inrange = 
-  `Fun(function 
+let scr_inrange =
+  `Fun(function
     |`Pair(`Int(a), `Int(b)) -> `Fun(function
       |`Int(r) -> `Fun(function
         |`Player(p) -> `Fun(function
-          |`List(l) -> 
+          |`List(l) ->
             List.map (function |`Player(p) -> p |_ -> assert false) l
             |> Logics.units_inrange (Position.create (a,b)) r p
             |> List.map (function u -> `Soldier(u))
@@ -345,19 +352,19 @@ let scr_inrange =
     | _ -> assert false
     )
 
-let scr_range = 
+let scr_range =
   `Fun(function
     |`Soldier(u) -> `Int(u#attack_range)
     | _ -> assert false
   )
 
-let scr_donothing = 
+let scr_donothing =
   `Fun(function
     |`Unit -> raise Do_nothing
     | _ -> assert false
   )
 
-let scr_endturn = 
+let scr_endturn =
   `Fun(function
     |`Unit -> raise End_turn
     | _ -> assert false
@@ -397,6 +404,8 @@ let init () =
     `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(1))))) "list_map";
   expose scr_listiter (`Fun_t(`Fun_t(`Alpha_t(0), `Unit_t),
     `Fun_t(`List_t(`Alpha_t(0)), `Unit_t))) "list_iter";
+  expose scr_listfilter (`Fun_t(`Fun_t(`Alpha_t(0), `Bool_t),
+    `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0))))) "list_filter";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";
