@@ -231,13 +231,14 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) camera my_unit =
+  method private draw_unit (target : render_window) camera character my_unit =
     let color =
       if my_unit#has_played
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
-    self#draw_from_map target camera (my_unit#name) (my_unit#position) ~color();
+    let name = character ^ "_" ^ my_unit#name in
+    self#draw_from_map target camera name (my_unit#position) ~color();
     let size = int_of_float (camera#zoom *. 14.) in
     let position = (foi2D (camera#project my_unit#position)) in
     new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
@@ -287,8 +288,17 @@ let renderer = object(self)
     List.iter (fun p ->
         List.iter (self#draw_building target data#camera) p#get_buildings
       ) data#players;
+    (* Ugly: to alternate characters *)
+    let characters = [|"flatman";"blub";"limboy"|] in
+    let get_chara = let x = ref 0 in fun () ->
+      let ret = characters.(!x) in
+      incr x ;
+      if !x = Array.length characters then x := 0 ;
+      ret
+    in
     List.iter (fun p ->
-      List.iter (self#draw_unit target data#camera) p#get_army
+      let chara = get_chara () in
+      List.iter (self#draw_unit target data#camera chara) p#get_army
       ) data#players;
     data#minimap#draw target data#camera#cursor;
     FPS.display target
