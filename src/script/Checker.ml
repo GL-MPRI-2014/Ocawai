@@ -9,16 +9,19 @@ open CheckerLog
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
-(* For the alphae *)
 (* Allows to unify them in a given context *)
-let alpha_env = Hashtbl.create 97
+(* let alpha_env = Hashtbl.create 13
+
+let init_alpha i =
+  Hashtbl.add alpha_env i (ref `None)
+
 let get_alpha i =
   if Hashtbl.mem alpha_env i then Hashtbl.find alpha_env i
   else begin
     let t = ref `None in
     Hashtbl.add alpha_env i t ;
     t
-  end
+  end *)
 
 exception Unbound_variable of string * location
 exception Unbound_function of string * location
@@ -28,6 +31,28 @@ let rec deref (t:term_type) =
   | `Pointer v -> deref v
   | v -> v
 
+
+(* For the alphae *)
+(* Returns a fresh type with _'a instead of 'a *)
+let underscore_alpha ftype =
+  let alpha_env = Hashtbl.create 13 in
+  let get_alpha i =
+    if Hashtbl.mem alpha_env i then Hashtbl.find alpha_env i
+    else begin
+      let t = ref `None in
+      Hashtbl.add alpha_env i t ;
+      t
+    end
+  in
+  let rec aux t =
+    match (deref t) with
+    | `Alpha_tc i    -> get_alpha i
+    | `Fun_tc (a,b)  -> ref (`Fun_tc (aux a, aux b))
+    | `List_tc a     -> ref (`List_tc (aux a))
+    | `Array_tc a    -> ref (`Array_tc (aux a))
+    | `Pair_tc (a,b) -> ref (`Pair_tc (aux a, aux b))
+    | _              -> t
+  in aux ftype
 
 (* Translates a type to a string *)
 let type_to_string t =
@@ -40,7 +65,7 @@ let type_to_string t =
     | `Soldier_tc    -> "soldier"
     | `Map_tc        -> "map"
     | `Player_tc     -> "player"
-    | `Alpha_tc i    -> "alpha_" ^ (string_of_int i)
+    | `Alpha_tc i    -> "'a" ^ (string_of_int i)
     | `List_tc v     -> (aux true v) ^ " list"
     | `Array_tc v    -> (aux true v) ^ " array"
     | `Fun_tc (a,b)  ->
@@ -64,8 +89,8 @@ let rec unify (t1:term_type) (t2:term_type) =
     (type_to_string t1) (type_to_string t2) ;
   if t1 <> t2 then
   match (deref t1, deref t2) with
-  | `Alpha_tc i, _ -> unify (get_alpha i) t2
-  | _, `Alpha_tc i -> unify t1 (get_alpha i)
+  | `Alpha_tc i, _ -> (*unify (get_alpha i) t2*) assert false
+  | _, `Alpha_tc i -> (*unify t1 (get_alpha i)*) assert false
   | `None, _     -> t1 := `Pointer t2
   | _, `None     -> t2 := `Pointer t1
   | `List_tc t1, `List_tc t2   -> unify t1 t2
@@ -151,6 +176,7 @@ and check_decl = function
       let tl = List.map (fun s -> Hashtbl.find assignment s) sl in
       let return_type = ref `None in
       (* We deduce the function type *)
+      (* TODO: Infer polymorphism *)
       List.fold_right (fun a b -> ref (`Fun_tc (a,b))) tl return_type |>
       Hashtbl.add assignment s ;
       (* We precise these types by checking the sequence *)
@@ -226,28 +252,37 @@ and val_type = function
   | Var (s,l)    ->
       debugf "var %s" s;
       (try
-        let t = Hashtbl.find assignment s in
+        let t = underscore_alpha (Hashtbl.find assignment s) in
         debugf "type %s" (type_to_string t) ;
         t
       with Not_found -> raise (Unbound_variable (s,l)))
   | App ((s,vl),l) ->
       debugf "application %s" s;
       begin
-        let ftype =
+        let ftype' =
           try Hashtbl.find assignment s
           with Not_found -> raise (Unbound_function (s,l))
         in
-        debugf "%s is of type %s" s (type_to_string ftype);
+        debugf "%s is of type %s" s (type_to_string ftype');
+        let ftype = underscore_alpha ftype' in
+        debugf "deduced type %s" (type_to_string ftype);
+        (* We make sure every alpha_i is bound before continuing *)
+        (* let rec assign (t: term_type) =
+          match (deref t) with
+          | `Alpha_tc i   -> init_alpha i
+          | `Fun_tc (a,b) -> assign a ; assign b
+          | _  -> ()
+        in assign ftype ; *)
         debug (lazy "computing argument types");
         let argst = List.map val_type vl in
         debug (lazy "return type");
         let return_type =
           try unify_func ftype argst
-          with Unification_failure -> raise (Apply_args (s,ftype,argst,l))
+          with Unification_failure -> raise (Apply_args (s,ftype',argst,l))
         in
         (* We don't want the alpha_i to remain bound *)
         (* TODO Check if it works for higher order *)
-        Hashtbl.clear alpha_env ;
+        (* Hashtbl.clear alpha_env ; *)
         debug (lazy "end application") ;
         return_type
       end
