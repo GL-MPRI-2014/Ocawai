@@ -71,11 +71,10 @@ module Tempo = struct
   (** {2 Tempo conversions} *)
 
   let tempoToMspq : t -> int = function
-    | tempo ->
-       Num.int_of_num
-	 (let baseTempo = Num.Int 120 in
-	  baseTempo */ tempo
-	 )
+    | tempo -> Num.int_of_num (
+		   let baseTempo = Num.Int 120 in
+		   baseTempo */ tempo
+		 )
 
 end
 
