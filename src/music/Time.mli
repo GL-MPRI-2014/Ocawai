@@ -1,7 +1,11 @@
 (**
    Interface Time: defines a time unit [Time.t].
 
-   [Time.t] is an ordered groupe
+   [Time.t] is an ordered groupe used for the description of durations
+   in the music tiles. 
+
+   Also holds the [Time.Tempo] module, which defines tempi and conversion
+   functions for MIDI.
 *)
 
 type t
