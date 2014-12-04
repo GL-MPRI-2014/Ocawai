@@ -53,14 +53,14 @@ test_src=test,$(engine_src)
 #dependencies required for each target
 common_dependencies = atdgen,dolog,unix
 engine_dependencies = $(common_dependencies),threads
-music_dependencies = bigarray,mm,threads,num,ocsfml.audio
+music_dependencies = num,ocsfml.audio,mm,pulseaudio
 script_dependencies = $(common_dependencies)
 
 
 test_dependencies=$(engine_dependencies),oUnit
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
-interface_dependencies = $(music_dependencies),ocsfml.graphics,$(common_dependencies)
+interface_dependencies = bigarray,threads,$(music_dependencies),ocsfml.graphics,$(common_dependencies)
 #network_libraries = unix
 
 #tags needed for each target

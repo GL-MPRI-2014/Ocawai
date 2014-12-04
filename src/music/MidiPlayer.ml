@@ -90,7 +90,7 @@
   (*print_endline "Oh BOY ! You DID reach some place !";*)
   (*sound#stop*)
 
-let play_file fname run =
+let play_midi_file fname run =
   let fname = fname in
   let f = new MIDI.IO.Reader.of_file fname in
   let channels = 2 in
@@ -114,7 +114,3 @@ let play_file fname run =
   done;
   pulse#close;
   f#close
-
-let () =
-  let a = ref true in
-  play_file "./bach_bourree.mid" a
