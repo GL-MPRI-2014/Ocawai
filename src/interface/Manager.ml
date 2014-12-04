@@ -6,7 +6,7 @@ let manager = object(self)
     new OcsfmlGraphics.render_window
       (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
       ~style:[OcsfmlWindow.Window.Fullscreen]
-      "Flower Wars"
+      "OCAWAI"
 
   initializer
     Render.renderer#init;
@@ -22,11 +22,11 @@ let manager = object(self)
       window#create
       ~style: [OcsfmlWindow.Window.Fullscreen]
       (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-      "Flower Wars"
+      "OCAWAI"
     else
       window#create
       (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
-      "Flower Wars" ;
+      "OCAWAI" ;
     window#set_key_repeat_enabled true ;
     window#set_framerate_limit 60
 
