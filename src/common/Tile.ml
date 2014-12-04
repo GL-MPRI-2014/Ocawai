@@ -78,3 +78,4 @@ let tile_cost tile soldier = movement_cost tile soldier#movement_type
 let parsed_tile_to_tile t = t
 
 let tile_to_parsed_tile t = t
+

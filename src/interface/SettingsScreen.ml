@@ -1,7 +1,7 @@
 open OcsfmlGraphics
 open Utils
 open GuiTools
-open Settings
+open Settings_interface_t
 
 open Manager
 
@@ -11,7 +11,7 @@ class state = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val font = new font `None
+  val font = Fonts.load_font "Roboto-Black.ttf"
 
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in
@@ -19,14 +19,14 @@ class state = object(self)
       []
       [
         (new Setters.slider (w /. 2., 150.)
-          ~default:(int_of_float ((settings#cursor_speed -. 1.) *. (19. /. 50.)))
+          ~default:(int_of_float ((Config.config#settings_interface.cursor_speed -. 1.) *. (19. /. 50.)))
           (fun i ->
-            settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i)))
+            Config.config#settings_interface.cursor_speed <- (1. +. (50. /. 19.) *. (float_of_int i)))
           "Cursor speed" :> Home.actionnable) ;
         (new Setters.slider (w /. 2., 150. +. Setters.setter_height)
-          ~default:(int_of_float ((settings#zoom_speed -. 1.) *. (9. /. 50.)))
+          ~default:(int_of_float ((Config.config#settings_interface.zoom_speed -. 1.) *. (9. /. 50.)))
           (fun i ->
-            settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i)))
+            Config.config#settings_interface.zoom_speed <- (1. +. (50. /. 9.) *. (float_of_int i)))
           "Zoom speed" :> Home.actionnable) ;
         (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
           ~default: (int_of_float (Sounds.get_volume ()))
@@ -67,8 +67,6 @@ class state = object(self)
     window#display
 
   initializer
-    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here";
     let window = manager#window in
     let (w,h) = window#get_size in
     self#set_screen w h

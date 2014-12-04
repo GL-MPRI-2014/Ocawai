@@ -18,24 +18,24 @@ object (self)
   method spawn_number = sp
   method attack_base = ab
   method armor = ar
-  method price = price
   method percentage_light = pl
   method percentage_normal = pn
   method percentage_heavy = ph
+  method price = price
   method life_max = l_m
 end
 
-class soldier (s : string) (p_id : int) (p : Position.t) (m : movement)
-  (v :int) (min_a : int) (a : int) (r : int) (sp : int) (ab : int) (ar : armor) (pl : int) (pn : int)
-  (ph :int) (price : int) (l_m : int)=
+class soldier (uu : unbound_soldier) (p : Position.t) (p_id : int) (id0 : int) =
 object (self)
-  inherit unbound_soldier s m v min_a a r sp ab ar pl pn ph price l_m
+  inherit unbound_soldier uu#name uu#movement_type 
+    uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
+    uu#spawn_number uu#attack_base uu#armor uu#percentage_light uu#percentage_normal uu#percentage_heavy uu#price uu#life_max
   val mutable pos = p
-  val mutable life = l_m
+  val mutable life = uu#life_max
   val mutable played = false
-
+  val mutable id = id0
   method hp = life
-  method id = Oo.id self
+  method get_id = id
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
@@ -50,37 +50,72 @@ object (self)
   method take_damage dmg = life <- max 0 (life-dmg)
   method has_played = played
   method set_played p = played <- p
+
+  initializer if id0 = -1 then id <- Oo.id self
 end
 
+
+type id = int
 type t = soldier
 type unbound_t = unbound_soldier
 
 let bind uu pos p_id =
-  new soldier uu#name p_id pos uu#movement_type 
-    uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
-    uu#spawn_number uu#attack_base uu#armor uu#percentage_light uu#percentage_normal uu#percentage_heavy uu#price uu#life_max
+  new soldier uu pos p_id (-1)
+
+let bind_extended uu p pid id hp h_p =
+  let u = new soldier uu p pid id in
+  u#take_damage (u#life_max - hp);
+  u#set_played h_p;
+  u
 
 let create_unbound_from_parsed_unit u = new unbound_soldier (u.Unit_t.name)
 (match (u.Unit_t.movement_type) with
-| "walk" -> Walk
-| "roll" -> Roll
-| "tread" -> Tread
-| "swim" -> Swim
-| "fly" -> Fly
-| "amphibious_walk" -> Amphibious_Walk
-| "amphibious_roll" -> Amphibious_Roll
-| "amphibious_tread" -> Amphibious_Tread
-| "all" -> All
-| a -> failwith("create_unbound_from_unit_t : "^a^" is not a movement\n")
+| `Walk -> Walk
+| `Roll -> Roll
+| `Tread -> Tread
+| `Swim -> Swim
+| `Fly -> Fly
+| `Amphibious_Walk -> Amphibious_Walk
+| `Amphibious_Roll -> Amphibious_Roll
+| `Amphibious_Tread -> Amphibious_Tread
+| `All -> All
 ) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) 
 (u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base)
 (match u.Unit_t.armor with
-| "light" -> Light
-| "normal" -> Normal
-| "heavy" -> Heavy
-| a -> failwith("create_unbound_from_unit_t : "^a^" is not an armor type\n"))
-(u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
+| `Light -> Light
+| `Normal -> Normal
+| `Heavy -> Heavy
+) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
 (u.Unit_t.price) (u.Unit_t.life_max)
 
-
+let create_parsed_unit_from_unbound (u :unbound_t) =
+  let open Unit_t in
+  {
+    name = u#name;
+    movement_type = (match u#movement_type with
+    | Walk -> `Walk
+    | Roll -> `Roll
+    | Tread -> `Tread
+    | Swim -> `Swim
+    | Fly -> `Fly
+    | Amphibious_Walk -> `Amphibious_Walk
+    | Amphibious_Roll -> `Amphibious_Roll
+    | Amphibious_Tread -> `Amphibious_Tread
+    | All -> `All);
+    vision_range = u#vision_range;
+    attack_range_min = u#min_attack_range;
+    attack_range_max = u#attack_range;
+    move_range = u#move_range;
+    spawn_number = u#spawn_number;
+    attack_base = u#attack_base;
+    armor = (match u#armor with
+    | Light -> `Light
+    | Normal -> `Normal
+    | Heavy -> `Heavy);
+    percentage_light = u#percentage_light;
+    percentage_normal = u#percentage_normal;
+    percentage_heavy = u#percentage_heavy;
+    price = u#price;
+    life_max = u#life_max;
+  }
 

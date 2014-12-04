@@ -49,7 +49,7 @@ class tileset texture config =
 
     val height = parse_result.height
 
-    val coordinates = Hashtbl.create 10 
+    val coordinates = Hashtbl.create 13 
 
     val vao = new vertex_array ~primitive_type:Quads []
 

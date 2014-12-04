@@ -1,0 +1,32 @@
+fun next_playable l = {
+  if (list_empty l) {
+    end_turn ()
+  }
+  else {
+    var u = list_hd l;
+    var acc = accessible_positions u self players map;
+    if ((unit_has_played u) || (list_empty acc)) {
+      next_playable (list_tl l)
+    } else {
+      u
+    }
+  }
+}
+
+move default {
+  var acc = accessible_positions selected_unit self players map;
+  var n = list_length acc;
+  var rnd = rand n;
+  dijkstra_to selected_unit map (list_nth acc rnd)
+}
+
+attack default {
+  do_nothing ()
+}
+
+init {
+}
+
+main {
+  next_playable (army_of self)
+}

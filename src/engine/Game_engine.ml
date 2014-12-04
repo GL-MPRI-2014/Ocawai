@@ -1,7 +1,8 @@
 open Action
 open Settings_t
+open Settings_engine_t
 
-let get_opt o = 
+let get_opt o =
   match o with
   |Some(s) -> s
   |None -> failwith "Failed to init game engine"
@@ -9,64 +10,73 @@ let get_opt o =
 class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
-  val mutable map_width = 0
-  val mutable map_height = 0
   val mutable actual_player = 0
-  
-  val config = new Config.t Config.default_config_files
-  
-  method get_config = config
 
-  method private next_player = 
+  method private next_player =
     (actual_player + 1) mod (Array.length players)
 
   method get_players =
     Array.to_list players
 
-  method init_local player nbplayers map_wht map_hgt = 
-      config#settings.battlefield_width <- map_wht;
-      config#settings.battlefield_height <- map_hgt;
-      players <- Array.make nbplayers (Player.create_player ());     
-      players.(0) <- player;
-      for i = 1 to nbplayers - 1 do
-        (*each player should be different*)
-        players.(i) <- Player.create_player ()
-      done;
-      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list) config);
+  method private create_n_scripted = function
+    |0 -> []
+    |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
+      ::(self#create_n_scripted (n-1))
+
+  method init_local player nbplayers map_wht map_hgt =
+      let config = Config.config in
+      config#settings.map_width <- map_wht;
+      config#settings.map_height <- map_hgt;
+      let sc_players = self#create_n_scripted (nbplayers - 1) in
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
+      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in 
+      List.iter (fun p -> p#init_script map players) sc_players;
+      (players, map)
+
+  method init_net port nbplayers map_wht map_hgt =
+      let config = Config.config in
+      config#settings.map_width <- map_wht;
+      config#settings.map_height <- map_hgt;
+      let connections = Network_tool.open_n_connections port nbplayers in
+      let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
+      players <- (Array.of_list (player_list :> Player.player list));
+      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
-  method private player_of_unit u = 
+  method private player_of_unit u =
     let rec aux = function
       |[] -> false
-      |t::q -> t#id = u#id || aux q
+      |t::q -> t#get_id = u#get_id || aux q
     in
     let rec player_aux = function
       |[] -> assert false
       |t::q -> if aux t#get_army then t else player_aux q
     in player_aux self#get_players
 
-  method run : unit = 
+  method run : unit =
     let player = players.(actual_player) in
     let next_wanted_action =  player#get_next_action in
     begin try
       let next_action = Logics.try_next_action
           (self#get_players :> Player.logicPlayer list)
           (player :> Player.logicPlayer)
-          (get_opt field)#field 
-          next_wanted_action 
+          (get_opt field)#field
+          next_wanted_action
       in
       match next_action with
       |(_, End_turn) -> self#end_turn
       |(move, Wait ) -> self#apply_movement move
-      |(move, Attack_unit (u1,u2)) -> 
+      |(move, Attack_unit (u1,u2)) ->
           self#apply_movement move;
           Logics.apply_attack u1 u2;
-          if u2#hp <= 0 then 
-            (self#player_of_unit u2)#delete_unit u2
+          if u2#hp <= 0 then (
+            (self#player_of_unit u2)#delete_unit (u2#get_id);
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2,(x#get_id))) ) players)
       |(move, _) -> self#apply_movement move
     with
-      |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn 
-    end; 
+      |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn
+    end;
     if true (* test gameover here *) then self#run
 
   method private end_turn =
@@ -76,20 +86,21 @@ class game_engine () = object (self)
 
   method private apply_movement movement =
     let player = players.(actual_player) in
-    let u = Logics.find_unit (List.hd movement) 
+    let u = Logics.find_unit (List.hd movement)
       (player :> Player.logicPlayer) in
-    player#move_unit u movement;
+
+    player#move_unit (u#get_id) movement;
+    Array.iter (fun x -> x#update (Types.Move_unit(u,movement,(x#get_id))) ) players;
     u#set_played true
 end
 
-
 type t = game_engine
-
 
 let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
-  for i = 0 to w-1 do
-    for j = 0 to h-1 do
+  let str = "??" in
+  for j = 0 to h-1 do
+    for i = 0 to w-1 do
     let pos = Position.create (i,j) in
     let t = Battlefield.get_tile m pos in
     let name =
@@ -101,30 +112,28 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
           then "path"
         else "") , Tile.get_name t )
     in
-    print_string (let str = "??" in
-      begin
-        match fst name with
-        | "spawn" -> str.[1] <- 'S';
-        | "unit" -> str.[1] <- '@';
-        | "path" -> str.[1] <- '#';
-        | "" -> str.[1] <- ' ';
-        | _ -> ()
-      end;
-      begin
-      match snd name with
-        | "water" -> str.[0] <- ' ';
-        | "shallow" -> str.[0] <- '%';
-        | "sand" -> str.[0] <- '~';
-        | "beach" -> str.[0] <- '_';
-        | "road" -> str.[0] <- '=';
-        | "plain" -> str.[0] <- '.';
-        | "forest" -> str.[0] <- ':';
-        | "concrete" -> str.[0] <- 'X';
-        | "mountain" -> str.[0] <- '/'; if str.[1] = ' ' then str.[1] <- '\\';
-        | _ -> ()
-      end;
-      str
-    )
+    begin
+      match fst name with
+      | "spawn" -> str.[1] <- 'S'
+      | "unit" -> str.[1] <- '@'
+      | "path" -> str.[1] <- '#'
+      | "" -> str.[1] <- ' '
+      | _ -> str.[1] <- '?'
+    end;
+    begin
+    match snd name with
+      | "water" | "lake" -> str.[0] <- ' '
+      | "shallow" -> str.[0] <- '%'
+      | "sand" -> str.[0] <- '~'
+      | "beach" | "lake_beach" -> str.[0] <- '_'
+      | "road" -> str.[0] <- '='
+      | "plain" -> str.[0] <- '.'
+      | "forest" -> str.[0] <- ':'
+      | "concrete" -> str.[0] <- 'X'
+      | "mountain" -> str.[0] <- '/'; if str.[1] = ' ' then str.[1] <- '\\'
+      | _ -> str.[0] <- '?'
+    end;
+    print_string str
     done;
     print_endline ""
   done
@@ -147,4 +156,3 @@ let dijkstra_test gen =
   let r = dij (List.nth gen#spawns 1) in
   print_ascii_extended gen#field gen#armies (match r with | None -> Path.empty | Some (_,b) -> b) gen#spawns;
   print_endline ("path length between spawns 1 and 2 : "^(match r with | None -> "no path" | Some (a,_) -> string_of_int a))
-

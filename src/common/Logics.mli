@@ -12,6 +12,11 @@ val player_vision : Player.logicPlayer -> Battlefield.t -> Position.t list
     is a shortest path to this position *)
 val accessible_positions : Unit.t -> Player.logicPlayer -> Player.logicPlayer list -> Battlefield.t -> Position.t list * (Position.t, Path.t) Hashtbl.t
 
+(** Same as accessible_positions, but without positions where an allied unit
+    is already stationned. *)
+val available_positions : Unit.t -> Player.logicPlayer -> 
+  Player.logicPlayer list -> Battlefield.t -> accessibles
+
 (** Checks if the requested action is possible.
     If it is, the same action is returned, else the function returns another
     action with the maximum possible path. *)

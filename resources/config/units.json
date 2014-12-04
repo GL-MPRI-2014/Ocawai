@@ -1,7 +1,7 @@
 [
   {
     "name": "general",
-    "movement_type": "walk",
+    "movement_type": "Walk",
     "vision_range": 10,
     "attack_range_min": 1,
     "attack_range_max": 5,
@@ -9,7 +9,7 @@
   },
   {
     "name": "bazooka",
-    "movement_type": "walk",
+    "movement_type": "Walk",
     "vision_range": 4,
     "attack_range_min": 1,
     "attack_range_max": 4,
@@ -18,7 +18,7 @@
   },
   {
     "name": "tank",
-    "movement_type": "tread",
+    "movement_type": "Tread",
     "vision_range": 5,
     "attack_range_min": 1,
     "attack_range_max": 5,
@@ -27,7 +27,7 @@
   },
   {
     "name": "infantry",
-    "movement_type": "walk",
+    "movement_type": "Walk",
     "vision_range": 4,
     "attack_range_min": 1,
     "attack_range_max": 2,
@@ -36,12 +36,28 @@
   },
   {
     "name": "recon",
-    "movement_type": "roll",
+    "movement_type": "Roll",
     "vision_range": 8,
     "attack_range_min": 1,
     "attack_range_max": 2,
     "move_range": 9,
     "spawn_number": 3
+  },
+  {
+    "name": "test1",
+    "movement_type": "Walk",
+    "vision_range": 10,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 5
+  },
+  {
+    "name": "test2",
+    "movement_type": "Walk",
+    "vision_range": 1,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 5
   }
 ]
 

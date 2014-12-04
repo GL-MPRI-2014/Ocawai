@@ -16,3 +16,4 @@ object (self)
 end
 
 type t = building
+type id = int

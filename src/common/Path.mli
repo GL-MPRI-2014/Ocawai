@@ -36,10 +36,16 @@ val cat : t -> t -> t
     The path must be possible for the given movement type. *)
 val cost : Unit.movement -> Battlefield.t -> t -> int
 
-(** [dijkstra m pos1 Unit.Walk pos2] return [Some cost * path] for going to pos2 from pos1, or [None] if pos2 is not reachable from pos1 *)
+(** [dijkstra m pos1 Unit.Walk pos2] returns [Some (cost * path)] for going from pos1 to pos1, or [None] if pos2 is not reachable from pos1.
+
+    [dijkstra m pos1 Unit.Walk] can be computed separately, allowing paths to several pos2 to be returned without computing everything again*)
 val dijkstra : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option
 
+(** Dijkstra optimisation when you know where you are going. 
+
+    [a_star m pos1 Unit.Walk] cannot be computed separately*)
 val a_star : Battlefield.t -> Position.t -> Unit.movement -> Position.t -> ( int * t ) option
 
 (** Printing for debug purposes *)
 val print_path : t -> unit
+
