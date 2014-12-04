@@ -72,14 +72,20 @@ cflags = -w,-3
 
 #name of the target for ocamlbuild
 output_interface = main.native
+output_profile = main.p.native
 output_script = script.native
 output_engine = dummy_serv.native
+output_gprof = profile
 
 
 
 command = ocamlbuild -use-ocamlfind -cflags $(cflags) -use-menhir -yaccflag --explain
 
 interface_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
+
+profile_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_profile) -tag $(interface_tags)
+
+gprof_command = gprof $(output_profile) gmon.out >> $(output_gprof)
 
 script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script) 
 
@@ -134,6 +140,12 @@ engine:  $(files_atd_ml)
 
 script: $(files_atd_ml)
 	$(script_command)
+
+profile: $(files_atd_ml)
+	$(profile_command)
+	./$(output_profile)
+	$(gprof_command)
+
 
 #variable DESTDIR is useful for distcheck and more generally if you want to change the directory for installation.
 install:
@@ -250,6 +262,8 @@ clean:
 	rm -f resources/config/settings.json
 	rm -f resources/config/settings_engine.json
 	rm -f resources/config/settings_interface.json
+	rm -f $(output_gprof)
+	rm -r gmon.out
 
 check_generation: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
