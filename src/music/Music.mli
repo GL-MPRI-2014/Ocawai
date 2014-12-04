@@ -86,4 +86,3 @@ val toMidi : ?samplerate:int -> ?division:MIDI.division ->
    defined by the [Format.formatter]
 *)
 val fprintf : Format.formatter -> event -> unit
-val fprint_pitch : Format.formatter -> pitch -> unit
