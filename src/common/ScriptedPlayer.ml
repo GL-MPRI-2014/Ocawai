@@ -15,6 +15,11 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
       [("self", `Player(self :> Player.logicPlayer));
        ("players", (`List(List.map (fun p -> `Player(p)) players)));
        ("map", (`Map(map)))]
+      [("self", `Player_t);
+       ("players", `List_t(`Player_t));
+       ("map", `Map_t);
+       ("selected_unit", `Soldier_t);
+       ("selected_pos", `Pair_t(`Int_t, `Int_t))]
 
   method get_next_action = 
     Thread.delay 0.10;

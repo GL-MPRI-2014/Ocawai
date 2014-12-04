@@ -322,14 +322,22 @@ let printable_location (l,l') =
 
 exception Type_checking_failure
 
-let type_check prog =
-  (* TODO: find a better place? *)
-  Hashtbl.add assignment "self" (ref `Player_tc) ;
-  Hashtbl.add assignment "players" (ref (`List_tc (ref `Player_tc))) ;
-  Hashtbl.add assignment "map" (ref `Map_tc) ;
-  Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
-  Hashtbl.add assignment "selected_pos" (ref (`Pair_tc(ref `Int_tc, ref `Int_tc))) ;
-  (* Simplifying a bit *)
+let rec v_to_tctype = function
+  |`Int_t         -> ref `Int_tc
+  |`Unit_t        -> ref `Unit_tc
+  |`String_t      -> ref `String_tc
+  |`Bool_t        -> ref `Bool_tc
+  |`Soldier_t     -> ref `Soldier_tc
+  |`Map_t         -> ref `Map_tc
+  |`Player_t      -> ref `Player_tc
+  |`Alpha_t (i)   -> ref (`Alpha_tc (i))
+  |`List_t  (v)   -> ref (`List_tc (v_to_tctype v))
+  |`Array_t (v)   -> ref (`Array_tc (v_to_tctype v))
+  |`Fun_t   (v,v')-> ref (`Fun_tc (v_to_tctype v, v_to_tctype v'))
+  |`Pair_t  (v,v')-> ref (`Pair_tc (v_to_tctype v, v_to_tctype v'))
+
+let type_check prog types =
+  List.iter (fun (s,t) -> Hashtbl.add assignment s (v_to_tctype t)) types;
   let pp = errorf in
   let okay = ref false in
   begin
