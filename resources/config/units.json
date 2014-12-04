@@ -22,7 +22,8 @@
     "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 3,
+    "move_range": 5,
+    "attack_base": 70,
     "spawn_number": 1
   },
   {
@@ -158,4 +159,3 @@
     "move_range": 5
   }
 ]
-
