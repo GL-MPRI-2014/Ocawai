@@ -1,5 +1,15 @@
 open Player
 
+let log_str output = `Fun(function
+  |`String(s) -> Printf.fprintf output "%s" s; `Unit
+  | _ -> assert false
+)
+
+let log_int output = `Fun(function
+  |`Int(i) -> Printf.fprintf output "%i" i; `Unit
+  | _ -> assert false
+)
+
 class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) = 
 
   object (self) 
@@ -10,11 +20,25 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
 
   val mutable script = Interpreter.empty_script ()
 
+  val mutable output = stdout
+
+  initializer
+    output <- open_out (Printf.sprintf "player_%i.log" self#get_id)
+
   method init_script map players = 
     script <- ScriptEngine.script_from_file scr 
       [("self", `Player(self :> Player.logicPlayer));
        ("players", (`List(List.map (fun p -> `Player(p)) players)));
-       ("map", (`Map(map)))]
+       ("map", (`Map(map)));
+       ("log_int", log_int output);
+       ("log_str", log_str output)]
+      [("self", `Player_t);
+       ("players", `List_t(`Player_t));
+       ("map", `Map_t);
+       ("selected_unit", `Soldier_t);
+       ("selected_pos", `Pair_t(`Int_t, `Int_t));
+       ("log_int", `Fun_t(`Int_t, `Unit_t));
+       ("log_str", `Fun_t(`String_t, `Unit_t))]
 
   method get_next_action = 
     Thread.delay 0.10;

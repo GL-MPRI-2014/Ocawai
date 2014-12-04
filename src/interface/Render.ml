@@ -231,13 +231,14 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) camera my_unit =
+  method private draw_unit (target : render_window) camera character my_unit =
     let color =
       if my_unit#has_played
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
-    self#draw_from_map target camera (my_unit#name) (my_unit#position) ~color();
+    let name = character ^ "_" ^ my_unit#name in
+    self#draw_from_map target camera name (my_unit#position) ~color();
     let size = int_of_float (camera#zoom *. 14.) in
     let position = (foi2D (camera#project my_unit#position)) in
     new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
@@ -246,10 +247,15 @@ let renderer = object(self)
     |> target#draw
 
   (* Draw a building *)
-  method private draw_building (target : render_window) camera resource building =
-    self#draw_from_map target camera (building#name) (building#position) ();
+  method private draw_building
+  (target : render_window) camera resource character building =
+    let name = character ^ "_" ^ building#name in
+    self#draw_from_map target camera name (building#position) ();
     if (building#name = "base") then (let size = int_of_float (camera#zoom *. 14.) in
-    let position = (foi2D (camera#project building#position)) in
+    let position = addf2D
+      (foi2D (camera#project building#position))
+      (camera#zoom *. 5.,camera#zoom *. 10.)
+    in
     new text ~string:(string_of_int resource)
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw)
@@ -289,11 +295,29 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
+    (* Ugly: to alternate characters *)
+    let characters = [|"flatman";"blub";"limboy"|] in
+    let get_chara = let x = ref 0 in fun () ->
+      let ret = characters.(!x) in
+      incr x ;
+      if !x = Array.length characters then x := 0 ;
+      ret
+    in
+    (* Associate every player to a character *)
+    (* It probably shouldn't be done here *)
+    let character_of = Hashtbl.create 13 in
+    List.iter (fun p -> Hashtbl.add character_of p (get_chara ())) data#players;
+    (* Printing buildings *)
     List.iter (fun p ->
-        List.iter (self#draw_building target data#camera p#get_value_resource) p#get_buildings
+      let chara = Hashtbl.find character_of p in
+      List.iter
+        (self#draw_building target data#camera p#get_value_resource chara)
+        p#get_buildings
       ) data#players;
+    (* Printing armies *)
     List.iter (fun p ->
-      List.iter (self#draw_unit target data#camera) p#get_army
+      let chara = Hashtbl.find character_of p in
+      List.iter (self#draw_unit target data#camera chara) p#get_army
       ) data#players;
     data#minimap#draw target data#camera#cursor;
     FPS.display target
