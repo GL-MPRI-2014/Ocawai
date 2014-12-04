@@ -9,20 +9,6 @@ open CheckerLog
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
-(* Allows to unify them in a given context *)
-(* let alpha_env = Hashtbl.create 13
-
-let init_alpha i =
-  Hashtbl.add alpha_env i (ref `None)
-
-let get_alpha i =
-  if Hashtbl.mem alpha_env i then Hashtbl.find alpha_env i
-  else begin
-    let t = ref `None in
-    Hashtbl.add alpha_env i t ;
-    t
-  end *)
-
 exception Unbound_variable of string * location
 exception Unbound_function of string * location
 
@@ -266,13 +252,6 @@ and val_type = function
         debugf "%s is of type %s" s (type_to_string ftype');
         let ftype = underscore_alpha ftype' in
         debugf "deduced type %s" (type_to_string ftype);
-        (* We make sure every alpha_i is bound before continuing *)
-        (* let rec assign (t: term_type) =
-          match (deref t) with
-          | `Alpha_tc i   -> init_alpha i
-          | `Fun_tc (a,b) -> assign a ; assign b
-          | _  -> ()
-        in assign ftype ; *)
         debug (lazy "computing argument types");
         let argst = List.map val_type vl in
         debug (lazy "return type");
@@ -280,9 +259,6 @@ and val_type = function
           try unify_func ftype argst
           with Unification_failure -> raise (Apply_args (s,ftype',argst,l))
         in
-        (* We don't want the alpha_i to remain bound *)
-        (* TODO Check if it works for higher order *)
-        (* Hashtbl.clear alpha_env ; *)
         debug (lazy "end application") ;
         return_type
       end
