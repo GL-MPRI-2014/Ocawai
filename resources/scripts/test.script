@@ -13,15 +13,43 @@ fun next_playable l = {
   }
 }
 
+fun closest_to pos l = {
+  var actual_dist = 100000;
+  var actual_pos  = (0,0);
+  fun closest_aux l = {
+    if (!(list_empty l)) {
+      var u = list_hd l;
+      var d = dist2D u pos;
+      if (d < actual_dist) {
+	actual_dist = d;
+	actual_pos = u;
+      };
+      closest_aux (list_tl l)
+    }
+  }
+  closest_aux l;
+  actual_pos
+}
+
 move default {
   var acc = accessible_positions selected_unit self players map;
-  var n = list_length acc;
+  var ptarget = list_hd players;
+  var parmy = army_of ptarget;
+  var n = list_length parmy;
   var rnd = rand n;
-  dijkstra_to selected_unit map (list_nth acc rnd)
+  var target = list_nth parmy rnd;
+  var pos_target = unit_position target;
+  dijkstra_to selected_unit map (closest_to pos_target acc)
 }
 
 attack default {
-  do_nothing ()
+  var range = unit_range selected_unit;
+  var inrange = ennemies_in_range selected_pos range self players;
+  if (list_empty inrange) {
+    do_nothing ()
+  } else {
+    list_hd inrange
+  }
 }
 
 init {

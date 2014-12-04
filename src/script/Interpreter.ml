@@ -186,7 +186,14 @@ let move_script (env, ep) u =
   |`List(l) -> List.map pair_to_pos l
   | _ -> assert false
 
-let attack_script (env, ep) u =
-  match eval_seq env (ep#attack u#name) with
+let attack_script (env, ep) (m : Action.movement) u =
+  let pos = List.nth m (List.length m - 1) in
+  let (x,y) = Position.topair pos in
+  let env' = (
+    ("selected_unit", ref (`Soldier u)) ::
+    ("selected_pos" , ref (`Pair(`Int x, `Int y))) ::
+    env) 
+  in
+  match eval_seq env' (ep#attack u#name) with
   |`Soldier(u) -> u
   | _ -> assert false

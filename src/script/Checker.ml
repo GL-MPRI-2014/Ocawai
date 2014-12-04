@@ -328,6 +328,7 @@ let type_check prog =
   Hashtbl.add assignment "players" (ref (`List_tc (ref `Player_tc))) ;
   Hashtbl.add assignment "map" (ref `Map_tc) ;
   Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
+  Hashtbl.add assignment "selected_pos" (ref (`Pair_tc(ref `Int_tc, ref `Int_tc))) ;
   (* Simplifying a bit *)
   let pp = errorf in
   let okay = ref false in

@@ -195,4 +195,11 @@ let apply_attack att def =
   (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
   def#take_damage damage
 
-
+let units_inrange pos range player pl = 
+  let ennemy_list = List.filter (fun p -> p <> player) pl in
+  List.map (fun p ->
+    List.filter (fun u ->
+      Position.dist pos u#position <= range
+    ) p#get_army
+  ) ennemy_list
+  |> List.flatten
