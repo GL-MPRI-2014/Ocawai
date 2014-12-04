@@ -176,7 +176,7 @@ class state = object(self)
       for y = 0 to 9 do
         if goods.(x).(y) then
           let pos = self#topos (Position.create (x,y)) in
-          Render.renderer#draw_txr window "infantry" ~position:pos ~rotation:(Random.float 360.) ()
+          Render.renderer#draw_txr window "flatman_infantry" ~position:pos ~rotation:(Random.float 360.) ()
       done
     done;
 
