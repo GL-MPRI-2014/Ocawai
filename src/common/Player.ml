@@ -60,9 +60,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   end
 
 
-class virtual player (a : Unit.t list) (b : Building.t list) = 
+class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) = 
   object (self) 
-  inherit logicPlayer a b
+  inherit logicPlayer ?id:id a b
   val mutable logicPlayerList = [] 
   method virtual get_next_action :  Action.t
   method virtual set_logicPlayerList : (logicPlayer list) -> unit

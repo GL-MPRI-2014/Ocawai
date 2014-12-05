@@ -1,11 +1,10 @@
 open OcsfmlGraphics
 
-open Settings
 open Home
 open GuiTools
 open Utils
 
-let font = Fonts.load_font "Roboto-Regular.ttf"
+let font = Fonts.load_font "FreeSans.ttf"
 
 let setter_width = 800.
 let setting_width = 300.

@@ -18,20 +18,28 @@ class game_engine () = object (self)
   method get_players =
     Array.to_list players
 
+  method private create_n_scripted = function
+    |0 -> []
+    |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
+      ::(self#create_n_scripted (n-1))
+
   method init_local player nbplayers map_wht map_hgt =
       let config = Config.config in
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
-      players <- Array.init nbplayers (fun n -> if n = 0 then player else Player.create_player ());
+      let sc_players = self#create_n_scripted (nbplayers - 1) in
+      players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in 
+      List.iter (fun p -> p#init_script map players) sc_players;
+      (players, map)
 
   method init_net port nbplayers map_wht map_hgt =
       let config = Config.config in
       config#settings.map_width <- map_wht;
       config#settings.map_height <- map_hgt;
       let connections = Network_tool.open_n_connections port nbplayers in
-      let player_list = List.map (fun x -> NetPlayer.create_netPlayer x [] [] ) connections in
+      let player_list = List.map (fun x -> new NetPlayer.netPlayer x [] [] ) connections in
       players <- (Array.of_list (player_list :> Player.player list));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
@@ -86,14 +94,13 @@ class game_engine () = object (self)
     u#set_played true
 end
 
-
 type t = game_engine
-
 
 let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
-  for i = 0 to w-1 do
-    for j = 0 to h-1 do
+  let str = "??" in
+  for j = 0 to h-1 do
+    for i = 0 to w-1 do
     let pos = Position.create (i,j) in
     let t = Battlefield.get_tile m pos in
     let name =
@@ -105,30 +112,28 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
           then "path"
         else "") , Tile.get_name t )
     in
-    print_string (let str = "??" in
-      begin
-        match fst name with
-        | "spawn" -> str.[1] <- 'S';
-        | "unit" -> str.[1] <- '@';
-        | "path" -> str.[1] <- '#';
-        | "" -> str.[1] <- ' ';
-        | _ -> ()
-      end;
-      begin
-      match snd name with
-        | "water" -> str.[0] <- ' ';
-        | "shallow" -> str.[0] <- '%';
-        | "sand" -> str.[0] <- '~';
-        | "beach" -> str.[0] <- '_';
-        | "road" -> str.[0] <- '=';
-        | "plain" -> str.[0] <- '.';
-        | "forest" -> str.[0] <- ':';
-        | "concrete" -> str.[0] <- 'X';
-        | "mountain" -> str.[0] <- '/'; if str.[1] = ' ' then str.[1] <- '\\';
-        | _ -> ()
-      end;
-      str
-    )
+    begin
+      match fst name with
+      | "spawn" -> str.[1] <- 'S'
+      | "unit" -> str.[1] <- '@'
+      | "path" -> str.[1] <- '#'
+      | "" -> str.[1] <- ' '
+      | _ -> str.[1] <- '?'
+    end;
+    begin
+    match snd name with
+      | "water" | "lake" -> str.[0] <- ' '
+      | "shallow" -> str.[0] <- '%'
+      | "sand" -> str.[0] <- '~'
+      | "beach" | "lake_beach" -> str.[0] <- '_'
+      | "road" -> str.[0] <- '='
+      | "plain" -> str.[0] <- '.'
+      | "forest" -> str.[0] <- ':'
+      | "concrete" -> str.[0] <- 'X'
+      | "mountain" -> str.[0] <- '/'; if str.[1] = ' ' then str.[1] <- '\\'
+      | _ -> str.[0] <- '?'
+    end;
+    print_string str
     done;
     print_endline ""
   done

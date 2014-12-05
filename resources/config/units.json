@@ -1,7 +1,7 @@
 [
   {
     "name": "general",
-    "movement_type": "walk",
+    "movement_type": "Walk",
     "vision_range": 10,
     "attack_range_min": 1,
     "attack_range_max": 5,
@@ -9,39 +9,153 @@
   },
   {
     "name": "bazooka",
-    "movement_type": "walk",
-    "vision_range": 4,
+    "movement_type": "Walk",
+    "vision_range": 3,
     "attack_range_min": 1,
-    "attack_range_max": 4,
-    "move_range": 3,
-    "spawn_number": 5
+    "attack_range_max": 1,
+    "move_range": 4,
+    "spawn_number": 2
   },
   {
     "name": "tank",
-    "movement_type": "tread",
-    "vision_range": 5,
+    "movement_type": "Tread",
+    "vision_range": 3,
     "attack_range_min": 1,
-    "attack_range_max": 5,
-    "move_range": 2,
+    "attack_range_max": 1,
+    "move_range": 5,
+    "attack_base": 70,
     "spawn_number": 1
   },
   {
     "name": "infantry",
-    "movement_type": "walk",
-    "vision_range": 4,
+    "movement_type": "Walk",
+    "vision_range": 3,
     "attack_range_min": 1,
-    "attack_range_max": 2,
-    "move_range": 3,
-    "spawn_number": 15
+    "attack_range_max": 1,
+    "move_range": 4,
+    "spawn_number": 2
   },
   {
     "name": "recon",
-    "movement_type": "roll",
-    "vision_range": 8,
+    "movement_type": "Roll",
+    "vision_range": 6,
     "attack_range_min": 1,
-    "attack_range_max": 2,
-    "move_range": 9,
+    "attack_range_max": 1,
+    "move_range": 8,
     "spawn_number": 3
+  },
+  {
+    "name": "vtb",
+    "movement_type": "Roll",
+    "vision_range": 4,
+    "move_range": 7
+  },
+  {
+    "name": "dca",
+    "movement_type": "Roll",
+    "vision_range": 4,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 6
+  },
+  {
+    "name": "artillery",
+    "movement_type": "Tread",
+    "vision_range": 4,
+    "attack_range_min": 2,
+    "attack_range_max": 3,
+    "move_range": 3
+  },
+  {
+    "name": "missilelauncher",
+    "movement_type": "Roll",
+    "vision_range": 6,
+    "attack_range_min": 3,
+    "attack_range_max": 6,
+    "move_range": 4
+  },
+  {
+    "name": "helicopter",
+    "movement_type": "Fly",
+    "vision_range": 5,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 7
+  },
+  {
+    "name": "bomber",
+    "movement_type": "Fly",
+    "vision_range": 4,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 6
+  },
+  {
+    "name": "fighter",
+    "movement_type": "Fly",
+    "vision_range": 5,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 8
+  },
+  {
+    "name": "ulm",
+    "movement_type": "Fly",
+    "vision_range": 4,
+    "move_range": 7
+  },
+  {
+    "name": "submarine",
+    "movement_type": "Swim",
+    "vision_range": 3,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 6
+  },
+  {
+    "name": "barge",
+    "movement_type": "Swim",
+    "vision_range": 4,
+    "move_range": 8
+  },
+  {
+    "name": "destroyer",
+    "movement_type": "Swim",
+    "vision_range": 5,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 7
+  },
+  {
+    "name": "battleship",
+    "movement_type": "Swim",
+    "vision_range": 5,
+    "attack_range_min": 1,
+    "attack_range_max": 3,
+    "move_range": 6
+  },
+  {
+    "name": "aircraftcarrier",
+    "movement_type": "Swim",
+    "vision_range": 6,
+    "attack_range_min": 1,
+    "attack_range_max": 4,
+    "move_range": 5
+  },
+  {
+    "name": "test1",
+    "movement_type": "Walk",
+    "vision_range": 10,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 5
+  },
+  {
+    "name": "test2",
+    "movement_type": "Walk",
+    "vision_range": 1,
+    "attack_range_min": 1,
+    "attack_range_max": 1,
+    "move_range": 5
   }
 ]
-

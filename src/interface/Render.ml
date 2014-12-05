@@ -8,20 +8,14 @@ let renderer = object(self)
 
   val tileset_library = TilesetLibrary.create ()
 
-  val font = Fonts.load_font "Roboto-Black.ttf"
+  val font = Fonts.load_font "FreeSansBold.ttf"
 
   val mutable rect_vao = new vertex_array ~primitive_type:Quads []
 
-  method init = 
-    let folder = ref "" in
-    (try
-      if (Sys.is_directory "resources/textures") then
-        folder := "resources/textures/"
-      else folder := "/usr/share/GL_2014/textures/"
-    with Sys_error _ -> folder := "/usr/share/GL_2014/textures/";);
-
-    TextureLibrary.load_directory texture_library (!folder);
-    TilesetLibrary.load_directory tileset_library (!folder);
+  method init =
+    let folder = (Utils.base_path ()) ^ "textures/" in
+    TextureLibrary.load_directory texture_library (folder);
+    TilesetLibrary.load_directory tileset_library (folder);
 
     (* Recreate-it after having initialized the window *)
     rect_vao <- new vertex_array ~primitive_type:Quads []
@@ -35,10 +29,10 @@ let renderer = object(self)
           (Position.create (1,1))))
 
   (* Draw a tile from a set, using a VAO *)
-  method private draw_tile set tilename 
-    ?position:(position = (0.,0.)) 
-    ?scale:(scale = 1.,1.) 
-    ?color:(color = Color.rgb 255 255 255) 
+  method private draw_tile set tilename
+    ?position:(position = (0.,0.))
+    ?scale:(scale = 1.,1.)
+    ?color:(color = Color.rgb 255 255 255)
     ?origin:(origin = 0.,0.) () =
     let vao = set#vao in
     let tex_size = float_of_int set#tile_size in
@@ -46,9 +40,9 @@ let renderer = object(self)
     let real_pos = Utils.subf2D position new_origin in
     let real_end = (fst scale *. tex_size, snd scale *. tex_size) in
     let texture_rect = set#texture_rect tilename in
-    vao#append (mk_vertex 
-      ~position:real_pos 
-      ~color 
+    vao#append (mk_vertex
+      ~position:real_pos
+      ~color
       ~tex_coords:(texture_rect.xmin, texture_rect.ymin) ());
     vao#append (mk_vertex
       ~position:(addf2D real_pos (fst real_end, 0.))
@@ -65,21 +59,21 @@ let renderer = object(self)
 
 
   (* Draw a texture *)
-  method draw_txr (target : render_window) name 
-    ?position 
-    ?rotation 
-    ?scale:(scale = (1.,1.)) 
-    ?size 
-    ?color 
+  method draw_txr (target : render_window) name
+    ?position
+    ?rotation
+    ?scale:(scale = (1.,1.))
+    ?size
+    ?color
     ?centered:(centered = true)
     ?blend_mode () =
     let texture = TextureLibrary.get_texture texture_library name in
     let (sx,sy) =  foi2D texture#get_size in
-    let origin  = 
+    let origin  =
       if centered then (sx/.2.,sy/.2.)
       else (0.,0.)
     in
-    let scale   = 
+    let scale   =
       match size with
       |None -> scale
       |Some(s) ->
@@ -91,12 +85,12 @@ let renderer = object(self)
 
 
   (* Draw a sprite from a map position and an offset *)
-  method private draw_from_map 
-    (target : render_window) camera name position 
-    ?rotation 
-    ?offset:(offset = (0.,0.)) 
-    ?scale:(scale = (1.,1.)) 
-    ?blend_mode 
+  method private draw_from_map
+    (target : render_window) camera name position
+    ?rotation
+    ?offset:(offset = (0.,0.))
+    ?scale:(scale = (1.,1.))
+    ?blend_mode
     ?color () =
     let (ox,oy) = offset in
     let position = addf2D
@@ -104,13 +98,13 @@ let renderer = object(self)
       (ox *. camera#zoom, oy *. camera#zoom)
     in
     let scale = (fst scale *. camera#zoom, snd scale *. camera#zoom) in
-    self#draw_txr target name ~position ?color 
+    self#draw_txr target name ~position ?color
       ?rotation ~scale ?blend_mode ()
 
   (* Draw a tile from a map position and an offset *)
-  method private draw_tile_from_map camera set name position 
-    ?offset:(offset = (0.,0.)) 
-    ?scale:(scale = (1.,1.)) 
+  method private draw_tile_from_map camera set name position
+    ?offset:(offset = (0.,0.))
+    ?scale:(scale = (1.,1.))
     ?color () =
     let position = addf2D
       (foi2D (camera#project position))
@@ -121,7 +115,7 @@ let renderer = object(self)
     self#draw_tile set name ~position ?color ~scale ~origin:(o,o) ()
 
   (* Render the joints *)
-  method private render_joints camera jointset pos texture_name map = 
+  method private render_joints camera jointset pos texture_name map =
     (* Utility *)
     let draw_v = self#draw_tile_from_map camera jointset ~offset:(0.,-2.) in
     let draw_h = self#draw_tile_from_map camera jointset in
@@ -132,41 +126,63 @@ let renderer = object(self)
     let is_ground name =
       name = "plain" || name = "forest" || name = "mountain"
     in
+    let is_water name =
+      name = "water" || name = "lake"
+    in
+    let is_beach name =
+      name = "beach" || name = "lake_beach"
+    in
     if self#filter_positions map up then
     begin
       let upname = Tile.get_name (Battlefield.get_tile map up) in
-      if texture_name = "water" && is_ground upname then
+      if is_water texture_name && is_ground upname then
         draw_v "ground_water_v" pos ()
-      else if is_ground texture_name && upname = "water" then
+      else if is_ground texture_name && is_water upname then
         draw_v "water_ground_v" pos ()
-    end ;
+      else if is_beach texture_name && is_ground upname then
+        draw_v "ground_beach_v" pos ()
+      else if is_ground texture_name && is_beach upname then
+        draw_v "beach_ground_v" pos ()
+      else if is_water texture_name && is_beach upname then
+        draw_v "beach_water_v" pos ()
+      else if is_beach texture_name && is_water upname then
+        draw_v "water_beach_v" pos ()
+    end;
     if self#filter_positions map left then
     begin
       let leftname = Tile.get_name (Battlefield.get_tile map left) in
-      if texture_name = "water" && is_ground leftname then
+      if is_water texture_name && is_ground leftname then
         draw_h ~offset:(2.,0.) "water_ground_hr" left ()
-      else if is_ground texture_name && leftname = "water" then
+      else if is_ground texture_name && is_water leftname then
         draw_h ~offset:(-2.,0.) "water_ground_h" pos ()
+      else if is_beach texture_name && is_ground leftname then
+        draw_h ~offset:(2.,0.) "beach_ground_hr" left ()
+      else if is_ground texture_name && is_beach leftname then
+        draw_h ~offset:(-2.,0.) "beach_ground_h" pos ()
+      else if is_water texture_name && is_beach leftname then
+        draw_h ~offset:(2.,0.) "water_beach_hr" left ()
+      else if is_beach texture_name && is_water leftname then
+        draw_h ~offset:(-2.,0.) "water_beach_h" pos ()
     end
 
   (* Highlight a tile *)
   method private highlight_tile (target : render_window)
-    camera base_color pos = 
+    camera base_color pos =
     let (r,g,b,a) = Color.(
-      base_color.r, base_color.g, base_color.b, 
+      base_color.r, base_color.g, base_color.b,
       float_of_int (base_color.a)) in
-    let multiplier = sin (Unix.gettimeofday () *. 2.) +. 2. in 
-    let alpha = int_of_float ((multiplier /. 3.) *. a) in 
-    self#draw_from_map target camera "highlight" pos 
+    let multiplier = sin (Unix.gettimeofday () *. 2.) +. 2. in
+    let alpha = int_of_float ((multiplier /. 3.) *. a) in
+    self#draw_from_map target camera "highlight" pos
       ~color:(Color.rgba r g b alpha)
       ~blend_mode:BlendAdd ()
 
   (* Render the whole map (also draws the tile VAO) *)
-  method private render_map (target : render_window) 
+  method private render_map (target : render_window)
     camera (map : Battlefield.t) =
     let tileset = TilesetLibrary.get_tileset tileset_library "tileset" in
     let jointset = TilesetLibrary.get_tileset tileset_library "tilejoints" in
-    let render_tile tile_name p = 
+    let render_tile tile_name p =
       self#draw_tile_from_map camera tileset tile_name p ();
       self#render_joints camera jointset p tile_name map
     in
@@ -179,7 +195,7 @@ let renderer = object(self)
     jointset#vao#clear
 
   (* Render a path with arrows *)
-  method private draw_path (target : render_window) 
+  method private draw_path (target : render_window)
     camera path =
     let draw = self#draw_from_map target camera in
     let angle s t =
@@ -215,45 +231,50 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) camera my_unit =
-    let color = 
-      if my_unit#has_played 
+  method private draw_unit (target : render_window) camera character my_unit =
+    let color =
+      if my_unit#has_played
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
-    self#draw_from_map target camera (my_unit#name) (my_unit#position) ~color();
+    let name = character ^ "_" ^ my_unit#name in
+    self#draw_from_map target camera name (my_unit#position) ~color();
     let size = int_of_float (camera#zoom *. 14.) in
     let position = (foi2D (camera#project my_unit#position)) in
-    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else 
+    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
         string_of_int (my_unit#hp * 10 / my_unit#life_max))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
- 
+
+  (* Draw a building *)
+  method private draw_building (target : render_window) camera building =
+    self#draw_from_map target camera (building#name) (building#position) ()
+
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
     |Cursor.Idle -> ()
     |Cursor.Displace(_,_,(range,_)) -> begin
-      List.iter (self#highlight_tile target camera 
+      List.iter (self#highlight_tile target camera
         (Color.rgba 255 255 100 150)) range
     end
     |Cursor.Action(my_unit, range) -> begin
-      let attack_range = 
+      let attack_range =
         List.filter (self#filter_positions map) range
       in
-      List.iter (self#highlight_tile target camera 
+      List.iter (self#highlight_tile target camera
         (Color.rgba 255 50 50 255)) attack_range
     end
 
   (* Draw the cursor *)
-  method private draw_cursor (target : render_window) 
+  method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
-    self#draw_from_map target camera "cursor" camera#cursor#position 
-      ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset) 
+    self#draw_from_map target camera "cursor" camera#cursor#position
+      ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
       ~scale:(camera#cursor#scale, camera#cursor#scale) ()
 
   (* Draw the GUI *)
-  method draw_gui (target : render_window) 
+  method draw_gui (target : render_window)
     (ui_manager : UIManager.ui_manager) =
     ui_manager#draw target texture_library
 
@@ -264,11 +285,22 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    List.iter (fun p -> 
-      List.iter (self#draw_unit target data#camera) p#get_army
+    List.iter (fun p ->
+        List.iter (self#draw_building target data#camera) p#get_buildings
+      ) data#players;
+    (* Ugly: to alternate characters *)
+    let characters = [|"flatman";"blub";"limboy"|] in
+    let get_chara = let x = ref 0 in fun () ->
+      let ret = characters.(!x) in
+      incr x ;
+      if !x = Array.length characters then x := 0 ;
+      ret
+    in
+    List.iter (fun p ->
+      let chara = get_chara () in
+      List.iter (self#draw_unit target data#camera chara) p#get_army
       ) data#players;
     data#minimap#draw target data#camera#cursor;
     FPS.display target
 
 end
-

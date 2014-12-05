@@ -4,7 +4,7 @@ exception Unknown_sound of string
 exception Not_a_valid_sound_file of string
 
 let sound_bank = Hashtbl.create 13
-let path = "./resources/sounds/"
+let path = (Utils.base_path ()) ^ "sounds/"
 
 let player = ref (new sound ())
 let volume = ref 100.

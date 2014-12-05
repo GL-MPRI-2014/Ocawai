@@ -65,6 +65,6 @@ val dist : t -> t -> int
 (** [eucl_dist a b] returns the Euclidian distance between a and b *)
 val eucl_dist : t -> t -> int
 
-(** [get_eucl_disk p d] returns the list of pos with an Euclidian distance to p <= d *)
+(** [get_eucl_disk p d] returns the list of pos with an Euclidian distance to p inferior or equal to d *)
 val get_eucl_disk : t -> int -> t list
 

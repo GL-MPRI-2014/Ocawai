@@ -42,7 +42,3 @@ object (self)
     to_channel out_channel (Update u) [Closures];
 
 end
-
-type t = netPlayer
-
-let create_netPlayer sockfd a b = new netPlayer sockfd a b

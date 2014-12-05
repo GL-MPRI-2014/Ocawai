@@ -8,7 +8,7 @@ class state (build : unit -> State.state) = object(self)
 
   inherit State.state as super
 
-  val font = (Fonts.load_font "Roboto-Black.ttf")
+  val font = (Fonts.load_font "FreeSansBold.ttf")
 
   val mutable init = false
 
@@ -25,7 +25,9 @@ class state (build : unit -> State.state) = object(self)
         Thread.create
           (fun () ->
             try let s = build () in manager#pop ; manager#push s
-            with e -> manager#pop ; raise e) ()
+            with
+            | Config.Missing_config(msg) as e-> manager#pop ;manager#pop ; raise e
+            | e -> manager#pop ; raise e) ()
         in init <- true
     end;
 

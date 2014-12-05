@@ -1,7 +1,16 @@
 
-type t = {
+type screen_mode = [ Fullscreen | Windowed ] <ocaml repr="classic">
+
+type float_s_positive = float
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0. < x
+  )">
+
+type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with none=()} *)">  : unit;
   
-  cursor_speed<ocaml mutable> : int;
+  cursor_speed<ocaml mutable> : float_s_positive;
+  zoom_speed<ocaml mutable> : float_s_positive;
+  mode<ocaml mutable> : screen_mode;
   
 }
 
