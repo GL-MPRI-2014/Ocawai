@@ -131,6 +131,8 @@ let rec subpath path pos = match path with
    - mvt is the actual movement done
    - b iff mvt is equal to the wanted movement *)
 let try_movement unit bf player player_list mvt =
+  if unit_of_position (List.hd (List.rev mvt)) player player_list = (true,true)
+  then raise Bad_path; (*allied unit at the end of the movement*)
   let mvt_pt = unit#move_range in
   let last_viable_pos = ref (List.hd mvt) in
   let rec aux mvt_pt mvt = match mvt with

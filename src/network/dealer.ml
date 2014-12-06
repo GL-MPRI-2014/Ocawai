@@ -20,12 +20,21 @@ object (self)
   val mutable clientPlayer = None
 		
 
+  (* for initialization *)
 
-  method set_logicPlayerList lpl = 
-    logicPlayerList <- lpl
+  method set_logicPlayerList id_list = 
+    let rec create_list logp_list = function
+      | [] -> logp_list
+      | t::q -> create_list (new Player.logicPlayer ?id:(Some t) [] []::logp_list) q
+    in
+    let logp_list = create_list [] id_list in
+    logicPlayerList <- logp_list
 
-  method set_clientPlayer clip = 
+  method set_clientPlayer id =
+    let clip = new ClientPlayer.client_player ?id:(Some id) [] [] in
     clientPlayer <- Some clip
+
+
 
   (* Mazzocchi asked for it *)
 	
@@ -61,14 +70,18 @@ object (self)
   method get_player id =
     let clip = self#is_set in 
     if clip#get_id = id
-    then (clip : Player.player :> Player.logicPlayer)
+    then (clip : ClientPlayer.client_player :> Player.logicPlayer)
     else
       try
 	self#list_scan id
       with
 	(*TO DO : add a raise exception *)
 	Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures]; failwith "Wrong id")
-		     
+	
+
+  (* TODO *)
+  method set_map str =
+    ()
 
 
 
@@ -92,8 +105,11 @@ object (self)
     | Delete_unit (u,id) -> (self#get_player id)#delete_unit u
     | Delete_building (b,id) -> (self#get_player id)#delete_building b
     | Move_unit (u,p,id) -> (self#get_player id)#move_unit u p
-
-
+    | Set_unit_hp (u,h,id) -> (self#get_player id)#set_unit_hp u h
+(* for initialization only *)
+    | Set_client_player id -> self#set_clientPlayer id
+    | Set_logic_player_list lst -> self#set_logicPlayerList lst
+    | Map str -> self#set_map str
 
   (* please give a call to this method just after having created this object *)
 
@@ -111,5 +127,5 @@ end
 
 type t = dealer
 
-let create_dealer sockfd tablogp clip = new dealer sockfd tablogp clip
+let create_dealer sockfd = new dealer sockfd
 
