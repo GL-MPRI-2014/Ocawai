@@ -21,13 +21,12 @@ type pitch = pitchClass * octave
 
    We use a class here for extensivity.
 *)
-class param pitch velocity =
-object (self)
+class param pitch velocity = object (self)
   val mutable pitch : pitch = pitch (** The note's pitch *)
   val mutable velocity : velocity = velocity (** The note's velocity *)
 				
-  method getPitch : pitch = pitch
-  method getVelocity : velocity = velocity
+  method pitch : pitch = pitch
+  method velocity : velocity = velocity
 				      
   method setPitch : pitch -> unit = fun newPitch ->
     pitch <- newPitch

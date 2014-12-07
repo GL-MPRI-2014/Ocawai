@@ -34,8 +34,8 @@ class param : pitch -> velocity ->
 		val mutable pitch : pitch (** The note's pitch *)
 		val mutable velocity : velocity (** The note's velocity *)
 		
-		method getPitch : pitch (** Get note's pitch *)
-		method getVelocity : velocity (** Get note's velocity *)
+		method pitch : pitch (** Get note's pitch *)
+		method velocity : velocity (** Get note's velocity *)
 
 		method setPitch : pitch -> unit  (** Set note's pitch *)
 		method setVelocity : velocity -> unit  (** Set note's velocity *)
@@ -63,20 +63,6 @@ val rest : Time.t -> 'a t
 *)
 val getDur : 'a t -> Time.t
 
-(** {2 MIDI conversion}
-    Based on @author "Savonet"'s mm Midi event type
-*)
-
-(**
-   @return the conversion of the given ['a t] into a MIDI event
-   @param int is the samplerate of the conversion
-   @param MIDI.division is the chosen grid division
-
-   Used for the rendering of music
-*)
-val toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     tempo:Time.Tempo.t -> event -> MIDI.buffer
-
 (** {2 Testing functions} *)
 
 (** {3 Pretty-printing} *)
@@ -86,3 +72,17 @@ val toMidi : ?samplerate:int -> ?division:MIDI.division ->
    defined by the [Format.formatter]
 *)
 val fprintf : Format.formatter -> event -> unit
+
+(** {2 MIDI conversion}
+    Based on @author "Savonet"'s mm Midi event type
+*)
+
+(**
+   Used for the rendering of music
+
+   @param int is the samplerate of the conversion
+   @param MIDI.division is the chosen grid division
+   @return the conversion of the given ['a t] into a MIDI event
+*)
+val toMidi : ?samplerate:int -> ?division:MIDI.division ->
+	     tempo:Time.Tempo.t -> event -> MIDI.buffer
