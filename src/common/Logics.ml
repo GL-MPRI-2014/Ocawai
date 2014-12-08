@@ -163,9 +163,11 @@ let try_movement unit bf player player_list mvt =
 	
 let try_next_action player_list player bf order =
   let mvt = fst order and action = snd order in
-  if action = End_turn then
+  match action with
+  | End_turn 
+  | Create_unit _ -> (*let End_turn and Create_unit pass through*)
     order
-  else (
+  | _ -> (
     let source = List.hd mvt in
     let u = find_unit source player in (*may raise Bad_unit*)
     if u#has_played then raise Has_played;
@@ -177,7 +179,6 @@ let try_next_action player_list player bf order =
     else (*in this case, real_mvt is equal to mvt*)
       match action with
       | Wait -> (mvt, Wait)
-      | End_turn -> failwith "try_next_action: this case is not possible"
       | Attack_unit (att, def) ->
         let dest = List.nth mvt (List.length mvt - 1) in
 	if att <> u then raise Bad_attack (*only the unit who moved can attack*)
@@ -192,8 +193,8 @@ let try_next_action player_list player bf order =
 	  else
 	    (mvt, action) (*the attack is valid*)
 	)
-      | _ -> (mvt, Wait)
-	(*New actions here*)
+      | _ -> 
+	failwith "try_next_action: Undefined action"
   )
 
 let apply_attack att def =

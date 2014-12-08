@@ -74,16 +74,17 @@ class game_engine () = object (self)
             (self#player_of_unit u2)#delete_unit (u2#get_id);
             Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(x#get_id))) ) players)
       |(_, Create_unit (b,uu)) ->
-          if Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list) then
-            raise Bad_path
-          else if player#use_resource uu#price then (
-            let u = Unit.bind uu b#position player#get_id in
-            player#add_unit u;
-            u#set_played true)
-          else raise Bad_unit
+        if List.mem b player#get_buildings 
+	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
+	  && player#use_resource uu#price 
+	then (
+          let u = Unit.bind uu b#position player#get_id in
+          player#add_unit u;
+          u#set_played true)
+        else raise Bad_create
       |(move, _) -> self#apply_movement move
     with
-      |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn
+      |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
     if true (* test gameover here *) then self#run
 
@@ -91,7 +92,17 @@ class game_engine () = object (self)
     let player = players.(actual_player) in
     List.iter (fun u -> u#set_played false) player#get_army;
     player#harvest_buildings_income;
-    actual_player <- self#next_player
+    actual_player <- self#next_player;
+(* TODO: Needs a method/val for building_list
+    (*update buildings at the start of a new turn*)
+    let changed_buildings = Logics.capture_buildings 
+      (self#get_players :> Player.logicPlayer list)
+      (players.(actual_player) :> Player.logicPlayer)
+      self#building_list
+    in
+    (*send the list of changed buildings to the players*)
+   ()
+*)
 
   method private apply_movement movement =
     let player = players.(actual_player) in
