@@ -34,7 +34,7 @@ let recv_string sock length break_time =
 
   let rec recv_string' sock accum length break_time =
     let timeout = break_time -. Sys.time () in
-    let buffer = String.create length 0 in
+    let buffer = String.make length ' ' in
     let size = Network_tool.read_timeout sock buffer length 0 timeout in
     
     match size with
@@ -49,10 +49,15 @@ let recv_string sock length break_time =
       | Some(n) ->
 	begin
 	  let string = String.sub buffer 0 n in
-	  recv_string sock (string::accum) (length - n) break_time
+	  recv_string' sock (string::accum) (length - n) break_time
 	end
 	  
-  in recv_string' sock [] length break_time
+  in
+
+  if length <= 0 then 
+    Some("")
+  else
+    recv_string' sock [] length break_time
 
 
 
@@ -88,7 +93,7 @@ let recv_magic sock break_time =
 
 
 
-let recv = sock timeout =
+let recv sock timeout =
   let break_time = Sys.time () +. timeout in
   recv_magic sock break_time
 
