@@ -1,8 +1,33 @@
 [
   {
     "name": "base",
-    "product" : ["infantry"],
-    "income" : 10
+    "product" : [],
+    "income" : 20
+  },
+  {
+    "name": "factory",
+    "product": ["infantry", "bazooka", "tank", "recon"],
+    "income": 10
+  },
+  {
+    "name": "port",
+    "product": ["battleship"],
+    "income": 10
+  },
+  {
+    "name": "airport",
+    "product": ["helicopter"],
+    "income": 10
+  },
+  {
+    "name": "city",
+    "product": [],
+    "income": 10
+  },
+  {
+    "name": "flowerfield",
+    "product": [],
+    "income": 50
   }
 ]
 
