@@ -2,10 +2,17 @@
   {
     "name": "general",
     "movement_type": "Walk",
-    "vision_range": 10,
+    "vision_range": 5,
     "attack_range_min": 1,
     "attack_range_max": 5,
-    "move_range": 3
+    "move_range": 3,
+    "attack_base": 40,
+    "armor": "Light",
+    "percentage_light": 100,
+    "percentage_normal": 30,
+    "percentage_heavy": 10,
+    "price": 100,
+    "life_max": 50
   },
   {
     "name": "bazooka",
@@ -13,8 +20,15 @@
     "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 4,
-    "spawn_number": 2
+    "move_range": 3,
+    "spawn_number": 2,
+    "attack_base": 40,
+    "armor": "Light",
+    "percentage_light": 20,
+    "percentage_normal": 80,
+    "percentage_heavy": 100,
+    "price": 20,
+    "life_max": 35
   },
   {
     "name": "tank",
@@ -23,8 +37,14 @@
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 5,
+    "spawn_number": 1,
     "attack_base": 70,
-    "spawn_number": 1
+    "armor": "Heavy",
+    "percentage_light": 40,
+    "percentage_normal": 100,
+    "percentage_heavy": 100,
+    "price": 50,
+    "life_max": 100
   },
   {
     "name": "infantry",
@@ -32,9 +52,15 @@
     "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 4,
+    "move_range": 3,
     "spawn_number": 2,
-    "price": 7
+    "attack_base": 15,
+    "armor": "Light",
+    "percentage_light": 100,
+    "percentage_normal": 30,
+    "percentage_heavy": 10,
+    "price": 10,
+    "life_max": 30
   },
   {
     "name": "recon",
@@ -43,7 +69,14 @@
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 8,
-    "spawn_number": 3
+    "spawn_number": 3,
+    "attack_base": 20,
+    "armor": "Normal",
+    "percentage_light": 100,
+    "percentage_normal": 50,
+    "percentage_heavy": 10,
+    "price": 25,
+    "life_max": 40
   },
   {
     "name": "vtb",

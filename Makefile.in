@@ -40,7 +40,7 @@ script_dir=$(src_root)/script
 
 test_dir=test
 # $(network_dir) removed for now
-dirs = $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir) $(script_dir)
+dirs = $(network_dir) $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir) $(script_dir)
 
 #for each target, the directories concerned for ocamlbuild
 engine_src=$(network_dir),$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(script_dir)
@@ -48,7 +48,7 @@ interface_src=$(engine_dir),$(common_dir),$(utils_dir),$(config_dir),$(interface
 network_src=$(network_dir),$(common_dir),$(utils_dir),$(config_dir)
 script_src=$(common_dir),$(utils_dir),$(script_dir),$(config_dir)
 
-test_src=test,$(engine_src)
+test_src=test,$(engine_src),$(interface_src)
 
 #dependencies required for each target
 common_dependencies = atdgen,dolog,unix
@@ -57,11 +57,11 @@ music_dependencies = num,ocsfml.audio,mm,pulseaudio
 script_dependencies = $(common_dependencies)
 
 
-test_dependencies=$(engine_dependencies),oUnit
-
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
 interface_dependencies = bigarray,threads,$(music_dependencies),ocsfml.graphics,$(common_dependencies)
-#network_libraries = unix
+network_libraries = unix
+
+test_dependencies=$(engine_dependencies),$(interface_dependencies),oUnit
 
 #tags needed for each target
 interface_tags = thread
@@ -75,6 +75,7 @@ output_interface = main.native
 output_profile = main.p.native
 output_script = script.native
 output_engine = dummy_serv.native
+output_network = dealer.native
 output_gprof = profile
 
 
@@ -87,7 +88,7 @@ profile_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(i
 
 gprof_command = gprof $(output_profile) gmon.out >> $(output_gprof)
 
-script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script) 
+script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script)
 
 engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine) -tag $(engine_tags)
 
@@ -137,6 +138,9 @@ run: interface
 
 engine:  $(files_atd_ml)
 	$(engine_command)
+
+#network: 
+#	$(network_command)
 
 script: $(files_atd_ml)
 	$(script_command)
@@ -279,6 +283,10 @@ check_logics: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) logics_test.native -tag $(engine_tags)
 	./logics_test.native
 
-check: check_player check_generation check_logics
+check_interface: interface
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) interface_test.native -tag $(interface_tags)
+	./interface_test.native
+
+check: check_player check_generation check_logics check_interface
 
 .PHONY: FORCE all clean dist distcheck engine interface network script

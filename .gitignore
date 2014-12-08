@@ -79,3 +79,6 @@ Makefile
 settings.json
 settings_engine.json
 settings_interface.json
+
+# log
+*.log

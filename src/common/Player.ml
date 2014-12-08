@@ -30,6 +30,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 
     method add_building b = Hashtbl.add buildings b#get_id b
 
+    (* TODO *)
+    method set_unit_hp (u : Unit.id) (h : int) = ()
+
     method delete_unit (id_unit : Unit.id) =
       try
         ignore(Hashtbl.find army id_unit);

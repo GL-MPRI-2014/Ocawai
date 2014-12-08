@@ -36,42 +36,42 @@
     "name": "plain",
     "walk_cost": 1,
     "roll_cost": 2,
-    "tread_cost": 2,
+    "tread_cost": 1,
     "swim_cost": -1,
     "fly_cost": 1,
     "density": 15
   },
   {
     "name": "sand",
-    "walk_cost": 2,
-    "roll_cost": 10,
-    "tread_cost": 15,
+    "walk_cost": 1,
+    "roll_cost": 2,
+    "tread_cost": 1,
     "swim_cost": -1,
     "fly_cost": 1
   },
   {
     "name": "beach",
-    "walk_cost": 2,
-    "roll_cost": 10,
-    "tread_cost": 15,
+    "walk_cost": 1,
+    "roll_cost": 2,
+    "tread_cost": 1,
     "swim_cost": 1,
     "fly_cost": 1,
     "structure": <"Border":("water",50,2)>
   },
   {
     "name": "lake_beach",
-    "walk_cost": 2,
-    "roll_cost": 10,
-    "tread_cost": 15,
+    "walk_cost": 1,
+    "roll_cost": 2,
+    "tread_cost": 1,
     "swim_cost": 1,
     "fly_cost": 1,
     "structure": <"Border":("lake",50,2)>
   },
   {
     "name": "forest",
-    "walk_cost": 2,
-    "roll_cost": 5,
-    "tread_cost": 10,
+    "walk_cost": 1,
+    "roll_cost": 3,
+    "tread_cost": 2,
     "swim_cost": -1,
     "fly_cost": 1,
     "density": 5
@@ -95,11 +95,11 @@
   },
   {
     "name": "mountain",
-    "walk_cost": 3,
+    "walk_cost": 2,
     "roll_cost": -1,
     "tread_cost": -1,
     "swim_cost": -1,
-    "fly_cost": 3,
+    "fly_cost": 2,
     "density": 2
   }
 ]
