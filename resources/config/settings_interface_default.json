@@ -1,3 +1,5 @@
 {
-    "cursor_speed": 100.0
+    "cursor_speed": 20.0,
+    "zoom_speed": 10.0,
+    "mode": "Fullscreen"
 }

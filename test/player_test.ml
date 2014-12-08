@@ -5,7 +5,7 @@ open Position
 open List
 open Action
 
-let config = let c = new Config.t in c#init_default;c
+let config = let c = new Config.t in c#set_config_name "test_config ";c#init Config.default_config_files;c
 
 (*check empty player*)
 let test_player_0 test_ctxt =

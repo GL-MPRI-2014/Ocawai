@@ -4,3 +4,6 @@ class game_engine : unit -> object
     method init_net : int -> int -> int -> int -> (Player.logicPlayer list*Battlefield.t)
     method run : unit
     end
+
+
+val print_ascii : Battlefield.t -> unit

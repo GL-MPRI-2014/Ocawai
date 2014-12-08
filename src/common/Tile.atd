@@ -2,7 +2,7 @@
 type structure = [ Block | Road | Border of (string * int * int) ] 
   <ocaml validator="Utils.check_validity (
     fun st -> match st with
-    | `Border (_,rate,expansion) -> rate >= 0 && rate <= 1000 && expansion >= 0
+    | `Border (borded_name,rate,expansion) -> rate >= 0 && rate <= 1000 && expansion >= 0
     | _ -> true
   )">
 

@@ -30,6 +30,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
     method add_building b = Hashtbl.add buildings b#get_id b
 
 
+    (* TODO *)
+    method set_unit_hp (u : Unit.id) (h : int) = ()
+
     method delete_unit (id_unit : Unit.id) =
       try
         ignore(Hashtbl.find army id_unit);
@@ -60,9 +63,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   end
 
 
-class virtual player (a : Unit.t list) (b : Building.t list) = 
+class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) = 
   object (self) 
-  inherit logicPlayer a b
+  inherit logicPlayer ?id:id a b
   val mutable logicPlayerList = [] 
   method virtual get_next_action :  Action.t
   method virtual set_logicPlayerList : (logicPlayer list) -> unit

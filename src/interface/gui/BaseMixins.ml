@@ -5,7 +5,7 @@ open GuiTools
 open Widget
 
 (* Put it in the theme ? *)
-let bold_font = Fonts.load_font "Roboto-Black.ttf"
+let bold_font = Fonts.load_font "FreeSansBold.ttf"
 
 
 class virtual ['a] widget_container = object(self)
@@ -94,7 +94,7 @@ class virtual has_toolbar = object(self)
     new rectangle_shape ~position ~size:(foi2D (fst size + 4, toolbar_height))
       ~fill_color:theme.Theme.bar_color ()
     |> target#draw;
-    let th = float_of_int toolbar_height in 
+    let th = float_of_int toolbar_height in
     Render.renderer#draw_txr target toolbar_icon ~position ~size:(th, th) ~centered:false ();
     let (posx,posy) = position in
     let (sx,sy) = foi2D (fst size, toolbar_height) in

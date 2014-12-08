@@ -6,6 +6,8 @@ class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> o
     method set_buildings : Building.t list -> unit
     method get_buildings : Building.t list
     method add_building : Building.t -> unit
+    (* TODO *)
+    method set_unit_hp : Unit.id -> int -> unit
 
     method get_unit_by_id : Unit.id -> Unit.t
     method get_building_by_id : Building.id -> Building.t
@@ -16,7 +18,7 @@ class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> o
 
   end
 
-class virtual player :  Unit.t list -> Building.t list  -> object
+class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  -> object
     inherit logicPlayer
     method virtual get_next_action :  Action.t
     method virtual set_logicPlayerList : (logicPlayer list) -> unit

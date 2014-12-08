@@ -12,7 +12,7 @@ let new_game () =
 
   let m_engine =new Game_engine.game_engine () in
 
-  let (m_players, m_map) = m_engine#init_local (my_player :> player) 4 70 70 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 30 30 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -278,6 +278,9 @@ let new_game () =
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
                 end else cursor#set_state Idle)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
+            cdata#camera#cursor#set_state Idle
         | _ -> ()
       end)
 

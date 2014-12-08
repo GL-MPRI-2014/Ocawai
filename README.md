@@ -1,5 +1,5 @@
-GL_MPRI_2014
-============
+OCAWAI
+======
 
 Projet de Génie Logiciel du MPRI, année 2014-2015
 

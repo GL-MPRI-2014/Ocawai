@@ -6,7 +6,7 @@ open BaseMixins
 open Utils
 open Menus
 
-let my_font = Fonts.load_font "Roboto-Regular.ttf"
+let my_font = Fonts.load_font "FreeSans.ttf"
 
 class text_framed_item m_position m_size m_text
   (action : unit -> unit) m_theme = object(self)

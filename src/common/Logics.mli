@@ -30,3 +30,6 @@ val find_unit : Position.t -> Player.logicPlayer -> Unit.t
 (** Computes and apply the damage of an attack. *)
 val apply_attack : Unit.t -> Unit.t -> unit
 
+(** Returns the list of the ennemy units in range *)
+val units_inrange : Position.t -> int -> Player.logicPlayer -> 
+  Player.logicPlayer list -> Unit.t list

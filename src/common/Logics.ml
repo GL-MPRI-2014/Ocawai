@@ -131,6 +131,10 @@ let rec subpath path pos = match path with
    - mvt is the actual movement done
    - b iff mvt is equal to the wanted movement *)
 let try_movement unit bf player player_list mvt =
+  let dest = List.hd (List.rev mvt) in
+  if dest <> unit#position && 
+     unit_of_position dest player player_list = (true,true)
+  then raise Bad_path; (*allied unit at the end of the movement*)
   let mvt_pt = unit#move_range in
   let last_viable_pos = ref (List.hd mvt) in
   let rec aux mvt_pt mvt = match mvt with
@@ -195,4 +199,11 @@ let apply_attack att def =
   (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
   def#take_damage damage
 
-
+let units_inrange pos range player pl = 
+  let ennemy_list = List.filter (fun p -> p <> player) pl in
+  List.map (fun p ->
+    List.filter (fun u ->
+      Position.dist pos u#position <= range
+    ) p#get_army
+  ) ennemy_list
+  |> List.flatten

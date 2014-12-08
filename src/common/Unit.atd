@@ -25,8 +25,8 @@ type t = {
   name : name_v;
   movement_type : movement;
   vision_range : positive;
-  attack_range_min : positive;
-  attack_range_max : positive;
+  ~attack_range_min<ocaml default="0"> : positive;
+  ~attack_range_max<ocaml default="0"> : positive;
   move_range : positive;
   ~spawn_number<ocaml default="0"> : positive;
   ~attack_base<ocaml default="50"> : positive;
@@ -36,7 +36,7 @@ type t = {
   ~percentage_heavy<ocaml default="0"> : percentage;
   ~price<ocaml default="50"> : positive;
   ~life_max<ocaml default="100"> : s_positive;
-} 
+}
   <ocaml validator="Utils.check_validity (
     fun u -> u.attack_range_min <= u.attack_range_max
   )">
