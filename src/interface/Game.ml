@@ -278,6 +278,9 @@ let new_game () =
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
                 end else cursor#set_state Idle)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
+            cdata#camera#cursor#set_state Idle
         | _ -> ()
       end)
 
