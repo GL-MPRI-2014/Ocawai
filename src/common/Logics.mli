@@ -7,6 +7,9 @@ val unit_vision : Unit.t -> Battlefield.t -> Position.t list
 (** Returns the list of all positions that a given player can see *)
 val player_vision : Player.logicPlayer -> Battlefield.t -> Position.t list
 
+(** Return true iff there is an unit on position [pos]*)
+val is_unit_on : Position.t -> Player.logicPlayer list -> bool
+
 (** For a given unit, returns the list of accessible positions and the 
     hashtable where the keys are the accessible positions and the entry 
     is a shortest path to this position *)

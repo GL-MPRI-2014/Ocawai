@@ -74,11 +74,13 @@ class game_engine () = object (self)
             (self#player_of_unit u2)#delete_unit (u2#get_id);
             Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(x#get_id))) ) players)
       |(_, Create_unit (b,uu)) ->
-          if true(*Logics.is_empty b#position*) then
-          if player#use_resource uu#price then (
-          let u = Unit.bind uu b#position player#get_id in
-          player#add_unit u;
-          u#set_played true)
+          if Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list) then
+            raise Bad_path
+          else if player#use_resource uu#price then (
+            let u = Unit.bind uu b#position player#get_id in
+            player#add_unit u;
+            u#set_played true)
+          else raise Bad_unit
       |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn

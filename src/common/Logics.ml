@@ -108,10 +108,7 @@ let find_unit pos player : Unit.t =
    - b1 iff there is a unit on position pos
    - if b1 then (b2 iff this unit belongs to player) *)
 let unit_of_position pos player player_list =
-  let rec check_army l = match l with
-    | [] -> false
-    | u :: t -> u#position = pos || check_army t
-  in
+  let check_army l = List.exists (fun u -> u#position = pos) l in
   let rec check_players l = match l with
     | [] -> (false,true)
     | p :: t ->
@@ -119,6 +116,14 @@ let unit_of_position pos player player_list =
       else check_players t
   in
   check_players player_list
+
+(* test if there is an unit on position pos*)
+let is_unit_on pos player_list = match player_list with
+  | [] -> false
+  | p::q -> 
+      let check_army l = List.exists (fun u -> u#position = pos) l in
+      let check_players l = List.exists (fun p -> check_army p#get_army) l in
+      check_players player_list
 
 (* Returns the subpath of path which stops when reaching pos *)
 let rec subpath path pos = match path with
