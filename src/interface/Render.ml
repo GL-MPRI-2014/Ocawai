@@ -280,8 +280,11 @@ let renderer = object(self)
       (foi2D (camera#project u_position))
       (ox *. camera#zoom, oy *. camera#zoom)
     in
-    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
+    (* new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
         string_of_int (my_unit#hp * 10 / my_unit#life_max))
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw *)
+    new text ~string:(string_of_int (my_unit#hp))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
 
