@@ -1,7 +1,10 @@
 (* We might want to change it later, leave it hidden *)
+
+
 (* We want to make sure there is no loop and discontinuity in it *)
 exception Path_exception of string
 
+(*in the type Path.t , the head of the list is the ending position*)
 type t = Position.t list
 
 let empty = []
@@ -21,6 +24,7 @@ let reach path pos =
 
 let get_move = List.rev
 
+let get_path = List.rev 
 let start_position path  =
   match path with
   | [] -> raise (Path_exception "Empty path")
@@ -65,10 +69,13 @@ let walk_on_canvas m pos move_type pos2 w h dist prev f =
   PosPrioQueue.push li 0 pos;
   Battlefield.tile_iteri (fun p t -> if (Tile.traversable_m t move_type) && p <> pos then PosPrioQueue.push li p_none p) m;
   (* boucle principale *)
+  let min_cost = ref (-1) in
   while not (PosPrioQueue.is_empty li) do
     (* u : min (dist a + Position.dist a pos2) pour tout a non parcouru *)
-    let u = snd (PosPrioQueue.pop li)  in
-    if u = pos2 then PosPrioQueue.set_empty li else
+    let top = PosPrioQueue.pop li in
+    let u = snd top in
+    if u = pos2 then min_cost := fst top else 
+    if !min_cost >= 0 && fst top > !min_cost then PosPrioQueue.set_empty li else
     match access dist u with
     | None -> PosPrioQueue.set_empty li
     | Some du -> (* pour tout voisin v de u atteignable d'une autre façon, on teste si c'est plus court d'aller en v par u *)

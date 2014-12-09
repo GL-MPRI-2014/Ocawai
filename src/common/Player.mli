@@ -1,59 +1,31 @@
-class logicPlayer : Unit.t list -> Building.t list  -> object
-    method get_id : int
+class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> object
+    method get_id : Types.id_player
     method get_army : Unit.t list
     method add_unit : Unit.t -> unit
     method set_army : Unit.t list -> unit
     method set_buildings : Building.t list -> unit
     method get_buildings : Building.t list
     method add_building : Building.t -> unit
+    (* TODO *)
+    method set_unit_hp : Unit.id -> int -> unit
 
-    method delete_unit : Unit.t -> unit
-    method move_unit : Unit.t -> Action.movement -> unit
-    method delete_building : Building.t -> unit
+    method get_unit_by_id : Unit.id -> Unit.t
+    method get_building_by_id : Building.id -> Building.t
+                                         
+    method delete_unit : Unit.id -> unit
+    method move_unit : Unit.id -> Action.movement -> unit
+    method delete_building : Building.id -> unit
 
   end
 
-class virtual player :  Unit.t list -> Building.t list  -> object
+class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  -> object
     inherit logicPlayer
     method virtual get_next_action :  Action.t
+    method virtual set_logicPlayerList : (logicPlayer list) -> unit
+    method virtual get_logicPlayerList : logicPlayer list
+    method update : Types.update -> unit
   end
-(*
-type logic = <
-  (*TO DO: The type Unit.t list could (should) not be exposed. Instead,
-    we could create a module allowing some functions as search one unit,
-    get a list of unit etc... *)
 
-  get_id : int;
-  get_army : Unit.t list;
-  add_unit : Unit.t -> unit;
-  set_army : Unit.t list -> unit;
-  set_buildings : Building.t list -> unit;
-  get_buildings : Building.t list;
-  add_building : Building.t -> unit;
-
-  delete_unit : Unit.t -> unit;
-  move_unit : Unit.t -> Action.movement -> unit;
-  delete_building : Building.t -> unit;
->
-*)
-
-(*
-type t = <
-
-  get_id : int;
-  get_army : Unit.t list;
-  add_unit : Unit.t -> unit;
-  set_army : Unit.t list -> unit;
-  set_buildings : Building.t list -> unit;
-  get_buildings : Building.t list;
-  add_building : Building.t -> unit;
-
-  delete_unit : Unit.t -> unit;
-  move_unit : Unit.t -> Action.movement -> unit;
-  delete_building : Building.t -> unit;
-  
-  get_next_action :  Action.t;    (* Appelé par la grosse boucle, renvoie depuis la file l'action que veut effectuer le joueur *)
->
-*)
 val create_player : unit -> player
+val create_dummy_player : Action.t list ->  player
 

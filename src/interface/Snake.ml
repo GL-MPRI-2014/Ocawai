@@ -8,7 +8,7 @@ class state = object(self)
 
   inherit State.state as super
 
-  val font = new font `None
+  val font = Fonts.load_font "FreeSansBold.ttf"
 
   val map = Array.make_matrix 16 10 false
   val goods = Array.make_matrix 16 10 false
@@ -145,6 +145,7 @@ class state = object(self)
         | KeyPressed { code = OcsfmlWindow.KeyCode.Down ; _ } ->
             if last_move = (0,-1) then ()
             else move_dir <- (0,1)
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ }
         | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; _ } ->
             manager#pop
         | _ -> ()
@@ -175,7 +176,7 @@ class state = object(self)
       for y = 0 to 9 do
         if goods.(x).(y) then
           let pos = self#topos (Position.create (x,y)) in
-          Render.renderer#draw_txr window "infantry" ~position:pos ~rotation:(Random.float 360.) ()
+          Render.renderer#draw_txr window "flatman_infantry" ~position:pos ~rotation:(Random.float 360.) ()
       done
     done;
 
@@ -194,12 +195,11 @@ class state = object(self)
     window#display
 
   initializer
-    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here";
     Random.self_init ();
     Sounds.play_sound "lets_do_this";
+    let tetris_path = (Utils.base_path ()) ^ "music/tetris.mid" in
     musicThread <-
-      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file "resources/music/tetris.mid" x) runMusic)
+      Some (Thread.create (fun x -> Thread.delay 1. ; MidiPlayer.play_midi_file tetris_path x) runMusic)
 
 
   method destroy =

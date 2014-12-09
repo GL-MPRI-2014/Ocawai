@@ -8,6 +8,9 @@
  *)
 
 
+(* SERVER *)
+
+
 (**
  * This function create a listening socket
  * @param port Listening port
@@ -23,8 +26,11 @@ let create_listener port =
     fd_listen
   with
     | Unix.Unix_error (Unix.EADDRINUSE, _, _) ->
-      Unix.close fd_listen
-        failwith "port already in use"
+      Unix.close fd_listen ;
+        failwith "The server port already in use : give another port to start the server"
+    | Unix.Unix_error (_, "bind", _) ->
+      Unix.close fd_listen ;
+         failwith "The server port illegal : give another port to start the server"
 	
 (**
  * This function initializes the connection with
@@ -33,25 +39,20 @@ let create_listener port =
  * @param n Expected number of clients
  * @return List of clients socket
  *)
-(*
-let open_n_connexions port n =
+let open_n_connections port n =
   let fd_listen = create_listener port in
-  let rec connexions' n list =
+  let rec open_n_connections' n list =
     if n = 0 then
       list
     else
       begin
 	let (client, _) = Unix.accept fd_listen in
-	connexions' (n-1) (client::list)
+	open_n_connections' (n-1) (client::list)
       end
   in
-  let list = connexions' n [] in
+  let list = open_n_connections' n [] in
   Unix.close (fd_listen);
   list
-*)
-
-exception Break
-let break s = raise Break
 
 
 (**
@@ -61,24 +62,72 @@ let break s = raise Break
  * @param timeout Waiting time
  * @return List of clients socket
  *)
-let open_connexions_timeout port timeout =
+let open_connections_timeout port timeout =
+  let fd_listen = create_listener port in
+  let off_time = Sys.time () +. timeout in
+  let rec open_connections_timeout' list =
+    let timeout = off_time -.Sys.time () in
+    let (fd_read, _, _) = Unix.select [fd_listen] [] [] timeout in
+    if fd_read = [] then
+      list
+    else
+      let (client, _) = Unix.accept fd_listen in
+      open_connections_timeout' (client::list)
+  in
+  let list = open_connections_timeout' [] in
+  Unix.close (fd_listen);
+  list
+
+(*
+exception Break
+let break s = raise Break
+
+
+let open_connexions_alarm port timeout =
   let fd_listen = create_listener port in
   let handle = Sys.signal Sys.sigalrm (Sys.Signal_handle break) in
   let _ = Unix.alarm timeout in
-  let rec connexions' list =
+  let rec open_connexions_alarm' list =
     try 
       begin
 	let (_, _, _) = Unix.select [fd_listen] [] [] (-1.) in
 	let (client, _) = Unix.accept fd_listen in
-	connexions' (client::list)
+        open_connexions_alarm' (client::list)
       end
     with Break ->
       list
   in
-  let list = connexions' [] in
+  let list = open_connexions_alarm' [] in
   let _ = Sys.signal Sys.sigalrm handle in
   Unix.close (fd_listen);
   list
+*)
+
+
+(* CLIENT *)
+
+
+(**
+ * This function creates a connection to the server
+ * @param port Server port
+ * @param ip Server address
+ * @return Socket
+**)
+let open_connection ip port =
+  let addr = Unix.inet_addr_of_string ip in
+  let sock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+  let sock_addr = Unix.ADDR_INET (addr, port) in
+  try 
+    Unix.connect sock sock_addr;
+    sock
+  with 
+    | Unix.Unix_error (_, "connect", _) -> 
+      Unix.close sock;
+      failwith "The server connection attempt failed : Check the address and listening port"
+
+
+(* COMUNNICATION *)
+
 
 
 (**

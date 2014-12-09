@@ -6,9 +6,9 @@ open BaseMixins
 open Utils
 open Menus
 
-let my_font = new font (`File "resources/fonts/Roboto-Regular.ttf")
+let my_font = Fonts.load_font "FreeSans.ttf"
 
-class text_framed_item m_position m_size m_text 
+class text_framed_item m_position m_size m_text
   (action : unit -> unit) m_theme = object(self)
 
   inherit widget
@@ -40,7 +40,7 @@ class text_framed_item m_position m_size m_text
 end
 
 
-class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height 
+class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
   ~m_bar_icon ~m_bar_text = object(self)
 
     inherit [text_framed_item] widget_container as super
@@ -70,13 +70,13 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
     method draw target lib = if self#active then begin
       let active_widget = List.nth self#children self#selected in
       new rectangle_shape ~fill_color:theme.Theme.default_color
-        ~size:(foi2D (fst size, snd size+m_bar_height-2)) 
-        ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2)) 
+        ~size:(foi2D (fst size, snd size+m_bar_height-2))
+        ~position:(foi2D (fst self#position, snd self#position-m_bar_height+2))
         ~outline_thickness:2. ~outline_color:theme.Theme.border_color ()
       |> target#draw;
       toolbar#draw target lib;
       new rectangle_shape ~fill_color:(theme.Theme.highlight_color)
-        ~size:(foi2D active_widget#get_size) 
+        ~size:(foi2D active_widget#get_size)
         ~position:(foi2D active_widget#position) ()
       |> target#draw;
       rect_print
@@ -85,12 +85,13 @@ class ingame_popup ~m_position ~m_size ~m_theme ~m_text ~m_bar_height
         top = float_of_int (snd position) ;
         width = float_of_int (fst size) ;
         height = float_of_int (snd size) };
-      List.iter (fun w -> w#draw target lib) self#children 
-    end 
+      List.iter (fun w -> w#draw target lib) self#children
+    end
 
   initializer
     self#add_event(function
-      |Event.KeyPressed{Event.code = KeyCode.Space; _} ->
+      | Event.KeyPressed{ Event.code = KeyCode.Return ; _ }
+      | Event.KeyPressed{ Event.code = KeyCode.Space ; _ } ->
           nb_items <> 0 &&
           ((List.nth self#children self#selected)#action;
           true)

@@ -4,7 +4,7 @@
 # either with opam or with the system manager.
 
 
-OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit"
+OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
 
@@ -29,7 +29,7 @@ sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam \
 export OPAMYES=1
 opam init 
 
-if [ "$OCAML_VERSION" -eq "4.02.1" ]
+if [ "$OCAML_VERSION" = "4.02.1" ]
 then
 	opam switch 4.02.1
 fi
@@ -43,6 +43,7 @@ make interface
 make engine
 make doc
 make check
+make check_generation
 make clean
 make dist
 make distcheck

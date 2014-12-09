@@ -1,11 +1,10 @@
 open OcsfmlGraphics
 
-open Settings
 open Home
 open GuiTools
 open Utils
 
-let font = new font (`File "resources/fonts/Roboto-Regular.ttf")
+let font = Fonts.load_font "FreeSans.ttf"
 
 let setter_width = 800.
 let setting_width = 300.
@@ -39,7 +38,7 @@ class virtual setter pos name = object(self)
 
 end
 
-class slider pos update name = object(self)
+class slider ?default:(default = 50) pos update name = object(self)
 
   inherit setter pos name as super_set
 
@@ -48,7 +47,7 @@ class slider pos update name = object(self)
 
   val cursor_r = 7.
 
-  val mutable percentage = 50
+  val mutable percentage = default
 
   method draw (target : OcsfmlGraphics.render_window) =
 
@@ -85,10 +84,41 @@ class slider pos update name = object(self)
     holds_focus <- true
 
   method handle_key = OcsfmlWindow.KeyCode.(function
-    | Left -> self#decr
-    | Right -> self#incr
-    | Return -> holds_focus <- false ; update percentage
+    | Left -> self#decr ; update percentage
+    | Right -> self#incr ; update percentage
+    | Escape | Space | Return -> holds_focus <- false
     | _ -> ()
   )
+
+end
+
+class toogle ?default:(default = false) pos name update = object(self)
+
+  inherit setter pos name as super
+
+  val led_r = 8.
+
+  val mutable toogle = default
+
+  method draw (target : OcsfmlGraphics.render_window) =
+    super#draw target ;
+    let fill_color = if toogle then Color.rgb 57 131 204 else Color.white
+    and position = addf2D (setter_width/.2. -. 20., 0.) self#position
+    and outline_color = Color.rgb 97 171 244
+    and outline_thickness = 2. in
+    new circle_shape
+    ~fill_color
+    ~radius: led_r
+    ~origin: (led_r, led_r)
+    ~position
+    ~point_count: 100
+    ~outline_color
+    ~outline_thickness
+    ()
+    |> target#draw
+
+  method action =
+    toogle <- not toogle ;
+    update toogle
 
 end

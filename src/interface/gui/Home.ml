@@ -87,7 +87,8 @@ class screen items actionnables = object(self)
       | Right -> self#right
       | Up -> self#up
       | Down -> self#down
-      | Return -> self#action
+      | Space | Return -> self#action
+      | Escape -> Manager.manager#pop
       | _ -> ()
     )
 
@@ -101,9 +102,9 @@ class screen items actionnables = object(self)
 
   method private weight horizontal s a =
     if horizontal then
-      self#sqdist a s * (abs (int_of_float (a#y -. s#y)))
+      self#sqdist a s * (abs (int_of_float (a#y -. s#y)) + 1)
     else
-      self#sqdist a s * (abs (int_of_float (a#x -. s#x)))
+      self#sqdist a s * (abs (int_of_float (a#x -. s#x)) + 1)
 
   method private compare h s a b =
     (self#weight h s a - self#weight h s b)
@@ -116,10 +117,10 @@ class screen items actionnables = object(self)
         | a :: _ -> self#select a
         | _ -> ()
 
-  method private left = self#move (fun a s -> a#x <= s#x) true
-  method private right = self#move (fun a s -> a#x >= s#x) true
-  method private up = self#move (fun a s -> a#y <= s#y) false
-  method private down = self#move (fun a s -> a#y >= s#y) false
+  method private left = self#move (fun a s -> a#x < s#x) true
+  method private right = self#move (fun a s -> a#x > s#x) true
+  method private up = self#move (fun a s -> a#y < s#y) false
+  method private down = self#move (fun a s -> a#y > s#y) false
 
   initializer
     match actionnables with

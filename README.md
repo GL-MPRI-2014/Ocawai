@@ -1,5 +1,5 @@
-GL_MPRI_2014
-============
+OCAWAI
+======
 
 Projet de Génie Logiciel du MPRI, année 2014-2015
 
@@ -13,8 +13,6 @@ en ce qui concerne le fonctionnement*
 Depuis le menu principal, il suffit d'appuyer sur **entrée** après avoir
 sélectionné **game on!** pour lancer le jeu.
 
-* **F** : Mettre l'application en plein-écran
-* **esc** : Repasser en mode fenêtre
 * **ctrl+Q** ou **ctrl+C** : Quitter l'application
 * **touches fléchées** : Déplacer la caméra
 * **espace** : Actions (déplacements, menus)

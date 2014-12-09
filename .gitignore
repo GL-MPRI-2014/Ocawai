@@ -69,6 +69,16 @@ Makefile
 *_j.mli
 *_t.ml
 *_t.mli
+*_v.ml
+*_v.mli
 
 # merlin config file
 .merlin
+
+# settings local file
+settings.json
+settings_engine.json
+settings_interface.json
+
+# log
+*.log

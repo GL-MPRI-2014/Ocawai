@@ -10,7 +10,7 @@ class main_menu = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val bg_texture = new texture (`File "resources/textures/gui/capture.png")
+  val bg_texture = new texture (`File ((Utils.base_path ()) ^ "textures/gui/capture.png"))
   val mutable bg_offset = (0.,0.)
   val mutable bg_dir = (0.,0.)
 
@@ -71,8 +71,10 @@ class main_menu = object(self)
     screen <- new Home.screen
       [new Home.textured_item "title" (w/.2., h /. 2. -. 250.)]
       [
-        new Home.textured_actionnable "gameon" "gameon_hover" (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push (new LoadScreen.state Game.new_game :> State.state)) ;
+        new Home.textured_actionnable "gameon" "gameon_hover"
+          (w/.2., h /. 2. +. 30.)
+          (fun () -> manager#push
+            (new LoadScreen.state Game.new_game :> State.state)) ;
         new Home.textured_actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;
