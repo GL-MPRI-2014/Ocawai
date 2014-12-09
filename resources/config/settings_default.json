@@ -1,10 +1,7 @@
 {
-    "battlefield_width": 100,
-    "battlefield_height": 100,
+    "map_width": 30,
+    "map_height": 30,
     
-    "generate_attempts": 10,
-    "structs_attempts": 1,
-    "units_spawn_attempts": 5,
-  
-    "cursor_speed": 100
+    "string_compression_offset": 48,
+    "serializer_offset": 97
 }

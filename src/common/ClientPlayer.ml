@@ -2,13 +2,15 @@ open Player
 
 type action_state = Idle | Waiting | Received of Action.t
 
-class client_player (a : Unit.t list) (b : Building.t list) = 
+class client_player ?(id) (a : Unit.t list) (b : Building.t list) = 
 
   object (self) 
 
-  inherit player a b
+  inherit player ?id:id a b
 
   val mutable event_state = Idle
+
+  val mutable logicPlayerList = [] 
 
   method event_state = event_state
 
@@ -23,6 +25,11 @@ class client_player (a : Unit.t list) (b : Building.t list) =
           event_state <- Idle; a
       | _ -> get_aux ()
     in get_aux ()
-    
+
+  method set_logicPlayerList playersList =
+	()
+
+  method get_logicPlayerList =
+	logicPlayerList
 
 end

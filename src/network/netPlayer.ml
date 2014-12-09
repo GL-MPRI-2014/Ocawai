@@ -8,7 +8,7 @@ object (self)
 
   (* The socket we read from and write into to communicate with the dealer over the network *)
   val mutable sockfd = s
-
+  val mutable logicPlayerList = [] 
   (* in_channel and out_channel corresponding to that socket *)
   val mutable in_channel = in_channel_of_descr s
   val mutable out_channel = out_channel_of_descr s
@@ -30,6 +30,11 @@ object (self)
     | Next_action a -> a
     | Error _ -> [Position.create (0,0)], Action.Wait (* By default Wait *) 
 
+  method set_logicPlayerList playersList =
+	()
+
+  method get_logicPlayerList =
+	logicPlayerList
 
   (* send updates over the network *)
 		   
@@ -37,7 +42,3 @@ object (self)
     to_channel out_channel (Update u) [Closures];
 
 end
-
-type t = netPlayer
-
-let create_netPlayer sockfd a b = new netPlayer sockfd a b

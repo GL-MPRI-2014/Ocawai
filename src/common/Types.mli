@@ -14,11 +14,16 @@ type update =
   | Set_building of Building.t list * id_player
   | Add_unit of Unit.t * id_player
   | Add_building of Building.t * id_player
-  | Delete_unit of Unit.t *id_player (*Fog or kill*)
-  | Delete_building of Building.t * id_player(*fog or kill*)
-  | Move_unit of Unit.t * Action.movement * id_player
-                       
+  | Delete_unit of Unit.id *id_player (*Fog or kill*)
+  | Delete_building of Building.id * id_player(*fog or kill*)
+  | Move_unit of Unit.id * Action.movement * id_player
+  | Set_unit_hp of Unit.id * int * id_player
+(* for initialization only *)
+  | Set_client_player of id_player
+  | Set_logic_player_list of id_player list
+  | Map of string
 
+                       
 
 (*what a NetPlayer send to a client player*)
 type  send = Get_next_action | Update of update
@@ -26,6 +31,3 @@ type  send = Get_next_action | Update of update
 (*What a client player send to a Net Player *)
 type  receive = Next_action of Action.t | Error of error
 
-
-
-                         

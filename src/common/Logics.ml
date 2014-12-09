@@ -20,7 +20,7 @@ let player_vision (player : Player.logicPlayer) (bf : Battlefield.t) : Position.
   remove_double l
 
 
-let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos path =
+let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos path only_available =
   if mvt_point < 0 then failwith "dfs: mvt_point < 0";
   let neighbour_unsafe =
     [Position.left pos; Position.up pos; Position.right pos; Position.down pos]
@@ -34,45 +34,60 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos path =
       else mvt_point + 1
     in
     let newpath = Path.reach path pos in
+    let allied_unit = ref false in
     (* now we check if we can actually go to this new position *)
     if cost <= mvt_point
-      && (not (Hashtbl.mem h pos)
-	  || (Path.cost mvt_type bf (Hashtbl.find h pos) >
+      && (not (Hashtbl.mem visited pos)
+	  || (Path.cost mvt_type bf (Hashtbl.find visited pos) >
 	      Path.cost mvt_type bf newpath)
       )
       && (not (List.mem pos visible_pos)
 	  || not (Hashtbl.mem unit_pos pos)
-	  || snd (Hashtbl.find unit_pos pos) = player
+	  || (allied_unit := (snd (Hashtbl.find unit_pos pos) = player);
+	      !allied_unit)
       )
     then (
-      if not (Hashtbl.mem h pos) then l := pos::(!l); 
-      Hashtbl.replace h pos newpath;
+      (* if only_available is set to true, add positions only if there is also
+	 no allied unit on it *)
+      if not (Hashtbl.mem h pos) && not (only_available && (!allied_unit)) then
+	l := pos::(!l);
+      if not (only_available && (!allied_unit)) then 
+	Hashtbl.replace h pos newpath;
+      Hashtbl.replace visited pos newpath;
       let mvt_point = mvt_point - cost in
-      dfs bf player mvt_point mvt_type visible_pos unit_pos h l pos newpath
+      dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos 
+	newpath only_available
     )
   in
   List.iter visit neighbour
 
 
-let accessible_positions unit player player_list bf =
+let accessible_positions_aux unit player player_list bf only_available =
   if not (List.mem unit player#get_army) then
     failwith "accessible_positions: wrong player";
   let visible_pos = player_vision player bf in
-  let unit_pos = Hashtbl.create 50 in
+  let unit_pos = Hashtbl.create 101 in
   List.iter
     (fun player -> List.iter
       (fun unit -> Hashtbl.add unit_pos unit#position (unit,player))
       player#get_army
     )
     player_list;
-  let h = Hashtbl.create 50 in
+  let h = Hashtbl.create 101 in
+  let visited = Hashtbl.create 101 in
   let l = ref [unit#position] in
   let path_init = Path.init unit#position in
   Hashtbl.add h unit#position path_init;
-  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h l
-    unit#position path_init;
+  Hashtbl.add visited unit#position path_init;
+  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h 
+    visited l unit#position path_init only_available;
   (!l,h)
 
+let accessible_positions unit player player_list bf =
+  accessible_positions_aux unit player player_list bf false
+
+let available_positions unit player player_list bf =
+  accessible_positions_aux unit player player_list bf true
 
 
 
@@ -116,6 +131,10 @@ let rec subpath path pos = match path with
    - mvt is the actual movement done
    - b iff mvt is equal to the wanted movement *)
 let try_movement unit bf player player_list mvt =
+  let dest = List.hd (List.rev mvt) in
+  if dest <> unit#position && 
+     unit_of_position dest player player_list = (true,true)
+  then raise Bad_path; (*allied unit at the end of the movement*)
   let mvt_pt = unit#move_range in
   let last_viable_pos = ref (List.hd mvt) in
   let rec aux mvt_pt mvt = match mvt with
@@ -180,4 +199,11 @@ let apply_attack att def =
   (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
   def#take_damage damage
 
-
+let units_inrange pos range player pl = 
+  let ennemy_list = List.filter (fun p -> p <> player) pl in
+  List.map (fun p ->
+    List.filter (fun u ->
+      Position.dist pos u#position <= range
+    ) p#get_army
+  ) ennemy_list
+  |> List.flatten
