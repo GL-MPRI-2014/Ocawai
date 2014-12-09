@@ -2,6 +2,9 @@ open OcsfmlGraphics
 open Utils
 open Tileset
 
+(* Time to move of 1 cell *)
+let animation_time = 0.03
+
 let renderer = object(self)
 
   val texture_library = TextureLibrary.create ()
@@ -11,6 +14,12 @@ let renderer = object(self)
   val font = Fonts.load_font "FreeSansBold.ttf"
 
   val mutable rect_vao = new vertex_array ~primitive_type:Quads []
+
+  (* Marks items of the log as read *)
+  val log_history = Hashtbl.create 91
+
+  (* Associates every unit to its graphical state *)
+  val unit_ginfo = Hashtbl.create 91
 
   method init =
     let folder = (Utils.base_path ()) ^ "textures/" in
@@ -237,12 +246,45 @@ let renderer = object(self)
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
+    let (u_position,offset) = if Hashtbl.mem unit_ginfo my_unit then
+      begin
+        let (path,time) = Hashtbl.find unit_ginfo my_unit in
+        let ellapsed = Unix.gettimeofday () -. time in
+        if ellapsed > animation_time then
+          Hashtbl.replace unit_ginfo my_unit
+            (List.tl path, Unix.gettimeofday () -. (ellapsed -. animation_time));
+        let (path,time) = Hashtbl.find unit_ginfo my_unit in
+        let ellapsed = Unix.gettimeofday () -. time in
+        match path with
+        | []          ->
+            Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
+        | e :: n :: _ ->
+            (* Beware of magic numbers *)
+            let o = ellapsed /. animation_time *. 50. in
+            e, Position.(
+              if      n = left  e then (-. o,   0.)
+              else if n = right e then (o   ,   0.)
+              else if n = up    e then (0.  , -. o)
+              else if n = down  e then (0.  ,    o)
+              else assert false
+            )
+        | e :: _      -> (e,(0.,0.))
+      end
+      else (my_unit#position, (0.,0.))
+    in
     let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map target camera name (my_unit#position) ~color();
+    self#draw_from_map ~offset target camera name u_position ~color();
     let size = int_of_float (camera#zoom *. 14.) in
-    let position = (foi2D (camera#project my_unit#position)) in
-    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
+    let (ox,oy) = offset in
+    let position = addf2D
+      (foi2D (camera#project u_position))
+      (ox *. camera#zoom, oy *. camera#zoom)
+    in
+    (* new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
         string_of_int (my_unit#hp * 10 / my_unit#life_max))
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw *)
+    new text ~string:(string_of_int (my_unit#hp))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
 
@@ -295,7 +337,20 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    (* Ugly: to alternate characters *)
+    (* Reads the log to update unit informations *)
+    List.iter (fun p ->
+      let rec read_log = function
+        | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
+          read_log r ;
+          begin Player.(match l with
+            | Moved(u,p) ->
+                Hashtbl.replace unit_ginfo u (p,Unix.gettimeofday())
+          ) end ;
+          Hashtbl.add log_history (p,i) ()
+        | _ -> ()
+      in read_log p#get_log
+    ) data#players;
+    (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
       let ret = characters.(!x) in
@@ -303,22 +358,18 @@ let renderer = object(self)
       if !x = Array.length characters then x := 0 ;
       ret
     in
-    (* Associate every player to a character *)
-    (* It probably shouldn't be done here *)
-    let character_of = Hashtbl.create 13 in
-    List.iter (fun p -> Hashtbl.add character_of p (get_chara ())) data#players;
-    (* Printing buildings *)
+    (* Draw buildings *)
     List.iter (fun p ->
-      let chara = Hashtbl.find character_of p in
+      let chara = get_chara () in
       List.iter
         (self#draw_building target data#camera p#get_value_resource chara)
         p#get_buildings
-      ) data#players;
-    (* Printing armies *)
+    ) data#players;
+    (* Draw units *)
     List.iter (fun p ->
-      let chara = Hashtbl.find character_of p in
+      let chara = get_chara () in
       List.iter (self#draw_unit target data#camera chara) p#get_army
-      ) data#players;
+    ) data#players;
     data#minimap#draw target data#camera#cursor;
     FPS.display target
 
