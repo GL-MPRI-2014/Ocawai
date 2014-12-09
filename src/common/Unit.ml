@@ -39,14 +39,18 @@ object (self)
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
+  method private attack_rand arm a r = 
+    match arm with
+    | Light -> a*self#attack_base*self#percentage_light*r/1000000
+    | Normal -> a*self#attack_base*self#percentage_normal*r/1000000
+    | Heavy -> a*self#attack_base*self#percentage_heavy*r/1000000
   method attack arm a = 
   (* fonction affine gérée par l'engine -> gérer les ripostes *)
     let _ = Random.self_init() in
     let r = 85 + Random.int 31 in
-    match arm with 
-      | Light -> a*self#attack_base*self#percentage_light*r/1000000
-      | Normal -> a*self#attack_base*self#percentage_normal*r/1000000
-      | Heavy -> a*self#attack_base*self#percentage_heavy*r/1000000
+    self#attack_rand arm a r
+  method attack_interval arm a =
+    (self#attack_rand arm a 85, self#attack_rand arm a 115)
   method take_damage dmg = life <- max 0 (life-dmg)
   method has_played = played
   method set_played p = played <- p
