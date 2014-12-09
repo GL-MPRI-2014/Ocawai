@@ -306,17 +306,21 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
+    (* Updates the positions according to the log *)
     List.iter (fun p ->
       let rec read_log = function
         | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
-              read_log r ;
-              begin Player.(match l with
-                | Moved(u,p) ->
-                    Hashtbl.replace unit_ginfo u (p,Unix.gettimeofday())
-              ) end ;
-              Hashtbl.add log_history (p,i) ()
+          read_log r ;
+          begin Player.(match l with
+            | Moved(u,p) ->
+            Hashtbl.replace unit_ginfo u (p,Unix.gettimeofday())
+          ) end ;
+          Hashtbl.add log_history (p,i) ()
         | _ -> ()
-      in read_log p#get_log ;
+      in read_log p#get_log
+    ) data#players;
+    (* Draw buildings *)
+    List.iter (fun p ->
       List.iter (self#draw_building target data#camera) p#get_buildings
     ) data#players;
     (* Ugly: to alternate characters *)
@@ -327,6 +331,7 @@ let renderer = object(self)
       if !x = Array.length characters then x := 0 ;
       ret
     in
+    (* Draw units *)
     List.iter (fun p ->
       let chara = get_chara () in
       List.iter (self#draw_unit target data#camera chara) p#get_army
