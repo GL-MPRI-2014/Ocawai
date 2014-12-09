@@ -2,6 +2,9 @@ open OcsfmlGraphics
 open Utils
 open Tileset
 
+(* Time to move of 1 cell *)
+let animation_time = 0.03
+
 let renderer = object(self)
 
   val texture_library = TextureLibrary.create ()
@@ -237,31 +240,46 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-
   method private draw_unit (target : render_window) camera character my_unit =
     let color =
       if my_unit#has_played
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
-    let u_position = if Hashtbl.mem unit_ginfo my_unit then
+    let (u_position,offset) = if Hashtbl.mem unit_ginfo my_unit then
       begin
         let (path,time) = Hashtbl.find unit_ginfo my_unit in
         let ellapsed = Unix.gettimeofday () -. time in
-        if ellapsed > 0.1 then
+        if ellapsed > animation_time then
           Hashtbl.replace unit_ginfo my_unit
-            (List.tl path, Unix.gettimeofday () -. (ellapsed -. 0.1));
+            (List.tl path, Unix.gettimeofday () -. (ellapsed -. animation_time));
         let (path,time) = Hashtbl.find unit_ginfo my_unit in
+        let ellapsed = Unix.gettimeofday () -. time in
         match path with
-        | [] -> Hashtbl.remove unit_ginfo my_unit ; my_unit#position
-        | e :: _ -> e
+        | []          ->
+            Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
+        | e :: n :: _ ->
+            (* Beware of magic numbers *)
+            let o = ellapsed /. animation_time *. 50. in
+            e, Position.(
+              if      n = left  e then (-. o,   0.)
+              else if n = right e then (o   ,   0.)
+              else if n = up    e then (0.  , -. o)
+              else if n = down  e then (0.  ,    o)
+              else assert false
+            )
+        | e :: _      -> (e,(0.,0.))
       end
-      else my_unit#position
+      else (my_unit#position, (0.,0.))
     in
     let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map target camera name u_position ~color();
+    self#draw_from_map ~offset target camera name u_position ~color();
     let size = int_of_float (camera#zoom *. 14.) in
-    let position = (foi2D (camera#project u_position)) in
+    let (ox,oy) = offset in
+    let position = addf2D
+      (foi2D (camera#project u_position))
+      (ox *. camera#zoom, oy *. camera#zoom)
+    in
     new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
         string_of_int (my_unit#hp * 10 / my_unit#life_max))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
@@ -306,14 +324,14 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    (* Updates the positions according to the log *)
+    (* Reads the log to update unit informations *)
     List.iter (fun p ->
       let rec read_log = function
         | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
           read_log r ;
           begin Player.(match l with
             | Moved(u,p) ->
-            Hashtbl.replace unit_ginfo u (p,Unix.gettimeofday())
+                Hashtbl.replace unit_ginfo u (p,Unix.gettimeofday())
           ) end ;
           Hashtbl.add log_history (p,i) ()
         | _ -> ()
@@ -323,7 +341,7 @@ let renderer = object(self)
     List.iter (fun p ->
       List.iter (self#draw_building target data#camera) p#get_buildings
     ) data#players;
-    (* Ugly: to alternate characters *)
+    (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
       let ret = characters.(!x) in
