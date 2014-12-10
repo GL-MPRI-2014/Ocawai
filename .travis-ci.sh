@@ -10,6 +10,7 @@ COMPILER_DEPENDS="g++ binutils make"
 TESTING_DEPENDS="xdotool libxrandr-dev"
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
+cat /etc/openal/alsoft.conf
 sudo cp /var/lib/dbus/machine-id /etc/machine-id
 
 case "$OCAML_VERSION" in
