@@ -7,6 +7,7 @@
 OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
+TESTING_DEPENDS="xdotool"
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
 #cp /etc/machine-id /var/lib/dbus/machine-id
@@ -28,7 +29,7 @@ sudo add-apt-repository -y ppa:sonkun/sfml-development
 
 sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam \
-						 ${LIB_DEPENDS} ${COMPILER_DEPENDS}
+			 ${LIB_DEPENDS} ${COMPILER_DEPENDS} ${TESTING_DEPENDS}
 
 export OPAMYES=1
 opam init 
