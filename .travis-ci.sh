@@ -12,7 +12,7 @@ export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
 #cp /etc/machine-id /var/lib/dbus/machine-id
 sudo cp /var/lib/dbus/machine-id /etc/machine-id
-xrandr
+sudo xrandr
 
 case "$OCAML_VERSION" in
 	3.12.1) ppa=avsm/ocaml312+opam12 ;;
