@@ -7,7 +7,7 @@
 OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
-TESTING_DEPENDS="xdotool"
+TESTING_DEPENDS="xdotool xrandr"
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
 #cp /etc/machine-id /var/lib/dbus/machine-id
