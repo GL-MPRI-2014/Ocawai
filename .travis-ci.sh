@@ -9,6 +9,7 @@ LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
+ln -s /etc/machine-id /var/lib/dbus/machine-id
 
 case "$OCAML_VERSION" in
 	3.12.1) ppa=avsm/ocaml312+opam12 ;;
