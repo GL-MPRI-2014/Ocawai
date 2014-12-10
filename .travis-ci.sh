@@ -7,6 +7,8 @@
 OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
+export DISPLAY=:99.0
+sh -e /etc/init.d/xvfb start
 
 case "$OCAML_VERSION" in
 	3.12.1) ppa=avsm/ocaml312+opam12 ;;
@@ -40,6 +42,8 @@ aclocal -I m4
 autoreconf configure.ac
 ./configure
 make interface
+make run
+./test/xdotools.sh
 make engine
 make doc
 make check
