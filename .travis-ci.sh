@@ -9,7 +9,7 @@ LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
 TESTING_DEPENDS="xdotool libxrandr-dev"
 export DISPLAY=:99.0
-xvfb +extension RANDR :99 -screen 0 1280x1024x32
+Xvfb +extension RANDR :99 -screen 0 1280x1024x32
 #cp /etc/machine-id /var/lib/dbus/machine-id
 sudo cp /var/lib/dbus/machine-id /etc/machine-id
 sudo xrandr
