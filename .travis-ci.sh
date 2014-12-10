@@ -44,8 +44,8 @@ aclocal -I m4
 autoreconf configure.ac
 ./configure
 make interface
-make run
-./test/xdotools.sh
+sudo make run
+sudo ./test/xdotools.sh
 make engine
 make doc
 make check
