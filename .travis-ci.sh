@@ -44,7 +44,7 @@ aclocal -I m4
 autoreconf configure.ac
 ./configure
 make interface
-sudo make run
+sudo nohup ./main.native &
 sudo ./test/xdotools.sh
 make engine
 make doc
