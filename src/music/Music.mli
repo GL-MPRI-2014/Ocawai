@@ -61,7 +61,7 @@ val rest : Time.t -> 'a t
 (**
    @return the length of an event
 *)
-val getDur : 'a t -> Time.t
+val duration : 'a t -> Time.t
 
 (** {2 Testing functions} *)
 

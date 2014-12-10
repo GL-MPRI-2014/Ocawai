@@ -41,7 +41,7 @@ let note : time -> 'a -> 'a t = fun dur a ->
   
 let rest : time -> 'a t = fun dur -> Rest (dur)
 
-let getDur : 'a t -> time = function
+let duration : 'a t -> time = function
   | Note(dur, _) -> dur
   | Rest(dur) -> dur		 
 
@@ -59,8 +59,8 @@ let rec fprintf : Format.formatter -> event -> unit = fun fmt ->
 and fprint_param : Format.formatter -> param -> unit = fun fmt ->
   function
   | param ->
-     let pitch = param#getPitch
-     and velocity = param#getVelocity in
+     let pitch = param#pitch
+     and velocity = param#velocity in
      Format.fprintf fmt "@[<1>(pitch =@ %a,@ velocity =@ %d@,)@]"
       fprint_pitch pitch velocity
 
@@ -105,10 +105,10 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
 						       ~tempo ~duration
      in
      let buffer = MIDI.create(midi_duration)
-     and note = Audio.Note.of_string (pitch_to_string (a#getPitch))
+     and note = Audio.Note.of_string (pitch_to_string (a#pitch))
      (** To-Do : Requires patching mm.Audio.Note to read sharp
                                  and flat notes *)
-     and velocity = MidiV.velocityFromInt (a#getVelocity)
+     and velocity = MidiV.velocityFromInt (a#velocity)
      in
      MIDI.insert buffer (0, MIDI.Note_on(note, velocity));
      MIDI.insert buffer (midi_duration-1, MIDI.Note_off(note, velocity));
