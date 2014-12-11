@@ -24,6 +24,9 @@ val minus : t -> t -> t
 (** Group unary inverse *) 
 val inverse : t -> t
 
+(** Return [-1], [0] or [1] according to the sign of the argument. *)
+val sign : t -> int
+
 (** {2 Comparison functions} *)
 
 (** [compare t1 t2] @return a negative int
