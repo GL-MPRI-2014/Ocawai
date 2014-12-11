@@ -1,8 +1,9 @@
+(**Represent an item in the log file of the player.*)
 type log_item =
   | Moved of Unit.t * Action.movement
 
 
-(**Initialize a logic player.
+(**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
 class logicPlayer : ?id:Types.id_player -> Unit.t list -> Building.t list  ->
 object
@@ -51,7 +52,7 @@ object
 					    
 end
 
-(**Initialize a player. A player is a enhanced logic player. It has a get_next_action that ask for the next action of the player. And it knows the other players on the game.
+(**A player is a enhanced logic player. It has a get_next_action that ask for the next action of the player. And it knows the other players on the game.
 @param id a logic player can be created with a specific id.*)
 class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  ->
 object

@@ -60,12 +60,7 @@ let scr_lt =
 
 let scr_eq =
   `Fun(fun a ->
-    `Fun (fun b ->
-      match (a,b) with
-      |(`Int(a), `Int(b)) -> `Bool(a = b)
-      | _ -> assert false
-    )
-  )
+    `Fun (fun b -> `Bool(a = b)))
 
 let scr_le =
   `Fun(fun a ->
@@ -209,6 +204,29 @@ let scr_listfilter =
           (fun x -> match f x with `Bool b -> b | _ -> assert false) l)
       | _ -> assert false)
     | _ -> assert false)
+
+let scr_listconcat =
+  `Fun(fun x ->
+    `Fun(function
+      | `List(l) -> `List (x::l)
+      | _ -> assert false))
+
+let scr_listappend =
+  `Fun(function
+    | `List(l) -> `Fun(function
+      | `List(l') -> `List (l@l')
+      | _ -> assert false)
+    | _ -> assert false)
+
+let scr_listflatten =
+  let rec flattener = function
+    | [] -> []
+    | `List(l)::t -> l @ flattener t
+    | _ -> assert false in
+  `Fun(function
+    | `List(l) -> `List (flattener l)
+      | _ -> assert false)
+
 
 
 (** Pair functions *)
@@ -358,6 +376,19 @@ let scr_range =
     | _ -> assert false
   )
 
+let scr_expected_damage =
+  `Fun (fun su ->
+    `Fun (fun sv ->
+      let b = match (su,sv) with
+      |(`Soldier(u), `Soldier(v)) -> let a = u#attack_base in match v#armor with
+        | `Light -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_light)/100
+        | `Normal -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_normal)/100
+        | `Heavy -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_heavy)/100
+      | _ -> assert false
+      in `Int(b) (*à remplacer par 'in max(b, vie courante de v)' *)
+    )
+  )
+
 let scr_donothing =
   `Fun(function
     |`Unit -> raise Do_nothing
@@ -378,7 +409,7 @@ let init () =
   expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
   expose scr_gt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_gt" ;
   expose scr_lt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_lt" ;
-  expose scr_eq  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_eq" ;
+  expose scr_eq  (`Fun_t(`Alpha_t(0) , `Fun_t(`Alpha_t(0) , `Bool_t))) "_eq" ;
   expose scr_ge  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_ge" ;
   expose scr_le  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_le" ;
   expose scr_mul (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_mul";
@@ -406,6 +437,15 @@ let init () =
     `Fun_t(`List_t(`Alpha_t(0)), `Unit_t))) "list_iter";
   expose scr_listfilter (`Fun_t(`Fun_t(`Alpha_t(0), `Bool_t),
     `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0))))) "list_filter";
+  expose scr_listappend
+    (`Fun_t(`Alpha_t(0), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
+    "list_append";
+  expose scr_listconcat
+    (`Fun_t(`List_t(`Alpha_t(0)), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
+    "list_concat";
+  expose scr_listflatten
+    (`Fun_t(`List_t(`List_t(`Alpha_t(0))), `List_t(`Alpha_t(0))))
+    "list_flatten";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";

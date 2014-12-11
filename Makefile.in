@@ -297,7 +297,6 @@ check_interface: interface
 check: check_player check_generation check_logics check_interface
 
 log:
-	@echo "coucou"
 	mkdir -p $(log_dir)
 
 .PHONY: FORCE all clean dist distcheck engine interface network script log
