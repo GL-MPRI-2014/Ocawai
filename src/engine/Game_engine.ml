@@ -11,12 +11,18 @@ class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
   val mutable actual_player = 0
+  val mutable is_over = false
 
   method private next_player =
     (actual_player + 1) mod (Array.length players)
 
   method get_players =
     Array.to_list players
+
+  method get_neutral_buildings =
+    (get_opt field)#neutral_buildings
+
+  method is_over = is_over
 
   method private create_n_scripted = function
     |0 -> []
@@ -83,33 +89,30 @@ class game_engine () = object (self)
           player#add_unit u;
           u#set_played true)
         else raise Bad_create
-      |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
-    if true (* test gameover here *) 
-(*
+    if (* test gameover here *) 
       List.exists 
 	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
 	(self#get_players :> Player.logicPlayer list)
-*)
     then self#run
+    else is_over <- true
 
   method private end_turn =
     let player = players.(actual_player) in
     List.iter (fun u -> u#set_played false) player#get_army;
     player#harvest_buildings_income;
     actual_player <- self#next_player;
-(* TODO: Needs a method/val for building_list
     (*update buildings at the start of a new turn*)
     let changed_buildings = Logics.capture_buildings 
       (self#get_players :> Player.logicPlayer list)
       (players.(actual_player) :> Player.logicPlayer)
-      self#building_list
+      (get_opt field)#buildings
     in
     (*send the list of changed buildings to the players*)
    ()
-*)
+
 
   method private apply_movement movement =
     let player = players.(actual_player) in
