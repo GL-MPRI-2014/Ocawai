@@ -25,7 +25,8 @@ let new_game () =
   let m_cdata = (new ClientData.client_data ~camera:m_camera
       ~map:m_map
       ~players:m_players
-      ~actual_player:my_player)
+      ~actual_player:my_player
+      ~neutral_buildings:(fun () -> m_engine#get_neutral_buildings))
   in
 
   object(self)
@@ -83,7 +84,7 @@ let new_game () =
     in
 
     (* Ingame menu items *)
-    new item "cancel" "End turn" (fun () -> 
+    new item "cancel" "End turn" (fun () ->
       if cdata#actual_player#event_state = ClientPlayer.Waiting then
         cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)

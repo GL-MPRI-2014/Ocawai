@@ -323,7 +323,7 @@ let renderer = object(self)
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
-    let texname = 
+    let texname =
       Cursor.(match camera#cursor#get_state with
       |Idle | Displace(_,_,_) -> "cursor"
       |Action(_,_,_) -> "sight")
@@ -366,6 +366,7 @@ let renderer = object(self)
       ret
     in
     (* Draw buildings *)
+    List.iter (self#draw_building target data#camera 0 "neutral") data#neutral_buildings;
     List.iter (fun p ->
       let chara = get_chara () in
       List.iter
