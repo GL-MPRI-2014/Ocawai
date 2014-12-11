@@ -358,6 +358,19 @@ let scr_range =
     | _ -> assert false
   )
 
+let scr_expected_damage =
+  `Fun (fun su ->
+    `Fun (fun sv ->
+      let b = match (su,sv) with
+      |(`Soldier(u), `Soldier(v)) -> let a = u#attack_base in match v#armor with
+        | `Light -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_light)/100
+        | `Normal -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_normal)/100
+        | `Heavy -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_heavy)/100
+      | _ -> assert false
+      in `Int(b) (*à remplacer par 'in max(b, vie courante de v)' *)
+    )
+  )
+
 let scr_donothing =
   `Fun(function
     |`Unit -> raise Do_nothing
