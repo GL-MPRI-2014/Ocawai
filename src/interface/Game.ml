@@ -83,6 +83,12 @@ let new_game () =
     in
 
     (* Ingame menu items *)
+    new item "cancel" "End turn" (fun () -> 
+      if cdata#actual_player#event_state = ClientPlayer.Waiting then
+        cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
+      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
+    |> my_menu#add_child;
+
     new item "forfeit" "Forfeit" (fun () -> forfeit_popup#toggle;
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
@@ -237,10 +243,6 @@ let new_game () =
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
-
-        | KeyPressed { code = OcsfmlWindow.KeyCode.E ; _ } ->
-            if cdata#actual_player#event_state = ClientPlayer.Waiting then
-               cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
