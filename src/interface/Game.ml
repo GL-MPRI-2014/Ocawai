@@ -280,7 +280,7 @@ let new_game () =
                 end else cursor#set_state Idle)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
-            cdata#camera#cursor#set_state Idle
+            cdata#camera#cursor#set_state Cursor.Idle
         | _ -> ()
       end)
 
