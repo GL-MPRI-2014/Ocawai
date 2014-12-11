@@ -214,7 +214,7 @@ let scr_listconcat =
   `Fun(fun x ->
     `Fun(function
       | `List(l) -> `List (x::l)
-      | _ -> assert false)))
+      | _ -> assert false))
 
 let scr_listappend =
   `Fun(function
