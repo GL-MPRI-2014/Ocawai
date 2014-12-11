@@ -8,6 +8,8 @@ class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> o
     method set_army : Unit.t list -> unit
     method set_buildings : Building.t list -> unit
     method get_buildings : Building.t list
+    method get_base : Building.t option
+    method set_base : Building.t -> unit
     method add_building : Building.t -> unit
     (* TODO *)
     method set_unit_hp : Unit.id -> int -> unit
