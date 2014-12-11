@@ -60,12 +60,7 @@ let scr_lt =
 
 let scr_eq =
   `Fun(fun a ->
-    `Fun (fun b ->
-      match (a,b) with
-      |(`Int(a), `Int(b)) -> `Bool(a = b)
-      | _ -> assert false
-    )
-  )
+    `Fun (fun b -> `Bool(a = b)))
 
 let scr_le =
   `Fun(fun a ->
@@ -219,6 +214,12 @@ let scr_listfilter =
       | _ -> assert false)
     | _ -> assert false)
 
+let scr_listconcat =
+  `Fun(fun x ->
+    `Fun(function
+      | `List(l) -> `List (x::l)
+      | _ -> assert false))
+
 let scr_listappend =
   `Fun(function
     | `List(l) -> `Fun(function
@@ -226,11 +227,15 @@ let scr_listappend =
       | _ -> assert false)
     | _ -> assert false)
 
-let scr_listconcat =
-  `Fun(fun x ->
-    `Fun(function
-      | `List(l) -> `List (x::l)
-      | _ -> assert false))
+let scr_listflatten =
+  let rec flattener = function
+    | [] -> []
+    | `List(l)::t -> l @ flattener t
+    | _ -> assert false in
+  `Fun(function
+    | `List(l) -> `List (flattener l)
+      | _ -> assert false)
+
 
 
 (** Pair functions *)
@@ -413,7 +418,7 @@ let init () =
   expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
   expose scr_gt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_gt" ;
   expose scr_lt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_lt" ;
-  expose scr_eq  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_eq" ;
+  expose scr_eq  (`Fun_t(`Alpha_t(0) , `Fun_t(`Alpha_t(0) , `Bool_t))) "_eq" ;
   expose scr_ge  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_ge" ;
   expose scr_le  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_le" ;
   expose scr_mul (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_mul";
@@ -448,6 +453,9 @@ let init () =
   expose scr_listconcat
     (`Fun_t(`List_t(`Alpha_t(0)), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
     "list_concat";
+  expose scr_listflatten
+    (`Fun_t(`List_t(`List_t(`Alpha_t(0))), `List_t(`Alpha_t(0))))
+    "list_flatten";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";
