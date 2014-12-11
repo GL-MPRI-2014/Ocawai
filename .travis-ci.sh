@@ -7,6 +7,11 @@
 OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
+TESTING_DEPENDS="xdotool libxrandr-dev x11-xserver-utils freeglut3 freeglut3-dev mesa-utils libgl1-mesa-glx xserver-xorg-core"
+export DISPLAY=:99.0
+#sh -e /etc/init.d/xvfb start
+#sudo cp /var/lib/dbus/machine-id /etc/machine-id
+/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99.0 -screen 0 800x600x16
 
 case "$OCAML_VERSION" in
 	3.12.1) ppa=avsm/ocaml312+opam12 ;;
@@ -24,7 +29,7 @@ sudo add-apt-repository -y ppa:sonkun/sfml-development
 
 sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam \
-						 ${LIB_DEPENDS} ${COMPILER_DEPENDS}
+			 ${LIB_DEPENDS} ${COMPILER_DEPENDS} ${TESTING_DEPENDS}
 
 export OPAMYES=1
 opam init 
@@ -40,6 +45,8 @@ aclocal -I m4
 autoreconf configure.ac
 ./configure
 make interface
+nohup ./test/snake.sh &
+./main.native
 make engine
 make doc
 make check
