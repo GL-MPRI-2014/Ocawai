@@ -1,6 +1,6 @@
 (**
-   Doubly chained list module used in music generation.
-   Implements constant time insert in head AND tail.
+   DList module used in music generation.
+   DLists implement constant time insert in head AND tail.
 
    Represents the background, lower-level implementation for the Tile module.
 
