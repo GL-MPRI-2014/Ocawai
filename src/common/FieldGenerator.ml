@@ -640,21 +640,19 @@ let create_borders m =
 
 let create_buildings m =
   let unbound_list = Config.config#unbound_buildings_list in
-  let poslist = ref (Battlefield.tile_filter (fun t -> Tile.get_name t = "plain") m) in
-  GenLog.infof "nb plains : %d" (List.length !poslist);
+  let poslist = ref [] in
+  let takenlist = ref [] in
   let rec position ub =function
   | 0 -> []
   | nb -> if !poslist = [] then (GenLog.infof "empty";[]) else (
     poslist := Utils.shuffle (!poslist);
     let pos = List.hd !poslist in
     poslist := List.tl !poslist;
+    takenlist := pos :: !takenlist;
     let b = Building.bind ub pos None in
     b::(position ub (nb-1)))
   in
-  List.fold_left (fun l e -> (position e e#spawn_number_neutral)@l) [] unbound_list
-    
-
-
+  List.fold_left (fun l e -> poslist := Battlefield.tile_filteri (fun pos t -> not (List.mem pos !takenlist) && List.for_all (fun mov -> Tile.traversable_m t mov ) e#movement_types) m;(position e e#spawn_number_neutral)@l) [] unbound_list
 
 (* create structures on a map *)
 let create_structs m =

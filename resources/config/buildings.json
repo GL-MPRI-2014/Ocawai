@@ -6,26 +6,35 @@
   {
     "name": "factory",
     "product": ["infantry", "bazooka", "tank", "recon"],
-    "income": 10
+    "income": 10,
+    "spawn_number_neutral" : 2,
+    "movement_types" : ["Walk"]
   },
   {
     "name": "port",
     "product": ["battleship"],
-    "income": 10
+    "income": 10,
+    "spawn_number_neutral" : 2,
+    "movement_types" : ["Walk", "Swim"]
   },
   {
     "name": "airport",
     "product": ["helicopter"],
-    "income": 10
+    "income": 10,
+    "spawn_number_neutral" : 1,
+    "movement_types" : ["Walk"]
   },
   {
     "name": "city",
-    "income": 10
+    "income": 10,
+    "spawn_number_neutral" : 3,
+    "movement_types" : ["Walk"]
   },
   {
     "name": "flowerfield",
     "income": 50,
-    "spawn_number_neutral" : 3
+    "spawn_number_neutral" : 3,
+    "movement_types" : ["Walk"]
   }
 ]
 

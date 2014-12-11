@@ -8,7 +8,8 @@ type unbound_t = <
   product : string list;
   income : int;
   spawn_number_per_player : int;
-  spawn_number_neutral : int
+  spawn_number_neutral : int;
+  movement_types : Unit.movement list
 >
 
 type t = <
@@ -21,7 +22,8 @@ type t = <
   spawn_number_per_player : int;
   spawn_number_neutral : int;
   set_owner : int -> unit;
-  set_neutral : unit
+  set_neutral : unit;
+  movement_types : Unit.movement list
 >
 
 val bind : unbound_t -> Position.t -> int option -> t
