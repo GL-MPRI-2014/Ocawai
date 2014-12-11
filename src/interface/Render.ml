@@ -341,7 +341,8 @@ let renderer = object(self)
           read_log r ;
           begin Player.(match l with
             | Moved(u,p) ->
-                Hashtbl.replace unit_ginfo u (p,0)
+                Hashtbl.replace unit_ginfo u (p,0);
+                Sounds.play_sound "boots"
           ) end ;
           Hashtbl.add log_history (p,i) ()
         | _ -> ()
