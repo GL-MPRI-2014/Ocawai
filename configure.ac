@@ -1,5 +1,5 @@
 AC_PREREQ([2.68])
-AC_INIT([projet_GL_2014_2015], [V0.1], [ens-info-genielog@lists.crans.org])
+AC_INIT([OCAWAI], [V0.1], [ens-info-genielog@lists.crans.org])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -21,7 +21,7 @@ fi
 
 AC_PROG_FINDLIB
 if test "$OCAMLFIND" = "no"; then
-   AC_MSG_ERROR([You must install Ocaml findlib])
+   AC_MSG_ERROR([You must install Ocamlfind])
 fi
 
 #for interface
@@ -51,7 +51,7 @@ fi
 
 #pulseaudio for music
 AC_CHECK_OCAML_PKG([pulseaudio])
-if test "$OCAML_PKG_mm" = "no"; then
+if test "$OCAML_PKG_pulseaudio" = "no"; then
    AC_MSG_ERROR([Please install OCaml findlib module 'pulseaudio'.])
 fi
 

@@ -10,7 +10,7 @@ let new_game () =
 
   let my_player = new ClientPlayer.client_player [] [] in
 
-  let m_engine =new Game_engine.game_engine () in
+  let m_engine = new Game_engine.game_engine () in
 
   let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 in
 
@@ -83,6 +83,12 @@ let new_game () =
     in
 
     (* Ingame menu items *)
+    new item "cancel" "End turn" (fun () -> 
+      if cdata#actual_player#event_state = ClientPlayer.Waiting then
+        cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
+      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
+    |> my_menu#add_child;
+
     new item "forfeit" "Forfeit" (fun () -> forfeit_popup#toggle;
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
@@ -108,7 +114,7 @@ let new_game () =
       let cursor = cdata#camera#cursor in
       let atking_unit =
         match cursor#get_state with
-        |Cursor.Action(u,_) -> u
+        |Cursor.Action(u,_,_) -> u
         | _ -> assert false
       in
       let atked_unit  =
@@ -133,11 +139,18 @@ let new_game () =
       ui_manager#unfocus disp_menu;
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
-        if List.mem cursor#position r then begin
+        let in_range = Logics.units_inrange cursor#position
+               u#attack_range (cdata#actual_player :> Player.logicPlayer)
+               cdata#players
+        in
+        if List.mem cursor#position r && in_range <> [] then begin
           cursor#set_state (Cursor.Action
-            (u, Position.range cursor#position
-                u#min_attack_range u#attack_range));
+            (u, cursor#position, in_range));
           camera#set_position (Position.right cursor#position)
+        end else if List.mem cursor#position r then begin
+          cdata#actual_player#set_state (ClientPlayer.Received
+            (cdata#current_move, Action.Wait));
+          cursor#set_state Cursor.Idle
         end else
           cursor#set_state Cursor.Idle
       | _ -> assert false)
@@ -238,10 +251,6 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.E ; _ } ->
-            if cdata#actual_player#event_state = ClientPlayer.Waiting then
-               cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn))
-
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
@@ -271,16 +280,13 @@ let new_game () =
                 |_ ->
                     cursor#set_state Idle
                 end
-              |Action(_,r) ->
-                if List.mem cursor#position r &&
-                   cdata#enemy_unit_at_position cursor#position then begin
-                  atk_menu#toggle;
-                  atk_menu#set_position (cdata#camera#project cursor#position);
-                  ui_manager#focus atk_menu
-                end else cursor#set_state Idle)
+              |Action(_,_,_) ->
+                atk_menu#toggle;
+                atk_menu#set_position (cdata#camera#project cursor#position);
+                ui_manager#focus atk_menu)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
-            cdata#camera#cursor#set_state Idle
+            cdata#camera#cursor#set_state Cursor.Idle
         | _ -> ()
       end)
 

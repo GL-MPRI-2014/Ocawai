@@ -31,7 +31,7 @@ let make_withDelay : Music.event -> t = fun event ->
   make event % delay (Music.getDur event) 
 
 let getDur : t -> time = function
-  | Tile(events) -> DList.getDur events  
+  | Tile(events) -> DList.getDur events
 
 let reset : t -> t = fun t ->
   let dur = getDur t in

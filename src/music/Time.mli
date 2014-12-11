@@ -1,7 +1,11 @@
 (**
    Interface Time: defines a time unit [Time.t].
 
-   [Time.t] is an ordered groupe
+   [Time.t] is an ordered groupe used for the description of durations
+   in the music tiles. 
+
+   Also holds the [Time.Tempo] module, which defines tempi and conversion
+   functions for MIDI.
 *)
 
 type t
@@ -61,6 +65,41 @@ val dtn : t (** dotted thirty-second note *)
 val ddhn : t (** double-dotted half note *)
 val ddqn : t (** double-dotted quarter note *)
 val dden : t (** double-dotted eighth note *)
+
+(** {2 Time conversions} *)
+
+(**
+   @return a floating-point approximation of the input [t]
+*)
+val toFloat : t -> float 
+val toInt : t -> int
+
+(** {2 Tempo definition and management} *)
+
+module Tempo : sig
+  (**
+   Tempo definition module.
+
+   A tempo is seen as a ratio between the wanted value of tempo and
+   a base tempo, defined as 120 BPM.
+   This model allows compositional management of tempi and straightforward
+   accelerations / decelerations.
+   *)
+
+  type t = Num.num
+
+  (** {2 Basic values} *)
+
+  (** The basic tempo value, defined as 120BPM *)
+  val base : t
+
+  (** {2 Tempo conversions} *)
+
+  (**
+   @return the conversion to milliseconds per quarter of the inupt [tempo] ratio
+   *)
+  val tempoToMspq : t -> int
+end
 
 (** {2 Testing functions} *)
 

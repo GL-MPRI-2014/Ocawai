@@ -51,11 +51,11 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos pa
 	 no allied unit on it *)
       if not (Hashtbl.mem h pos) && not (only_available && (!allied_unit)) then
 	l := pos::(!l);
-      if not (only_available && (!allied_unit)) then 
+      if not (only_available && (!allied_unit)) then
 	Hashtbl.replace h pos newpath;
       Hashtbl.replace visited pos newpath;
       let mvt_point = mvt_point - cost in
-      dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos 
+      dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos
 	newpath only_available
     )
   in
@@ -79,7 +79,7 @@ let accessible_positions_aux unit player player_list bf only_available =
   let path_init = Path.init unit#position in
   Hashtbl.add h unit#position path_init;
   Hashtbl.add visited unit#position path_init;
-  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h 
+  dfs bf player unit#move_range unit#movement_type visible_pos unit_pos h
     visited l unit#position path_init only_available;
   (!l,h)
 
@@ -120,7 +120,7 @@ let unit_of_position pos player player_list =
 (* test if there is an unit on position pos*)
 let is_unit_on pos player_list = match player_list with
   | [] -> false
-  | p::q -> 
+  | p::q ->
       let check_army l = List.exists (fun u -> u#position = pos) l in
       let check_players l = List.exists (fun p -> check_army p#get_army) l in
       check_players player_list
@@ -128,7 +128,7 @@ let is_unit_on pos player_list = match player_list with
 (* Returns the subpath of path which stops when reaching pos *)
 let rec subpath path pos = match path with
   | [] -> []
-  | p :: t -> 
+  | p :: t ->
     if p = pos then [p]
     else p :: (subpath t pos)
 
@@ -137,7 +137,7 @@ let rec subpath path pos = match path with
    - b iff mvt is equal to the wanted movement *)
 let try_movement unit bf player player_list mvt =
   let dest = List.hd (List.rev mvt) in
-  if dest <> unit#position && 
+  if dest <> unit#position &&
      unit_of_position dest player player_list = (true,true)
   then raise Bad_path; (*allied unit at the end of the movement*)
   let mvt_pt = unit#move_range in
@@ -160,21 +160,21 @@ let try_movement unit bf player player_list mvt =
   in
   if aux mvt_pt mvt then (mvt, true)
   else (subpath mvt (!last_viable_pos), false)
-	
+
 let try_next_action player_list player bf order =
   let mvt = fst order and action = snd order in
   match action with
-  | End_turn 
+  | End_turn
   | Create_unit _ -> (*let End_turn and Create_unit pass through*)
     order
   | _ -> (
     let source = List.hd mvt in
     let u = find_unit source player in (*may raise Bad_unit*)
     if u#has_played then raise Has_played;
-    let (real_mvt, is_equal) = 
+    let (real_mvt, is_equal) =
       try_movement u bf player player_list mvt (*may raise Bad_path*)
     in
-    if not is_equal then 
+    if not is_equal then
       (real_mvt, Wait) (*if the movement was shortened, unit does nothing*)
     else (*in this case, real_mvt is equal to mvt*)
       match action with
@@ -185,30 +185,35 @@ let try_next_action player_list player bf order =
 	else (
 	  let dist = Position.dist dest (def#position) in
 	  let range = (att#min_attack_range, att#attack_range) in
-	  if fst range > dist || snd range < dist then 
+	  if fst range > dist || snd range < dist then
 	    raise Bad_attack (*targeted unit not in range*)
-          (*commented for testing purposes *) 
+          (*commented for testing purposes *)
 	  (*else if snd range > 1 && List.length mvt > 1 then
 	    raise Bad_attack (*a ranged unit must not move before firing*)*)
 	  else
 	    (mvt, action) (*the attack is valid*)
 	)
-      | _ -> 
+      | _ ->
 	failwith "try_next_action: Undefined action"
   )
 
-let apply_attack att def =
+let attack_coeff att def =
   let lambda = 90 and mu = 10 in
   let percentage = lambda * att#hp + mu * att#life_max in
   let div = 100 * att#life_max in
-  let damage = att#attack def#armor (percentage * 100 / div) in
-  (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
+  let a = percentage * 100 / div in
+  (* a = 0.9 * (current hp/max hp) + 0.1 *)
+  a
+
+let apply_attack att def =
+  let a = attack_coeff att def in
+  let damage = att#attack def#armor a in
   def#take_damage damage
 
 let rec find_player id player_list = match player_list with
   | [] -> failwith "find_player: not found"
-  | p :: t -> 
-    if p#get_id = id then p 
+  | p :: t ->
+    if p#get_id = id then p
     else find_player id t
 
 let capture_buildings player_list player building_list =
@@ -217,15 +222,15 @@ let capture_buildings player_list player building_list =
   let changed = ref [] in
   let aux u =
     match u#movement_type with
-    | Unit.Walk | Unit.Roll | Unit.Tread 
+    | Unit.Walk | Unit.Roll | Unit.Tread
     | Unit.Amphibious_Walk | Unit.Amphibious_Roll | Unit.Amphibious_Tread -> (
       let pos = u#position in
       let rec find_building = function
 	| [] -> ()
-	| b :: t -> 
+	| b :: t ->
 	  if b#position = pos then (
 	    match b#player_id with
-	    | None -> 
+	    | None ->
 	      b#set_owner p_id;
 	      player#add_building b;
 	      changed := (b, None) :: (!changed)
@@ -246,7 +251,13 @@ let capture_buildings player_list player building_list =
   List.iter aux unit_list;
   (!changed)
 
-let units_inrange pos range player pl = 
+
+let damage_interval att def =
+  let a = attack_coeff att def in
+  att#attack_interval def#armor a
+
+
+let units_inrange pos range player pl =
   let ennemy_list = List.filter (fun p -> p <> player) pl in
   List.map (fun p ->
     List.filter (fun u ->
@@ -254,4 +265,3 @@ let units_inrange pos range player pl =
     ) p#get_army
   ) ennemy_list
   |> List.flatten
-

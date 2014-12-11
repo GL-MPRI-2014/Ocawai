@@ -22,7 +22,7 @@
     "attack_range_max": 1,
     "move_range": 3,
     "spawn_number": 2,
-    "attack_base": 40,
+    "attack_base": 50,
     "armor": "Light",
     "percentage_light": 20,
     "percentage_normal": 80,
@@ -43,7 +43,7 @@
     "percentage_light": 40,
     "percentage_normal": 100,
     "percentage_heavy": 100,
-    "price": 50,
+    "price": 60,
     "life_max": 100
   },
   {
@@ -59,7 +59,7 @@
     "percentage_light": 100,
     "percentage_normal": 30,
     "percentage_heavy": 10,
-    "price": 10,
+    "price": 5,
     "life_max": 30
   },
   {
@@ -76,7 +76,7 @@
     "percentage_normal": 50,
     "percentage_heavy": 10,
     "price": 25,
-    "life_max": 40
+    "life_max": 50
   },
   {
     "name": "vtb",
@@ -98,7 +98,15 @@
     "vision_range": 4,
     "attack_range_min": 2,
     "attack_range_max": 3,
-    "move_range": 3
+    "move_range": 3,
+    "spawn_number": 2,
+    "attack_base": 60,
+    "armor": "Normal",
+    "percentage_light": 40,
+    "percentage_normal": 70,
+    "percentage_heavy": 100,
+    "price": 30,
+    "life_max": 40
   },
   {
     "name": "missilelauncher",
