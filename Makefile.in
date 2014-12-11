@@ -256,7 +256,7 @@ config.status: configure
 
 
 #Generate documentation -I _builld/$(network_dir) removed for now
-doc: interface engine
+doc: interface engine client
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
