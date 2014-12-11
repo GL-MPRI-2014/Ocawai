@@ -7,11 +7,11 @@
 OPAM_DEPENDS="ocamlfind ocsfml atdgen mm pulseaudio oUnit dolog"
 LIB_DEPENDS="libboost-all-dev cmake libsfml-dev pulseaudio libpulse-dev"
 COMPILER_DEPENDS="g++ binutils make"
-TESTING_DEPENDS="xdotool libxrandr-dev"
+TESTING_DEPENDS="xdotool libxrandr-dev x11-xserver-utils freeglut3 freeglut3-dev mesa-utils libgl1-mesa-glx xserver-xorg-core"
 export DISPLAY=:99.0
-sh -e /etc/init.d/xvfb start
-cat /etc/openal/alsoft.conf
-sudo cp /var/lib/dbus/machine-id /etc/machine-id
+#sh -e /etc/init.d/xvfb start
+#sudo cp /var/lib/dbus/machine-id /etc/machine-id
+Xvfb +extension RANDR :99.0 -screen 0 800x600x16
 
 case "$OCAML_VERSION" in
 	3.12.1) ppa=avsm/ocaml312+opam12 ;;
