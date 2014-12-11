@@ -35,7 +35,8 @@ Si c'est la première fois que vous générer le projet, lancer la commande `acl
 * `make engine` : Compiler le moteur
 * `make network` : Compiler la partie réseaux
 * `make doc` : Compiler la documentation
-* `make all` : Compiler l'interface, le moteur et la partie réseaux
+* `make` : Compile l'interface
+* `make run` : Compile le jeu et le lance
 
 Si vous faites une modification dans le Makefile.in (et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile` pour le mettre à jour.
 
