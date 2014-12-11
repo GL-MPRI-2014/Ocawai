@@ -1,4 +1,4 @@
-sleep 1
+sleep 10
 xdotool search --name OCAWAI key Up
 xdotool search --name OCAWAI key Up
 xdotool search --name OCAWAI key Down

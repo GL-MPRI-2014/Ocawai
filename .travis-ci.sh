@@ -45,8 +45,8 @@ aclocal -I m4
 autoreconf configure.ac
 ./configure
 make interface
-nohup ./main.native &
-./test/test_snake.sh
+nohup ./test/snake.sh &
+./main.native
 make engine
 make doc
 make check
