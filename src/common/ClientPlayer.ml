@@ -1,5 +1,7 @@
 open Player
 
+module Log = Log.Make (struct let section = "ClientPlayer" end)
+
 type action_state = Idle | Waiting | Received of Action.t
 
 class client_player ?(id) (a : Unit.t list) (b : Building.t list) = 
@@ -17,6 +19,9 @@ class client_player ?(id) (a : Unit.t list) (b : Building.t list) =
   method set_state s = event_state <- s
 
   method get_next_action = 
+    Log.infof "Next action..." ;
+    ([], Action.End_turn)
+    (* TODO make it work
     event_state <- Waiting;
     let rec get_aux () = 
       Thread.delay 0.25;
@@ -24,7 +29,7 @@ class client_player ?(id) (a : Unit.t list) (b : Building.t list) =
       |Received(a) -> 
           event_state <- Idle; a
       | _ -> get_aux ()
-    in get_aux ()
+    in get_aux () *)
 
   method set_logicPlayerList playersList =
 	()

@@ -78,6 +78,7 @@ output_interface = main.native
 output_profile = main.p.native
 output_script = script.native
 output_engine = dummy_serv.native
+output_client = dummy_client.native
 output_network = dealer.native
 output_gprof = profile
 
@@ -94,6 +95,8 @@ gprof_command = gprof $(output_profile) gmon.out >> $(output_gprof)
 script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script)
 
 engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine) -tag $(engine_tags)
+
+client_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_client) -tag $(engine_tags)
 
 network_command = $(command) -Is $(network_src) $(output_network)
 
@@ -142,6 +145,9 @@ run: interface
 
 engine:  $(files_atd_ml) log
 	$(engine_command)
+
+client:  $(files_atd_ml)
+	$(client_command)
 
 #network: 
 #	$(network_command)

@@ -2,6 +2,7 @@ open Unix
 open Marshal
 open Types
 
+module Log = Log.Make (struct let section = "Dealer" end)
 
 class dealer (s : file_descr) =
 object (self)
@@ -90,7 +91,10 @@ object (self)
   method manage_gna = 
     let clip = self#is_set in 
     let action = clip#get_next_action in
-    to_channel out_channel (Next_action action) [Closures]
+    Log.infof "Sending..." ;
+    to_channel out_channel (Next_action action) [Closures] ;
+    Log.infof "Sent." ;
+    flush out_channel
     
 
   (* do what has to be done with an update... *)
@@ -116,7 +120,9 @@ object (self)
   method run = 
     while true 
     do 
+      Log.infof "Receiving..." ;
       let m = (from_channel in_channel : send) in
+      Log.infof "Received." ;
       match m with
       | Get_next_action -> self#manage_gna
       | Update update -> self#manage_update update

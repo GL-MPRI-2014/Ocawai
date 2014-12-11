@@ -2,6 +2,8 @@ open Unix
 open Marshal
 open Types
 
+module Log = Log.Make (struct let section = "NetPlayer" end)
+
 class netPlayer (s : file_descr) (a:Unit.t list) (b:Building.t list) = 
 object (self)
   inherit Player.player a b 
@@ -24,8 +26,12 @@ object (self)
      does not handle timeout yet *)
 
   method get_next_action = 
+    Log.infof "#get_next_action" ;
     to_channel out_channel (Get_next_action) [Closures];
+    flush out_channel ;
+    Log.infof "#get_next_action sent" ;
     let s = (from_channel in_channel : receive) in
+    Log.infof "#get_next_action received" ;
     match s with 
     | Next_action a -> a
     | Error _ -> [Position.create (0,0)], Action.Wait (* By default Wait *) 
