@@ -12,7 +12,6 @@ export DISPLAY=:99.0
 #sh -e /etc/init.d/xvfb start
 #sudo cp /var/lib/dbus/machine-id /etc/machine-id
 /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99.0 -screen 0 800x600x16
-Xvfb +extension RANDR :99.0 -screen 0 800x600x16
 
 case "$OCAML_VERSION" in
 	3.12.1) ppa=avsm/ocaml312+opam12 ;;
