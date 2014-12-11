@@ -11,6 +11,7 @@ class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
   val mutable actual_player = 0
+  val mutable is_over = false
 
   method private next_player =
     (actual_player + 1) mod (Array.length players)
@@ -20,6 +21,8 @@ class game_engine () = object (self)
 
   method get_neutral_buildings =
     (get_opt field)#neutral_buildings
+
+  method is_over = is_over
 
   method private create_n_scripted = function
     |0 -> []
@@ -94,6 +97,7 @@ class game_engine () = object (self)
 	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
 	(self#get_players :> Player.logicPlayer list)
     then self#run
+    else is_over <- true
 
   method private end_turn =
     let player = players.(actual_player) in
