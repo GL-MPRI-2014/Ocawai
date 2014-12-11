@@ -56,10 +56,4 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
         print_endline ("Warning, script invalid argument : " ^ s);
         ([], Action.End_turn)
 
-  method set_logicPlayerList playersList =
-	()
-
-  method get_logicPlayerList =
-	logicPlayerList
-
 end
