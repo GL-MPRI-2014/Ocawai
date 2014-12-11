@@ -2,6 +2,8 @@ open Action
 open Settings_t
 open Settings_engine_t
 
+module Log = Log.Make (struct let section = "Engine" end)
+
 let get_opt o =
   match o with
   |Some(s) -> s
@@ -55,6 +57,7 @@ class game_engine () = object (self)
     in player_aux self#get_players
 
   method run : unit =
+    Log.infof "One step (%d)..." actual_player ;
     let player = players.(actual_player) in
     let next_wanted_action =  player#get_next_action in
     begin try
