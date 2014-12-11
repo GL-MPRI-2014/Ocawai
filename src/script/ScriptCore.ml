@@ -425,7 +425,7 @@ let init () =
   expose scr_add (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_add";
   expose scr_sub (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_sub";
   expose scr_div (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_div";
-  expose scr_max (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_max";
+  expose scr_max (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "int_max";
   expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
   expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
   expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
