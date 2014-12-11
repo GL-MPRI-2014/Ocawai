@@ -68,7 +68,7 @@ interface_tags = thread
 engine_tags = thread
 
 #compiler flags
-cflags = -w,-3
+cflags = -w,-3,-g
 
 #name of the target for ocamlbuild
 output_interface = main.native
