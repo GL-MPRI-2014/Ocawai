@@ -18,6 +18,9 @@ class game_engine () = object (self)
   method get_players =
     Array.to_list players
 
+  method get_neutral_buildings =
+    (get_opt field)#neutral_buildings
+
   method private create_n_scripted = function
     |0 -> []
     |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
@@ -83,16 +86,13 @@ class game_engine () = object (self)
           player#add_unit u;
           u#set_played true)
         else raise Bad_create
-      |(move, _) -> self#apply_movement move
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
-    if true (* test gameover here *) 
-(*
+    if (* test gameover here *) 
       List.exists 
 	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
 	(self#get_players :> Player.logicPlayer list)
-*)
     then self#run
 
   method private end_turn =
@@ -100,16 +100,15 @@ class game_engine () = object (self)
     List.iter (fun u -> u#set_played false) player#get_army;
     player#harvest_buildings_income;
     actual_player <- self#next_player;
-(* TODO: Needs a method/val for building_list
     (*update buildings at the start of a new turn*)
     let changed_buildings = Logics.capture_buildings 
       (self#get_players :> Player.logicPlayer list)
       (players.(actual_player) :> Player.logicPlayer)
-      self#building_list
+      (get_opt field)#buildings
     in
     (*send the list of changed buildings to the players*)
    ()
-*)
+
 
   method private apply_movement movement =
     let player = players.(actual_player) in

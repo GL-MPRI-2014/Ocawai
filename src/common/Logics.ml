@@ -227,12 +227,15 @@ let capture_buildings player_list player building_list =
 	    match b#player_id with
 	    | None -> 
 	      b#set_owner p_id;
+	      player#add_building b;
 	      changed := (b, None) :: (!changed)
 	    | Some id when id = p_id ->
 	      ()
 	    | Some id ->
 	      b#set_neutral;
-	      changed := (b, Some (find_player id player_list)) :: (!changed)
+	      let p = find_player id player_list in
+	      p#delete_building (b#get_id);
+	      changed := (b, Some p) :: (!changed)
 	  )
 	  else find_building t
       in
