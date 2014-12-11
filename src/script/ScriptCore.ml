@@ -210,6 +210,19 @@ let scr_listfilter =
       | _ -> assert false)
     | _ -> assert false)
 
+let scr_listappend =
+  `Fun(function
+    | `List(l) -> `Fun(function
+      | `List(l') -> `List (l@l')
+      | _ -> assert false)
+    | _ -> assert false)
+
+let scr_listconcat =
+  `Fun(fun x ->
+    `Fun(function
+      | `List(l) -> `List (x::l)
+      | _ -> assert false))
+
 
 (** Pair functions *)
 let scr_fst =
@@ -406,6 +419,12 @@ let init () =
     `Fun_t(`List_t(`Alpha_t(0)), `Unit_t))) "list_iter";
   expose scr_listfilter (`Fun_t(`Fun_t(`Alpha_t(0), `Bool_t),
     `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0))))) "list_filter";
+  expose scr_listappend
+    (`Fun_t(`Alpha_t(0), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
+    "list_append";
+  expose scr_listconcat
+    (`Fun_t(`List_t(`Alpha_t(0)), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
+    "list_concat";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";
