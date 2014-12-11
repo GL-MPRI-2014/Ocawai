@@ -191,13 +191,22 @@ let try_next_action player_list player bf order =
 	(*New actions here*)
   )
 
-let apply_attack att def =
+let attack_coeff att def =
   let lambda = 90 and mu = 10 in
   let percentage = lambda * att#hp + mu * att#life_max in
   let div = 100 * att#life_max in
-  let damage = att#attack def#armor (percentage * 100 / div) in
-  (* coeff = 0.9 * (current hp/max hp) + 0.1 *)
+  let a = percentage * 100 / div in
+  (* a = 0.9 * (current hp/max hp) + 0.1 *)
+  a
+       
+let apply_attack att def =
+  let a = attack_coeff att def in
+  let damage = att#attack def#armor a in
   def#take_damage damage
+
+let damage_interval att def =
+  let a = attack_coeff att def in
+  att#attack_interval def#armor a
 
 let units_inrange pos range player pl = 
   let ennemy_list = List.filter (fun p -> p <> player) pl in

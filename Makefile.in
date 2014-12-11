@@ -39,6 +39,9 @@ music_dir=$(src_root)/music
 script_dir=$(src_root)/script
 
 test_dir=test
+
+log_dir=log
+
 # $(network_dir) removed for now
 dirs = $(network_dir) $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir) $(script_dir)
 
@@ -68,7 +71,7 @@ interface_tags = thread
 engine_tags = thread
 
 #compiler flags
-cflags = -w,-3
+cflags = -w,-3,-g
 
 #name of the target for ocamlbuild
 output_interface = main.native
@@ -130,7 +133,8 @@ files_atd_t := $(foreach dir,$(dirs),$(find_files_t_ml))
 all_files_atd_ml := $(files_atd_t) $(files_atd_t:_t.ml=_j.ml) $(files_atd_t:_t.ml=_v.ml)
 all_files_atd_mli := $(files_atd_ml:.ml=.mli)
 
-interface: $(files_atd_ml)
+#TO DO : log shouldn't be here
+interface: $(files_atd_ml) log
 	$(interface_command)
 
 run: interface
@@ -289,4 +293,8 @@ check_interface: interface
 
 check: check_player check_generation check_logics check_interface
 
-.PHONY: FORCE all clean dist distcheck engine interface network script
+log:
+	@echo "coucou"
+	mkdir -p $(log_dir)
+
+.PHONY: FORCE all clean dist distcheck engine interface network script log
