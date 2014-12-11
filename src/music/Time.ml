@@ -17,6 +17,8 @@ let inverse = minus_num
 
 let compare = compare_num
 
+let sign = sign_num
+
 let min = min_num
 
 let max = max_num
