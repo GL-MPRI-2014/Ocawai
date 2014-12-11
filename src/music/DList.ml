@@ -9,7 +9,7 @@ type time = Time.t
 type event = Music.event
 
 let (/+/) : time -> time -> time = fun x y -> (Time.plus x y)
-let (/-/) : time -> time -> time = fun x y ->  (Time.minus x y)
+let (/-/) : time -> time -> time = fun x y -> (Time.minus x y)
 
 (** Tag manipulation functions *)
 
@@ -20,7 +20,7 @@ type tag = Tag of (time (** Value dur *)
 (** Base DLists *)
 
 type t = Sync of time
-	 | Event of Music.event
+	 | Event of event
 	 | Prod of (tag * t * t)
 
 let getTag : t -> tag = function
@@ -34,7 +34,7 @@ let tagProd : tag -> tag -> tag =
       | (None, None) -> None
       | (None, Some st_time) -> Some (st_time /+/ dur1)
       | (Some st_time, None) -> Some st_time
-      | (Some st_time1, Some st_time2) -> Some (Time.min st_time1 (st_time2 /+/ dur2))
+      | (Some st_time1, Some st_time2) -> Some (Time.min st_time1 (st_time2 /+/ dur1))
     in Tag (dur1 /+/ dur2, newStart)
 
 let sync : time -> t = fun time -> Sync time
@@ -45,7 +45,7 @@ let isZero : t -> bool = fun t -> t = zero
 
 let return : Music.event -> t = fun event -> Event event
 
-let getDur : t -> Time.t = fun t ->
+let duration : t -> Time.t = fun t ->
   let Tag(dur, _) = getTag t in
   dur
 
@@ -64,7 +64,7 @@ let (/::/) : t -> t -> t = fun t1 t2 ->
       end
 
 let returnWithDelay : Music.event -> t = fun event ->
-  let dur = Music.getDur event in
+  let dur = Music.duration event in
   (return event) /::/ (sync dur)
 
 (** List <-> DList functions *)
@@ -202,6 +202,14 @@ let headTail : t -> t * t =
       fromList_parallel (MusicSet.elements headTailT.events) /::/ (sync headTailT.to_next)
     in (head, headTailT.tailT)
 
+(*
+type normalized_t = NormSync of time
+		  | NormEvent of event
+		  | NormProd of (tag * t * t)
+
+let normalize : t -> normalized_t
+ *)
+
 (** {2 Testing functions} *)
 
 (** {3 Pretty_printing} *)
@@ -227,3 +235,64 @@ and fprint_start fmt = function
   | Some(dur) -> Format.fprintf fmt "@[%a@]" Time.fprintf dur
 
 let printf : t -> unit = fprintf Format.std_formatter
+
+(** {2 MIDI conversion} *)
+
+(**
+let compute_pos : t -> Time.t = function
+  | Event event -> 
+  | Sync dur -> dur
+  | Prod(Tag(dur, start), t1, t2) -> 
+ *)
+
+(** Representation of (Pre, Pos, Events buffer) *)
+type tiledBuffer = TiledB of (time * time * (MIDI.buffer option))
+
+
+(**
+   Converts a DList to a MIDI.buffer
+
+   Semantics : the MIDI.buffer's beginning is the first event in the DList
+ *)
+let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
+		 tempo:Time.Tempo.t -> t -> MIDI.buffer option =
+  fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
+      ~tempo ->
+  let local_musicToMidi : Music.event -> MIDI.buffer =
+    Music.toMidi ~samplerate ~division ~tempo
+  in 
+  function
+  | Event event -> Some(local_musicToMidi event)
+  (* TiledB(Time.zero, Music.duration event, Some(local_musicToMidi event)) *)
+  | Sync dur -> None
+  (* (
+    match Time.sign dur with
+    | -1 ->  TiledB(Time.inverse dur, Time.zero, None)
+    | _  -> TiledB(Time.zero, dur, None)
+  ) *)
+  (* Following is wrong anyway (dur might be < 0) :
+  local_musicToMidi (Music.Rest (Time.fromPair (dur, 1))) *)
+  | Prod (Tag(dur, _), t1, t2) ->
+     let local_DLtoMidi = toMidi ~samplerate ~division ~tempo in
+     let b1_opt = local_DLtoMidi t1 
+     and b2_opt = local_DLtoMidi t2 in
+     let Tag(dur1, start1) as tag1  = getTag t1
+     and Tag(dur2, start2) as tag2  = getTag t2
+     in
+     let Tag(newDur, newStart) = tagProd tag1 tag2 in
+     
+     match (b1_opt, b2_opt) with
+     | (None, None) -> None
+     | (None, Some b2) -> Some b2
+     | (Some b1, None) -> Some b1
+     | (Some b1, Some b2) -> (
+       (** Computes the duration from the first event in the whole DList
+           to the first event of the DList which does not hold the global
+           first event. *) 
+       let offset t1 t2 = match (start1, start2, newStart) with
+	 | (Some st1, Some st2, Some newSt) -> 
+	    if newSt = st1 then
+	      st1 /+/ dur1 /-/ st2
+	    else
+	 | _ -> failwith "Empty but non-None MIDI.buffer"
+     )
