@@ -36,7 +36,7 @@ val return : Music.event -> t
 (**
    @return the duration of the tile
 *)
-val getDur : t -> Time.t
+val duration : t -> Time.t
 
 (** {2 DList operators} *)
 
@@ -84,4 +84,4 @@ val fprintf : Format.formatter -> t -> unit
    @return the conversion of the given ['a t] into a MIDI event
 *)
 val toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     tempo:Time.Tempo.t -> t -> MIDI.buffer
+	     tempo:Time.Tempo.t -> t -> MIDI.buffer option
