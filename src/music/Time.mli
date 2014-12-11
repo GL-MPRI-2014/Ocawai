@@ -42,6 +42,9 @@ val min : t -> t -> t
 (** Return the greater of the two arguments. *)
 val max : t -> t -> t
 
+(** Absolute value *)
+val abs : t -> t
+
 (** {2 Basic time creation} *)
 
 (**

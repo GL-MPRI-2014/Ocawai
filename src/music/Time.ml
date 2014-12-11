@@ -23,6 +23,8 @@ let min = min_num
 
 let max = max_num
 
+let abs = abs_num
+
 (** {2 Basic time creation} *)
 
 let fromPair : (int * int) -> t = function
