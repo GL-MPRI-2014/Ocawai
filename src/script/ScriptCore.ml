@@ -60,12 +60,7 @@ let scr_lt =
 
 let scr_eq =
   `Fun(fun a ->
-    `Fun (fun b ->
-      match (a,b) with
-      |(`Int(a), `Int(b)) -> `Bool(a = b)
-      | _ -> assert false
-    )
-  )
+    `Fun (fun b -> `Bool(a = b)))
 
 let scr_le =
   `Fun(fun a ->
@@ -414,7 +409,7 @@ let init () =
   expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
   expose scr_gt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_gt" ;
   expose scr_lt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_lt" ;
-  expose scr_eq  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_eq" ;
+  expose scr_eq  (`Fun_t(`Alpha_t(0) , `Fun_t(`Alpha_t(0) , `Bool_t))) "_eq" ;
   expose scr_ge  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_ge" ;
   expose scr_le  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_le" ;
   expose scr_mul (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_mul";
