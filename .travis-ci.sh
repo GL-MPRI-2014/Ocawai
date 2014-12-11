@@ -46,7 +46,7 @@ autoreconf configure.ac
 ./configure
 make interface
 nohup ./main.native &
-./test/xdotools.sh
+./test/test_snake.sh
 make engine
 make doc
 make check

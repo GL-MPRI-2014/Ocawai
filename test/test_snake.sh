@@ -10,4 +10,4 @@ xdotool search --name OCAWAI key Right
 xdotool search --name OCAWAI key b
 xdotool search --name OCAWAI key a
 sleep 5
-xdotool search --name OCAWAI key ctrl+c
+xdotool search --name OCAWAI key ctrl+c &> /dev/null || true
