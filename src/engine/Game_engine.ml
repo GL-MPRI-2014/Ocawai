@@ -54,6 +54,13 @@ class game_engine () = object (self)
       |t::q -> if aux t#get_army then t else player_aux q
     in player_aux self#get_players
 
+  method private is_dead player =
+    player#get_army = [] (*no more units*)
+    || (match player#get_base with
+      | None -> true
+      | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
+    )
+
   method run : unit =
     let player = players.(actual_player) in
     let next_wanted_action =  player#get_next_action in
@@ -86,7 +93,13 @@ class game_engine () = object (self)
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
-    if true (* test gameover here *) then self#run
+    if true (* test gameover here *) 
+(*
+      List.exists 
+	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
+	(self#get_players :> Player.logicPlayer list)
+*)
+    then self#run
 
   method private end_turn =
     let player = players.(actual_player) in
