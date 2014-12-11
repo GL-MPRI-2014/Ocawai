@@ -23,10 +23,7 @@ class game_engine () = object (self)
     |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
       ::(self#create_n_scripted (n-1))
 
-  method init_local player nbplayers map_wht map_hgt =
-      let config = Config.config in
-      config#settings.map_width <- map_wht;
-      config#settings.map_height <- map_hgt;
+  method init_local player nbplayers =
       let sc_players = self#create_n_scripted (nbplayers - 1) in
       players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
@@ -34,10 +31,7 @@ class game_engine () = object (self)
       List.iter (fun p -> p#init_script map players) sc_players;
       (players, map)
 
-  method init_net port nbplayers map_wht map_hgt =
-      let config = Config.config in
-      config#settings.map_width <- map_wht;
-      config#settings.map_height <- map_hgt;
+  method init_net port nbplayers =
       let connections = Network_tool.open_n_connections port nbplayers in
       let player_list = List.map (fun x -> new NetPlayer.netPlayer x [] [] ) connections in
       players <- (Array.of_list (player_list :> Player.player list));

@@ -10,14 +10,16 @@ type positive = int
 
 type t = {
   name : name_v;
-  product : name_v list;
-  income : int;
+  ~product<ocaml default = "[]"> : name_v list;
+  ~income<ocaml default = "0"> : int;
+  ~spawn_number_per_player<ocaml default = "0"> : int;
+  ~spawn_number_neutral<ocaml default = "0"> : int;
 } 
 
 type t_list = t list
 
 type t_valid_list = { list : t_list}
   <ocaml validator="Utils.check_validity (
-    (* contains at least a general *)
+    (* contains at least a base *)
     fun lr -> List.exists (fun t -> t.name = \"base\") lr.list
   )">

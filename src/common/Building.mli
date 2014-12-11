@@ -6,7 +6,9 @@ type id = int
 type unbound_t = <
   name : string;
   product : string list;
-  income : int
+  income : int;
+  spawn_number_per_player : int;
+  spawn_number_neutral : int
 >
 
 type t = <
@@ -16,6 +18,8 @@ type t = <
   player_id : int option;
   product : string list;
   income : int;
+  spawn_number_per_player : int;
+  spawn_number_neutral : int;
   set_owner : int -> unit;
   set_neutral : unit
 >

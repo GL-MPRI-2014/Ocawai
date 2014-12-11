@@ -1,7 +1,6 @@
 [
   {
     "name": "base",
-    "product" : [],
     "income" : 20
   },
   {
@@ -21,13 +20,12 @@
   },
   {
     "name": "city",
-    "product": [],
     "income": 10
   },
   {
     "name": "flowerfield",
-    "product": [],
-    "income": 50
+    "income": 50,
+    "spawn_number_neutral" : 3
   }
 ]
 
