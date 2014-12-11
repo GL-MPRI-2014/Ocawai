@@ -28,23 +28,23 @@ let (%) : t -> t -> t = fun (Tile(events1)) (Tile(events2)) ->
   Tile(DList.(/::/) events1 events2)
 
 let make_withDelay : Music.event -> t = fun event ->
-  make event % delay (Music.getDur event) 
+  make event % delay (Music.duration event) 
 
-let getDur : t -> time = function
-  | Tile(events) -> DList.getDur events
+let duration : t -> time = function
+  | Tile(events) -> DList.duration events
 
 let reset : t -> t = fun t ->
-  let dur = getDur t in
+  let dur = duration t in
   let back_delay = delay (Time.inverse dur) in
   t % back_delay
 
 let coreset : t -> t = fun t ->
-  let dur = getDur t in
+  let dur = duration t in
   let back_delay = delay (Time.inverse dur) in
   back_delay % t
 
 let inverse : t -> t = fun t ->
-  let dur = getDur t in
+  let dur = duration t in
   let back_delay = delay (Time.inverse dur) in
   back_delay % t % back_delay
 
