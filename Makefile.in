@@ -140,16 +140,16 @@ interface: $(files_atd_ml) log
 run: interface
 	./$(output_interface)
 
-engine:  $(files_atd_ml)
+engine:  $(files_atd_ml) log
 	$(engine_command)
 
 #network: 
 #	$(network_command)
 
-script: $(files_atd_ml)
+script: $(files_atd_ml) log
 	$(script_command)
 
-profile: $(files_atd_ml)
+profile: $(files_atd_ml) log
 	$(profile_command)
 	./$(output_profile)
 	$(gprof_command)
@@ -272,6 +272,9 @@ clean:
 	rm -f resources/config/settings_interface.json
 	rm -f $(output_gprof)
 	rm -f gmon.out
+
+mrproper: clean
+	rm -f configure
 
 check_generation: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
