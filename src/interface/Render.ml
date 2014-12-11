@@ -3,7 +3,9 @@ open Utils
 open Tileset
 
 (* Time to move of 1 cell *)
-let animation_time = 0.03
+(* let animation_time = 0.03 *)
+(* Number of frames for the animation *)
+let animation_time = 2
 
 let renderer = object(self)
 
@@ -248,19 +250,17 @@ let renderer = object(self)
     in
     let (u_position,offset) = if Hashtbl.mem unit_ginfo my_unit then
       begin
-        let (path,time) = Hashtbl.find unit_ginfo my_unit in
-        let ellapsed = Unix.gettimeofday () -. time in
-        if ellapsed > animation_time then
-          Hashtbl.replace unit_ginfo my_unit
-            (List.tl path, Unix.gettimeofday () -. (ellapsed -. animation_time));
-        let (path,time) = Hashtbl.find unit_ginfo my_unit in
-        let ellapsed = Unix.gettimeofday () -. time in
+        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
+        if frames + 1 = animation_time
+        then Hashtbl.replace unit_ginfo my_unit (List.tl path, 0)
+        else Hashtbl.replace unit_ginfo my_unit (path, frames + 1);
+        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
         match path with
         | []          ->
             Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
         | e :: n :: _ ->
             (* Beware of magic numbers *)
-            let o = ellapsed /. animation_time *. 50. in
+            let o = (float_of_int frames) /. (float_of_int animation_time) *. 50. in
             e, Position.(
               if      n = left  e then (-. o,   0.)
               else if n = right e then (o   ,   0.)
@@ -341,7 +341,7 @@ let renderer = object(self)
           read_log r ;
           begin Player.(match l with
             | Moved(u,p) ->
-                Hashtbl.replace unit_ginfo u (p,Unix.gettimeofday())
+                Hashtbl.replace unit_ginfo u (p,0)
           ) end ;
           Hashtbl.add log_history (p,i) ()
         | _ -> ()
