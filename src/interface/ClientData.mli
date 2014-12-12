@@ -7,15 +7,17 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method minimap : Minimap.minimap
 
+  method case_info : CaseInfo.case_info
+
   method camera : Camera.camera
 
   method players : Player.logicPlayer list
 
-  method actual_player : ClientPlayer.client_player 
+  method actual_player : ClientPlayer.client_player
 
   method current_move : Position.t list
 
-  method player_unit_at_position : Position.t -> 
+  method player_unit_at_position : Position.t ->
     #Player.logicPlayer -> Unit.t option
 
   method enemy_unit_at_position : Position.t -> bool

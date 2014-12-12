@@ -313,7 +313,7 @@ let renderer = object(self)
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
-    let texname = 
+    let texname =
       Cursor.(match camera#cursor#get_state with
       |Idle | Displace(_,_,_) -> "cursor"
       |Action(_,_,_) -> "sight")
@@ -365,7 +365,11 @@ let renderer = object(self)
       let chara = get_chara () in
       List.iter (self#draw_unit target data#camera chara) p#get_army
     ) data#players;
+    (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
+    (* Displaying case information *)
+    data#case_info#draw target data#camera#cursor;
+    (* Display framerate *)
     FPS.display target
 
 end

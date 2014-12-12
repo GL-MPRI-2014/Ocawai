@@ -83,7 +83,7 @@ let new_game () =
     in
 
     (* Ingame menu items *)
-    new item "cancel" "End turn" (fun () -> 
+    new item "cancel" "End turn" (fun () ->
       if cdata#actual_player#event_state = ClientPlayer.Waiting then
         cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
@@ -296,6 +296,7 @@ let new_game () =
     window#clear ();
 
     cdata#minimap#compute cdata#map cdata#players;
+    cdata#case_info#compute;
 
     (* Rendering goes here *)
     Render.renderer#render_game window cdata;
