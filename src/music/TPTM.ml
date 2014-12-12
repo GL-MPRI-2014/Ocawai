@@ -82,8 +82,7 @@ let rec printf : t -> unit = fprintf Format.std_formatter
 
 let play : t -> unit = fun t ->
   let Tile(dl) = normalize t in
-  print_string "toto\n";
-  let fname = "./temp/play.mid" in
+  let fname = (Utils.base_path ()) ^ "music/play.mid" in
   let writer = new MIDI.IO.Writer.to_file MidiV.samplerate ~tracks:1 fname in
   let events = DList.toMidi dl in
   match events with
@@ -94,9 +93,8 @@ let play : t -> unit = fun t ->
      List.iter (fun (time, event) -> 
 		writer#advance (time - !curpos);
 		curpos := time;
-		writer#put 1 event) events_list;
-     (*
+		writer#put 1 event) events_list;   
      (Thread.create (fun x -> Thread.delay 1. ;
 			      MidiPlayer.play_midi_file fname x) (ref true)
-     );*)		   
+     );
      Unix.unlink fname
