@@ -98,7 +98,6 @@ type headTail = {mutable to_events : time;
 let makeHeadTail to_events events to_next tail =
   {to_events = to_events; events = events; to_next = to_next; tailT = tail}
 
-
 let rec headTail_tuple : t -> headTail =
   (** Returns a tuple containing a decomposition of
       the input tail where :
@@ -246,8 +245,8 @@ let compute_pos : t -> Time.t = function
  *)
 
 (** Representation of (Pre, Pos, Events buffer) *)
-type tiledBuffer = TiledB of (time * time * (MIDI.buffer option))
-
+(* type tiledBuffer = TiledB of (time * time * (MIDI.buffer option))
+ *)
 
 (**
    Converts a DList to a MIDI.buffer
@@ -255,9 +254,9 @@ type tiledBuffer = TiledB of (time * time * (MIDI.buffer option))
    Semantics : the MIDI.buffer's beginning is the first event in the DList
  *)
 let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
-		 tempo:Time.Tempo.t -> t -> MIDI.buffer option =
+		 ?tempo:Time.Tempo.t -> t -> MIDI.buffer option =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
-      ~tempo ->
+      ?tempo:(tempo = Time.Tempo.base) ->
   let local_musicToMidi : Music.event -> MIDI.buffer =
     Music.toMidi ~samplerate ~division ~tempo
   in 
@@ -288,11 +287,37 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
      | (Some b1, Some b2) -> (
        (** Computes the duration from the first event in the whole DList
            to the first event of the DList which does not hold the global
-           first event. *) 
-       let offset t1 t2 = match (start1, start2, newStart) with
-	 | (Some st1, Some st2, Some newSt) -> 
-	    if newSt = st1 then
-	      st1 /+/ dur1 /-/ st2
-	    else
+           first event, also return its sign. *) 
+       let (midi_offset, offset_sign) = match (start1, start2) with
+	 | (Some st1, Some st2) -> 
+	    let rel_offset = dur1 /+/ st2 /-/ st1 in
+	    let midi_duration ~duration =
+	      MidiV.timeToMidiDuration ~samplerate ~division
+				       ~tempo ~duration in
+	    (midi_duration (Time.abs rel_offset), Time.sign rel_offset)
 	 | _ -> failwith "Empty but non-None MIDI.buffer"
+       in
+       let localDuration buf =
+	 MIDI.Multitrack.duration [|buf|] in 
+       let b1_dur = localDuration b1
+       and b2_dur = localDuration b2
+       in
+       let new_duration =
+	 if offset_sign >= 0 then
+	   max b1_dur (b2_dur + midi_offset)
+	 else max (b1_dur + midi_offset) b2_dur
+       in
+       let new_buffer = MIDI.create(new_duration) in
+       (match offset_sign with
+	| -1 -> (** t2 starts first, shift t1. *)
+	   MIDI.add b1 midi_offset new_buffer 0 new_duration;
+	   MIDI.add b2 0 new_buffer 0 new_duration
+	| 0 -> (** Both tiles start at the same time. *)
+	   MIDI.add b1 0 new_buffer 0 new_duration;
+	   MIDI.add b2 0 new_buffer 0 new_duration
+	| 1 -> (** t1 starts first, shift t2. *)
+	   MIDI.add b2 midi_offset new_buffer 0 new_duration;
+	   MIDI.add b1 0 new_buffer 0 new_duration
+       );
+       Some(new_buffer)
      )
