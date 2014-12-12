@@ -1,7 +1,7 @@
 open OcsfmlGraphics
 open Utils
 open GuiTools
-open Settings
+open Settings_interface_t
 
 open Manager
 
@@ -11,16 +11,33 @@ class state = object(self)
 
   val mutable screen = new Home.screen [] []
 
-  val font = new font `None
+  val font = Fonts.load_font "FreeSansBold.ttf"
 
   method private set_screen w h =
     let (w,h) = foi2D (w,h) in
     screen <- new Home.screen
       []
       [
-        (new Setters.slider (w /. 2., 150.) (fun i -> settings#set_cursor_speed (1. +. (50. /. 19.) *. (float_of_int i))) "Cursor speed" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. Setters.setter_height) (fun i -> settings#set_zoom_speed (1. +. (50. /. 9.) *. (float_of_int i))) "Zoom speed" :> Home.actionnable) ;
-        (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height) (fun i -> Sounds.set_volume (float_of_int i)) "Sounds volume" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150.)
+          ~default:(int_of_float ((Config.config#settings_interface.cursor_speed -. 1.) *. (19. /. 50.)))
+          (fun i ->
+            Config.config#settings_interface.cursor_speed <- (1. +. (50. /. 19.) *. (float_of_int i)))
+          "Cursor speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150. +. Setters.setter_height)
+          ~default:(int_of_float ((Config.config#settings_interface.zoom_speed -. 1.) *. (9. /. 50.)))
+          (fun i ->
+            Config.config#settings_interface.zoom_speed <- (1. +. (50. /. 9.) *. (float_of_int i)))
+          "Zoom speed" :> Home.actionnable) ;
+        (new Setters.slider (w /. 2., 150. +. 2. *. Setters.setter_height)
+          ~default: (int_of_float (Sounds.get_volume ()))
+          (fun i ->
+            Sounds.play_sound "click";
+            Sounds.set_volume (float_of_int i))
+            "Sounds volume" :> Home.actionnable) ;
+        (new Setters.toogle (w /. 2., 150. +. 3. *. Setters.setter_height)
+          "Fullscreen"
+          ~default: true
+          manager#set_fullscreen :> Home.actionnable) ;
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop) ;
       ]
@@ -29,8 +46,6 @@ class state = object(self)
 
     OcsfmlWindow.Event.(
       match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Back ; _ } ->
-            manager#pop
         | KeyPressed { code = kc ; _ } ->
             screen#handle_key kc
         | _ -> ()
@@ -52,8 +67,6 @@ class state = object(self)
     window#display
 
   initializer
-    if not (font#load_from_file "resources/fonts/Roboto-Black.ttf")
-    then failwith "Couldn't load the font here";
     let window = manager#window in
     let (w,h) = window#get_size in
     self#set_screen w h

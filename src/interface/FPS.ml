@@ -6,7 +6,7 @@ let framecount = ref 0
 
 let current_fps = ref 0
 
-let font = new font (`File "resources/fonts/digit.ttf")
+let font = Fonts.load_font "digit.ttf"
 
 let display (target : #render_target) =
   incr framecount;

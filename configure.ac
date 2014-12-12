@@ -36,17 +36,23 @@ if test "$OCAML_PKG_atdgen" = "no"; then
    AC_MSG_ERROR([Please install OCaml findlib module 'atdgen'.])
 fi
 
-
-#for interface (music dependencies)
-AC_CHECK_OCAML_PKG([pulseaudio])
-if test "$OCAML_PKG_pulseaudio" = "no"; then
-   AC_MSG_ERROR([Please install OCaml findlib module 'pulseaudio'.])
+#for everyone's logging
+AC_CHECK_OCAML_PKG([dolog])
+if test "$OCAML_PKG_dolog" = "no"; then
+	AC_MSG_ERROR([Please install OCaml findlib module 'dolog'.])
 fi
 
 
+#mm for music
 AC_CHECK_OCAML_PKG([mm])
 if test "$OCAML_PKG_mm" = "no"; then
    AC_MSG_ERROR([Please install OCaml findlib module 'mm'.])
+fi
+
+#pulseaudio for music
+AC_CHECK_OCAML_PKG([pulseaudio])
+if test "$OCAML_PKG_mm" = "no"; then
+   AC_MSG_ERROR([Please install OCaml findlib module 'pulseaudio'.])
 fi
 
 

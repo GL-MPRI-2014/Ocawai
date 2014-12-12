@@ -8,26 +8,29 @@ open Menus
 
 let new_game () =
 
-  let m_generator = new FieldGenerator.t 100 100 2 10 5 in
+  let my_player = new ClientPlayer.client_player [] [] in
+
+  let m_engine =new Game_engine.game_engine () in
+
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 30 30 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
-    ~maxpos:(Position.create (99,99))
+    ~maxpos:(Position.diff
+      (Position.create (Battlefield.size m_map))
+      (Position.create (1,1)))
   in
 
   let m_cdata = (new ClientData.client_data ~camera:m_camera
-      ~map:(m_generator#field)
-      ~players:(List.map (fun a ->
-        let p = (Player.create_player () : Player.player :> Player.logicPlayer) in
-        p#set_army a; p) m_generator#armies))
+      ~map:m_map
+      ~players:m_players
+      ~actual_player:my_player)
   in
 
   object(self)
 
   inherit State.state as super
-
-  val generator = m_generator
 
   val ui_manager = new UIManager.ui_manager
 
@@ -55,7 +58,9 @@ let new_game () =
       ~m_position:(manager#window#get_width / 2 - 200,
         manager#window#get_height / 2 - 80)
       ~m_size:(400, 110) ~m_theme:Theme.blue_theme
-      ~m_text:"Do you really want to forfeit ? The game will be considered lost... Also, notice how this text is perfectly handled ! This is beautiful isn't it ?"
+      ~m_text:("Do you really want to forfeit ? The game will be considered "
+                ^ "lost... Also, notice how this text is perfectly handled ! "
+                ^ "This is beautiful isn't it ?")
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
 
     (* Buttons for the forfeit popup *)
@@ -73,7 +78,8 @@ let new_game () =
     let main_button = new key_button_oneuse ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
-      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu) ~m_theme:Theme.blue_theme
+      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu)
+      ~m_theme:Theme.blue_theme
     in
 
     (* Ingame menu items *)
@@ -85,7 +91,7 @@ let new_game () =
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> print_endline "settings activated";
+    new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
@@ -99,6 +105,19 @@ let new_game () =
     new item "fire" "Fire !" (fun () ->
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
+      let cursor = cdata#camera#cursor in
+      let atking_unit =
+        match cursor#get_state with
+        |Cursor.Action(u,_) -> u
+        | _ -> assert false
+      in
+      let atked_unit  =
+        match cdata#unit_at_position cursor#position with
+        |Some(u) -> u
+        |None -> assert false
+      in
+      cdata#actual_player#set_state (ClientPlayer.Received
+        (cdata#current_move, Action.Attack_unit (atking_unit, atked_unit)));
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
@@ -115,7 +134,9 @@ let new_game () =
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
         if List.mem cursor#position r then begin
-          cursor#set_state (Cursor.Action (u,cursor#position));
+          cursor#set_state (Cursor.Action
+            (u, Position.range cursor#position
+                u#min_attack_range u#attack_range));
           camera#set_position (Position.right cursor#position)
         end else
           cursor#set_state Cursor.Idle
@@ -125,6 +146,8 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
+      cdata#actual_player#set_state (ClientPlayer.Received
+        (cdata#current_move, Action.Wait));
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
@@ -146,7 +169,9 @@ let new_game () =
     ui_manager#add_widget atk_menu
 
   initializer
-    self#create_ui
+    self#create_ui;
+    Thread.create (fun () -> m_engine#run) ()
+    |> ignore
 
   val mutable last_event = 0.
   val mutable dir_key_pressed = false
@@ -213,26 +238,49 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
-        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } -> Cursor.(
+        | KeyPressed { code = OcsfmlWindow.KeyCode.E ; _ } ->
+            if cdata#actual_player#event_state = ClientPlayer.Waiting then
+               cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn))
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
+            cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
-              |Idle -> cdata#unit_at_position cursor#position >?
-                (fun u -> cursor#set_state (Displace (cdata#map, u,
-                  Logics.accessible_positions u
-                    (cdata#player_of u)
-                     cdata#players
-                     cdata#map))
-                )
-              |Displace(_,_,(acc,_)) ->
-                if List.mem cursor#position acc then begin
-                  disp_menu#set_position (cdata#camera#project cursor#position);
-                  ui_manager#focus disp_menu;
-                  disp_menu#toggle
-                end else cursor#set_state Idle
-              |Action(_) ->
-                atk_menu#toggle;
-                atk_menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus atk_menu)
+              |Idle -> begin
+                match cdata#player_unit_at_position cursor#position
+                      cdata#actual_player with
+                |Some(u) when (not u#has_played) ->
+                    cursor#set_state (Displace (cdata#map, u,
+                      Logics.accessible_positions u
+                     (cdata#actual_player :> logicPlayer)
+                      cdata#players
+                      cdata#map))
+                | _ -> ()
+              end
+              |Displace(_,u,(acc,_)) ->
+                let uopt = cdata#unit_at_position cursor#position in
+                begin match uopt with
+                |None when List.mem cursor#position acc ->
+                    disp_menu#set_position (cdata#camera#project cursor#position);
+                    ui_manager#focus disp_menu;
+                    disp_menu#toggle
+                |Some(u') when u = u' && List.mem cursor#position acc ->
+                    disp_menu#set_position (cdata#camera#project cursor#position);
+                    ui_manager#focus disp_menu;
+                    disp_menu#toggle
+                |_ ->
+                    cursor#set_state Idle
+                end
+              |Action(_,r) ->
+                if List.mem cursor#position r &&
+                   cdata#enemy_unit_at_position cursor#position then begin
+                  atk_menu#toggle;
+                  atk_menu#set_position (cdata#camera#project cursor#position);
+                  ui_manager#focus atk_menu
+                end else cursor#set_state Idle)
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
+            cdata#camera#cursor#set_state Idle
         | _ -> ()
       end)
 
@@ -240,6 +288,8 @@ let new_game () =
     self#keyboard_events;
     Interpolators.update () ;
     window#clear ();
+
+    cdata#minimap#compute cdata#map cdata#players;
 
     (* Rendering goes here *)
     Render.renderer#render_game window cdata;

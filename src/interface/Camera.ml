@@ -1,9 +1,9 @@
 open Utils
-open Settings
+open Settings_interface_t
 
 class camera ~def_tile_size ~w ~h ~maxpos = object(self)
 
-  val cursor = new Cursor.cursor ~position:(Position.create (40,40))
+  val cursor = new Cursor.cursor ~position:(Position.create (10,10))
 
   val mutable offset = (0., 0.)
 
@@ -62,6 +62,7 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
     let old_cursor = cursor#position in
     (* Try to move the cursor first *)
     if cursor#set_position new_position then begin
+      let cursor_speed = Config.config#settings_interface.cursor_speed in
       let (dx, dy) = Position.topair
         (Position.diff new_position old_cursor)
       in
@@ -69,18 +70,19 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
       let (offx, offy) = foi2D (dx * self#tile_size, dy * self#tile_size) in
       offset <- addf2D offset (offx, offy);
       let interp_function t dt =
-        offset <- addf2D offset (-. dt *. settings#cursor_speed *. offx /. 5.,
-                                -. dt *. settings#cursor_speed *. offy /. 5.)
+        offset <- addf2D offset (-. dt *. cursor_speed *. offx /. 5.,
+                                 -. dt *. cursor_speed *. offy /. 5.)
       in
-      ignore(Interpolators.new_ip_with_timeout interp_function (5./.settings#cursor_speed));
+      ignore(Interpolators.new_ip_with_timeout interp_function (5./.cursor_speed));
       (* Interpolating cursor *)
+      let (offx, offy) = foi2D (def_tile_size * dx, dy * def_tile_size) in
       cursor#set_offset (addf2D cursor#offset (offx, offy));
       let interp_cursor t dt =
         cursor#set_offset (addf2D cursor#offset
-          (-. dt *. settings#cursor_speed *. offx,
-          -. dt *. settings#cursor_speed *. offy))
+          (-. dt *. cursor_speed *. offx,
+          -. dt *. cursor_speed *. offy))
       in
-      ignore(Interpolators.new_ip_with_timeout interp_cursor (1./.settings#cursor_speed))
+      ignore(Interpolators.new_ip_with_timeout interp_cursor (1./.cursor_speed))
     end
 
   method set_position pos =
@@ -94,14 +96,15 @@ class camera ~def_tile_size ~w ~h ~maxpos = object(self)
   method zoom = zoom_factor
 
   method set_zoom z =
+    let zoom_speed = Config.config#settings_interface.zoom_speed in
     let end_zoom = min (max z min_zoom) max_zoom in
     let begin_zoom = zoom_target in
     zoom_target <- end_zoom;
     let interp_function t dt =
-      zoom_factor <- zoom_factor +. (end_zoom -. begin_zoom) *. settings#zoom_speed *. dt
+      zoom_factor <- zoom_factor +. (end_zoom -. begin_zoom) *. zoom_speed *. dt
     in
     ignore(
-      Interpolators.new_ip_with_timeout interp_function (1./.settings#zoom_speed))
+      Interpolators.new_ip_with_timeout interp_function (1./.zoom_speed))
 
   method toggle_zoom =
     if zoom_factor > (min_zoom *. 1.5) then self#set_zoom min_zoom

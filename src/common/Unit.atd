@@ -1,12 +1,50 @@
 
+type movement = [ Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
+  | Amphibious_Roll | Amphibious_Tread | All ]
+
+type armor = [ Light | Normal | Heavy ]
+
+type name_v = string
+  <ocaml validator="Utils.check_validity (
+    fun s -> s <> \"\"
+  )">
+type positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 <= x
+  )">
+type s_positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 < x
+  )">
+type percentage = int
+  <ocaml validator="Utils.check_validity (
+   fun x -> 0 <= x && x <= 100
+  )">
+
 type t = {
-  name : string;
-  movement_type : string;
-  vision_range : int;
-  attack_range_min : int;
-  attack_range_max : int;
-  move_range : int;
-  ~spawn_number<ocaml default="0"> : int
+  name : name_v;
+  movement_type : movement;
+  vision_range : positive;
+  ~attack_range_min<ocaml default="0"> : positive;
+  ~attack_range_max<ocaml default="0"> : positive;
+  move_range : positive;
+  ~spawn_number<ocaml default="0"> : positive;
+  ~attack_base<ocaml default="50"> : positive;
+  ~armor<ocaml default="`Normal"> : armor;
+  ~percentage_light<ocaml default="100"> : percentage;
+  ~percentage_normal<ocaml default="100"> : percentage;
+  ~percentage_heavy<ocaml default="0"> : percentage;
+  ~price<ocaml default="50"> : positive;
+  ~life_max<ocaml default="100"> : s_positive;
 }
+  <ocaml validator="Utils.check_validity (
+    fun u -> u.attack_range_min <= u.attack_range_max
+  )">
 
 type t_list = t list
+
+type t_valid_list = { list : t_list}
+  <ocaml validator="Utils.check_validity (
+    (* contains at least a general *)
+    fun lr -> List.exists (fun t -> t.name = \"general\") lr.list
+  )">
