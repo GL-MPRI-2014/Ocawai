@@ -80,3 +80,19 @@ let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
   
 let rec printf : t -> unit = fprintf Format.std_formatter
 
+let play : t -> unit = fun t ->
+  let Tile(dl) = normalize t in
+  let fname = "./temp/play.mid" in
+  let writer = new MIDI.IO.Writer.to_file MidiV.samplerate ~tracks:1 fname in
+  let events = DList.toMidi dl in
+  match events with
+  | None -> ()
+  | Some(buf) -> 
+     let events_list = MIDI.data buf
+     and curpos = ref 0 in
+     List.iter (fun (time, event) -> 
+		writer#advance (time - !curpos);
+		curpos := time;
+		writer#put 1 event) events_list;
+     MidiPlayer.play_midi_file fname (ref true);
+     Unix.unlink fname
