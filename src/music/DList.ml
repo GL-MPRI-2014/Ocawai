@@ -128,7 +128,7 @@ let rec headTail_tuple : t -> headTail =
     | (Some _, None) ->
       (** t2 is pure sync. *)
       let headTuple1 = headTail_tuple t1
-      in if (headTuple1.to_next <= Time.zero)
+      in if (Time.sign (headTuple1.to_next) <= 0)
         then (** There are no more events in t1's tail and t2 is empty :
 		 the tail is pure sync. *)
           ( headTuple1.to_next <- dur2;
@@ -143,7 +143,9 @@ let rec headTail_tuple : t -> headTail =
       | (true, false) -> (* t1 starts first *)
         let headTuple1 = headTail_tuple t1 in
 	let next_of_head = start1 /+/ headTuple1.to_next in
-	if next_of_head <= shifted_start2 then
+	if (* next_of_head <= shifted_start2 *)
+	  ((Time.compare next_of_head shifted_start2) <= 0)
+	then
 	    ( headTuple1.tailT <- headTuple1.tailT /::/ t2;
 	      headTuple1 )
           else (
@@ -164,7 +166,7 @@ let rec headTail_tuple : t -> headTail =
             (headTuple1.tailT /::/ (sync sync_endTail1ToNext2)
              /::/ headTuple2.tailT)
         in
-        if (headTuple2.to_next < headTuple1.to_next) then
+        if ((Time.compare headTuple2.to_next headTuple1.to_next) < 0) then
           ( newHT.to_next <- headTuple2.to_next;
 	    newHT.tailT <- (sync (headTuple1.to_next /-/ headTuple2.to_next)) /::/
               headTuple1.tailT /::/
@@ -177,7 +179,8 @@ let rec headTail_tuple : t -> headTail =
 	let headTuple2 = headTail_tuple t2 in
 	let next_of_head = shifted_start2 /+/ headTuple2.to_next in
 	let newHT = makeHeadTail shifted_start2 headTuple2.events in
-        if next_of_head <= start1 then
+        if (* next_of_head <= start1 *)
+	  (Time.compare next_of_head start1 <= 0) then
             newHT headTuple2.to_next
 	      (
 		(sync (Time.inverse next_of_head)) /::/
@@ -315,7 +318,7 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	| 0 -> (** Both tiles start at the same time. *)
 	   MIDI.add b1 0 new_buffer 0 new_duration;
 	   MIDI.add b2 0 new_buffer 0 new_duration
-	| 1 -> (** t1 starts first, shift t2. *)
+	| _ -> (** t1 starts first, shift t2. *)
 	   MIDI.add b2 midi_offset new_buffer 0 new_duration;
 	   MIDI.add b1 0 new_buffer 0 new_duration
        );
