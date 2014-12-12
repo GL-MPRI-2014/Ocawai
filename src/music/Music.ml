@@ -94,12 +94,12 @@ let pitch_to_string : pitch -> string = function
 (** {3 MIDI conversion} *)
 
 let toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     tempo:Time.Tempo.t -> event -> MIDI.buffer
+	     ?tempo:Time.Tempo.t -> event -> MIDI.buffer
   = fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
-	~tempo
+	?tempo:(tempo = Time.Tempo.base)
   -> function  
   | Rest(duration) -> MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
-						      ~tempo ~duration)
+							   ~tempo ~duration)
   | Note(duration, a) ->
      let midi_duration = MidiV.timeToMidiDuration ~samplerate ~division
 						       ~tempo ~duration

@@ -85,4 +85,4 @@ val fprintf : Format.formatter -> event -> unit
    @return the conversion of the given ['a t] into a MIDI event
 *)
 val toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     tempo:Time.Tempo.t -> event -> MIDI.buffer
+	     ?tempo:Time.Tempo.t -> event -> MIDI.buffer
