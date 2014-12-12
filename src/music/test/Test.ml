@@ -23,5 +23,6 @@ let () =
   print_TPTM (
       delay (Time.fromPair (-1, 1)) % (TPTM.make (dummy_event (1, 1)))
     );
-  print_TPTM (delay (Time.fromPair (-1, 1)) % parallelProd)
-
+  let myTPTM = (delay (Time.fromPair (-1, 1)) % parallelProd) in
+  print_TPTM myTPTM;
+  TPTM.play myTPTM
