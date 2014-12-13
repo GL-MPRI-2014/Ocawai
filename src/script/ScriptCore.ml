@@ -118,6 +118,15 @@ let scr_div =
     )
   )
 
+let scr_max =
+  `Fun(fun a ->
+    `Fun (fun b ->
+      match (a,b) with
+      |(`Int(a), `Int(b)) -> `Int(if a>=b then a else b)
+      | _ -> assert false
+    )
+  )
+
 
 (** Printing functions *)
 let scr_printf =
@@ -377,15 +386,15 @@ let scr_range =
   )
 
 let scr_expected_damage =
-  `Fun (fun su ->
-    `Fun (fun sv ->
+  `Fun (fun (su : ScriptValues.value) ->
+    `Fun (fun (sv : ScriptValues.value)->
       let b = match (su,sv) with
-      |(`Soldier(u), `Soldier(v)) -> let a = u#attack_base in match v#armor with
-        | `Light -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_light)/100
-        | `Normal -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_normal)/100
-        | `Heavy -> (9*(u#life_percentage)*a/1000+a/10)*(u#percentage_heavy)/100
+      |(`Soldier(u), `Soldier(v)) -> let a = u#attack_base in ( match v#armor with
+        | Unit.Light -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_light)/100
+        | Unit.Normal -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_normal)/100
+        | Unit.Heavy -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_heavy)/100 )
       | _ -> assert false
-      in `Int(b) (*à remplacer par 'in max(b, vie courante de v)' *)
+      in `Int(b)
     )
   )
 
@@ -416,6 +425,7 @@ let init () =
   expose scr_add (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_add";
   expose scr_sub (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_sub";
   expose scr_div (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_div";
+  expose scr_max (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "int_max";
   expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
   expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
   expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
@@ -449,6 +459,7 @@ let init () =
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";
+  expose scr_expected_damage (`Fun_t(`Soldier_t , `Fun_t(`Soldier_t , `Int_t ))) "expected_damage";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
   expose scr_inrange (`Fun_t(intpair, `Fun_t(`Int_t, `Fun_t(`Player_t,
   `Fun_t(`List_t(`Player_t), `List_t(`Soldier_t)))))) "ennemies_in_range";
