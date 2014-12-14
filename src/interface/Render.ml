@@ -371,7 +371,16 @@ let renderer = object(self)
     let drawer s pos =
       self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
     in
-    data#case_info#draw target drawer (data#unit_at_position data#camera#cursor#position);
+    let selected_unit = data#unit_at_position data#camera#cursor#position in
+    let chara = match selected_unit with
+    | Some selected_unit ->
+        let player = data#player_of selected_unit in
+        List.fold_left
+            (fun a p -> let c = get_chara () in if p = player then c else a)
+            "" data#players
+    | None -> ""
+    in
+    data#case_info#draw target drawer selected_unit chara;
     (* Display framerate *)
     FPS.display target
 

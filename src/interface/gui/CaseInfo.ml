@@ -4,16 +4,19 @@ open GuiTools
 
 let font = Fonts.load_font "FreeSans.ttf"
 
+
 let width  = 220.
 let height = 150.
 
 class case_info = object(self)
 
-  method draw : 'a. (#render_target as 'a) -> (string -> (float * float) -> unit) -> Unit.t option -> unit =
-    fun target drawer u ->
+  method draw : 'a. (#render_target as 'a) -> (string -> (float * float) -> unit) -> Unit.t option -> string -> unit =
+    fun target drawer u chara ->
       let (w,h) = foi2D target#get_size in
+      let x = 10.
+      and y = h -. 160. in
       new rectangle_shape
-        ~position:(10.,h-.160.)
+        ~position:(x,y)
         ~size:(width,height)
         ~fill_color:(Color.rgba 255 255 255 240)
         ()
@@ -22,11 +25,11 @@ class case_info = object(self)
       match u with
       | Some u ->
           (* TODO Add character handling *)
-          drawer ("blub_" ^ u#name) (30.,h-.140.) ;
+          drawer (chara ^ "_" ^ u#name) (30.,h-.140.) ;
           rect_print target u#name font (Color.rgb 33 33 33) (Pix 15) (Pix 2)
             Left
             { left = 50. ; top = h -. 150. ; width = 170. ; height = 50. };
-          rect_print target "#3" font (Color.rgb 77 77 77) (Pix 15) (Pix 2)
+          rect_print target "#?" font (Color.rgb 77 77 77) (Pix 15) (Pix 2)
             Right
             { left = 50. ; top = h -. 150. ; width = 170. ; height = 50. }
       | None ->
