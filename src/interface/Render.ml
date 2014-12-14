@@ -368,7 +368,7 @@ let renderer = object(self)
     (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
     (* Displaying case information *)
-    data#case_info#draw target data#camera#cursor;
+    data#case_info#draw target (fun s pos -> self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ());
     (* Display framerate *)
     FPS.display target
 

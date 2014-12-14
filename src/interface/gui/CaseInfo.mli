@@ -3,6 +3,6 @@ class case_info : object
 
   method compute : unit
 
-  method draw : #OcsfmlGraphics.render_target -> Cursor.cursor -> unit
+  method draw : #OcsfmlGraphics.render_target -> (string -> (float * float) -> unit) -> unit
 
 end
