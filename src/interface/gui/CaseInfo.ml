@@ -22,24 +22,52 @@ class case_info = object(self)
         ()
       |> target#draw ;
       (* Unit information *)
-      match u with
+      begin match u with
       | Some u ->
           (* TODO Add character handling *)
           drawer (chara ^ "_" ^ u#name) (30.,h-.140.) ;
+          (* Name *)
           rect_print target u#name font (Color.rgb 33 33 33) (Pix 15) (Pix 2)
             Left
             { left = 50. ; top = h -. 150. ; width = 170. ; height = 50. };
-          rect_print target "#?" font (Color.rgb 77 77 77) (Pix 15) (Pix 2)
+          (* Player ID *)
+          rect_print target ("#" ^ (string_of_int u#player_id)) font
+            (Color.rgb 77 77 77)
+            (Pix 15) (Pix 2)
             Right
-            { left = 50. ; top = h -. 150. ; width = 170. ; height = 50. }
+            { left = 50. ; top = h -. 150. ; width = 170. ; height = 50. } ;
+          (* Life *)
+          drawer "life" (25.,h-.115.) ;
+          rect_print target
+            ((string_of_int u#hp) ^ "/" ^ (string_of_int u#life_max)) font
+            (Color.rgb 77 77 77)
+            (Pix 15) (Pix 2)
+            Left
+            { left = 37. ; top = h -. 125. ; width = 60. ; height = 50. };
+          (* Move Range *)
+          drawer "move_range" (110.,h-.115.) ;
+          rect_print target (string_of_int u#move_range) font
+            (Color.rgb 77 77 77)
+            (Pix 15) (Pix 2)
+            Left
+            { left = 125. ; top = h -. 125. ; width = 10. ; height = 50. }
       | None ->
           rect_print target "No unit there" font (Color.rgb 99 99 99)
             (Pix 15) (Pix 2)
             Center
             { left = 30. ; top = h -. 150. ; width = 170. ; height = 50. }
+      end;
       (* Building information *)
       (* TODO: After merge *)
+      rect_print target "Buildings don't exist..." font (Color.rgb 99 99 99)
+        (Pix 15) (Pix 2)
+        Center
+        { left = 30. ; top = h -. 100. ; width = 170. ; height = 50. };
       (* Tile information *)
       (* TODO *)
+      rect_print target "Tiles are lazy" font (Color.rgb 99 99 99)
+        (Pix 15) (Pix 2)
+        Center
+        { left = 30. ; top = h -. 50. ; width = 170. ; height = 50. }
 
 end
