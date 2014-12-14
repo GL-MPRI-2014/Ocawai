@@ -296,7 +296,6 @@ let new_game () =
     window#clear ();
 
     cdata#minimap#compute cdata#map cdata#players;
-    cdata#case_info#compute;
 
     (* Rendering goes here *)
     Render.renderer#render_game window cdata;
