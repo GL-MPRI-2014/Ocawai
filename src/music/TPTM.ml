@@ -80,21 +80,19 @@ let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
   
 let rec printf : t -> unit = fprintf Format.std_formatter
 
-let play : t -> unit = fun t ->
+let play : ?samplerate:int -> ?division:MIDI.division ->
+	   ?tempo:Time.Tempo.t -> t -> unit =
+  fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
+      ?tempo:(tempo = Time.Tempo.base) ->
+  fun t ->
   let Tile(dl) = normalize t in
-  let fname = (Utils.base_path ()) ^ "music/play.mid" in
-  let writer = new MIDI.IO.Writer.to_file MidiV.samplerate ~tracks:1 fname in
-  let events = DList.toMidi dl in
+  let events = DList.toMidi ~samplerate ~division ~tempo dl in
   match events with
   | None -> ()
   | Some(buf) -> 
-     let events_list = MIDI.data buf
-     and curpos = ref 0 in
-     List.iter (fun (time, event) -> 
-		writer#advance (time - !curpos);
-		curpos := time;
-		writer#put 1 event) events_list;   
-     (Thread.create (fun x -> Thread.delay 1. ;
-			      MidiPlayer.play_midi_file fname x) (ref true)
-     );
-     Unix.unlink fname
+     let midi_player = new MidiPlayer.asynchronousMidiPlayer
+     and multi_track = Array.make 16 (buf) in
+     multi_track.(0) <- buf;
+     midi_player#add multi_track;
+     (Thread.create midi_player#play ());
+     midi_player#stop ()

@@ -112,4 +112,5 @@ val fprintf : Format.formatter -> t -> unit
 (**
    Convert [t] to MIDI and stream it to the user.
  *)
-val play : t -> unit
+val play : ?samplerate:int -> ?division:MIDI.division ->
+	   ?tempo:Time.Tempo.t -> t -> unit 
