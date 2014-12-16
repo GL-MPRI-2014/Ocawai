@@ -2,6 +2,11 @@ open OcsfmlGraphics
 open Utils
 open Tileset
 
+(* Time to move of 1 cell *)
+(* let animation_time = 0.03 *)
+(* Number of frames for the animation *)
+let animation_time = 2
+
 let renderer = object(self)
 
   val texture_library = TextureLibrary.create ()
@@ -11,6 +16,12 @@ let renderer = object(self)
   val font = Fonts.load_font "FreeSansBold.ttf"
 
   val mutable rect_vao = new vertex_array ~primitive_type:Quads []
+
+  (* Marks items of the log as read *)
+  val log_history = Hashtbl.create 91
+
+  (* Associates every unit to its graphical state *)
+  val unit_ginfo = Hashtbl.create 91
 
   method init =
     let folder = (Utils.base_path ()) ^ "textures/" in
@@ -237,12 +248,43 @@ let renderer = object(self)
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
+    let (u_position,offset) = if Hashtbl.mem unit_ginfo my_unit then
+      begin
+        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
+        if frames + 1 = animation_time
+        then Hashtbl.replace unit_ginfo my_unit (List.tl path, 0)
+        else Hashtbl.replace unit_ginfo my_unit (path, frames + 1);
+        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
+        match path with
+        | []          ->
+            Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
+        | e :: n :: _ ->
+            (* Beware of magic numbers *)
+            let o = (float_of_int frames) /. (float_of_int animation_time) *. 50. in
+            e, Position.(
+              if      n = left  e then (-. o,   0.)
+              else if n = right e then (o   ,   0.)
+              else if n = up    e then (0.  , -. o)
+              else if n = down  e then (0.  ,    o)
+              else assert false
+            )
+        | e :: _      -> (e,(0.,0.))
+      end
+      else (my_unit#position, (0.,0.))
+    in
     let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map target camera name (my_unit#position) ~color();
+    self#draw_from_map ~offset target camera name u_position ~color();
     let size = int_of_float (camera#zoom *. 14.) in
-    let position = (foi2D (camera#project my_unit#position)) in
-    new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
+    let (ox,oy) = offset in
+    let position = addf2D
+      (foi2D (camera#project u_position))
+      (ox *. camera#zoom, oy *. camera#zoom)
+    in
+    (* new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
         string_of_int (my_unit#hp * 10 / my_unit#life_max))
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw *)
+    new text ~string:(string_of_int (my_unit#hp))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
 
@@ -258,7 +300,9 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 255 100 150)) range
     end
-    |Cursor.Action(my_unit, range) -> begin
+    |Cursor.Action(my_unit,p,_) -> begin
+      let range = Position.range p my_unit#min_attack_range
+        my_unit#attack_range in
       let attack_range =
         List.filter (self#filter_positions map) range
       in
@@ -269,7 +313,12 @@ let renderer = object(self)
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
-    self#draw_from_map target camera "cursor" camera#cursor#position
+    let texname =
+      Cursor.(match camera#cursor#get_state with
+      |Idle | Displace(_,_,_) -> "cursor"
+      |Action(_,_,_) -> "sight")
+    in
+    self#draw_from_map target camera texname camera#cursor#position
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
       ~scale:(camera#cursor#scale, camera#cursor#scale) ()
 
@@ -285,10 +334,25 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
+    (* Reads the log to update unit informations *)
     List.iter (fun p ->
-        List.iter (self#draw_building target data#camera) p#get_buildings
-      ) data#players;
-    (* Ugly: to alternate characters *)
+      let rec read_log = function
+        | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
+          read_log r ;
+          begin Player.(match l with
+            | Moved(u,p) ->
+                Hashtbl.replace unit_ginfo u (p,0);
+                Sounds.play_sound "boots"
+          ) end ;
+          Hashtbl.add log_history (p,i) ()
+        | _ -> ()
+      in read_log p#get_log
+    ) data#players;
+    (* Draw buildings *)
+    List.iter (fun p ->
+      List.iter (self#draw_building target data#camera) p#get_buildings
+    ) data#players;
+    (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
       let ret = characters.(!x) in
@@ -296,11 +360,28 @@ let renderer = object(self)
       if !x = Array.length characters then x := 0 ;
       ret
     in
+    (* Draw units *)
     List.iter (fun p ->
       let chara = get_chara () in
       List.iter (self#draw_unit target data#camera chara) p#get_army
-      ) data#players;
+    ) data#players;
+    (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
+    (* Displaying case information *)
+    let drawer s pos =
+      self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
+    in
+    let selected_unit = data#unit_at_position data#camera#cursor#position in
+    let chara = match selected_unit with
+    | Some selected_unit ->
+        let player = data#player_of selected_unit in
+        List.fold_left
+            (fun a p -> let c = get_chara () in if p = player then c else a)
+            "" data#players
+    | None -> ""
+    in
+    data#case_info#draw target drawer selected_unit chara;
+    (* Display framerate *)
     FPS.display target
 
 end

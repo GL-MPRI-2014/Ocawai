@@ -2,6 +2,7 @@ open Unix
 open Marshal
 open Types
 
+module Log = Log.Make (struct let section = "Dealer" end)
 
 class dealer (s : file_descr) =
 object (self)
@@ -17,7 +18,7 @@ object (self)
   val mutable logicPlayerList = []
 
   (* my client player *)
-  val mutable clientPlayer = None
+  val mutable clientPlayer : Player.player option = Some (Player.create_dummy_player [])
 		
 
   (* for initialization *)
@@ -30,9 +31,7 @@ object (self)
     let logp_list = create_list [] id_list in
     logicPlayerList <- logp_list
 
-  method set_clientPlayer id =
-    let clip = new ClientPlayer.client_player ?id:(Some id) [] [] in
-    clientPlayer <- Some clip
+  method set_player_id id = ()
 
 
 
@@ -69,9 +68,7 @@ object (self)
 
   method get_player id =
     let clip = self#is_set in 
-    if clip#get_id = id
-    then (clip : ClientPlayer.client_player :> Player.logicPlayer)
-    else
+    if clip#get_id = id then (clip :> Player.logicPlayer) else
       try
 	self#list_scan id
       with
@@ -90,7 +87,26 @@ object (self)
   method manage_gna = 
     let clip = self#is_set in 
     let action = clip#get_next_action in
-    to_channel out_channel (Next_action action) [Closures]
+    Log.infof "Sending..." ;
+
+(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
+let boolean = Send_recv.send sockfd 2 (to_string [Closures]) 3.0
+
+With
+ -> sockfd the socket
+ -> '2' the code for "Next_action action"
+ -> to_string [Closures]
+ -> 3.0 is the timeout
+
+if boolean is false then kill this player 
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
+
+(*#################### old ####################*)
+    to_channel out_channel (Next_action action) [Closures] ;
+(*#############################################*)
+
+    Log.infof "Sent." ;
+    flush out_channel
     
 
   (* do what has to be done with an update... *)
@@ -107,7 +123,7 @@ object (self)
     | Move_unit (u,p,id) -> (self#get_player id)#move_unit u p
     | Set_unit_hp (u,h,id) -> (self#get_player id)#set_unit_hp u h
 (* for initialization only *)
-    | Set_client_player id -> self#set_clientPlayer id
+    | Set_client_player id -> self#set_player_id id
     | Set_logic_player_list lst -> self#set_logicPlayerList lst
     | Map str -> self#set_map str
 
@@ -116,11 +132,41 @@ object (self)
   method run = 
     while true 
     do 
+      Log.infof "Receiving..." ;
+
+(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
+let receipt  = Send_recv.recv sockfd 3.0
+
+With
+ -> sockfd the socket
+ -> 3.0 is the timeout
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
+
+(*#################### old ####################*)
       let m = (from_channel in_channel : send) in
+(*#############################################*)
+
+      Log.infof "Received." ;
+
+(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
+match receipt with
+ | Some (0, _) -> self#manage_gna
+ | Some(1, update) -> self#manage_update (update_from_string update)
+ | None -> kill this player
+
+With
+ -> '0' is the code for "Get_next_action"
+ -> '1' is the code for "Update"
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
+
+(*#################### old ####################*)
       match m with
-      | Get_next_action -> self#manage_gna
-      | Update update -> self#manage_update update
+	| Get_next_action -> self#manage_gna
+	| Update update -> self#manage_update update
+(*#############################################*)
+
     done
+
       
 
 end

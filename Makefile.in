@@ -39,6 +39,9 @@ music_dir=$(src_root)/music
 script_dir=$(src_root)/script
 
 test_dir=test
+
+log_dir=log
+
 # $(network_dir) removed for now
 dirs = $(network_dir) $(engine_dir) $(common_dir) $(utils_dir) $(config_dir) $(interface_dir) $(gui_dir) $(music_dir) $(script_dir)
 
@@ -68,13 +71,14 @@ interface_tags = thread
 engine_tags = thread
 
 #compiler flags
-cflags = -w,-3
+cflags = -w,-3,-g
 
 #name of the target for ocamlbuild
 output_interface = main.native
 output_profile = main.p.native
 output_script = script.native
 output_engine = dummy_serv.native
+output_client = dummy_client.native
 output_network = dealer.native
 output_gprof = profile
 
@@ -91,6 +95,8 @@ gprof_command = gprof $(output_profile) gmon.out >> $(output_gprof)
 script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script)
 
 engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine) -tag $(engine_tags)
+
+client_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_client) -tag $(engine_tags)
 
 network_command = $(command) -Is $(network_src) $(output_network)
 
@@ -130,22 +136,26 @@ files_atd_t := $(foreach dir,$(dirs),$(find_files_t_ml))
 all_files_atd_ml := $(files_atd_t) $(files_atd_t:_t.ml=_j.ml) $(files_atd_t:_t.ml=_v.ml)
 all_files_atd_mli := $(files_atd_ml:.ml=.mli)
 
-interface: $(files_atd_ml)
+#TO DO : log shouldn't be here
+interface: $(files_atd_ml) log
 	$(interface_command)
 
 run: interface
 	./$(output_interface)
 
-engine:  $(files_atd_ml)
+engine:  $(files_atd_ml) log
 	$(engine_command)
+
+client:  $(files_atd_ml)
+	$(client_command)
 
 #network: 
 #	$(network_command)
 
-script: $(files_atd_ml)
+script: $(files_atd_ml) log
 	$(script_command)
 
-profile: $(files_atd_ml)
+profile: $(files_atd_ml) log
 	$(profile_command)
 	./$(output_profile)
 	$(gprof_command)
@@ -246,7 +256,7 @@ config.status: configure
 
 
 #Generate documentation -I _builld/$(network_dir) removed for now
-doc: interface engine
+doc: interface engine client
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
@@ -269,6 +279,9 @@ clean:
 	rm -f $(output_gprof)
 	rm -f gmon.out
 
+mrproper: clean
+	rm -f configure
+
 check_generation: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) generation_test.native -tag $(engine_tags)
 	#ocamlfind ocamlc -o player_test -package oUnit -linkpkg -g test/player_test.ml
@@ -289,4 +302,7 @@ check_interface: interface
 
 check: check_player check_generation check_logics check_interface
 
-.PHONY: FORCE all clean dist distcheck engine interface network script
+log:
+	mkdir -p $(log_dir)
+
+.PHONY: FORCE all clean dist distcheck engine interface network script log

@@ -1,0 +1,102 @@
+fun next_playable l = {
+  if (list_empty l) {
+    end_turn ()
+  }
+  else {
+    var u = list_hd l;
+    var acc = accessible_positions u self players map;
+    if ((unit_has_played u) || (list_empty acc)) {
+      next_playable (list_tl l)
+    } else {
+      u
+    }
+  }
+}
+
+fun closest_to pos l = {
+  var actual_dist = 100000;
+  var actual_pos  = (0,0);
+  fun closest_aux l = {
+    if (!(list_empty l)) {
+      var u = list_hd l;
+      var d = dist2D u pos;
+      if (d < actual_dist) {
+	actual_dist = d;
+	actual_pos = u;
+      };
+      closest_aux (list_tl l)
+    }
+  }
+  closest_aux l;
+  actual_pos
+}
+
+fun log_position p = {
+  log_str "(";
+  log_int (fst p);
+  log_str ",";
+  log_int (snd p);
+  log_str ")";
+}
+
+move default {
+  var acc = accessible_positions selected_unit self players map;
+  fun has_army player = {
+    !(list_empty (army_of player));
+  }
+  var undead_players = list_filter has_army players ;
+  if (list_empty undead_players) { end_turn (); };
+  var ptarget = list_hd undead_players;
+  var parmy = army_of ptarget;
+  var n = list_length parmy;
+  var rnd = rand n;
+  var target = list_nth parmy rnd;
+  var pos_target = unit_position target;
+  var select_pos = closest_to pos_target acc;
+  log_str "Moving unit to : ";
+  log_position select_pos;
+  log_str "\n";
+  dijkstra_to selected_unit map select_pos
+}
+
+attack default {
+  var range = unit_range selected_unit;
+  var inrange = ennemies_in_range selected_pos range self players;
+  fun chose_target l = {
+    var u = list_hd l;
+    var n = list_length l;
+    fun aux u l = {
+      if (list_empty l) {
+        u
+      } else {
+        var v = list_hd l;
+        var w = u;
+        var du = expected_damage selected_unit u;
+	var dv = expected_damage selected_unit v;
+	if ((int_max du dv) == du) {
+          w = u;
+        } else {
+          w = v;
+        };
+	aux w (list_tl l)
+      };
+    }
+    aux u l
+  }
+  if (list_empty inrange) {
+    do_nothing ()
+  } else {
+    var atkunit = chose_target inrange;
+    log_str "Attacking unit at : ";
+    log_position (unit_position atkunit);
+    log_str "\n";
+    atkunit;
+  }
+}
+
+init {
+}
+
+main {
+  next_playable (army_of self)
+}

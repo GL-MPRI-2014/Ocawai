@@ -1,12 +1,12 @@
 open OcsfmlGraphics
 
-type mini_tile = Forest | Mountain | Plain | Water
+type mini_tile = Forest | Mountain | Plain | Water | Sand
 
 let player_colors = [|
-  Color.rgb 255 0 0;
-  Color.rgb 0 255 0;
-  Color.rgb 0 0 255;
-  Color.rgb 255 255 0 |]
+  Color.rgb 255   0   0;
+  Color.rgb   0 255   0;
+  Color.rgb   0   0 255;
+  Color.rgb 255 255   0 |]
 
 class minimap def width height = object(self)
 
@@ -63,7 +63,7 @@ class minimap def width height = object(self)
     let majority_map = Array.make_matrix def def [||] in
     for i = 0 to def - 1 do
       for j = 0 to def - 1 do
-        majority_map.(i).(j) <- Array.make 4 0
+        majority_map.(i).(j) <- Array.make 5 0
       done;
     done;
     for i = 0 to width - 1 do
@@ -84,9 +84,12 @@ class minimap def width height = object(self)
         |"plain" ->
             majority_map.(px).(py).(2) <-
               majority_map.(px).(py).(2) + 1
-        |"water" | "lake" ->
+        |"water" | "lake" | "shallow" ->
             majority_map.(px).(py).(3) <-
               majority_map.(px).(py).(3) + 1
+        |"sand" | "beach" | "lake_beach" ->
+            majority_map.(px).(py).(4) <-
+              majority_map.(px).(py).(4) + 1
         | _ -> ()
       done;
     done;
@@ -94,7 +97,7 @@ class minimap def width height = object(self)
       for j = 0 to def - 1 do
         let maxt = ref (-1) in
         let maxn = ref (-1) in
-        for k = 0 to 3 do
+        for k = 0 to 4 do
           if majority_map.(i).(j).(k) > !maxn then begin
             maxn := majority_map.(i).(j).(k);
             maxt := k
@@ -105,6 +108,7 @@ class minimap def width height = object(self)
         |1 -> map.(i).(j) <- Mountain
         |2 -> map.(i).(j) <- Plain
         |3 -> map.(i).(j) <- Water
+        |4 -> map.(i).(j) <- Sand
         |_ -> assert false
       done;
     done
@@ -131,10 +135,11 @@ class minimap def width height = object(self)
       for j = 0 to def - 1 do
         let fill_color =
           match map.(i).(j) with
-          |Forest -> Color.rgb 0 100 0
-          |Mountain -> Color.rgb 50 140 0
-          |Plain -> Color.rgb 80 180 80
-          |Water -> Color.rgb 50 50 220
+          |Forest   -> Color.rgb   0 100   0
+          |Mountain -> Color.rgb  50 140   0
+          |Plain    -> Color.rgb  80 180  80
+          |Water    -> Color.rgb  50  50 220
+          |Sand     -> Color.rgb 240 240  96
         in
         self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
           (ratio,ratio) fill_color;

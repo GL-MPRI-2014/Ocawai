@@ -69,7 +69,7 @@ let play_midi_file fname run =
   let tmpbuf = MIDI.Multitrack.create 16 1024 in
   let r = ref (f#read 44100 tmpbuf 0 1024) in
   player#add tmpbuf;
-  Thread.create (player#play) ();
+  let _ = Thread.create (player#play) () in
   while !r <> 0 do
     r := f#read 44100 tmpbuf 0 1024;
     player#add tmpbuf
