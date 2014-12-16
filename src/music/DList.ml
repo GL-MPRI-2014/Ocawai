@@ -266,7 +266,7 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
   function
   | Event event -> Some(local_musicToMidi event)
   | Sync dur -> None
-  | Prod (Tag(dur, _), t1, t2) as t ->
+  | Prod (Tag(dur, _), t1, t2) (* as t *) ->
      (*
      print_string "Converting DList product to midi\n";
      printf t;
