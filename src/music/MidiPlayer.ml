@@ -57,7 +57,8 @@ class asynchronousMidiPlayer =
       should_run := false
 
     method add new_buffer = 
-      self#multi_add (!main_buffer) (!current_adding) new_buffer 0 (MIDI.Multitrack.duration new_buffer);
+      self#multi_add (!main_buffer) (!current_adding) new_buffer 0
+		     (MIDI.Multitrack.duration new_buffer);
       current_adding := !current_adding + (MIDI.Multitrack.duration new_buffer)
 
   end
