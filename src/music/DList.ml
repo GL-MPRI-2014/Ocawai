@@ -265,32 +265,28 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
   in 
   function
   | Event event -> Some(local_musicToMidi event)
-  (* TiledB(Time.zero, Music.duration event, Some(local_musicToMidi event)) *)
   | Sync dur -> None
-  (* (
-    match Time.sign dur with
-    | -1 ->  TiledB(Time.inverse dur, Time.zero, None)
-    | _  -> TiledB(Time.zero, dur, None)
-  ) *)
-  (* Following is wrong anyway (dur might be < 0) :
-  local_musicToMidi (Music.Rest (Time.fromPair (dur, 1))) *)
-  | Prod (Tag(dur, _), t1, t2) ->
-     let local_DLtoMidi = toMidi ~samplerate ~division ~tempo in
+  | Prod (Tag(dur, _), t1, t2) as t ->
+     (*
+     print_string "Converting DList product to midi\n";
+     printf t;
+      *)     
+     let local_DLtoMidi : t -> MIDI.buffer option =
+       toMidi ~samplerate ~division ~tempo in
      let b1_opt = local_DLtoMidi t1 
      and b2_opt = local_DLtoMidi t2 in
-     let Tag(dur1, start1) as tag1  = getTag t1
-     and Tag(dur2, start2) as tag2  = getTag t2
+     let Tag(dur1, start1) as tag1 = getTag t1
+     and Tag(dur2, start2) as tag2 = getTag t2
      in
-     let Tag(newDur, newStart) = tagProd tag1 tag2 in
-     
      match (b1_opt, b2_opt) with
-     | (None, None) -> None
-     | (None, Some b2) -> Some b2
-     | (Some b1, None) -> Some b1
+     | (None, None) -> (* print_string "Conversion completed";
+			*) None
+     | (None, Some b2) -> (* print_string "Conversion completed"; *) Some b2
+     | (Some b1, None) -> (* print_string "Conversion completed"; *) Some b1
      | (Some b1, Some b2) -> (
        (** Computes the duration from the first event in the whole DList
-           to the first event of the DList which does not hold the global
-           first event, also return its sign. *) 
+	     to the first event of the DList which does not hold the global
+	     first event, also return its sign. *) 
        let (midi_offset, offset_sign) = match (start1, start2) with
 	 | (Some st1, Some st2) -> 
 	    let rel_offset = dur1 /+/ st2 /-/ st1 in
@@ -311,16 +307,17 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	 else max (b1_dur + midi_offset) b2_dur
        in
        let new_buffer = MIDI.create(new_duration) in
+       
        (match offset_sign with
 	| -1 -> (** t2 starts first, shift t1. *)
-	   MIDI.add b1 midi_offset new_buffer 0 new_duration;
-	   MIDI.add b2 0 new_buffer 0 new_duration
+	   MIDI.add new_buffer midi_offset b1 0 new_duration;
+	   MIDI.add new_buffer 0 b2 0 new_duration
 	| 0 -> (** Both tiles start at the same time. *)
-	   MIDI.add b1 0 new_buffer 0 new_duration;
-	   MIDI.add b2 0 new_buffer 0 new_duration
+	   MIDI.add new_buffer 0 b1 0 new_duration;
+	   MIDI.add new_buffer 0 b2 0 new_duration
 	| _ -> (** t1 starts first, shift t2. *)
-	   MIDI.add b2 midi_offset new_buffer 0 new_duration;
-	   MIDI.add b1 0 new_buffer 0 new_duration
+	   MIDI.add new_buffer midi_offset b2 0 new_duration;
+	   MIDI.add new_buffer 0 b1 0 new_duration
        );
-       Some(new_buffer)
+       (* print_string "Conversion completed"; *) Some(new_buffer)
      )
