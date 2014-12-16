@@ -50,10 +50,10 @@ class asynchronousMidiPlayer =
         pulse#write buf 0 blen
       done;
       pulse#close;
-      MusicLog.infof "Closed the pulseaudio output"
+      MusicLog.infof "Closed pulseaudio output"
 
     method stop () =
-      MusicLog.infof "Stoping Music plating";
+      MusicLog.infof "Stopping Music playback";
       should_run := false
 
     method add new_buffer = 
