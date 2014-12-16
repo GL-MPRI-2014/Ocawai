@@ -27,6 +27,7 @@ let abs = abs_num
 
 (** {2 Basic time creation} *)
 
+let fromInt : int -> t = fun a -> Int a
 let fromPair : (int * int) -> t = function
   | (a, b) -> Num.( // ) (Int a) (Int b)
 
@@ -56,6 +57,15 @@ let dden : t = fromPair (7, 32)
 let toFloat : t -> float = Num.float_of_num
 let toInt : t -> int = Num.int_of_num
 
+let toMidiTicks : division:MIDI.division -> t -> int = fun
+    ~division duration ->
+  match division with
+  | MIDI.Ticks_per_quarter tpq ->
+     let tpq = fromInt tpq in
+     toInt (Num.mult_num tpq duration)
+  | _ -> failwith "Unrecognized MIDI division"
+
+
 (** {2 Tempo definition and management} *)
 
 module Tempo = struct
@@ -75,11 +85,15 @@ module Tempo = struct
   (** {2 Tempo conversions} *)
 
   let tempoToMspq : t -> int = function
-    | tempo -> Num.int_of_num (
-		   let baseTempo = Num.Int 120 in
-		   baseTempo */ tempo
-		 )
-
+    | tempo ->
+       Num.int_of_num (Num.round_num (
+	   ((Num.Int 1) // (
+	      let baseTempo = Num.Int 120 in
+	      baseTempo */ tempo
+	    )
+	   (* Conversion from minutes to microseconds *)
+	   ) */ (Num.Int 60) */ (Num.Int 1000000)
+	 ))
 end
 
 (** {2 Testing functions} *)

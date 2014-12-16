@@ -48,8 +48,13 @@ val abs : t -> t
 (** {2 Basic time creation} *)
 
 (**
+   @return the time associated to the input integer
+ *)
+val fromInt : int -> t
+
+(**
    @return the time associated to the quotient of the input integers
-*)
+ *)
 val fromPair : int * int -> t
 
 val bn : t (** brevis *)
@@ -78,7 +83,15 @@ val dden : t (** double-dotted eighth note *)
    @return a floating-point approximation of the input [t]
 *)
 val toFloat : t -> float 
+
 val toInt : t -> int
+
+(**
+   @param division the MIDI division, given in ticks per quarter
+   
+   @return the number of MIDI ticks corresponding to the duration d
+ *)
+val toMidiTicks : division:MIDI.division -> t -> int
 
 (** {2 Tempo definition and management} *)
 
@@ -96,7 +109,7 @@ module Tempo : sig
 
   (** {2 Basic values} *)
 
-  (** The basic tempo value, defined as 120BPM *)
+  (** The basic tempo value, corresponds to 120BPM *)
   val base : t
 
   (** {2 Tempo conversions} *)
