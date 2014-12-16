@@ -55,6 +55,5 @@ let timeToMidiDuration : ?samplerate:int -> ?division:MIDI.division ->
 			 ?tempo:Time.Tempo.t -> duration:Time.t -> int =
   fun ?samplerate:(sr = samplerate) ?division:(div = division)
       ?tempo:(tempo = Time.Tempo.base) ~duration ->
-  let tempo_mspq = Time.Tempo.tempoToMspq tempo
-  and delta = duration in
+  let tempo_mspq = Time.Tempo.tempoToMspq tempo in
   samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration)
