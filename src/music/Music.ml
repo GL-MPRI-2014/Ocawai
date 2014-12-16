@@ -100,16 +100,24 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
   -> function  
   | Rest(duration) -> MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
 							   ~tempo ~duration)
-  | Note(duration, a) ->
+  | Note(duration, param) ->
+     (*
+        Time.fprintf Format.std_formatter duration;
+        print_newline ();
+      *)
      let midi_duration = MidiV.timeToMidiDuration ~samplerate ~division
-						       ~tempo ~duration
+						  ~tempo ~duration
      in
      let buffer = MIDI.create(midi_duration)
-     and note = Audio.Note.of_string (pitch_to_string (a#pitch))
-     (** To-Do : Requires patching mm.Audio.Note to read sharp
+     and note = Audio.Note.of_string (pitch_to_string (param#pitch))
+     (** TODO : Requires patching mm.Audio.Note to read sharp
                                  and flat notes *)
-     and velocity = MidiV.velocityFromInt (a#velocity)
+     and velocity = MidiV.velocityFromInt (param#velocity)
      in
+     (*
+        print_int midi_duration;
+        print_newline ();
+      *)     
      MIDI.insert buffer (0, MIDI.Note_on(note, velocity));
-     MIDI.insert buffer (midi_duration-1, MIDI.Note_off(note, velocity));
+     MIDI.insert buffer (0 (*midi_duration-1 *), MIDI.Note_off(note, velocity));
      buffer
