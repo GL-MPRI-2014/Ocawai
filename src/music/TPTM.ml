@@ -94,5 +94,5 @@ let play : ?samplerate:int -> ?division:MIDI.division ->
      and multi_track = Array.make 16 (buf) in
      multi_track.(0) <- buf;
      midi_player#add multi_track;
-     (Thread.create midi_player#play ());
+     ignore (Thread.create midi_player#play ());
      midi_player#stop ()
