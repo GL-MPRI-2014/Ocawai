@@ -22,5 +22,8 @@ type update =
   | Set_logic_player_list of id_player list
   | Map of string
 
-val from_string : string -> update
-val to_string : update -> string
+let from_string (str : string) = 
+  Game_over
+
+let to_string (update : update) = 
+  ""

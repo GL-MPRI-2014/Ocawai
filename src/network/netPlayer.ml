@@ -29,56 +29,22 @@ object (self)
   method get_next_action = 
     Log.infof "#get_next_action" ;
 
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let boolean = Send_recv.send sockfd 0 (to_string [Closures]) 3.0
-
-With
- -> sockfd the socket
- -> 0 the code for "Get_next_action"
- -> to_string [Closures]
- -> 3.0 is the timeout
-
-if boolean is false then kill this player 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    to_channel out_channel (Get_next_action) [Closures];
-(*#############################################*)
-
+    let boolean = Send_recv.send sockfd 0 "" 3.0 in
+    (* TODO: if boolean is false then kill this player*)
     flush out_channel ;
-    Log.infof "#get_next_action sent" ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let receipt  = Send_recv.recv sockfd 3.0
-
-With
- -> sockfd the socket
- -> 3.0 is the timeout
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    let s = (from_channel in_channel : receive) in
-(*#############################################*)
-
-    Log.infof "#get_next_action received" ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-match receipt with
- | Some(2, _) -> self#manage_gna
- | Some(3, _) -> [Position.create (0,0)], Action.Wait
- | None -> kill this player
-
-With
- -> '2' is the code for "Next_action"
- -> '3' is the code for "Error"
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    match s with 
-    | Next_action a -> a
-    | Error _ -> [Position.create (0,0)], Action.Wait (* By default Wait *)
-(*#############################################*) 
-
+    
+    if not boolean
+    then () (* kill the player *)
+    else
+      Log.infof "#get_next_action sent" ;
+    
+    let receipt  = Send_recv.recv sockfd 3.0 in 
+    Log.infof "#get_next_action received";
+    match receipt with
+    | Some(2, str) -> Action.from_string str
+    | None -> [Position.create (0,0)], Action.Wait (* kill this player *)
+    | _ -> [Position.create (0,0)], Action.Wait (* Wait by default *)
+		       
   method set_logicPlayerList playersList =
 	()
 
@@ -86,8 +52,15 @@ With
 	logicPlayerList
 
   (* send updates over the network *)
-		   
+	  
   method update u =
-    to_channel out_channel (Update u) [Closures];
-
+    Log.infof "#update";
+    
+    let boolean = Send_recv.send sockfd 1 (Types.to_string u) 3.0 in
+    flush out_channel ;
+    if not boolean
+    then ()    (* TODO: kill this player*)
+    else
+      Log.infof "#update sent"
+    
 end

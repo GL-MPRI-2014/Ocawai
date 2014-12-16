@@ -73,7 +73,7 @@ object (self)
 	self#list_scan id
       with
 	(*TO DO : add a raise exception *)
-	Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures]; failwith "Wrong id")
+	Not_found -> failwith "Wrong id"
 	
 
   (* TODO *)
@@ -87,24 +87,12 @@ object (self)
   method manage_gna = 
     let clip = self#is_set in 
     let action = clip#get_next_action in
+
     Log.infof "Sending..." ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let boolean = Send_recv.send sockfd 2 (to_string [Closures]) 3.0
-
-With
- -> sockfd the socket
- -> '2' the code for "Next_action action"
- -> to_string [Closures]
- -> 3.0 is the timeout
-
-if boolean is false then kill this player 
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    to_channel out_channel (Next_action action) [Closures] ;
-(*#############################################*)
-
+    let boolean = Send_recv.send sockfd 2 (Action.to_string action) 3.0 in
+    if not boolean
+    then (* kill the player *) ()
+    else
     Log.infof "Sent." ;
     flush out_channel
     
@@ -133,41 +121,13 @@ if boolean is false then kill this player
     while true 
     do 
       Log.infof "Receiving..." ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let receipt  = Send_recv.recv sockfd 3.0
-
-With
- -> sockfd the socket
- -> 3.0 is the timeout
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-      let m = (from_channel in_channel : send) in
-(*#############################################*)
-
+      let receipt  = Send_recv.recv sockfd 3.0 in
       Log.infof "Received." ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-match receipt with
- | Some (0, _) -> self#manage_gna
- | Some(1, update) -> self#manage_update (update_from_string update)
- | None -> kill this player
-
-With
- -> '0' is the code for "Get_next_action"
- -> '1' is the code for "Update"
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-      match m with
-	| Get_next_action -> self#manage_gna
-	| Update update -> self#manage_update update
-(*#############################################*)
-
+      match receipt with
+      | Some (0, _) -> self#manage_gna
+      | Some(1, update) -> self#manage_update (Types.from_string update)
+      | _ -> (* kill this player *) ()
     done
-
-      
 
 end
 
