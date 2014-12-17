@@ -9,6 +9,8 @@ class client_data
     (fst (Battlefield.size map))
     (snd (Battlefield.size map))
 
+  val case_info = new CaseInfo.case_info
+
   initializer
     minimap#compute map players
 
@@ -17,6 +19,8 @@ class client_data
   method camera = camera
 
   method minimap = minimap
+
+  method case_info = case_info
 
   method players = players
 

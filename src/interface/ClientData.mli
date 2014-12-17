@@ -8,6 +8,8 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method minimap : Minimap.minimap
 
+  method case_info : CaseInfo.case_info
+
   method camera : Camera.camera
 
   method players : Player.logicPlayer list

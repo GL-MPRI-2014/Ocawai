@@ -351,7 +351,8 @@ let renderer = object(self)
           read_log r ;
           begin Player.(match l with
             | Moved(u,p) ->
-                Hashtbl.replace unit_ginfo u (p,0)
+                Hashtbl.replace unit_ginfo u (p,0);
+                Sounds.play_sound "boots"
           ) end ;
           Hashtbl.add log_history (p,i) ()
         | _ -> ()
@@ -378,7 +379,26 @@ let renderer = object(self)
       let chara = get_chara () in
       List.iter (self#draw_unit target data#camera chara) p#get_army
     ) data#players;
+    (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
+    (* Displaying case information *)
+    let drawer s pos =
+      self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
+    in
+    let selected_unit = data#unit_at_position data#camera#cursor#position in
+    let chara = match selected_unit with
+    | Some selected_unit ->
+        let player = data#player_of selected_unit in
+        List.fold_left
+            (fun a p -> let c = get_chara () in if p = player then c else a)
+            "" data#players
+    | None -> ""
+    in
+    let selected_tile =
+      Battlefield.get_tile data#map data#camera#cursor#position
+    in
+    data#case_info#draw target drawer selected_unit chara selected_tile;
+    (* Display framerate *)
     FPS.display target
 
 end
