@@ -90,8 +90,9 @@ let play : ?samplerate:int -> ?division:MIDI.division ->
   match events with
   | None -> ()
   | Some(buf) -> 
+     let duration = MIDI.Multitrack.duration [|buf|] in
      let midi_player = new MidiPlayer.asynchronousMidiPlayer
-     and multi_track = Array.make 16 (buf) in
+     and multi_track = MIDI.Multitrack.create 16 duration in
      multi_track.(0) <- buf;
      midi_player#add multi_track;
      ignore (Thread.create midi_player#play ());
