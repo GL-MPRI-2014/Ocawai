@@ -27,6 +27,9 @@ class virtual ['a] widget_container = object(self)
     super#toggle;
     List.iter (fun c -> c#toggle) children
 
+  method clear_children =
+    children <- []
+
 
 end
 
@@ -49,6 +52,10 @@ class virtual ['a] evq_container = object(self)
     size <- (fst size, snd size + item_height);
     w#set_size (fst size, item_height);
     w#set_position (0, (List.length children - 1) * item_height)
+
+  method clear_children =
+    List.iter (fun w -> size <- (fst size, snd size - item_height));
+    super#clear_children
 
 
 end

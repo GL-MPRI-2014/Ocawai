@@ -305,12 +305,12 @@ let renderer = object(self)
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
-    |Cursor.Idle -> ()
-    |Cursor.Displace(_,_,(range,_)) -> begin
+    | Cursor.Idle -> ()
+    | Cursor.Displace(_,_,(range,_)) -> begin
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 255 100 150)) range
     end
-    |Cursor.Action(my_unit,p,_) -> begin
+    | Cursor.Action(my_unit,p,_) -> begin
       let range = Position.range p my_unit#min_attack_range
         my_unit#attack_range in
       let attack_range =
@@ -319,14 +319,15 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 50 50 255)) attack_range
     end
+    | Cursor.Build _ -> ()
 
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
     let texname =
       Cursor.(match camera#cursor#get_state with
-      |Idle | Displace(_,_,_) -> "cursor"
-      |Action(_,_,_) -> "sight")
+      | Idle | Displace(_,_,_) | Build _ -> "cursor"
+      | Action(_,_,_) -> "sight")
     in
     self#draw_from_map target camera texname camera#cursor#position
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)

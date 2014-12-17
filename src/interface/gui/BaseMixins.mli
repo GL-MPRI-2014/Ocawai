@@ -11,6 +11,9 @@ class virtual ['a] widget_container : object
 
   method children : 'a list
 
+  (** Removes all children *)
+  method clear_children : unit
+
 end
 
 
@@ -34,9 +37,9 @@ class virtual ['a] evq_container : object
 end
 
 
-(** A mixin that represents a keyboard-controlled list 
+(** A mixin that represents a keyboard-controlled list
   * The two parameters are the up/down keys *)
-class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t -> 
+class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t ->
   OcsfmlWindow.KeyCode.t -> object
 
   val virtual mutable nb_items : int

@@ -47,6 +47,12 @@ let new_game () =
     ~m_item_height:30 ~m_theme:Theme.red_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
 
+  val build_menu = new ingame_menu ~m_position:(0,0)
+    ~m_width:150
+    ~m_item_height:30 ~m_theme:Theme.yellow_theme
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon"
+    ~m_bar_text:"Build"
+
   method private create_ui =
     (* Main ingame menu *)
     let my_menu = new ingame_menu
@@ -171,16 +177,27 @@ let new_game () =
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
+    (* Build menu items *)
+
+    new item "cancel" "Cancel" (fun () ->
+      build_menu#toggle;
+      ui_manager#unfocus build_menu;
+      cursor#set_state Cursor.Idle)
+    |> build_menu#add_child;
+
     my_menu#toggle;
     disp_menu#toggle;
     atk_menu#toggle;
+    build_menu#toggle;
+
     forfeit_popup#toggle;
 
     ui_manager#add_widget forfeit_popup;
     ui_manager#add_widget main_button;
     ui_manager#add_widget my_menu;
     ui_manager#add_widget disp_menu;
-    ui_manager#add_widget atk_menu
+    ui_manager#add_widget atk_menu;
+    ui_manager#add_widget build_menu
 
   initializer
     self#create_ui;
@@ -259,32 +276,61 @@ let new_game () =
               |Idle -> begin
                 match cdata#player_unit_at_position cursor#position
                       cdata#actual_player with
-                |Some(u) when (not u#has_played) ->
+                | Some u when (not u#has_played) ->
                     cursor#set_state (Displace (cdata#map, u,
                       Logics.accessible_positions u
                      (cdata#actual_player :> logicPlayer)
                       cdata#players
                       cdata#map))
+                | None ->
+                    (* We only check out buildings where there are no unit *)
+                    begin match cdata#building_at_position cursor#position with
+                      | (Some b, Some p) when
+                        p = (cdata#actual_player :> logicPlayer) ->
+                          (* Compute the list of producibles into a menu *)
+                          build_menu#clear_children;
+                          new item "cancel" "Cancel" (fun () ->
+                            build_menu#toggle;
+                            ui_manager#unfocus build_menu;
+                            cursor#set_state Cursor.Idle)
+                          |> build_menu#add_child;
+                          List.iter (fun s ->
+                            new item ("flatman_" ^ s) s (fun () ->
+                              build_menu#toggle;
+                              ui_manager#unfocus build_menu;
+                              cursor#set_state Cursor.Idle
+                            )
+                            |> build_menu#add_child
+                          ) b#product;
+                          cursor#set_state (Build b)
+                      | _ -> ()
+                    end
                 | _ -> ()
               end
-              |Displace(_,u,(acc,_)) ->
-                let uopt = cdata#unit_at_position cursor#position in
-                begin match uopt with
-                |None when List.mem cursor#position acc ->
-                    disp_menu#set_position (cdata#camera#project cursor#position);
-                    ui_manager#focus disp_menu;
-                    disp_menu#toggle
-                |Some(u') when u = u' && List.mem cursor#position acc ->
-                    disp_menu#set_position (cdata#camera#project cursor#position);
-                    ui_manager#focus disp_menu;
-                    disp_menu#toggle
-                |_ ->
-                    cursor#set_state Idle
-                end
-              |Action(_,_,_) ->
-                atk_menu#toggle;
-                atk_menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus atk_menu)
+              | Displace (_,u,(acc,_)) ->
+                  let uopt = cdata#unit_at_position cursor#position in
+                  begin match uopt with
+                  |None when List.mem cursor#position acc ->
+                      disp_menu#set_position
+                        (cdata#camera#project cursor#position);
+                      ui_manager#focus disp_menu;
+                      disp_menu#toggle
+                  |Some (u') when u = u' && List.mem cursor#position acc ->
+                      disp_menu#set_position
+                        (cdata#camera#project cursor#position);
+                      ui_manager#focus disp_menu;
+                      disp_menu#toggle
+                  |_ ->
+                      cursor#set_state Idle
+                  end
+              | Action(_,_,_) ->
+                  atk_menu#toggle;
+                  atk_menu#set_position (cdata#camera#project cursor#position);
+                  ui_manager#focus atk_menu
+              | Build b ->
+                  build_menu#toggle;
+                  build_menu#set_position (cdata#camera#project cursor#position);
+                  ui_manager#focus build_menu)
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle
