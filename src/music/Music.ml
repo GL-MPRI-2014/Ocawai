@@ -119,5 +119,5 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
         print_newline ();
       *)     
      MIDI.insert buffer (0, MIDI.Note_on(note, velocity));
-     MIDI.insert buffer (0 (*midi_duration-1 *), MIDI.Note_off(note, velocity));
+     MIDI.insert buffer (midi_duration-1, MIDI.Note_off(note, velocity));
      buffer
