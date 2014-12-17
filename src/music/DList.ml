@@ -285,8 +285,8 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
      | (Some b1, None) -> (* print_string "Conversion completed"; *) Some b1
      | (Some b1, Some b2) -> (
        (** Computes the duration from the first event in the whole DList
-	     to the first event of the DList which does not hold the global
-	     first event, also return its sign. *) 
+	     to the first event of the DList in the product which does not
+             hold the global first event, also return its sign. *) 
        let (midi_offset, offset_sign) = match (start1, start2) with
 	 | (Some st1, Some st2) -> 
 	    let rel_offset = dur1 /+/ st2 /-/ st1 in
