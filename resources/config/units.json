@@ -79,13 +79,13 @@
     "life_max": 50
   },
   {
-    "name": "vtb",
+    "name": "apc",
     "movement_type": "Roll",
     "vision_range": 4,
     "move_range": 7
   },
   {
-    "name": "dca",
+    "name": "aat",
     "movement_type": "Roll",
     "vision_range": 4,
     "attack_range_min": 1,
