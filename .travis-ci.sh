@@ -42,7 +42,7 @@ fi
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
 # Temporary: before we update dolog to 1.0
-opam uninstall dolog && opam pin dolog 0.5 && opam install dolog
+opam uninstall dolog && opam pin add dolog 0.5 && opam install dolog
 aclocal -I m4
 autoreconf configure.ac
 ./configure
