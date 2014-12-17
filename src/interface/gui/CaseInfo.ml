@@ -11,8 +11,9 @@ let height = 150.
 class case_info = object(self)
 
   method draw : 'a. (#render_target as 'a) ->
-  (string -> (float * float) -> unit) -> Unit.t option -> string -> unit =
-    fun target drawer u chara ->
+  (string -> (float * float) -> unit) -> Unit.t option -> string -> Tile.t ->
+  unit =
+    fun target drawer u chara tile ->
       let (w,h) = foi2D target#get_size in
       let x = 10.
       and y = h -. 160. in
@@ -25,7 +26,6 @@ class case_info = object(self)
       (* Unit information *)
       begin match u with
       | Some u ->
-          (* TODO Add character handling *)
           drawer (chara ^ "_" ^ u#name) (30.,h-.140.) ;
           (* Name *)
           rect_print target u#name font (Color.rgb 33 33 33) (Pix 15) (Pix 2)
@@ -73,7 +73,9 @@ class case_info = object(self)
         { left = 30. ; top = h -. 100. ; width = 170. ; height = 50. };
       (* Tile information *)
       (* TODO *)
-      rect_print target "Tiles are lazy" font (Color.rgb 99 99 99)
+      (* let tileset = TilesetLibrary.get_tileset tileset_library "tileset" in
+      drawer (Tile.get_name tile) (30.,h-.50.) ; *)
+      rect_print target (Tile.get_name tile) font (Color.rgb 99 99 99)
         (Pix 15) (Pix 2)
         Center
         { left = 30. ; top = h -. 50. ; width = 170. ; height = 50. }

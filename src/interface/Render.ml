@@ -380,7 +380,10 @@ let renderer = object(self)
             "" data#players
     | None -> ""
     in
-    data#case_info#draw target drawer selected_unit chara;
+    let selected_tile =
+      Battlefield.get_tile data#map data#camera#cursor#position
+    in
+    data#case_info#draw target drawer selected_unit chara selected_tile;
     (* Display framerate *)
     FPS.display target
 
