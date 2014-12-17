@@ -8,6 +8,8 @@ class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> o
     method set_army : Unit.t list -> unit
     method set_buildings : Building.t list -> unit
     method get_buildings : Building.t list
+    method get_base : Building.t option
+    method set_base : Building.t -> unit
     method add_building : Building.t -> unit
     (* TODO *)
     method set_unit_hp : Unit.id -> int -> unit
@@ -21,7 +23,10 @@ class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> o
     method delete_unit : Unit.id -> unit
     method move_unit : Unit.id -> Action.movement -> unit
     method delete_building : Building.id -> unit
-
+    
+    method get_value_resource : int
+    method use_resource : int -> bool
+    method harvest_buildings_income : unit
   end
 
 class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  -> object

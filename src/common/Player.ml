@@ -18,6 +18,8 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 
     val mutable army = Hashtbl.create 97
     val mutable buildings = Hashtbl.create 23
+    val mutable resource = 0
+    val mutable base : Building.t option = None
 
     (*Quite dirty mutable id. Can't we do without it ?*)
     val mutable id_ =
@@ -39,9 +41,10 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
       List.iter (fun building -> self#add_building building) b
     method get_buildings =
       Hashtbl.fold (fun id b l -> b::l) buildings []
+    method get_base = base
+    method set_base b = base <- Some b
 
     method add_building b = Hashtbl.add buildings b#get_id b
-
 
     (* TODO *)
     method set_unit_hp (u : Unit.id) (h : int) = ()
@@ -61,12 +64,17 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
       self#log (Moved (u, p));
       u#move (final_position (get_path p))
 
-
     method delete_building (id_building : Building.id) =
       try
         ignore(Hashtbl.find buildings id_building);
           Hashtbl.remove buildings id_building
       with Not_found -> raise Not_found
+
+    method get_value_resource = resource
+
+    method use_resource amount = if resource < amount then false else ( resource <- resource - amount;true)
+
+    method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
 
     initializer
       match id with

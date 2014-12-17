@@ -2,7 +2,8 @@ class client_data
   ~(map:Battlefield.t)
   ~(camera:Camera.camera)
   ~(players:Player.logicPlayer list)
-  ~(actual_player:ClientPlayer.client_player) = object(self)
+  ~(actual_player:ClientPlayer.client_player)
+  ~(neutral_buildings:(unit -> Building.t list)) = object(self)
 
   val minimap = new Minimap.minimap 30
     (fst (Battlefield.size map))
@@ -22,6 +23,8 @@ class client_data
   method case_info = case_info
 
   method players = players
+
+  method neutral_buildings = neutral_buildings ()
 
   method actual_player = actual_player
 
@@ -63,5 +66,27 @@ class client_data
       |t::q -> if aux t#get_army then t else iter_player q
     in
     iter_player players
+
+  method private listed_building_at_position pos blist =
+    let rec aux = function
+      | [] -> None
+      | e :: r when e#position = pos -> Some e
+      | _ :: r -> aux r
+    in aux blist
+
+  method building_at_position p =
+    let rec aux_player = function
+      | [] -> None, None
+      | e :: r ->
+          begin
+            match self#listed_building_at_position p e#get_buildings with
+            | None -> aux_player r
+            | Some b -> (Some b, Some e)
+          end
+    in
+    match aux_player players with
+      | None, _ ->
+          (self#listed_building_at_position p self#neutral_buildings, None)
+      | x -> x
 
 end

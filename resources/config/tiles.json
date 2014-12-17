@@ -11,8 +11,7 @@
     "roll_cost": -1,
     "tread_cost": -1,
     "swim_cost": 1,
-    "fly_cost": 1,
-    "density": 0
+    "fly_cost": 1
   },
   {
     "name": "lake",

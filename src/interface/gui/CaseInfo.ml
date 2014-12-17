@@ -11,9 +11,9 @@ let height = 150.
 class case_info = object(self)
 
   method draw : 'a. (#render_target as 'a) ->
-  (string -> (float * float) -> unit) -> Unit.t option -> string -> Tile.t ->
-  unit =
-    fun target drawer u chara tile ->
+  (string -> (float * float) -> unit) -> Unit.t option -> string ->
+  Building.t option -> string -> Tile.t -> unit =
+    fun target drawer u chara building b_chara tile ->
       let (w,h) = foi2D target#get_size in
       let x = 10.
       and y = h -. 160. in
@@ -64,13 +64,40 @@ class case_info = object(self)
             (Pix 15) (Pix 2)
             Center
             { left = 30. ; top = h -. 150. ; width = 170. ; height = 50. }
-      end;
+      end ;
       (* Building information *)
-      (* TODO: After merge *)
-      rect_print target "Buildings don't exist..." font (Color.rgb 99 99 99)
-        (Pix 15) (Pix 2)
-        Center
-        { left = 30. ; top = h -. 100. ; width = 170. ; height = 50. };
+      begin match building with
+      | Some b ->
+          drawer (b_chara ^ "_" ^ b#name) (30.,h-.87.) ;
+          (* Name *)
+          rect_print target b#name font (Color.rgb 33 33 33)
+            (Pix 15) (Pix 2)
+            Left
+            { left = 50. ; top = h -. 95. ; width = 170. ; height = 50. } ;
+          (* Player id *)
+          let id = match b#player_id with
+            | Some id -> "#" ^ (string_of_int id)
+            | None -> "neutral"
+          in
+          rect_print target id font
+            (Color.rgb 77 77 77)
+            (Pix 15) (Pix 2)
+            Right
+            { left = 50. ; top = h -. 95. ; width = 170. ; height = 50. } ;
+          (* Income *)
+          drawer "income" (25.,h-.62.) ;
+          rect_print target
+            (string_of_int b#income) font
+            (Color.rgb 77 77 77)
+            (Pix 15) (Pix 2)
+            Left
+            { left = 37. ; top = h -. 70. ; width = 60. ; height = 50. }
+      | None ->
+          rect_print target "No building there" font (Color.rgb 99 99 99)
+            (Pix 15) (Pix 2)
+            Center
+            { left = 30. ; top = h -. 95. ; width = 170. ; height = 50. }
+      end ;
       (* Tile information *)
       (* TODO *)
       (* let tileset = TilesetLibrary.get_tileset tileset_library "tileset" in
