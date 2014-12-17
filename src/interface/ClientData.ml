@@ -67,4 +67,26 @@ class client_data
     in
     iter_player players
 
+  method private listed_building_at_position pos blist =
+    let rec aux = function
+      | [] -> None
+      | e :: r when e#position = pos -> Some e
+      | _ :: r -> aux r
+    in aux blist
+
+  method building_at_position p =
+    let rec aux_player = function
+      | [] -> None, None
+      | e :: r ->
+          begin
+            match self#listed_building_at_position p e#get_buildings with
+            | None -> aux_player r
+            | Some b -> (Some b, Some e)
+          end
+    in
+    match aux_player players with
+      | None, _ ->
+          (self#listed_building_at_position p self#neutral_buildings, None)
+      | x -> x
+
 end

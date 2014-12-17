@@ -5,6 +5,8 @@ class case_info : object
     (string -> (float * float) -> unit) ->
     Unit.t option ->
     string ->
+    Building.t option ->
+    string ->
     Tile.t ->
     unit
 

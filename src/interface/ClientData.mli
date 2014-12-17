@@ -29,4 +29,7 @@ class client_data : map:Battlefield.t -> camera:Camera.camera ->
 
   method player_of : Unit.t -> Player.logicPlayer
 
+  method building_at_position :
+    Position.t -> (Building.t option) * (Player.logicPlayer option)
+
 end

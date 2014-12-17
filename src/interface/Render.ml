@@ -367,7 +367,9 @@ let renderer = object(self)
       ret
     in
     (* Draw buildings *)
-    List.iter (self#draw_building target data#camera 0 "neutral") data#neutral_buildings;
+    List.iter
+      (self#draw_building target data#camera 0 "neutral")
+      data#neutral_buildings;
     List.iter (fun p ->
       let chara = get_chara () in
       List.iter
@@ -385,8 +387,8 @@ let renderer = object(self)
     let drawer s pos =
       self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
     in
-    let selected_unit = data#unit_at_position data#camera#cursor#position in
-    let chara = match selected_unit with
+    let s_unit = data#unit_at_position data#camera#cursor#position in
+    let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
         List.fold_left
@@ -394,10 +396,20 @@ let renderer = object(self)
             "" data#players
     | None -> ""
     in
-    let selected_tile =
+    let (s_building, b_player) =
+      data#building_at_position data#camera#cursor#position
+    in
+    let b_chara = match b_player with
+    | Some player ->
+        List.fold_left
+          (fun a p -> let c = get_chara () in if p = player then c else a)
+          "" data#players
+    | None -> "neutral"
+    in
+    let s_tile =
       Battlefield.get_tile data#map data#camera#cursor#position
     in
-    data#case_info#draw target drawer selected_unit chara selected_tile;
+    data#case_info#draw target drawer s_unit chara s_building b_chara s_tile;
     (* Display framerate *)
     FPS.display target
 
