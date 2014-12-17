@@ -83,7 +83,15 @@ class case_info = object(self)
             (Color.rgb 77 77 77)
             (Pix 15) (Pix 2)
             Right
-            { left = 50. ; top = h -. 95. ; width = 170. ; height = 50. }
+            { left = 50. ; top = h -. 95. ; width = 170. ; height = 50. } ;
+          (* Income *)
+          drawer "income" (25.,h-.62.) ;
+          rect_print target
+            (string_of_int b#income) font
+            (Color.rgb 77 77 77)
+            (Pix 15) (Pix 2)
+            Left
+            { left = 37. ; top = h -. 70. ; width = 60. ; height = 50. }
       | None ->
           rect_print target "No building there" font (Color.rgb 99 99 99)
             (Pix 15) (Pix 2)
