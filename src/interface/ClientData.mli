@@ -29,6 +29,8 @@ class client_data : object
 
   method neutral_buildings : Building.t list
 
+  method toggle_neutral_building : Building.t -> unit
+
   method actual_player : ClientPlayer.client_player
 
   method current_move : Position.t list

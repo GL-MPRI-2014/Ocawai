@@ -149,8 +149,11 @@ class game_engine () = object (self)
       (get_opt field)#buildings
     in
     (*send the list of changed buildings to the players*)
-    (* TODO *)
-   ()
+    Array.iter (fun p ->
+      List.iter (fun b -> 
+        p#update (Types.Building_changed (fst b)))
+        changed_buildings)
+      players
 
 
   method private apply_movement movement =
