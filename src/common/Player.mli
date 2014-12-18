@@ -40,7 +40,7 @@ class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  -
     method virtual get_next_action :  Action.t
     method virtual set_logicPlayerList : (logicPlayer list) -> unit
     method virtual get_logicPlayerList : logicPlayer list
-    method update : Types.update -> unit
+    method virtual update : Types.update -> unit
   end
 
 val create_player : unit -> player

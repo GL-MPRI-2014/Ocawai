@@ -9,4 +9,6 @@ class scripted_player : string -> Unit.t list -> Building.t list -> object
   method set_logicPlayerList : (Player.logicPlayer list) -> unit
 
   method get_logicPlayerList : Player.logicPlayer list
+
+  method update : Types.update -> unit
 end
