@@ -11,7 +11,11 @@ exception Not_enough_ressource
 class logicPlayer : ?id:Types.id_player -> Unit.t list -> Building.t list  ->
 object
 
+  (** Get the units visible by the player due to the fog
+      @return units visible by the player*)
   method get_visible_army_for : logicPlayer -> Unit.t list
+													  
+  (**@return The fog for the player*)
   method get_fog : Fog.t
 
 
