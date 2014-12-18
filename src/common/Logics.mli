@@ -44,5 +44,5 @@ val capture_buildings : Player.logicPlayer list -> Player.logicPlayer ->
 val damage_interval : Unit.t -> Unit.t -> int * int
 
 (** Returns the list of the ennemy units in range *)
-val units_inrange : Position.t -> int -> Player.logicPlayer ->
+val units_inrange : Position.t -> (int*int) -> Player.logicPlayer -> 
   Player.logicPlayer list -> Unit.t list
