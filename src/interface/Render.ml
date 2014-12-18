@@ -299,19 +299,9 @@ let renderer = object(self)
 
   (* Draw a building *)
   method private draw_building
-  (target : render_window) camera resource character building =
+  (target : render_window) camera character building =
     let name = character ^ "_" ^ building#name in
-    self#draw_from_map target camera name (building#position) ();
-    if (building#name = "base") then
-      (let size = int_of_float (camera#zoom *. 14.)
-    in
-    let position = addf2D
-      (foi2D (camera#project building#position))
-      (camera#zoom *. 5.,camera#zoom *. 10.)
-    in
-    new text ~string:(string_of_int resource)
-      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
-    |> target#draw)
+    self#draw_from_map target camera name (building#position) ()
 
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
@@ -384,12 +374,12 @@ let renderer = object(self)
     in
     (* Draw buildings *)
     List.iter
-      (self#draw_building target data#camera 0 "neutral")
+      (self#draw_building target data#camera "neutral")
       data#neutral_buildings;
     List.iter (fun p ->
       let chara = get_chara () in
       List.iter
-        (self#draw_building target data#camera p#get_value_resource chara)
+        (self#draw_building target data#camera chara)
         p#get_buildings
     ) data#players;
     (* Draw units *)
@@ -427,6 +417,12 @@ let renderer = object(self)
       Battlefield.get_tile data#map data#camera#cursor#position
     in
     data#case_info#draw target drawer s_unit chara s_building b_chara s_tile;
+    (* Display resources *)
+    let resources = string_of_int data#actual_player#get_value_resource in
+    let (w,h) = foi2D target#get_size in
+    GuiTools.(rect_print
+      target resources font Color.white (Pix 30) (Pix 10) Right
+      { left = 20. ; top = 5. ; width = w -. 40. ; height = 100. });
     (* Display framerate *)
     FPS.display target
 
