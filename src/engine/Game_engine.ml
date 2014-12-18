@@ -126,7 +126,7 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(x#get_id))) ) players;
+    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players;
     u#set_played true
 end
 
