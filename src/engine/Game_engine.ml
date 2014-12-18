@@ -24,6 +24,8 @@ class game_engine () = object (self)
   method get_neutral_buildings =
     (get_opt field)#neutral_buildings
 
+  method cursor_init_position = Hashtbl.find (get_opt field)#cursor_init_positions
+
   method is_over = is_over
 
   method private create_n_scripted =
@@ -88,10 +90,14 @@ class game_engine () = object (self)
       |(move, Attack_unit (u1,u2)) ->
           self#apply_movement move;
           Logics.apply_attack u1 u2;
-          if u2#hp <= 0 then (
-            let player_u2 = self#player_of_unit u2 in
+          let player_u2 = self#player_of_unit u2 in
+          if u2#hp <= 0 then 
+            (
             player_u2#delete_unit (u2#get_id);
-            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players)
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players
+            )
+          else
+            Array.iter (fun x -> x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id))) ) players
       |(_, Create_unit (b,uu)) ->
         if List.mem b player#get_buildings 
 	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
