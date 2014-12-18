@@ -17,6 +17,9 @@ class tileset : OcsfmlGraphics.texture -> string -> object
   (** Returns the square containing the corresponding texture name *)
   method texture_rect : string -> floatrect
 
+  (** Returns the int square containing the corresponding texture name *)
+  method int_rect : string -> int OcsfmlGraphics.rect
+
   (** Returns the vao associated to the tileset *)
   method vao : OcsfmlGraphics.vertex_array
 

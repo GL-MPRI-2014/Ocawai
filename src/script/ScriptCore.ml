@@ -315,14 +315,6 @@ let position_to_pair p =
   let (a,b) = Position.topair p in
   `Pair(`Int a, `Int b)
 
-let scr_armyof =
-  `Fun(function
-    |`Player(p) ->
-        p#get_army
-        |> List.map (fun u -> `Soldier u)
-        |> fun l -> `List l
-    | _ -> assert false
-  )
 
 let scr_range =
   `Fun(function
@@ -407,7 +399,6 @@ let init () =
   expose scr_range (`Fun_t(`Soldier_t, intpair)) "unit_range";
   expose scr_expected_damage (`Fun_t(`Soldier_t , `Fun_t(`Soldier_t , `Int_t ))) "expected_damage";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
-  expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t))) "army_of";
   expose scr_rand (`Fun_t(`Int_t, `Int_t)) "rand";
   expose scr_endturn (`Fun_t(`Unit_t, `Alpha_t(0))) "end_turn";
   expose scr_donothing (`Fun_t(`Unit_t, `Alpha_t(0))) "do_nothing";

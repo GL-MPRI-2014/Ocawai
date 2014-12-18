@@ -68,6 +68,13 @@ let renderer = object(self)
       ~color
       ~tex_coords:(texture_rect.xmin, texture_rect.ymax) ())
 
+  method draw_direct_tile (target : render_window) (set : Tileset.tileset) 
+    tilename ?position ?rotation ?scale
+    ?color ?origin () =
+    let texture_rect = set#int_rect tilename in
+    let spr = new sprite ~texture:set#texture ?position ?rotation 
+      ?scale ?color ?origin ~texture_rect () in
+    target#draw spr
 
   (* Draw a texture *)
   method draw_txr (target : render_window) name
@@ -350,6 +357,7 @@ let renderer = object(self)
         let pl = Logics.find_player id_p data#players in
         Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
         Sounds.play_sound "boots"
+    | Some(Set_unit_hp(_,_,_)) -> Sounds.play_sound "shots"
     | _ -> ()
     );
     (* Hardcoded: to alternate characters *)
