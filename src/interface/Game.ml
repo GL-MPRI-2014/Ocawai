@@ -304,6 +304,10 @@ let new_game () =
                               )
                               |> (fun i -> i#toggle ; build_menu#add_child i)
                             ) b#product;
+                            build_menu#toggle;
+                            build_menu#set_position
+                              (cdata#camera#project cursor#position) ;
+                            ui_manager#focus build_menu ;
                             cursor#set_state (Build b)
                           end
                       | _ -> ()
@@ -330,10 +334,7 @@ let new_game () =
                   atk_menu#toggle;
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
-              | Build b ->
-                  build_menu#toggle;
-                  build_menu#set_position (cdata#camera#project cursor#position);
-                  ui_manager#focus build_menu)
+              | Build b -> ())
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle
