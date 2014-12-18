@@ -7,8 +7,8 @@ type log_item =
 
 exception Not_enough_ressource
 
-			
-class logicPlayer ?(id) =
+
+class logicPlayer ?(id) () =
   object (self)
 
     val mutable log : (int * log_item) list = []
@@ -35,7 +35,7 @@ class logicPlayer ?(id) =
       Hashtbl.fold (fun id u l -> u::l) army []
 
     method get_visible_army_for (p:logicPlayer) =
-        if Array.length fog > 0 then 
+        if Array.length fog > 0 then
             Fog.visible_army p#get_fog self#get_army
         else
             self#get_army
@@ -47,7 +47,7 @@ class logicPlayer ?(id) =
       List.iter (fun unit -> self#add_unit unit) a;
       if Array.length fog > 0 then List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) a
 
-    method add_unit u = 
+    method add_unit u =
         Hashtbl.add army u#get_id u;
         if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
         (*TODO*)
@@ -92,12 +92,12 @@ class logicPlayer ?(id) =
     method get_value_resource = resource
 
 	method has_resource amount = if resource < amount then false else true
-																		
+
     method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
     method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
 
-    method init (field: Battlefield.t) (players:logicPlayer list) =  
+    method init (field: Battlefield.t) (players:logicPlayer list) =
         let (size_x,size_y) = Battlefield.size field in
         fog <- Array.make_matrix size_x size_y 0;
         List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) self#get_army;
@@ -111,9 +111,9 @@ class logicPlayer ?(id) =
   end
 
 
-class virtual player  ?(id) =
+class virtual player  ?(id) () =
   object (self)
-  inherit logicPlayer ?id:id 
+  inherit logicPlayer ?id:id ()
   val mutable logic_player_list:logicPlayer list = []
   method virtual get_next_action :  Action.t
 
@@ -127,7 +127,7 @@ type t = player
 
 class dummy_player ?(id) (a: Action.t list) =
   object
-    inherit player ?id:id 
+    inherit player ?id:id ()
     val mutable actions = (a: Action.t list)
     method get_next_action  =
       if length a == 0 then

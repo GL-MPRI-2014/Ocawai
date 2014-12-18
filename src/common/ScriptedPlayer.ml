@@ -14,7 +14,7 @@ class scripted_player ?(id) (scr : string)  =
 
   object (self)
 
-  inherit player ?id:id
+  inherit player ?id:id ()
 
   val mutable logicPlayerList = []
 
