@@ -1,6 +1,4 @@
 (* Several functions relative to fog *)
-(* To be implemented somewhere *)
-
 type t = int array array
 (* The fog is a double array of int of the size of the map,
 if the value of a case is 0, it is hidden. When a unit can see a case, we increment 
@@ -12,8 +10,8 @@ the value of the case. When a unit cannot see anymore a case (moved/killed), we 
 let set_fog_for_unit (fog: t) (p:Position.t) range k=
     let (x,y) = Position.topair p in
     let (size_x,size_y)= (Array.length fog,Array.length fog.(0)) in
-    fog.(x).(y) <- fog.(x).(y) +1;
-
+    (* On commence par s'occuper de la croix autour du joueur *)
+    fog.(x).(y) <- fog.(x).(y) +1;    
     for i=1 to range do
         if (x+i) < size_x then fog.(x+i).(y) <- fog.(x+i).(y) +k;
         if (x-i) >= 0 then fog.(x-i).(y) <- fog.(x-i).(y) +k
@@ -22,6 +20,7 @@ let set_fog_for_unit (fog: t) (p:Position.t) range k=
         if (y+j) < size_y then fog.(x).(y+j) <- fog.(x).(y+j) +k;
         if (y-j) >=0  then fog.(x).(y-j) <- fog.(x).(y-j) +k
     done;
+    (* Puis on construit le reste avec les symétries *)
     for i=1 to range do
         for j=1 to range do
             if (i+j) <= range && (i+j)>0 then
@@ -40,12 +39,17 @@ let set_fog_for_unit (fog: t) (p:Position.t) range k=
         done;
     done
 
+(* update du fog quand on ajoute une unité *)
 let add_unit_fog fog (p:Position.t) range= set_fog_for_unit fog p range 1
+(* update du fog quand on delete une unité *)
 let delete_unit_fog fog (p:Position.t) range= set_fog_for_unit fog p range (-1)
+
+(* retourne si l'unité est visible ou pas *)
 let unit_is_visible fog (u:Unit.t)=
     let (x,y) = Position.topair u#position in
         fog.(x).(y) = 0
 
+(* retourne l'armée tronquée, contenant uniquement les unités visible par rapport au fog *)
 let rec visible_army fog (a:Unit.t list)=
     match a with
     |[]->[]

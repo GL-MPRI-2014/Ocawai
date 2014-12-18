@@ -4,6 +4,8 @@ type log_item =
 class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> object
     method get_id : Types.id_player
     method get_army : Unit.t list
+
+    (** @return the part of the army of self visible by the player in parameter *)
     method get_visible_army_for : logicPlayer -> Unit.t list
     method get_fog : Fog.t
     method add_unit : Unit.t -> unit
