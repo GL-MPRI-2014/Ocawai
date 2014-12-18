@@ -29,7 +29,14 @@ object (self)
   method get_next_action = 
     Log.infof "#get_next_action" ;
 
-    let success = Send_recv.send sockfd 0 "" 3.0 in
+   (*
+    let chars = Network_tool.write_timeout sockfd "titi" 0 4 1. in
+match chars with 
+| Some (n) -> Log.infof "nb chars %d" n;failwith "end"
+| None ->  Log.infof "None";failwith "end"
+   *)
+
+ let success = Send_recv.send sockfd 0 "" 3.0 in
     (* TODO: if boolean is false then kill this player*)
     Log.infof "Sent";
     flush out_channel ;
@@ -47,6 +54,7 @@ object (self)
 	| None -> [Position.create (0,0)], Action.Wait (* kill this player *)
 	| _ -> [Position.create (0,0)], Action.Wait (* Wait by default *)
       end
+
 	  
   method set_logicPlayerList playersList =
 	()

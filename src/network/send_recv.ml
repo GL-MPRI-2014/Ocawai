@@ -13,10 +13,10 @@ let string_of_length length =
 
   (* written by Mazzocchi *)
   match size with
-  | 0 -> String.make 4 (Char.chr 0) ^ length_string
-  | 1 -> String.make 3 (Char.chr 0) ^ length_string
-  | 2 -> String.make 2 (Char.chr 0) ^ length_string
-  | 3 -> String.make 1 (Char.chr 0) ^ length_string
+  | 0 -> String.make 4 '0' ^ length_string
+  | 1 -> String.make 3 '0' ^ length_string
+  | 2 -> String.make 2 '0' ^ length_string
+  | 3 -> String.make 1 '0' ^ length_string
   | 4 -> length_string
   | _ -> assert false
     
@@ -32,7 +32,7 @@ let rec send_string sock string break_time =
   let timeout = max (break_time -. Sys.time ()) 0. in
   let length = String.length string in
 
-  let size = Network_tool.write_timeout sock string length 0 timeout in
+  let size = Network_tool.write_timeout sock string 0 length timeout in
 
   Log.infof "break_time %f systime %f" break_time (Sys.time ());
 
@@ -60,7 +60,8 @@ let send sock magic string timeout =
   let break_time = timeout +. Sys.time () in
   let magic_char = char_of_int magic in
   let magic_string = String.make 1 magic_char in
-  let length_string = string_of_length (String.length string) in 
+  let length_string = string_of_length (String.length string) in
+Log.infof "%s" length_string;
   let data = String.concat "" [magic_string;length_string;string] in
   send_string sock data break_time
 
@@ -80,7 +81,7 @@ let recv_string sock length break_time =
   let rec recv_string' sock accum length break_time =
     let timeout = break_time -. Sys.time () in
     let buffer = String.make length ' ' in
-    let size = Network_tool.read_timeout sock buffer length 0 timeout in
+    let size = Network_tool.read_timeout sock buffer 0 length timeout in
     
     match size with
       | None -> None
@@ -138,7 +139,9 @@ let combine_results sock break_time magic_string data =
  * @return [None] if successful on receipt and [None] otherwise
  *)
 let recv_data sock break_time magic_string length_string =
+Log.infof "%s" length_string;
   let length = int_of_string length_string in
+Log.infof "%s" length_string;
   let data = recv_string sock length break_time in
   data |>> (combine_results sock break_time magic_string)
 
