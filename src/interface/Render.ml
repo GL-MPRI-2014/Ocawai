@@ -358,6 +358,7 @@ let renderer = object(self)
         Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
         Sounds.play_sound "boots"
     | Some(Set_unit_hp(_,_,_)) -> Sounds.play_sound "shots"
+    | Some(Game_over) -> Sounds.play_sound "lose"
     | _ -> ()
     );
     (* Hardcoded: to alternate characters *)
