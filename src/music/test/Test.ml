@@ -7,17 +7,32 @@ open Music
 open DList
 open TPTM
 
-let dummy_event (a, b) =
-  note (Time.fromPair (a, b)) (new Music.param (C, 4) 127)
+let dummy_event =
+  note (Time.fromInt 1) (new Music.param (C, 4) 127)
 
-let dummy_sequence : TPTM.t list =
-  List.map TPTM.make_withDelay (List.map dummy_event [(1,1); (1, 2); (1, 1)])
+let dummy_event_plus (a, b) (pitch, velocity) =
+  note (Time.fromPair (a, b)) (new Music.param pitch velocity)
+
+let dummy_simple_event (a, pitch) =
+  dummy_event_plus (a, 1) ((pitch, 4), 127)
 
 let dummy_delay : int -> TPTM.t = fun dur ->
-  delay (Time.fromPair (dur, 1)) 
+  delay (Time.fromInt dur)
 
-let parallelProd =
-  TPTM.fromList dummy_sequence
+(**
+   notes : [(int, Music.pitch)], duration and pitch.
+*) 
+let sequence notes =
+  let aggregate tile note =
+    tile % (TPTM.make_withDelay (dummy_simple_event note))
+  in
+  List.fold_left aggregate TPTM.zero notes
+
+let pierrot =
+  sequence [(1, C); (1, C); (1, C); (1, D); (2, E); (2, D);
+	    (1, C); (1, E); (1, D); (1, D); (4, C)]
+
+let pierrot_canon = fork pierrot ((dummy_delay 8) % pierrot)   
 
 let () =
   print_string "Testing Time module\n";
@@ -28,11 +43,7 @@ let () =
   print_newline ();
   
   let print_TPTM t = TPTM.fprintf Format.std_formatter t; print_newline () in
-  print_TPTM (
-      (dummy_delay (-1)) % (TPTM.make (dummy_event (1, 1)))
-    );
-  if isZero (dummy_delay 0) then print_string "isZero: OK\n"; 
   
-  let myTPTM = normalize ((dummy_delay (-1)) % parallelProd) in
+  let myTPTM = normalize pierrot in
   print_TPTM myTPTM;
-  TPTM.play (TPTM.make_withDelay (dummy_event (1, 1)))
+  TPTM.play pierrot_canon
