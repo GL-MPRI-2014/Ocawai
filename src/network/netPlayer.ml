@@ -79,12 +79,6 @@ With
     | Error _ -> [Position.create (0,0)], Action.Wait (* By default Wait *)
 (*#############################################*) 
 
-  method set_logicPlayerList playersList =
-	()
-
-  method get_logicPlayerList =
-	logicPlayerList
-
   (* send updates over the network *)
 		   
   method update u =

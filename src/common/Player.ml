@@ -4,6 +4,10 @@ open Path
 type log_item =
   | Moved of Unit.t * Action.movement
 
+
+exception Not_enough_ressource
+
+			
 class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
 
@@ -50,12 +54,15 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 
     method set_buildings b =
       List.iter (fun building -> self#add_building building) b
+
     method get_buildings =
       Hashtbl.fold (fun id b l -> b::l) buildings []
     method get_base = base
     method set_base b = base <- Some b
 
-    method add_building (b:Building.t) = Hashtbl.add buildings b#get_id b
+    method add_building (b:Building.t) =
+        Hashtbl.add buildings b#get_id b;
+        if Array.length fog > 0 then Fog.add_unit_fog fog b#position b#vision_range
 
     (* TODO *)
     method set_unit_hp (u : Unit.id) (h : int) = ()
@@ -78,14 +85,15 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
       if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
 
     method delete_building (id_building : Building.id) =
-      try
-        ignore(Hashtbl.find buildings id_building);
-          Hashtbl.remove buildings id_building
-      with Not_found -> raise Not_found
+        let b = Hashtbl.find buildings id_building in
+        if Array.length fog > 0 then Fog.delete_unit_fog fog b#position b#vision_range;
+        Hashtbl.remove buildings id_building
 
     method get_value_resource = resource
 
-    method use_resource amount = if resource < amount then false else ( resource <- resource - amount;true)
+	method has_resource amount = if resource < amount then false else true
+																		
+    method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
     method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
 
@@ -108,11 +116,13 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
   inherit logicPlayer ?id:id a b
-  val mutable logicPlayerList = []
+  val mutable logic_player_list:logicPlayer list = []
   method virtual get_next_action :  Action.t
-  method virtual set_logicPlayerList : (logicPlayer list) -> unit
-  method virtual get_logicPlayerList : logicPlayer list
+
+  method set_logic_player_list playerList = logic_player_list <- playerList
+  method get_logic_player_list = logic_player_list
   method virtual update : (Types.update)  -> unit
+
 end
 
 type t = player
@@ -129,14 +139,9 @@ class dummy_player army_ buildings_ (a: Action.t list) =
         actions<-tl(actions);
         action
 
-    method set_logicPlayerList playersList =
-	()
-
-    method get_logicPlayerList =
-	logicPlayerList
-
     method update (u:Types.update) =
     ()
+
   end
 
 let create_player () = new dummy_player [] []  []

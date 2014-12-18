@@ -10,9 +10,7 @@ class client_player : (Types.update -> unit) -> ?id:Types.id_player -> Unit.t li
 
   method get_next_action : Action.t
 
-  method set_logicPlayerList : (Player.logicPlayer list) -> unit
-
-  method get_logicPlayerList : Player.logicPlayer list
 
   method update : Types.update -> unit
+
 end

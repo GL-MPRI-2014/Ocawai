@@ -26,13 +26,9 @@ class client_player add_update ?(id) (a : Unit.t list) (b : Building.t list) =
       | _ -> get_aux ()
     in get_aux ()
 
-  method set_logicPlayerList playersList =
-	()
-
-  method get_logicPlayerList =
-	logicPlayerList
 
   method update (u:Types.update) = add_update u
     
+
 
 end

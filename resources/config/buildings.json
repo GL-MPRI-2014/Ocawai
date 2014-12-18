@@ -12,7 +12,7 @@
   },
   {
     "name": "port",
-    "product": ["battleship"],
+    "product": ["sumbarine"],
     "income": 10,
     "spawn_number_neutral" : 2,
     "movement_types" : ["Walk", "Swim"]
