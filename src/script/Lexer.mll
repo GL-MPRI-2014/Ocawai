@@ -67,6 +67,8 @@ rule token = parse
   | "}" {RBRACE}
   | "[" {LBRACK}
   | "]" {RBRACK}
+  | "//" [ ^ '\r' '\n']* newline
+    {Lexing.new_line lexbuf; token lexbuf}
   | _  {raise (Script_SyntaxError ("Syntax Error, unknown char."))}
 
 and read_string buf = parse
