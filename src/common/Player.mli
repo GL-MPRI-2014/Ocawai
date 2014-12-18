@@ -4,6 +4,7 @@ type log_item =
 class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> object
     method get_id : Types.id_player
     method get_army : Unit.t list
+    method get_fog : Fog.t
     method add_unit : Unit.t -> unit
     method set_army : Unit.t list -> unit
     method set_buildings : Building.t list -> unit
@@ -27,6 +28,8 @@ class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> o
     method get_value_resource : int
     method use_resource : int -> bool
     method harvest_buildings_income : unit
+
+    method init : Battlefield.t -> logicPlayer list -> unit
   end
 
 class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  -> object
