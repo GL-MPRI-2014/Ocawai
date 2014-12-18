@@ -132,7 +132,10 @@ class game_engine () = object (self)
 	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
 	(self#get_players :> Player.logicPlayer list)
     then self#run
-    else is_over <- true
+    else (
+        Array.iter (fun x -> x#update (Types.Game_over) ) players;
+        is_over <- true
+        )
 
   method private end_turn =
     let player = players.(actual_player) in
