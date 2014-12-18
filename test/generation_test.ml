@@ -54,7 +54,7 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
 
 let print_ascii m = print_ascii_extended m [[];[]] Path.empty []
 
-let print generator = print_ascii_extended generator#field generator#armies Path.empty generator#spawns
+let print generator = print_ascii_extended generator#field generator#armies Path.empty []
 
 (*check generation*)
 let test_gen test_ctxt =

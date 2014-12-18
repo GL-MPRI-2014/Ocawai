@@ -108,3 +108,9 @@ val fromList : t list -> t
    defined by the [Format.formatter]
 *)
 val fprintf : Format.formatter -> t -> unit
+
+(**
+   Convert [t] to MIDI and stream it to the user.
+ *)
+val play : ?samplerate:int -> ?division:MIDI.division ->
+	   ?tempo:Time.Tempo.t -> t -> unit 

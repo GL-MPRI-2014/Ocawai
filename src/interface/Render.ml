@@ -289,8 +289,18 @@ let renderer = object(self)
     |> target#draw
 
   (* Draw a building *)
-  method private draw_building (target : render_window) camera building =
-    self#draw_from_map target camera (building#name) (building#position) ()
+  method private draw_building
+  (target : render_window) camera resource character building =
+    let name = character ^ "_" ^ building#name in
+    self#draw_from_map target camera name (building#position) ();
+    if (building#name = "base") then (let size = int_of_float (camera#zoom *. 14.) in
+    let position = addf2D
+      (foi2D (camera#project building#position))
+      (camera#zoom *. 5.,camera#zoom *. 10.)
+    in
+    new text ~string:(string_of_int resource)
+      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+    |> target#draw)
 
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
@@ -313,7 +323,7 @@ let renderer = object(self)
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
-    let texname = 
+    let texname =
       Cursor.(match camera#cursor#get_state with
       |Idle | Displace(_,_,_) -> "cursor"
       |Action(_,_,_) -> "sight")
@@ -348,10 +358,6 @@ let renderer = object(self)
         | _ -> ()
       in read_log p#get_log
     ) data#players;
-    (* Draw buildings *)
-    List.iter (fun p ->
-      List.iter (self#draw_building target data#camera) p#get_buildings
-    ) data#players;
     (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
@@ -360,12 +366,51 @@ let renderer = object(self)
       if !x = Array.length characters then x := 0 ;
       ret
     in
+    (* Draw buildings *)
+    List.iter
+      (self#draw_building target data#camera 0 "neutral")
+      data#neutral_buildings;
+    List.iter (fun p ->
+      let chara = get_chara () in
+      List.iter
+        (self#draw_building target data#camera p#get_value_resource chara)
+        p#get_buildings
+    ) data#players;
     (* Draw units *)
     List.iter (fun p ->
       let chara = get_chara () in
       List.iter (self#draw_unit target data#camera chara) p#get_army
     ) data#players;
+    (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
+    (* Displaying case information *)
+    let drawer s pos =
+      self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
+    in
+    let s_unit = data#unit_at_position data#camera#cursor#position in
+    let chara = match s_unit with
+    | Some selected_unit ->
+        let player = data#player_of selected_unit in
+        List.fold_left
+            (fun a p -> let c = get_chara () in if p = player then c else a)
+            "" data#players
+    | None -> ""
+    in
+    let (s_building, b_player) =
+      data#building_at_position data#camera#cursor#position
+    in
+    let b_chara = match b_player with
+    | Some player ->
+        List.fold_left
+          (fun a p -> let c = get_chara () in if p = player then c else a)
+          "" data#players
+    | None -> "neutral"
+    in
+    let s_tile =
+      Battlefield.get_tile data#map data#camera#cursor#position
+    in
+    data#case_info#draw target drawer s_unit chara s_building b_chara s_tile;
+    (* Display framerate *)
     FPS.display target
 
 end

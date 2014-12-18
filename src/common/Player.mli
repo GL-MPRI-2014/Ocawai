@@ -2,7 +2,6 @@
 type log_item =
   | Moved of Unit.t * Action.movement
 
-
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
 class logicPlayer : ?id:Types.id_player -> Unit.t list -> Building.t list  ->
@@ -19,7 +18,10 @@ object
 				
   (** Set the units to the player. Useful for the initialisation.*)
   method set_army : Unit.t list -> unit
-				     
+
+  method get_base : Building.t option
+  method set_base : Building.t -> unit
+
   (** Set the buildings to the player. Useful for the initialisation.*)
   method set_buildings : Building.t list -> unit
 					      
@@ -33,6 +35,7 @@ object
 					   
   (** @return the list of entries [log_line, item]  taken by this player.*)
   method get_log : (int * log_item) list
+
 
   (**Get a unit owned by the player using the unit id.
    @return the unit corresponding to the id*)
@@ -49,9 +52,11 @@ object
   (**Move the unit referenced by its id. Action.movement is the path of this unit. *)
   method move_unit : Unit.id -> Action.movement -> unit
 
-					    
-end
+  method get_value_resource : int
+  method use_resource : int -> bool
+  method harvest_buildings_income : unit
 
+end
 (**A player is a enhanced logic player. It has a get_next_action that ask for the next action of the player. And it knows the other players on the game.
 @param id a logic player can be created with a specific id.*)
 class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  ->

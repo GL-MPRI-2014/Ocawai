@@ -4,7 +4,7 @@ type movement = Position.t list
 
 type action = 
 | Attack_unit of (Unit.t * Unit.t)
-| Attack_building of (Unit.t * Building.t)
+| Create_unit of (Building.t * Unit.unbound_t)
 | Wait
 | End_turn
 
@@ -14,4 +14,4 @@ exception Bad_unit
 exception Has_played
 exception Bad_path
 exception Bad_attack
-
+exception Bad_create

@@ -22,6 +22,8 @@ type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with n
   dist_min_between_seeds<ocaml mutable> : positive;
   
   island_expansion<ocaml mutable> : positive;
+  
+  ~resource_initial_amount<ocaml default="0"> : positive;
 }
 
 
