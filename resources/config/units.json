@@ -122,7 +122,8 @@
     "vision_range": 5,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 7
+    "move_range": 7,
+    "spawn_number": 1
   },
   {
     "name": "bomber",
