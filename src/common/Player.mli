@@ -19,7 +19,10 @@ object
   (** Set the units to the player. Useful for the initialisation.*)
   method set_army : Unit.t list -> unit
 
+  (** If the player has a base, return its base as a building*)
   method get_base : Building.t option
+
+  (**Set  the base of the player*)
   method set_base : Building.t -> unit
 
   (** Set the buildings to the player. Useful for the initialisation.*)
@@ -52,8 +55,14 @@ object
   (**Move the unit referenced by its id. Action.movement is the path of this unit. *)
   method move_unit : Unit.id -> Action.movement -> unit
 
+  (** Get the amount of resource owned by the player*)
   method get_value_resource : int
+
+  (**Try to use some resources.
+   @return True if it is possible, False otherwise*)
   method use_resource : int -> bool
+
+  (**Harvest the resources producted by the buildings owned by the player*)
   method harvest_buildings_income : unit
 
 end
