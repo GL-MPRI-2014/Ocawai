@@ -3,11 +3,11 @@
 type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
   | Amphibious_Roll | Amphibious_Tread | All
 
-type armor = Light | Normal | Heavy
+type armor = Light | Normal | Heavy | Flying
 
 class unbound_soldier (s : string) (m : movement) (v : int) (min_a : int)
   (a : int) (r : int) (sp : int) (ab : int) (ar : armor) (pl : int) (pn : int)
-  (ph :int) (price : int) (l_m : int)=
+  (ph :int) (pf : int) (price : int) (l_m : int)=
 object (self)
   method name = s
   method movement_type = m
@@ -21,6 +21,7 @@ object (self)
   method percentage_light = pl
   method percentage_normal = pn
   method percentage_heavy = ph
+  method percentage_flying = pf
   method price = price
   method life_max = l_m
 end
@@ -29,7 +30,9 @@ class soldier (uu : unbound_soldier) (p : Position.t) (p_id : int) (id0 : int) =
 object (self)
   inherit unbound_soldier uu#name uu#movement_type 
     uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
-    uu#spawn_number uu#attack_base uu#armor uu#percentage_light uu#percentage_normal uu#percentage_heavy uu#price uu#life_max
+    uu#spawn_number uu#attack_base uu#armor uu#percentage_light 
+    uu#percentage_normal uu#percentage_heavy uu#percentage_flying uu#price 
+    uu#life_max
   val mutable pos = p
   val mutable life = uu#life_max
   val mutable played = false
@@ -44,6 +47,7 @@ object (self)
     | Light -> a*self#attack_base*self#percentage_light*r/1000000
     | Normal -> a*self#attack_base*self#percentage_normal*r/1000000
     | Heavy -> a*self#attack_base*self#percentage_heavy*r/1000000
+    | Flying -> a*self#attack_base*self#percentage_flying*r/1000000
   method attack arm a = 
   (* fonction affine gérée par l'engine -> gérer les ripostes *)
     let _ = Random.self_init() in
@@ -89,7 +93,8 @@ let create_unbound_from_parsed_unit u = new unbound_soldier (u.Unit_t.name)
 | `Light -> Light
 | `Normal -> Normal
 | `Heavy -> Heavy
-) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy)
+| `Flying -> Flying
+) (u.Unit_t.percentage_light) (u.Unit_t.percentage_normal) (u.Unit_t.percentage_heavy) (u.Unit_t.percentage_flying)
 (u.Unit_t.price) (u.Unit_t.life_max)
 
 let create_parsed_unit_from_unbound (u :unbound_t) =
@@ -115,10 +120,12 @@ let create_parsed_unit_from_unbound (u :unbound_t) =
     armor = (match u#armor with
     | Light -> `Light
     | Normal -> `Normal
-    | Heavy -> `Heavy);
+    | Heavy -> `Heavy
+    | Flying -> `Flying);
     percentage_light = u#percentage_light;
     percentage_normal = u#percentage_normal;
     percentage_heavy = u#percentage_heavy;
+    percentage_flying = u#percentage_flying;
     price = u#price;
     life_max = u#life_max;
   }

@@ -767,4 +767,14 @@ object (self)
   method armies = let _,a,_ = g in a
   method buildings = let _,_,b = g in b
   method neutral_buildings = let _,_,b = g in List.filter (fun bu -> bu#player_id = None) b
+  method cursor_init_positions = let _,_,b = g in 
+    let tbl = Hashtbl.create 10 in 
+    List.iter
+      (fun bu -> 
+        Hashtbl.add tbl 
+          (match bu#player_id with Some a -> a | None -> assert false)
+          bu#position
+      )
+      (List.filter (fun bu -> bu#name = "base") b);
+    tbl
 end
