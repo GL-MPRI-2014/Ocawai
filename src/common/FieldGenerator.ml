@@ -770,10 +770,10 @@ object (self)
   method cursor_init_positions = let _,_,b = g in 
     let tbl = Hashtbl.create 10 in 
     List.iter
-      (fun bu -> 
-        Hashtbl.add tbl 
-          (match bu#player_id with Some a -> a | None -> assert false)
-          bu#position
+      (fun bu ->
+        (match bu#player_id with
+        | Some a -> Hashtbl.add tbl a bu#position 
+        | None -> ())
       )
       (List.filter (fun bu -> bu#name = "base") b);
     tbl

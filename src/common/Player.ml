@@ -8,7 +8,7 @@ type log_item =
 exception Not_enough_ressource
 
 			
-class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
+class logicPlayer ?(id) =
   object (self)
 
     val mutable log : (int * log_item) list = []
@@ -107,15 +107,13 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
       match id with
       | None -> id_ <- Oo.id self;
       | _ -> ();
-      (* Useless initialisation *)
-     (* List.iter (fun unit -> self#add_unit unit) a;
-      List.iter (fun building -> self#add_building building) b;*)
+
   end
 
 
-class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) =
+class virtual player  ?(id) =
   object (self)
-  inherit logicPlayer ?id:id a b
+  inherit logicPlayer ?id:id 
   val mutable logic_player_list:logicPlayer list = []
   method virtual get_next_action :  Action.t
 
@@ -127,9 +125,9 @@ end
 
 type t = player
 
-class dummy_player army_ buildings_ (a: Action.t list) =
+class dummy_player ?(id) (a: Action.t list) =
   object
-    inherit player army_ buildings_
+    inherit player ?id:id 
     val mutable actions = (a: Action.t list)
     method get_next_action  =
       if length a == 0 then
@@ -144,5 +142,5 @@ class dummy_player army_ buildings_ (a: Action.t list) =
 
   end
 
-let create_player () = new dummy_player [] []  []
-let create_dummy_player actions = new dummy_player [] [] actions
+let create_player () = new dummy_player []
+let create_dummy_player actions = new dummy_player actions

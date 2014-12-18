@@ -10,7 +10,7 @@ let new_game () =
 
   let m_cdata = new ClientData.client_data in
 
-  let my_player = new ClientPlayer.client_player m_cdata#push_update [] [] in
+  let my_player = new ClientPlayer.client_player m_cdata#push_update in
 
   let m_engine = new Game_engine.game_engine () in
 
@@ -19,6 +19,7 @@ let new_game () =
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
+    ~initpos:(m_engine#cursor_init_position (my_player :> player)#get_id)
     ~maxpos:(Position.diff
       (Position.create (Battlefield.size m_map))
       (Position.create (1,1)))
