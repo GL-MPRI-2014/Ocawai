@@ -19,32 +19,33 @@ let player_vision (player : Player.logicPlayer) (bf : Battlefield.t) : Position.
   in
   remove_double l
 
-
+(* Depth-first search used for {accessible,available}_positions. *)
 let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos path only_available =
   if mvt_point < 0 then failwith "dfs: mvt_point < 0";
   let neighbour_unsafe =
     [Position.left pos; Position.up pos; Position.right pos; Position.down pos]
   in
+  (* check that these positions are actually in the map *)
   let neighbour = List.filter (Battlefield.in_range bf) neighbour_unsafe in
   let visit pos =
     let tile = Battlefield.get_tile bf pos in
     let cost =
       if Tile.traversable_m tile mvt_type then
 	Tile.movement_cost tile mvt_type
-      else mvt_point + 1
+      else mvt_point + 1 (* this ensures that we can't go there *)
     in
     let newpath = Path.reach path pos in
     let allied_unit = ref false in
     (* now we check if we can actually go to this new position *)
     if cost <= mvt_point
-      && (not (Hashtbl.mem visited pos)
+      && (not (Hashtbl.mem visited pos) (* not yet visited *)
 	  || (Path.cost mvt_type bf (Hashtbl.find visited pos) >
-	      Path.cost mvt_type bf newpath)
+	      Path.cost mvt_type bf newpath) (* or faster path *)
       )
-      && (not (List.mem pos visible_pos)
-	  || not (Hashtbl.mem unit_pos pos)
+      && (not (List.mem pos visible_pos) (* in fog *)
+	  || not (Hashtbl.mem unit_pos pos) (* or no unit there *)
 	  || (allied_unit := (snd (Hashtbl.find unit_pos pos) = player);
-	      !allied_unit)
+	      !allied_unit) (* or allied unit there *)
       )
     then (
       (* if only_available is set to true, add positions only if there is also
@@ -62,6 +63,8 @@ let rec dfs bf player mvt_point mvt_type visible_pos unit_pos h visited l pos pa
   List.iter visit neighbour
 
 
+(* Auxiliary function for {accessible,available}_positions.
+   It initializes hashtables and other variables, then launch dfs. *)
 let accessible_positions_aux unit player player_list bf only_available =
   if not (List.mem unit player#get_army) then
     failwith "accessible_positions: wrong player";
@@ -145,14 +148,18 @@ let try_movement unit bf player player_list mvt =
   let rec aux mvt_pt mvt = match mvt with
     | [] -> failwith "Action.try_movement: bad movement"
     | [dst] -> true
-    | src :: dst :: t ->
+    | src :: dst :: t -> (* iter on path *)
       let tile = Battlefield.get_tile bf dst in
+      (* check the unit can go through this tile *)
       if not (Tile.traversable tile unit) then raise Bad_path;
       let cost = Tile.tile_cost tile unit in
+      (* check the unit has enough movement points *)
       if mvt_pt - cost < 0 then raise Bad_path;
       let (b1,b2) = unit_of_position dst player player_list in
-      if b1 then
-	b2 && (t <> []) && aux (mvt_pt - cost) (dst::t)
+      if b1 then (* if there is a unit on this position *)
+	b2 (* check it's an ally *) 
+	&& (t <> []) (* but we can't finish on an ally *)
+	&& aux (mvt_pt - cost) (dst::t)
       else (
 	last_viable_pos := dst;
 	aux (mvt_pt - cost) (dst::t)
@@ -197,6 +204,7 @@ let try_next_action player_list player bf order =
 	failwith "try_next_action: Undefined action"
   )
 
+(* Coefficient used in attacks *)
 let attack_coeff att def =
   let lambda = 90 and mu = 10 in
   let percentage = lambda * att#hp + mu * att#life_max in
@@ -210,18 +218,20 @@ let apply_attack att def =
   let damage = att#attack def#armor a in
   def#take_damage damage
 
+(* Finds player with given id *)
 let rec find_player id player_list = match player_list with
   | [] -> failwith "find_player: not found"
   | p :: t ->
     if p#get_id = id then p
     else find_player id t
 
+(* Computes building ownership changes *)
 let capture_buildings player_list player building_list =
   let unit_list = player#get_army in
   let p_id = player#get_id in
   let changed = ref [] in
   let aux u =
-    match u#movement_type with
+    match u#movement_type with (* only ground units can capture buildings *)
     | Unit.Walk | Unit.Roll | Unit.Tread
     | Unit.Amphibious_Walk | Unit.Amphibious_Roll | Unit.Amphibious_Tread -> (
       let pos = u#position in
@@ -230,13 +240,13 @@ let capture_buildings player_list player building_list =
 	| b :: t ->
 	  if b#position = pos then (
 	    match b#player_id with
-	    | None ->
+	    | None -> (* if neutral, change owner to player *)
 	      b#set_owner p_id;
 	      player#add_building b;
 	      changed := (b, None) :: (!changed)
-	    | Some id when id = p_id ->
+	    | Some id when id = p_id -> (* if already to player, do nothing *)
 	      ()
-	    | Some id ->
+	    | Some id -> (* if belongs to enemy, become neutral *)
 	      b#set_neutral;
 	      let p = find_player id player_list in
 	      p#delete_building (b#get_id);
@@ -261,7 +271,8 @@ let units_inrange pos range player pl =
   let ennemy_list = List.filter (fun p -> p <> player) pl in
   List.map (fun p ->
     List.filter (fun u ->
-      Position.dist pos u#position <= range
+      Position.dist pos u#position <= snd range &&
+      Position.dist pos u#position >= fst range
     ) p#get_army
   ) ennemy_list
   |> List.flatten

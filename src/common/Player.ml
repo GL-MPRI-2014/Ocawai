@@ -4,7 +4,11 @@ open Path
 type log_item =
   | Moved of Unit.t * Action.movement
 
-class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
+
+exception Not_enough_ressource
+
+			
+class logicPlayer ?(id) =
   object (self)
 
     val mutable log : (int * log_item) list = []
@@ -20,7 +24,7 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
     val mutable buildings = Hashtbl.create 23
     val mutable resource = 0
     val mutable base : Building.t option = None
-
+    val mutable fog = [||]
     (*Quite dirty mutable id. Can't we do without it ?*)
     val mutable id_ =
       match id with
@@ -30,30 +34,44 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
     method get_army =
       Hashtbl.fold (fun id u l -> u::l) army []
 
+    method get_visible_army_for (p:logicPlayer) =
+        if Array.length fog > 0 then 
+            Fog.visible_army p#get_fog self#get_army
+        else
+            self#get_army
     method get_id = id_
 
-    method set_army a =
-      List.iter (fun unit -> self#add_unit unit) a
+    method get_fog = fog
 
-    method add_unit u = Hashtbl.add army u#get_id u
+    method set_army a =
+      List.iter (fun unit -> self#add_unit unit) a;
+      if Array.length fog > 0 then List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) a
+
+    method add_unit u = 
+        Hashtbl.add army u#get_id u;
+        if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
         (*TODO*)
+
     method set_buildings b =
       List.iter (fun building -> self#add_building building) b
+
     method get_buildings =
       Hashtbl.fold (fun id b l -> b::l) buildings []
     method get_base = base
     method set_base b = base <- Some b
 
-    method add_building b = Hashtbl.add buildings b#get_id b
+    method add_building (b:Building.t) =
+        Hashtbl.add buildings b#get_id b;
+        if Array.length fog > 0 then Fog.add_unit_fog fog b#position b#vision_range
 
     (* TODO *)
     method set_unit_hp (u : Unit.id) (h : int) = ()
 
     method delete_unit (id_unit : Unit.id) =
-      try
-        ignore(Hashtbl.find army id_unit);
-          Hashtbl.remove army id_unit
-      with Not_found -> raise Not_found
+      let u = (Hashtbl.find army id_unit) in
+      if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
+      Hashtbl.remove army id_unit
+
 
     method get_unit_by_id (id_unit : Unit.id) = Hashtbl.find army id_unit
     method get_building_by_id (id_building : Building.id) = Hashtbl.find buildings id_building
@@ -61,46 +79,55 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
     (*it is quite dirty*)
     method move_unit (id_unit : Unit.id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
+      if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
       self#log (Moved (u, p));
-      u#move (final_position (get_path p))
+      u#move (final_position (get_path p));
+      if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
 
     method delete_building (id_building : Building.id) =
-      try
-        ignore(Hashtbl.find buildings id_building);
-          Hashtbl.remove buildings id_building
-      with Not_found -> raise Not_found
+        let b = Hashtbl.find buildings id_building in
+        if Array.length fog > 0 then Fog.delete_unit_fog fog b#position b#vision_range;
+        Hashtbl.remove buildings id_building
 
     method get_value_resource = resource
 
-    method use_resource amount = if resource < amount then false else ( resource <- resource - amount;true)
+	method has_resource amount = if resource < amount then false else true
+																		
+    method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
     method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
+
+    method init (field: Battlefield.t) (players:logicPlayer list) =  
+        let (size_x,size_y) = Battlefield.size field in
+        fog <- Array.make_matrix size_x size_y 0;
+        List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) self#get_army;
+
 
     initializer
       match id with
       | None -> id_ <- Oo.id self;
       | _ -> ();
-      List.iter (fun unit -> self#add_unit unit) a;
-      List.iter (fun building -> self#add_building building) b;
+
   end
 
 
-class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) =
+class virtual player  ?(id) =
   object (self)
-  inherit logicPlayer ?id:id a b
-  val mutable logicPlayerList = []
+  inherit logicPlayer ?id:id 
+  val mutable logic_player_list:logicPlayer list = []
   method virtual get_next_action :  Action.t
-  method virtual set_logicPlayerList : (logicPlayer list) -> unit
-  method virtual get_logicPlayerList : logicPlayer list
-  method  update (u:Types.update) =
-    ()
+
+  method set_logic_player_list playerList = logic_player_list <- playerList
+  method get_logic_player_list = logic_player_list
+  method virtual update : (Types.update)  -> unit
+
 end
 
 type t = player
 
-class dummy_player army_ buildings_ (a: Action.t list) =
+class dummy_player ?(id) (a: Action.t list) =
   object
-    inherit player army_ buildings_
+    inherit player ?id:id 
     val mutable actions = (a: Action.t list)
     method get_next_action  =
       if length a == 0 then
@@ -110,12 +137,10 @@ class dummy_player army_ buildings_ (a: Action.t list) =
         actions<-tl(actions);
         action
 
-    method set_logicPlayerList playersList =
-	()
+    method update (u:Types.update) =
+    ()
 
-    method get_logicPlayerList =
-	logicPlayerList
   end
 
-let create_player () = new dummy_player [] []  []
-let create_dummy_player actions = new dummy_player [] [] actions
+let create_player () = new dummy_player []
+let create_dummy_player actions = new dummy_player actions

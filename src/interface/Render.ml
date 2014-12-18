@@ -346,19 +346,13 @@ let renderer = object(self)
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
     (* Reads the log to update unit informations *)
-    List.iter (fun p ->
-      let rec read_log = function
-        | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
-          read_log r ;
-          begin Player.(match l with
-            | Moved(u,p) ->
-                Hashtbl.replace unit_ginfo u (p,0);
-                Sounds.play_sound "boots"
-          ) end ;
-          Hashtbl.add log_history (p,i) ()
-        | _ -> ()
-      in read_log p#get_log
-    ) data#players;
+    Types.( match data#pop_update with
+    | Some(Move_unit (u,path,id_p)) -> 
+        let pl = Logics.find_player id_p data#players in
+        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
+        Sounds.play_sound "boots"
+    | _ -> ()
+    );
     (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->

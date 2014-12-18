@@ -97,7 +97,7 @@ class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
 
   inherit [item] evq_container as super
 
-  inherit key_ctrl_list OcsfmlWindow.KeyCode.Up OcsfmlWindow.KeyCode.Down
+  inherit key_ctrl_list OcsfmlWindow.KeyCode.Up OcsfmlWindow.KeyCode.Down as kcl
 
   inherit has_toolbar as toolbar
 
@@ -139,6 +139,12 @@ class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
   method clear_children =
     nb_items <- 0 ;
     super#clear_children
+
+  method toggle =
+    super#toggle ;
+    toolbar#toggle ;
+    kcl#reset_selection
+
 
   initializer
     self#add_event(function

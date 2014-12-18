@@ -86,11 +86,20 @@
   },
   {
     "name": "aat",
-    "movement_type": "Roll",
-    "vision_range": 4,
+    "movement_type": "Tread",
+    "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 6
+    "move_range": 6,
+    "attack_base": 60,
+    "armor": "Normal",
+    "spawn_number": 1,
+    "percentage_light": 70,
+    "percentage_normal": 10,
+    "percentage_heavy": 1,
+    "percentage_flying": 100,
+    "price": 30,
+    "life_max": 40
   },
   {
     "name": "artillery",
@@ -122,7 +131,16 @@
     "vision_range": 5,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 7
+    "move_range": 6,
+    "spawn_number": 1,
+    "attack_base": 50,
+    "armor": "Flying",
+    "percentage_light": 100,
+    "percentage_normal": 70,
+    "percentage_heavy": 20,
+    "percentage_flying": 75,
+    "price": 30,
+    "life_max": 40
   },
   {
     "name": "bomber",

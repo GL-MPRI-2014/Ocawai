@@ -15,6 +15,7 @@ type t = {
   name : name_v;
   ~product<ocaml default = "[]"> : name_v list;
   ~income<ocaml default = "0"> : int;
+  ~vision_range<ocaml default = "3"> : positive;
   ~spawn_number_per_player<ocaml default = "0"> : int;
   ~spawn_number_neutral<ocaml default = "0"> : int;
   ~movement_types<ocaml default = "[]"> : movement list;

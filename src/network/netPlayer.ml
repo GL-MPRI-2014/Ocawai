@@ -5,9 +5,9 @@ open Send_recv
 
 module Log = Log.Make (struct let section = "NetPlayer" end)
 
-class netPlayer (s : file_descr) (a:Unit.t list) (b:Building.t list) = 
+class netPlayer ?(id) (s : file_descr) = 
 object (self)
-  inherit Player.player a b 
+  inherit Player.player ?id:id
 
   (* The socket we read from and write into to communicate with the dealer over the network *)
   val mutable sockfd = s
@@ -78,12 +78,6 @@ With
     | Next_action a -> a
     | Error _ -> [Position.create (0,0)], Action.Wait (* By default Wait *)
 (*#############################################*) 
-
-  method set_logicPlayerList playersList =
-	()
-
-  method get_logicPlayerList =
-	logicPlayerList
 
   (* send updates over the network *)
 		   

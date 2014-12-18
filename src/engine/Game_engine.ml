@@ -26,10 +26,18 @@ class game_engine () = object (self)
 
   method is_over = is_over
 
-  method private create_n_scripted = function
-    |0 -> []
-    |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
-      ::(self#create_n_scripted (n-1))
+  method private create_n_scripted =
+    (* create one scripted from its id 1..n *)
+    let create_one = function
+      | _ -> new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script")
+      in
+    (* create n scripted calling create_one *)
+    let rec create_n = function
+      | 0 -> []
+      | n -> (create_one n) :: (create_n (n-1))
+      in
+    create_n
+
 
   method init_local player nbplayers =
       let sc_players = self#create_n_scripted (nbplayers - 1) in
@@ -41,7 +49,7 @@ class game_engine () = object (self)
 
   method init_net port nbplayers =
       let connections = Network_tool.open_n_connections port nbplayers in
-      let player_list = List.map (fun x -> new NetPlayer.netPlayer x [] [] ) connections in
+      let player_list = List.map (fun x -> new NetPlayer.netPlayer x) connections in
       players <- (Array.of_list (player_list :> Player.player list));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
@@ -81,15 +89,18 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           if u2#hp <= 0 then (
-            (self#player_of_unit u2)#delete_unit (u2#get_id);
-            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(x#get_id))) ) players)
+            let player_u2 = self#player_of_unit u2 in
+            player_u2#delete_unit (u2#get_id);
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players)
       |(_, Create_unit (b,uu)) ->
         if List.mem b player#get_buildings 
 	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
-	  && player#use_resource uu#price 
-	then (
+	  && player#has_resource uu#price
+		then (
+		  player#use_resource uu#price;
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
+          Array.iter (fun x -> x#update (Types.Add_unit(u,(player#get_id))) ) players;
           u#set_played true)
         else raise Bad_create
     with
@@ -123,7 +134,7 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(x#get_id))) ) players;
+    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players;
     u#set_played true
 end
 

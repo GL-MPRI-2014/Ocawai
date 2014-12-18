@@ -5,14 +5,14 @@
   },
   {
     "name": "factory",
-    "product": ["infantry", "bazooka", "tank", "recon"],
+    "product": ["infantry", "bazooka", "tank", "recon", "aat", "artillery"],
     "income": 10,
     "spawn_number_neutral" : 2,
     "movement_types" : ["Walk", "Roll", "Tread"]
   },
   {
     "name": "port",
-    "product": ["battleship"],
+    "product": ["submarine"],
     "income": 10,
     "spawn_number_neutral" : 2,
     "movement_types" : ["Walk", "Swim"]

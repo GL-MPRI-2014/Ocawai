@@ -48,6 +48,8 @@ class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t ->
 
   method selected : int
 
+  method reset_selection : unit
+
 end
 
 

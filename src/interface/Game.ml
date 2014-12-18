@@ -8,7 +8,9 @@ open Menus
 
 let new_game () =
 
-  let my_player = new ClientPlayer.client_player [] [] in
+  let m_cdata = new ClientData.client_data in
+
+  let my_player = new ClientPlayer.client_player m_cdata#push_update in
 
   let m_engine = new Game_engine.game_engine () in
 
@@ -20,13 +22,6 @@ let new_game () =
     ~maxpos:(Position.diff
       (Position.create (Battlefield.size m_map))
       (Position.create (1,1)))
-  in
-
-  let m_cdata = (new ClientData.client_data ~camera:m_camera
-      ~map:m_map
-      ~players:m_players
-      ~actual_player:my_player
-      ~neutral_buildings:(fun () -> m_engine#get_neutral_buildings))
   in
 
   object(self)
@@ -52,6 +47,11 @@ let new_game () =
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
+
+  initializer
+    cdata#init_core m_map my_player m_players;
+    cdata#init_buildings m_engine#get_neutral_buildings;
+    cdata#init_interface m_camera
 
   method private create_ui =
     (* Main ingame menu *)
@@ -147,7 +147,8 @@ let new_game () =
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
         let in_range = Logics.units_inrange cursor#position
-               u#attack_range (cdata#actual_player :> Player.logicPlayer)
+               (u#min_attack_range, u#attack_range)
+               (cdata#actual_player :> Player.logicPlayer)
                cdata#players
         in
         if List.mem cursor#position r && in_range <> [] then begin

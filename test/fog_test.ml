@@ -1,14 +1,4 @@
-open OUnit2
-open Settings_t
-open Settings_engine_t
-
-let config = Config.config
-let _ =
-  config#settings.map_width <- 45;
-  config#settings.map_height <- 45;
-  config#settings_engine.generate_attempts <- 20;
-  config#settings_engine.structs_attempts <- 1;
-  config#settings_engine.units_spawn_attempts <- 5
+open Fog
 
 let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list)=
   let (w,h) = Battlefield.size m in
@@ -52,39 +42,38 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
     print_endline ""
   done
 
+let print_ascii_extended_fog (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list) fog=
+  let (w,h) = Battlefield.size m in
+  for j = 0 to h-1 do
+    for i = 0 to w-1 do
+        if fog.(i).(j) = 0 then 
+            (print_string "??")
+        else
+            (
+            print_string "u"; print_int fog.(i).(j)
+            );
+
+    done;
+    print_endline ""
+  done
+
 let print_ascii m = print_ascii_extended m [[];[]] Path.empty []
 
 let print generator = print_ascii_extended generator#field generator#armies Path.empty []
 
-(*check generation*)
-let test_gen test_ctxt =
-  let p() = (Player.create_dummy_player [] :>Player.logicPlayer) in
-  let rec p_list = function | 0 -> [] | n -> (p())::(p_list (n-1)) in
-  config#settings_engine.generation_method <- `Dummy;
-  let generator = new FieldGenerator.t (p_list 0) in
-  print generator;
-  config#settings_engine.generation_method <- `Swap;
-  let generator = new FieldGenerator.t (p_list 0) in
-  print generator;
-  config#settings_engine.generation_method <- `Seeds;
-  let generator = new FieldGenerator.t (p_list 0) in
-  print generator;
-  config#settings_engine.generation_method <- `Island;
-  let generator = new FieldGenerator.t (p_list 0) in
-  print generator;
-  let generator = new FieldGenerator.t (p_list 1) in
-  print generator;
-  let generator = new FieldGenerator.t (p_list 2) in
-  print generator;
-  let generator = new FieldGenerator.t (p_list 3) in
-  print generator;
-  let generator = new FieldGenerator.t (p_list 4) in
-  print generator;
-  assert_equal () ()
-
-let suite_gen =
-  "map generation tests">:::
-  ["New map : check dummy">:: test_gen]
+let print_fog generator fog = print_ascii_extended_fog generator#field generator#armies Path.empty [] fog
 
 let () =
-  run_test_tt_main suite_gen
+
+  
+    let p1 = (Player.create_dummy_player [] ) in
+    let p2 = (Player.create_dummy_player [] ) in
+    let generator = new FieldGenerator.t [(p1 :>Player.logicPlayer);(p2:>Player.logicPlayer)] in
+    p1#init generator#field [(p1 :>Player.logicPlayer);(p2:>Player.logicPlayer)];
+    p2#init generator#field [(p1 :>Player.logicPlayer);(p2:>Player.logicPlayer)];
+
+    print generator;
+
+
+
+    print_fog generator p1#get_fog
