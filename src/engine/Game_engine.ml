@@ -24,6 +24,8 @@ class game_engine () = object (self)
   method get_neutral_buildings =
     (get_opt field)#neutral_buildings
 
+  method cursor_init_position = Hashtbl.find (get_opt field)#cursor_init_positions
+
   method is_over = is_over
 
   method private create_n_scripted =
