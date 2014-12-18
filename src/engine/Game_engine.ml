@@ -167,33 +167,40 @@ class game_engine () = object (self)
     let player = players.(self#actual_player) in
     List.iter (fun u -> u#set_played false) player#get_army;
     player#harvest_buildings_income;
+
     (*update buildings at the end of a turn*)
     let changed_buildings = Logics.capture_buildings
       (self#get_players :> Player.logicPlayer list)
       (players.(self#actual_player) :> Player.logicPlayer)
       (get_opt field)#buildings
     in
+
     (*send the list of changed buildings to the players*)
+    Array.iter (fun p ->
+      List.iter (fun b ->
+        p#update (Types.Building_changed (fst b)))
+        changed_buildings)
+      players;
+
     let rec aux lst = 
-    match lst with
-        |[] -> ()
-        |p::q ->  (if self#is_dead players.(p) then
-                        (
-                        self#remove_player p;
-                        players.(p)#update (Types.Game_over) 
-                        );
-                   aux q 
-                    )
+      match lst with
+          |[] -> ()
+          |p::q ->  (if self#is_dead players.(p) then
+                          (
+                          self#remove_player p;
+                          players.(p)#update (Types.Game_over) 
+                          );
+                    aux q 
+                      )
     in
     aux actual_player_l;
     if List.length actual_player_l = 1 then
-    players.(self#actual_player)#update (Types.Game_over)
-    else
-    (
-    (* Enfin, on change de joueur en cours *)
-    self#next_player;
-    (* Notify the player *)
-    players.(self#actual_player)#update Types.Your_turn;
+      players.(self#actual_player)#update (Types.Game_over)
+    else (
+      (* Enfin, on change de joueur en cours *)
+      self#next_player;
+      (* Notify the player *)
+      players.(self#actual_player)#update Types.Your_turn;
     )
 
   method private apply_movement movement =

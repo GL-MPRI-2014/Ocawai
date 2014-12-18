@@ -42,6 +42,7 @@ class logicPlayer ?(id) () =
             Fog.visible_army p#get_fog self#get_army
         else
             self#get_army
+
     method get_id = id_
 
     method get_fog = fog
