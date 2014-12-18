@@ -291,18 +291,18 @@ let new_game () =
                           if b#product <> [] then begin
                             (* Compute the list of producibles into a menu *)
                             build_menu#clear_children;
-                            new item "cancel" "Cancel" (fun () ->
+                            let item = new item "cancel" "Cancel" (fun () ->
                               build_menu#toggle;
                               ui_manager#unfocus build_menu;
                               cursor#set_state Cursor.Idle)
-                            |> build_menu#add_child;
+                            in item#toggle ; build_menu#add_child item;
                             List.iter (fun s ->
                               new item ("flatman_" ^ s) s (fun () ->
                                 build_menu#toggle;
                                 ui_manager#unfocus build_menu;
                                 cursor#set_state Cursor.Idle
                               )
-                              |> build_menu#add_child
+                              |> (fun i -> i#toggle ; build_menu#add_child i)
                             ) b#product;
                             cursor#set_state (Build b)
                           end
