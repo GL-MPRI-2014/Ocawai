@@ -68,6 +68,13 @@ let renderer = object(self)
       ~color
       ~tex_coords:(texture_rect.xmin, texture_rect.ymax) ())
 
+  method draw_direct_tile (target : render_window) (set : Tileset.tileset) 
+    tilename ?position ?rotation ?scale
+    ?color ?origin () =
+    let texture_rect = set#int_rect tilename in
+    let spr = new sprite ~texture:set#texture ?position ?rotation 
+      ?scale ?color ?origin ~texture_rect () in
+    target#draw spr
 
   (* Draw a texture *)
   method draw_txr (target : render_window) name

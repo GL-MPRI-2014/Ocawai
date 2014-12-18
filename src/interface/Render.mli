@@ -2,6 +2,15 @@
 
 val renderer : <
 
+  (** Draw a tile from a tileset *)
+  draw_direct_tile : OcsfmlGraphics.render_window -> Tileset.tileset ->
+    string ->
+    ?position:(float * float) -> 
+    ?rotation:float -> 
+    ?scale:(float*float) -> 
+    ?color:OcsfmlGraphics.Color.t ->
+    ?origin:(float*float) -> unit -> unit;
+
   (** Draw a [texture] in screen coordinates (from the local library).
     * Usage: [draw_txr target name ... ]*)
   draw_txr : OcsfmlGraphics.render_window -> string ->

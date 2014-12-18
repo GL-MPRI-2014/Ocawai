@@ -75,6 +75,15 @@ class tileset texture config =
       let s = float_of_int size in
       {xmin = cx; ymin = cy; xmax = cx +. s; ymax = cy +. s}
 
+    method int_rect s = 
+      let fr_to_ir r = OcsfmlGraphics.IntRect.(
+        {left   = int_of_float r.xmin; 
+        top    = int_of_float r.ymin;
+        width  = int_of_float (r.xmax -. r.xmin);
+        height = int_of_float (r.ymax -. r.ymin)})
+      in
+      fr_to_ir (self#texture_rect s)
+
     method vao = vao
 
 end
