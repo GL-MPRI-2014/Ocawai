@@ -54,6 +54,7 @@ class game_engine () = object (self)
       let player_list = List.map (fun x -> new NetPlayer.netPlayer x) connections in
       players <- (Array.of_list (player_list :> Player.player list));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
+      Array.iter (fun p1 -> (Array.iter (fun p2 -> (p1#update (Types.Set_army(p2#get_army,p2#get_id)); p1#update (Types.Set_building(p2#get_buildings,p2#get_id)) ) ) players)) players;
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
   method private player_of_unit u =
