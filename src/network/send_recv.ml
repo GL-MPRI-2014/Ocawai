@@ -6,10 +6,23 @@
 
 (* SEND *)
 
+let rec string2int64 s = function
+    | 0 -> 0
+    | n -> (int_of_char s.[n - 1]) +
+               (256 * (string2int64 s (n-1)))
+
+let int2string i size =
+  let result = String.create size in
+  for j = (size) downto 1 do
+      result.[size - j] <- (char_of_int ((i lsr (8 * (j - 1))) mod 256))
+  done;
+  result
+  
 let string_of_length length =
   let length_string = string_of_int length in
   let size = String.length length_string in
-  
+
+
 
   (* written by Mazzocchi *)
   match size with
