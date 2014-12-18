@@ -87,11 +87,12 @@ class game_engine () = object (self)
       |(_, Create_unit (b,uu)) ->
         if List.mem b player#get_buildings 
 	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
-	  && player#use_resource uu#price 
-	then (
+	  && player#has_resource uu#price
+		then (
+		  player#use_resource uu#price;
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
-          Array.iter (fun x -> x#update (Types.Add_unit(u#get_id,(player#get_id))) ) players;
+          Array.iter (fun x -> x#update (Types.Add_unit(u,(player#get_id))) ) players;
           u#set_played true)
         else raise Bad_create
     with

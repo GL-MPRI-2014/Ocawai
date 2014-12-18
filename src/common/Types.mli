@@ -10,10 +10,10 @@ type id_player = int
 type update =
     Game_over
   | Classement 
-  | Set_army of Unit.id list * id_player
-  | Set_building of Building.id list * id_player
-  | Add_unit of Unit.id * id_player
-  | Add_building of Building.id * id_player
+  | Set_army of Unit.t list * id_player
+  | Set_building of Building.t list * id_player
+  | Add_unit of Unit.t * id_player
+  | Add_building of Building.t * id_player
   | Delete_unit of Unit.id *id_player (*Fog or kill*)
   | Delete_building of Building.id * id_player(*fog or kill*)
   | Move_unit of Unit.id * Action.movement * id_player
