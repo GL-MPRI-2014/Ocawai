@@ -2,11 +2,11 @@
 class client_data : object
 
   (* Update methods *)
-  method pop_update : Types.update
+  method pop_update : Types.update option
 
   method push_update : Types.update -> unit
 
-  method top_update : Types.update
+  method top_update : Types.update option
 
   (* Initialization methods *)
   method init_core : Battlefield.t -> 

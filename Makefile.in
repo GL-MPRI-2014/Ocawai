@@ -37,6 +37,7 @@ gui_dir=$(interface_dir)/gui
 network_dir=$(src_root)/network
 music_dir=$(src_root)/music
 script_dir=$(src_root)/script
+foo=${datarootdir}
 
 test_dir=test
 

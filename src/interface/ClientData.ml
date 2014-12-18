@@ -41,11 +41,15 @@ class client_data = object(self)
   method init_interface cam =
     camera <- Some cam
 
-  method pop_update = Stack.pop updates
+  method pop_update = 
+    try Some (Stack.pop updates)
+    with Stack.Empty -> None
 
   method push_update u = Stack.push u updates
 
-  method top_update = Stack.top updates
+  method top_update = 
+    try Some (Stack.top updates)
+    with Stack.Empty -> None
 
   method map = get_option map
 

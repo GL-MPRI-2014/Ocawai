@@ -767,4 +767,23 @@ object (self)
   method armies = let _,a,_ = g in a
   method buildings = let _,_,b = g in b
   method neutral_buildings = let _,_,b = g in List.filter (fun bu -> bu#player_id = None) b
+  method cursor_init_positions = let _,a,b = g in 
+    let tbl = Hashtbl.create 10 in 
+    match Config.config#settings_engine.cursor_init with
+    | `Base ->
+        List.iter
+          (fun bu ->
+            (match bu#player_id with
+            | Some a -> Hashtbl.add tbl a bu#position 
+            | None -> ())
+          )
+          (List.filter (fun bu -> bu#name = "base") b);tbl
+    | `Unit -> 
+        let l = List.fold_left (fun l ua -> ua@l) [] a in
+        let list_units = List.filter (fun u -> List.for_all (fun ub -> ub#position <> left u#position) l) l in
+        List.iter
+          (fun u ->
+            Hashtbl.add tbl u#player_id u#position
+          )
+          list_units;tbl
 end

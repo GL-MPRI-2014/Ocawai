@@ -69,6 +69,16 @@ let get_functions env =
     )
   in
 
+  let scr_armyof =
+    `Fun(function
+      |`Player(p) ->
+          p#get_visible_army_for self
+          |> List.map (fun u -> `Soldier u)
+          |> fun l -> `List l
+      | _ -> assert false
+    )
+  in
+
   let intpair = `Pair_t(`Int_t, `Int_t) in
   (* New environment *)
   env 
@@ -78,3 +88,5 @@ let get_functions env =
     (`Fun_t (`Soldier_t, `List_t(intpair)))
   |> expose scr_inrange "ennemies_in_range"
     (`Fun_t (intpair, `Fun_t(intpair, `List_t(`Soldier_t))))
+  |> expose scr_armyof "army_of"
+    (`Fun_t(`Player_t, `List_t(`Soldier_t)))

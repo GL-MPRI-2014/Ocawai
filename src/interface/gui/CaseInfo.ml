@@ -20,7 +20,7 @@ class case_info = object(self)
       new rectangle_shape
         ~position:(x,y)
         ~size:(width,height)
-        ~fill_color:(Color.rgba 255 255 255 240)
+        ~fill_color:(Color.rgba 210 230 255 240)
         ()
       |> target#draw ;
       (* Unit information *)

@@ -10,11 +10,11 @@ let log_int output = `Fun(function
   | _ -> assert false
 )
 
-class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
+class scripted_player ?(id) (scr : string)  =
 
   object (self)
 
-  inherit player a b
+  inherit player ?id:id
 
   val mutable logicPlayerList = []
 

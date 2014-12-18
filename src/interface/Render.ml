@@ -68,6 +68,13 @@ let renderer = object(self)
       ~color
       ~tex_coords:(texture_rect.xmin, texture_rect.ymax) ())
 
+  method draw_direct_tile (target : render_window) (set : Tileset.tileset) 
+    tilename ?position ?rotation ?scale
+    ?color ?origin () =
+    let texture_rect = set#int_rect tilename in
+    let spr = new sprite ~texture:set#texture ?position ?rotation 
+      ?scale ?color ?origin ~texture_rect () in
+    target#draw spr
 
   (* Draw a texture *)
   method draw_txr (target : render_window) name
@@ -305,12 +312,12 @@ let renderer = object(self)
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
-    |Cursor.Idle -> ()
-    |Cursor.Displace(_,_,(range,_)) -> begin
+    | Cursor.Idle -> ()
+    | Cursor.Displace(_,_,(range,_)) -> begin
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 255 100 150)) range
     end
-    |Cursor.Action(my_unit,p,_) -> begin
+    | Cursor.Action(my_unit,p,_) -> begin
       let range = Position.range p my_unit#min_attack_range
         my_unit#attack_range in
       let attack_range =
@@ -319,14 +326,15 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 50 50 255)) attack_range
     end
+    | Cursor.Build _ -> ()
 
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
     let texname =
       Cursor.(match camera#cursor#get_state with
-      |Idle | Displace(_,_,_) -> "cursor"
-      |Action(_,_,_) -> "sight")
+      | Idle | Displace(_,_,_) | Build _ -> "cursor"
+      | Action(_,_,_) -> "sight")
     in
     self#draw_from_map target camera texname camera#cursor#position
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
@@ -345,19 +353,15 @@ let renderer = object(self)
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
     (* Reads the log to update unit informations *)
-    List.iter (fun p ->
-      let rec read_log = function
-        | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
-          read_log r ;
-          begin Player.(match l with
-            | Moved(u,p) ->
-                Hashtbl.replace unit_ginfo u (p,0);
-                Sounds.play_sound "boots"
-          ) end ;
-          Hashtbl.add log_history (p,i) ()
-        | _ -> ()
-      in read_log p#get_log
-    ) data#players;
+    Types.( match data#pop_update with
+    | Some(Move_unit (u,path,id_p)) -> 
+        let pl = Logics.find_player id_p data#players in
+        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
+        Sounds.play_sound "boots"
+    | Some(Set_unit_hp(_,_,_)) -> Sounds.play_sound "shots"
+    | Some(Game_over) -> Sounds.play_sound "lose"
+    | _ -> ()
+    );
     (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
