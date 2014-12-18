@@ -2,10 +2,15 @@
 type log_item =
   | Moved of Unit.t * Action.movement
 
+
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
 class logicPlayer : ?id:Types.id_player -> Unit.t list -> Building.t list  ->
 object
+
+  method get_visible_army_for : logicPlayer -> Unit.t list
+  method get_fog : Fog.t
+
 
   (**Get the id of the player*)
   method get_id : Types.id_player
@@ -56,6 +61,7 @@ object
   method use_resource : int -> bool
   method harvest_buildings_income : unit
 
+  method init : Battlefield.t -> logicPlayer list -> unit
 end
 (**A player is a enhanced logic player. It has a get_next_action that ask for the next action of the player. And it knows the other players on the game.
 @param id a logic player can be created with a specific id.*)
@@ -74,7 +80,8 @@ object
   method get_logic_player_list : logicPlayer list
 
   (**A player can receive an update. It can be an action triggered by itself or by its opponents.*)
-  method update : Types.update -> unit
+  method virtual update : Types.update -> unit
+
   end
 
 (**Create a new player*)

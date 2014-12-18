@@ -10,4 +10,7 @@ class client_player : ?id:Types.id_player -> Unit.t list -> Building.t list -> o
 
   method get_next_action : Action.t
 
+
+  method update : Types.update -> unit
+
 end

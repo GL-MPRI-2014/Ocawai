@@ -65,6 +65,8 @@ class virtual key_ctrl_list key1 key2 = object(self)
 
   method selected = selected
 
+  method reset_selection = selected <- 0
+
   initializer
     self#add_event (function
       |Event.KeyPressed {Event.code = kc; _} when kc = key1 ->

@@ -7,4 +7,7 @@ object
 								       
   method get_next_action : Action.t
 
+
+  method update : Types.update -> unit
+
 end
