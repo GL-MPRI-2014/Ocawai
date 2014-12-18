@@ -389,8 +389,17 @@ let renderer = object(self)
         (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
     ) data#players;
     (* Displaying fog *)
+    let camera = data#camera in
+    (* TODO fog is empty *)
     let fog = data#actual_player#get_fog in
-    (* TODO print fog texture *)
+    let foggy p =
+      let (i,j) = Position.topair p in
+      try fog.(i).(j) = 0
+      with _ -> false
+    in
+    List.iter
+      (fun p -> if (foggy p) then self#draw_from_map target camera "fog" p ())
+      (Position.square camera#top_left camera#bottom_right);
     (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
     (* Displaying case information *)
