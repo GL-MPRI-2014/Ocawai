@@ -45,6 +45,6 @@ val capture_buildings : Player.logicPlayer list -> Player.logicPlayer ->
 (** @return the minimum and maximum damage for an attack *)
 val damage_interval : Unit.t -> Unit.t -> int * int
 
-(** @return the list of the ennemy units in range *)
-val units_inrange : Position.t -> int -> Player.logicPlayer ->
+(** Returns the list of the ennemy units in range *)
+val units_inrange : Position.t -> (int*int) -> Player.logicPlayer -> 
   Player.logicPlayer list -> Unit.t list
