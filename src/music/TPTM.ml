@@ -93,7 +93,17 @@ let play : ?samplerate:int -> ?division:MIDI.division ->
      let duration = MIDI.Multitrack.duration [|buf|] in
      let midi_player = new MidiPlayer.asynchronousMidiPlayer
      and multi_track = MIDI.Multitrack.create 16 duration in
+     let duration_seconds_num =
+       Num.mult_num (Num.num_of_int duration)
+	 (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
+     in
+     let duration_seconds =
+       Num.float_of_num duration_seconds_num
+     in
+     
      multi_track.(0) <- buf;
      midi_player#add multi_track;
      ignore (Thread.create midi_player#play ());
+     print_endline "YOLO";
+     Thread.delay duration_seconds;
      midi_player#stop ()
