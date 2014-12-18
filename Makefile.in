@@ -149,7 +149,7 @@ engine:  $(files_atd_ml) log
 client:  $(files_atd_ml)
 	$(client_command)
 
-#network: 
+#network:
 #	$(network_command)
 
 script: $(files_atd_ml) log
@@ -295,6 +295,10 @@ check_player: engine
 check_logics: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) logics_test.native -tag $(engine_tags)
 	./logics_test.native
+
+check_fog: interface
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) fog_test.native -tag $(interface_tags)
+	./fog_test.native
 
 check_interface: interface
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) interface_test.native -tag $(interface_tags)

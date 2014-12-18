@@ -34,9 +34,9 @@ class virtual ['a] evq_container : object
 end
 
 
-(** A mixin that represents a keyboard-controlled list 
+(** A mixin that represents a keyboard-controlled list
   * The two parameters are the up/down keys *)
-class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t -> 
+class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t ->
   OcsfmlWindow.KeyCode.t -> object
 
   val virtual mutable nb_items : int
@@ -44,6 +44,8 @@ class virtual key_ctrl_list : OcsfmlWindow.KeyCode.t ->
   method virtual add_event : (Event.t -> bool) -> unit
 
   method selected : int
+
+  method reset_selection : unit
 
 end
 

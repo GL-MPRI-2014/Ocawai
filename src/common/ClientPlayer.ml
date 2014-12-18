@@ -26,4 +26,9 @@ class client_player ?(id) (a : Unit.t list) (b : Building.t list) =
       | _ -> get_aux ()
     in get_aux ()
 
+
+  method update (u:Types.update) =
+	()
+
+
 end
