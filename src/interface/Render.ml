@@ -340,7 +340,7 @@ let renderer = object(self)
     ui_manager#draw target texture_library
 
   (* Reads the stack to update unit informations *)
-  method private handle_updates (data : ClientData.client_data) = 
+  method private handle_updates (data : ClientData.client_data) =
     Types.( match data#pop_update with
     | Some(u) -> begin
       match u with
@@ -350,7 +350,7 @@ let renderer = object(self)
         Sounds.play_sound "boots";
       | Game_over -> Sounds.play_sound "lose"
       | Set_unit_hp(_,_,_) -> Sounds.play_sound "shots"
-      | Building_changed(b) -> data#toggle_neutral_building b 
+      | Building_changed(b) -> data#toggle_neutral_building b
       | _ -> ()
       end; self#handle_updates data
     | None -> ()
@@ -385,9 +385,12 @@ let renderer = object(self)
     (* Draw units *)
     List.iter (fun p ->
       let chara = get_chara () in
-      List.iter (self#draw_unit target data#camera chara) 
+      List.iter (self#draw_unit target data#camera chara)
         (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
     ) data#players;
+    (* Displaying fog *)
+    let fog = data#actual_player#get_fog in
+    (* TODO print fog texture *)
     (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
     (* Displaying case information *)
