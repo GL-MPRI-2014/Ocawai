@@ -1,7 +1,7 @@
 (** Module for menus *)
 
 (** A class representing an item (in a menu) *)
-class item : string -> string -> (unit -> unit) -> object
+class item : ?enabled:bool -> string -> string -> (unit -> unit) -> object
 
   inherit Widget.widget
 
@@ -41,12 +41,12 @@ class key_button_oneuse : icon:string -> text:string -> m_position:(int*int)
 end
 
 
-(** Usage : [new ingame_menu position width item_height theme bar_height 
-  * bar_icon bar_text] 
+(** Usage : [new ingame_menu position width item_height theme bar_height
+  * bar_icon bar_text]
   * Creates a simple ingame menu *)
-class ingame_menu : m_position:(int * int) -> m_width:int -> 
-  m_item_height:int -> m_theme:Theme.t -> m_bar_height:int -> 
-  m_bar_icon:string -> m_bar_text:string -> 
+class ingame_menu : m_position:(int * int) -> m_width:int ->
+  m_item_height:int -> m_theme:Theme.t -> m_bar_height:int ->
+  m_bar_icon:string -> m_bar_text:string ->
     object
 
   inherit [item] BaseMixins.evq_container

@@ -68,6 +68,13 @@ let renderer = object(self)
       ~color
       ~tex_coords:(texture_rect.xmin, texture_rect.ymax) ())
 
+  method draw_direct_tile (target : render_window) (set : Tileset.tileset)
+    tilename ?position ?rotation ?scale
+    ?color ?origin () =
+    let texture_rect = set#int_rect tilename in
+    let spr = new sprite ~texture:set#texture ?position ?rotation
+      ?scale ?color ?origin ~texture_rect () in
+    target#draw spr
 
   (* Draw a texture *)
   method draw_txr (target : render_window) name
@@ -260,7 +267,9 @@ let renderer = object(self)
             Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
         | e :: n :: _ ->
             (* Beware of magic numbers *)
-            let o = (float_of_int frames) /. (float_of_int animation_time) *. 50. in
+            let o =
+              (float_of_int frames) /. (float_of_int animation_time) *. 50.
+            in
             e, Position.(
               if      n = left  e then (-. o,   0.)
               else if n = right e then (o   ,   0.)
@@ -273,7 +282,7 @@ let renderer = object(self)
       else (my_unit#position, (0.,0.))
     in
     let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map ~offset target camera name u_position ~color();
+    self#draw_from_map ~offset target camera name u_position ~color ();
     let size = int_of_float (camera#zoom *. 14.) in
     let (ox,oy) = offset in
     let position = addf2D
@@ -289,18 +298,20 @@ let renderer = object(self)
     |> target#draw
 
   (* Draw a building *)
-  method private draw_building (target : render_window) camera building =
-    self#draw_from_map target camera (building#name) (building#position) ()
+  method private draw_building
+  (target : render_window) camera character building =
+    let name = character ^ "_" ^ building#name in
+    self#draw_from_map target camera name (building#position) ()
 
   (* Render a range (move or attack, according to cursor's state) *)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
-    |Cursor.Idle -> ()
-    |Cursor.Displace(_,_,(range,_)) -> begin
+    | Cursor.Idle -> ()
+    | Cursor.Displace(_,_,(range,_)) -> begin
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 255 100 150)) range
     end
-    |Cursor.Action(my_unit,p,_) -> begin
+    | Cursor.Action(my_unit,p,_) -> begin
       let range = Position.range p my_unit#min_attack_range
         my_unit#attack_range in
       let attack_range =
@@ -309,14 +320,15 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 50 50 255)) attack_range
     end
+    | Cursor.Build _ -> ()
 
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
     (camera : Camera.camera) =
     let texname =
       Cursor.(match camera#cursor#get_state with
-      |Idle | Displace(_,_,_) -> "cursor"
-      |Action(_,_,_) -> "sight")
+      | Idle | Displace(_,_,_) | Build _ -> "cursor"
+      | Action(_,_,_) -> "sight")
     in
     self#draw_from_map target camera texname camera#cursor#position
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
@@ -327,6 +339,23 @@ let renderer = object(self)
     (ui_manager : UIManager.ui_manager) =
     ui_manager#draw target texture_library
 
+  (* Reads the stack to update unit informations *)
+  method private handle_updates (data : ClientData.client_data) =
+    Types.( match data#pop_update with
+    | Some(u) -> begin
+      match u with
+      | Move_unit (u,path,id_p) ->
+        let pl = Logics.find_player id_p data#players in
+        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
+        Sounds.play_sound "boots";
+      | Game_over -> Sounds.play_sound "lose"
+      | Set_unit_hp(_,_,_) -> Sounds.play_sound "shots"
+      | Building_changed(b) -> data#toggle_neutral_building b
+      | _ -> ()
+      end; self#handle_updates data
+    | None -> ()
+    );
+
   (* Draw the whole game *)
   method render_game (target : render_window)
     (data : ClientData.client_data) =
@@ -334,24 +363,7 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    (* Reads the log to update unit informations *)
-    List.iter (fun p ->
-      let rec read_log = function
-        | (i,l) :: r when (not (Hashtbl.mem log_history (p,i))) ->
-          read_log r ;
-          begin Player.(match l with
-            | Moved(u,p) ->
-                Hashtbl.replace unit_ginfo u (p,0);
-                Sounds.play_sound "boots"
-          ) end ;
-          Hashtbl.add log_history (p,i) ()
-        | _ -> ()
-      in read_log p#get_log
-    ) data#players;
-    (* Draw buildings *)
-    List.iter (fun p ->
-      List.iter (self#draw_building target data#camera) p#get_buildings
-    ) data#players;
+    self#handle_updates data;
     (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->
@@ -360,19 +372,47 @@ let renderer = object(self)
       if !x = Array.length characters then x := 0 ;
       ret
     in
+    (* Draw buildings *)
+    List.iter
+      (self#draw_building target data#camera "neutral")
+      data#neutral_buildings;
+    List.iter (fun p ->
+      let chara = get_chara () in
+      List.iter
+        (self#draw_building target data#camera chara)
+        p#get_buildings
+    ) data#players;
     (* Draw units *)
     List.iter (fun p ->
       let chara = get_chara () in
-      List.iter (self#draw_unit target data#camera chara) p#get_army
+      List.iter (self#draw_unit target data#camera chara)
+        (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
     ) data#players;
+    (* Displaying fog *)
+    let camera = data#camera in
+    (* TODO fog is empty *)
+    let fog = data#actual_player#get_fog in
+    let foggy p =
+      let (i,j) = Position.topair p in
+      try fog.(i).(j) = 0
+      with _ -> false
+    in
+    List.iter
+      (fun p -> if (foggy p) then self#draw_from_map target camera "fog" p ())
+      (Position.square camera#top_left camera#bottom_right);
     (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
     (* Displaying case information *)
     let drawer s pos =
       self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
     in
-    let selected_unit = data#unit_at_position data#camera#cursor#position in
-    let chara = match selected_unit with
+    let tile_drawer s pos =
+      let set = TilesetLibrary.get_tileset tileset_library "tileset" in
+      self#draw_direct_tile target set s
+        ~position:pos ~scale:(30./.50.,30./.50.) ()
+    in
+    let s_unit = data#unit_at_position data#camera#cursor#position in
+    let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
         List.fold_left
@@ -380,7 +420,27 @@ let renderer = object(self)
             "" data#players
     | None -> ""
     in
-    data#case_info#draw target drawer selected_unit chara;
+    let (s_building, b_player) =
+      data#building_at_position data#camera#cursor#position
+    in
+    let b_chara = match b_player with
+    | Some player ->
+        List.fold_left
+          (fun a p -> let c = get_chara () in if p = player then c else a)
+          "" data#players
+    | None -> "neutral"
+    in
+    let s_tile =
+      Battlefield.get_tile data#map data#camera#cursor#position
+    in
+    data#case_info#draw
+      target drawer tile_drawer s_unit chara s_building b_chara s_tile;
+    (* Display resources *)
+    let resources = string_of_int data#actual_player#get_value_resource in
+    let (w,h) = foi2D target#get_size in
+    GuiTools.(rect_print
+      target resources font Color.white (Pix 30) (Pix 10) Right
+      { left = 20. ; top = 5. ; width = w -. 40. ; height = 100. });
     (* Display framerate *)
     FPS.display target
 

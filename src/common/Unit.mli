@@ -3,7 +3,7 @@
 type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
   | Amphibious_Roll | Amphibious_Tread | All
 
-type armor = Light | Normal | Heavy
+type armor = Light | Normal | Heavy | Flying | Boat
 type id = int
 
 (** Unit type *)
@@ -25,6 +25,8 @@ type t = <
   percentage_light : int;
   percentage_normal : int;
   percentage_heavy : int;
+  percentage_flying : int;
+  percentage_boat : int;
   life_max : int;
   hp : int;
   attack : armor -> int -> int;
@@ -50,6 +52,8 @@ type unbound_t = <
   percentage_light : int;
   percentage_normal : int;
   percentage_heavy : int;
+  percentage_flying : int;
+  percentage_boat : int;
   life_max : int
 >
 

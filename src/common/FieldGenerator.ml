@@ -436,6 +436,7 @@ let check_movement attempt =
 (* test connexity between armies *)
 let check_path attempt =
   let (m,_,sp) = attempt in
+  (*let sp = List.map (fun b -> b#position) (List.filter (fun b -> b#name = "base") bl) in*)
   if List.length sp > 0 then
   let sp1 = List.hd sp in
   let dij = Path.dijkstra m sp1 Unit.Tread in
@@ -495,7 +496,7 @@ let init_positioning m nbplayers =
     !poslist
 
 (* positions nbplayers armies on a map m, with legit_spawns the list returned by init_positioning *)
-let positioning m playerslist legit_spawns =
+let positioning m playerslist legit_spawns buildings =
   let nbplayers = List.length playerslist in
   let (width,height) = Battlefield.size m in
   let rec behead = function
@@ -517,7 +518,7 @@ let positioning m playerslist legit_spawns =
   List.iter
     (
       fun pos ->
-        if test_dist_spawns pos !filtered_pos then
+        if test_dist_spawns pos !filtered_pos && not (List.exists (fun b -> b#position = pos) buildings) then
           filtered_pos := pos :: !filtered_pos
     )
     (Utils.shuffle legit_spawns);
@@ -527,11 +528,12 @@ let positioning m playerslist legit_spawns =
   check_path (m,(),poslist);
 
   (* place an army around the position spawn, knowing the other armies positions (to avoid overlaps on small maps)*)
-  let position_army_around spawn player other_armies_pos =
+  let position_army_around spawn (player:Player.logicPlayer) other_armies_pos other_buildings =
     let unbound_list = Config.config#unbound_units_list in
-    let general = Unit.bind (Config.config#unbound_unit "general") spawn player#get_id in
-    player#add_unit general;
-    let army = ref [general] in
+    let base = Building.bind (Config.config#unbound_building "base") spawn (Some player#get_id) in
+    player#add_building base;
+    player#set_base base;
+    let army = ref [] in
     let army_pos = ref [spawn] in
     List.iter
       (
@@ -543,6 +545,7 @@ let positioning m playerslist legit_spawns =
                   Battlefield.in_range m p
                   && (Tile.traversable_m (Battlefield.get_tile m p) ui#movement_type)
                   && not (List.mem p other_armies_pos)
+                  && not (List.exists (fun b -> b#position = p) other_buildings)
               )
               (neighbours !army_pos) in
             if ne = [] then
@@ -559,17 +562,18 @@ let positioning m playerslist legit_spawns =
           done;
       )
       unbound_list;
-    (!army, (!army_pos)@other_armies_pos)
+    (!army, (!army_pos)@other_armies_pos, base)
   in
   (* iter position_army_around for all armies*)
   let rec position_armies n = function
-  | [] -> (([]:Unit.t list list),([]:Position.t list))
+  | [] -> (([]:Unit.t list list),([]:Position.t list),buildings)
   | p::q ->
-      let others = position_armies (n+1) q in
-      let ap = position_army_around (List.nth poslist n) p (snd others) in
-      ((fst ap)::(fst others),snd ap)
+      let (oa,ob,oc) = position_armies (n+1) q in
+      let (a,b,c) = position_army_around (List.nth poslist n) p ob oc in
+      (a::oa,b,c::oc)
   in
-  (fst (position_armies 0 playerslist), poslist)
+  let (a,b,c) = position_armies 0 playerslist in
+  (a, c, poslist)
 
 
 (* create roads and bridges on a map*)
@@ -634,47 +638,64 @@ let create_borders m =
     )
     borders
 
+let create_buildings m =
+  let unbound_list = Config.config#unbound_buildings_list in
+  let poslist = ref [] in
+  let takenlist = ref [] in
+  let rec position ub =function
+  | 0 -> []
+  | nb -> if !poslist = [] then (GenLog.infof "empty";[]) else (
+    poslist := Utils.shuffle (!poslist);
+    let pos = List.hd !poslist in
+    poslist := List.tl !poslist;
+    takenlist := pos :: !takenlist;
+    let b = Building.bind ub pos None in
+    b::(position ub (nb-1)))
+  in
+  List.fold_left (fun l e -> poslist := Battlefield.tile_filteri (fun pos t -> not (List.mem pos !takenlist) && List.for_all (fun mov -> Tile.traversable_m t mov ) e#movement_types) m;(position e e#spawn_number_neutral)@l) [] unbound_list
+
 (* create structures on a map *)
 let create_structs m =
   create_borders m;
-  create_roads m
+  create_roads m;
+  create_buildings m
 
 (* iterated tries to spawn armies *)
-let units_spawn m playerslist legit_spawns =
+let units_spawn m playerslist legit_spawns buildings =
   let units_spawn_attempts = Config.config#settings_engine.units_spawn_attempts in
   let rec units_spawn_aux = function
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
-      GenLog.debugf "    attempt %d / %d : " (units_spawn_attempts - n +1) units_spawn_attempts;
+      GenLog.infof "    attempt %d / %d : " (units_spawn_attempts - n +1) units_spawn_attempts;
       try
-        let (a,sp) = positioning m playerslist legit_spawns in
-        let attempt = (m,a,sp) in
-        GenLog.debugf "    armies spawned, checking... ";
+        let (a,b,c) = positioning m playerslist legit_spawns buildings in
+        let attempt = (m,a,c) in
+        GenLog.infof "    armies spawned, checking... ";
         flush_all();
         check_movement attempt;
         check_superposed_units attempt;
         (*check_path attempt;*) (* place here any checks on units positioning*)
-        (a,sp)
+        (a,b)
       with
       | BadSpawnsSequence ->
-          GenLog.debugf "    Not enough spawns found";
+          GenLog.infof "    Not enough spawns found";
           units_spawn_aux (n-1)
       | NotEnoughPlace ->
-          GenLog.debugf "    Not enough space around spawn for army";
+          GenLog.infof "    Not enough space around spawn for army";
           units_spawn_aux (n-1)
       | InvalidPositioning ->
-          GenLog.debugf "    Unit placed on an area not coresponding to its movement modes";
+          GenLog.infof "    Unit placed on an area not coresponding to its movement modes";
           units_spawn_aux (n-1)
       | UnitsSuperposition ->
-          GenLog.debugf "    Units superposition";
+          GenLog.infof "    Units superposition";
           units_spawn_aux (n-1)
       | NoPath ->
-          GenLog.debugf "    No path between armies";
+          GenLog.infof "    No path between armies";
           units_spawn_aux (n-1)
     end
   in
-  GenLog.debugf "  Spawning armies ...";
+  GenLog.infof "  Spawning armies ...";
   units_spawn_aux units_spawn_attempts
 
 (* iterated tries to create structures *)
@@ -684,17 +705,18 @@ let create_structures m =
   | 0 -> raise StructSpawnFail
   | n ->
     begin
-      GenLog.debugf "    attempt %d / %d : " (structs_attempts - n +1) structs_attempts;
+      GenLog.infof "    attempt %d / %d : " (structs_attempts - n +1) structs_attempts;
       try
-        create_structs m;
-        GenLog.debugf "    structures spawn success"
+        let buildings = create_structs m in
+        GenLog.infof "    structures spawn success";
+        buildings
         (* place here any checks on structures positioning*)
       with
       | StructSpawnFail ->
           raise StructSpawnFail
     end
   in
-  GenLog.debugf "  Spawning structures ...";
+  GenLog.infof "  Spawning structures ...";
   create_structures_aux structs_attempts
 
 (* iterated tries to generate the map *)
@@ -706,7 +728,7 @@ let generate playerslist =
     raise GeneratorFailure
   | n ->
     begin
-      GenLog.debugf "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
+      GenLog.infof "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
       try
         let m = 
           match Config.config#settings_engine.generation_method with
@@ -715,26 +737,26 @@ let generate playerslist =
           | `Seeds -> seeds_gen()
           | `Island -> seeds_island()
         in
-        create_structures m;
-        let (a,sp) = units_spawn m playerslist (init_positioning m (List.length playerslist)) in
-        let attempt = (m,a,sp) in
+        let nb = create_structures m in
+        let (a,b) = units_spawn m playerslist (init_positioning m (List.length playerslist)) nb in
+        let attempt = (m,a,b@nb) in
         GenLog.infof "Generation success"(* place here any check on map generation*);
         attempt
       with
       | StructSpawnFail ->
-          GenLog.debugf "  structures spawn aborted";
+          GenLog.infof "  structures spawn aborted";
           generate_aux (n-1)
       | NotEnoughSpawns ->
-          GenLog.debugf "  Spawning armies ...";
-          GenLog.debugf "    not enough valid spawns";
-          GenLog.debugf "  armies spawn aborted";
+          GenLog.infof "  Spawning armies ...";
+          GenLog.infof "    not enough valid spawns";
+          GenLog.infof "  armies spawn aborted";
           generate_aux (n-1)
       | UnitsSpawnFail ->
-          GenLog.debugf "  armies spawn aborted";
+          GenLog.infof "  armies spawn aborted";
           generate_aux (n-1)
     end
   in
-  GenLog.debugf "Generating Battlefield ...";
+  GenLog.infof "Generating Battlefield ...";
   generate_aux generate_attempts
 
 
@@ -743,5 +765,25 @@ object (self)
   val g = Random.self_init(); generate playerslist
   method field = let m,_,_ = g in m
   method armies = let _,a,_ = g in a
-  method spawns = let _,_,sp = g in sp
+  method buildings = let _,_,b = g in b
+  method neutral_buildings = let _,_,b = g in List.filter (fun bu -> bu#player_id = None) b
+  method cursor_init_positions = let _,a,b = g in 
+    let tbl = Hashtbl.create 10 in 
+    match Config.config#settings_engine.cursor_init with
+    | `Base ->
+        List.iter
+          (fun bu ->
+            (match bu#player_id with
+            | Some a -> Hashtbl.add tbl a bu#position 
+            | None -> ())
+          )
+          (List.filter (fun bu -> bu#name = "base") b);tbl
+    | `Unit -> 
+        let l = List.fold_left (fun l ua -> ua@l) [] a in
+        let list_units = List.filter (fun u -> List.for_all (fun ub -> ub#position <> left u#position) l) l in
+        List.iter
+          (fun u ->
+            Hashtbl.add tbl u#player_id u#position
+          )
+          list_units;tbl
 end

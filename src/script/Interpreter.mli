@@ -31,3 +31,8 @@ val move_script : script -> Unit.t -> Action.movement
   * @return a unit attacked by the unit [u] after the movement [m] *)
 val attack_script : script -> Action.movement -> Unit.t -> Unit.t
 
+(** [building_script s b] calls the build methods of the script [s]
+  * @return a unit to build by the building b *)
+val building_script : script -> Building.t -> Unit.unbound_t
+
+

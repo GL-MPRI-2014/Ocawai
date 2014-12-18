@@ -8,5 +8,7 @@
     "nb_seeds_ratio": 50,
     "dist_min_between_seeds": 2,
     
-    "island_expansion": 50
+    "island_expansion": 50,
+    
+    "cursor_init": "Base"
 }

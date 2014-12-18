@@ -1,6 +1,8 @@
 
 type generation_type = [ Dummy | Swap | Seeds | Island ]
 
+type cursor_initialisation = [ Base | Unit ]
+
 type positive = int
   <ocaml validator="Utils.check_validity (
     fun x -> 0 <= x
@@ -9,6 +11,7 @@ type s_positive = int
   <ocaml validator="Utils.check_validity (
     fun x -> 0 < x
   )">
+
 
 type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with none=()} *)">  : unit;
   
@@ -22,6 +25,10 @@ type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with n
   dist_min_between_seeds<ocaml mutable> : positive;
   
   island_expansion<ocaml mutable> : positive;
+  
+  ~resource_initial_amount<ocaml default="0"> : positive;
+  
+  ~cursor_init<ocaml default = "`Base"> : cursor_initialisation;
 }
 
 

@@ -8,24 +8,21 @@ open Menus
 
 let new_game () =
 
-  let my_player = new ClientPlayer.client_player [] [] in
+  let m_cdata = new ClientData.client_data in
+
+  let my_player = new ClientPlayer.client_player m_cdata#push_update in
 
   let m_engine = new Game_engine.game_engine () in
 
-  let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 30 30 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
     ~w:manager#window#get_width ~h:manager#window#get_height
+    ~initpos:(m_engine#cursor_init_position (my_player :> player)#get_id)
     ~maxpos:(Position.diff
       (Position.create (Battlefield.size m_map))
       (Position.create (1,1)))
-  in
-
-  let m_cdata = (new ClientData.client_data ~camera:m_camera
-      ~map:m_map
-      ~players:m_players
-      ~actual_player:my_player)
   in
 
   object(self)
@@ -45,6 +42,17 @@ let new_game () =
   val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.red_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
+
+  val build_menu = new ingame_menu ~m_position:(0,0)
+    ~m_width:220
+    ~m_item_height:30 ~m_theme:Theme.yellow_theme
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon"
+    ~m_bar_text:"Build"
+
+  initializer
+    cdata#init_core m_map my_player m_players;
+    cdata#init_buildings m_engine#get_neutral_buildings;
+    cdata#init_interface m_camera
 
   method private create_ui =
     (* Main ingame menu *)
@@ -140,13 +148,14 @@ let new_game () =
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
         let in_range = Logics.units_inrange cursor#position
-               u#attack_range (cdata#actual_player :> Player.logicPlayer)
+               (u#min_attack_range, u#attack_range)
+               (cdata#actual_player :> Player.logicPlayer)
                cdata#players
         in
         if List.mem cursor#position r && in_range <> [] then begin
           cursor#set_state (Cursor.Action
             (u, cursor#position, in_range));
-          camera#set_position (Position.right cursor#position)
+          camera#set_position (List.hd in_range)#position
         end else if List.mem cursor#position r then begin
           cdata#actual_player#set_state (ClientPlayer.Received
             (cdata#current_move, Action.Wait));
@@ -170,16 +179,27 @@ let new_game () =
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
+    (* Build menu items *)
+
+    new item "cancel" "Cancel" (fun () ->
+      build_menu#toggle;
+      ui_manager#unfocus build_menu;
+      cursor#set_state Cursor.Idle)
+    |> build_menu#add_child;
+
     my_menu#toggle;
     disp_menu#toggle;
     atk_menu#toggle;
+    build_menu#toggle;
+
     forfeit_popup#toggle;
 
     ui_manager#add_widget forfeit_popup;
     ui_manager#add_widget main_button;
     ui_manager#add_widget my_menu;
     ui_manager#add_widget disp_menu;
-    ui_manager#add_widget atk_menu
+    ui_manager#add_widget atk_menu;
+    ui_manager#add_widget build_menu
 
   initializer
     self#create_ui;
@@ -258,32 +278,77 @@ let new_game () =
               |Idle -> begin
                 match cdata#player_unit_at_position cursor#position
                       cdata#actual_player with
-                |Some(u) when (not u#has_played) ->
+                | Some u when (not u#has_played) ->
                     cursor#set_state (Displace (cdata#map, u,
                       Logics.accessible_positions u
                      (cdata#actual_player :> logicPlayer)
                       cdata#players
                       cdata#map))
+                | None ->
+                    (* We only check out buildings where there are no unit *)
+                    begin match cdata#building_at_position cursor#position with
+                      | (Some b, Some p) when
+                        p = (cdata#actual_player :> logicPlayer) ->
+                          if b#product <> [] then begin
+                            (* Compute the list of producibles into a menu *)
+                            build_menu#clear_children;
+                            let item = new item "cancel" "Cancel" (fun () ->
+                              build_menu#toggle;
+                              ui_manager#unfocus build_menu;
+                              cursor#set_state Cursor.Idle)
+                            in item#toggle ; build_menu#add_child item;
+                            List.iter (fun s ->
+                              let u = List.find
+                                (fun u -> u#name = s)
+                                Config.config#unbound_units_list
+                              in
+                              new item
+                                ~enabled:(u#price <= p#get_value_resource)
+                                ("flatman_" ^ s)
+                                (s ^ " (" ^ (string_of_int u#price) ^ ")")
+                                (fun () ->
+                                  build_menu#toggle;
+                                  ui_manager#unfocus build_menu;
+                                  cdata#actual_player#set_state (
+                                    ClientPlayer.Received ([],
+                                      Action.Create_unit (b,u)
+                                    )
+                                  ) ;
+                                  cursor#set_state Cursor.Idle
+                                )
+                              |> (fun i -> i#toggle ; build_menu#add_child i)
+                            ) b#product;
+                            build_menu#toggle;
+                            build_menu#set_position
+                              (cdata#camera#project cursor#position) ;
+                            ui_manager#focus build_menu ;
+                            cursor#set_state (Build b)
+                          end
+                      | _ -> ()
+                    end
                 | _ -> ()
               end
-              |Displace(_,u,(acc,_)) ->
-                let uopt = cdata#unit_at_position cursor#position in
-                begin match uopt with
-                |None when List.mem cursor#position acc ->
-                    disp_menu#set_position (cdata#camera#project cursor#position);
-                    ui_manager#focus disp_menu;
-                    disp_menu#toggle
-                |Some(u') when u = u' && List.mem cursor#position acc ->
-                    disp_menu#set_position (cdata#camera#project cursor#position);
-                    ui_manager#focus disp_menu;
-                    disp_menu#toggle
-                |_ ->
-                    cursor#set_state Idle
-                end
-              |Action(_,_,_) ->
-                atk_menu#toggle;
-                atk_menu#set_position (cdata#camera#project cursor#position);
-                ui_manager#focus atk_menu)
+              | Displace (_,u,(acc,_)) ->
+                  let uopt = cdata#unit_at_position cursor#position in
+                  begin match uopt with
+                  |None when List.mem cursor#position acc ->
+                      disp_menu#set_position
+                        (cdata#camera#project cursor#position);
+                      ui_manager#focus disp_menu;
+                      disp_menu#toggle
+                  |Some (u') when u = u' && List.mem cursor#position acc ->
+                      disp_menu#set_position
+                        (cdata#camera#project cursor#position);
+                      ui_manager#focus disp_menu;
+                      disp_menu#toggle
+                  |_ ->
+                      cursor#set_state Idle
+                  end
+              | Action(_,_,_) ->
+                  atk_menu#toggle;
+                  atk_menu#set_position (cdata#camera#project cursor#position);
+                  ui_manager#focus atk_menu
+              | Build b -> ())
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle

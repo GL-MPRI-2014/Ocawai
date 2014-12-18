@@ -13,7 +13,8 @@ type value_type = [
   `List_t  of value_type |
   `Array_t of value_type |
   `Fun_t   of value_type * value_type |
-  `Pair_t  of value_type * value_type
+  `Pair_t  of value_type * value_type |
+  `Building_t
 ]
 
 (** Type of the exposed values *)
@@ -28,7 +29,8 @@ type value = [
   `Pair   of value * value    |
   `Soldier of Unit.t          |
   `Map     of Battlefield.t   |
-  `Player  of Player.logicPlayer
+  `Player  of Player.logicPlayer |
+  `Building of Building.t     
 ]
 
 exception Script_value_not_found of string
