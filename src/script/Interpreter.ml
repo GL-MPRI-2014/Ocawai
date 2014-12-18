@@ -21,6 +21,8 @@ class entrypoints = object(self)
 
   val mutable attacks : (string, seq_type) Hashtbl.t = Hashtbl.create 13
 
+  val mutable builds : (string, seq_type) Hashtbl.t = Hashtbl.create 13
+
   method add_main t = main <- Some(t)
 
   method add_init t = main <- Some(t)
@@ -30,6 +32,9 @@ class entrypoints = object(self)
 
   method add_attack (sl, t) =
     List.iter (fun s -> Hashtbl.add attacks s t) sl
+
+  method add_build (sl, t) = 
+    List.iter (fun s -> Hashtbl.add builds s t) sl
 
   method main =
     match main with
@@ -55,6 +60,14 @@ class entrypoints = object(self)
       try Hashtbl.find attacks "default"
       with |Not_found -> raise (Entry_point_missing
         ("No attack method for " ^ s ^ " or default."))
+    end
+
+  method build s =
+    try Hashtbl.find builds s
+    with |Not_found -> begin
+      try Hashtbl.find builds "default"
+      with |Not_found -> raise (Entry_point_missing
+        ("No build method for " ^ s ^ " or default."))
     end
 
 end
@@ -92,6 +105,7 @@ let rec eval_proc entries = function
   |Attack (p,_) -> entries#add_attack p
   |Main(p,_) -> entries#add_main p
   |Init(p,_) -> entries#add_init p
+  |Build(p,_) -> entries#add_build p
 
 and create_lambda env args seq =
   match args with
@@ -196,4 +210,12 @@ let attack_script (env, ep) (m : Action.movement) u =
   in
   match eval_seq env' (ep#attack u#name) with
   |`Soldier(u) -> u
+  | _ -> assert false
+
+let building_script (env, ep) building = 
+  let env' = ("selected_building", ref (`Building building)) :: env in
+  match eval_seq env' (ep#build building#name) with
+  |`String(s) -> 
+    List.find (fun u -> u#name = s)
+    Config.config#unbound_units_list
   | _ -> assert false

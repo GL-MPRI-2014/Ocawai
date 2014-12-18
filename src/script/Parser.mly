@@ -5,7 +5,7 @@
 %token VAR FUN
 %token IF ELSE
 %token SEMICOLON COMMA
-%token MOVE ATK MAIN INIT
+%token MOVE ATK MAIN INIT BUILD
 %token LEFTP RIGHTP
 %token LBRACE RBRACE
 %token LBRACK RBRACK
@@ -107,6 +107,7 @@ composed_value:
 
 proc:
   |MOVE; s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Move ((s,e), ($startpos(s),$endpos(s)))}
+  |BUILD; s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Build ((s,e), ($startpos(s),$endpos(s)))}
   |ATK;  s = strings_comma; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Attack ((s,e), ($startpos(s),$endpos(s)))}
   |MAIN; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Main (e, ($startpos(e),$endpos(e)))}
   |INIT; LBRACE; e = seqexpr; RBRACE {ScriptTypes.Init (e, ($startpos(e),$endpos(e)))}

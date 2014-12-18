@@ -13,6 +13,7 @@ fun next_playable l = {
   }
 }
 
+// Returns the closest unit in l from position pos
 fun closest_to pos l = {
   var actual_dist = 100000;
   var actual_pos  = (0,0);
@@ -31,6 +32,7 @@ fun closest_to pos l = {
   actual_pos
 }
 
+// Outputs a position in the log
 fun log_position p = {
   log_str "(";
   log_int (fst p);
@@ -71,6 +73,14 @@ attack default {
     log_str "\n";
     atkunit;
   }
+}
+
+build factory {
+  "infantry";
+}
+
+build default {
+  do_nothing ()
 }
 
 init {
