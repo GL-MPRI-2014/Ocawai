@@ -136,10 +136,15 @@ class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
     super#add_child w;
     nb_items <- nb_items + 1
 
+  method clear_children =
+    nb_items <- 0 ;
+    super#clear_children
+
   method toggle =
     super#toggle ;
     toolbar#toggle ;
     kcl#reset_selection
+
 
   initializer
     self#add_event(function

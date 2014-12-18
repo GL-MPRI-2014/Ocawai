@@ -21,14 +21,16 @@ class virtual widget = object(self)
 
   method add_event f = event_funs <- f :: event_funs
 
-  method on_event e = 
+  method clear_event = event_funs <- []
+
+  method on_event e =
     (* Not a fold left because we want to evaluate everything *)
     let rec event_aux = function
       |[] -> false
-      |t::q -> let b = event_aux q in 
+      |t::q -> let b = event_aux q in
         t e || b
     in
-    active && event_aux event_funs 
+    active && event_aux event_funs
 
   method set_position p = position <- p
 

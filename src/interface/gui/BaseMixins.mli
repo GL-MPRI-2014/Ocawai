@@ -11,6 +11,9 @@ class virtual ['a] widget_container : object
 
   method children : 'a list
 
+  (** Removes all children *)
+  method clear_children : unit
+
 end
 
 
