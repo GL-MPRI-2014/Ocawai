@@ -63,6 +63,12 @@ class client_data = object(self)
 
   method neutral_buildings = neutral_buildings
 
+  method toggle_neutral_building b = 
+    if List.mem b neutral_buildings then 
+      neutral_buildings <- (List.filter (fun bd -> bd <> b) neutral_buildings)
+    else
+      neutral_buildings <- (b :: neutral_buildings)
+
   method actual_player = 
     match actual_player with
     |None -> failwith "Bad client data initialization"

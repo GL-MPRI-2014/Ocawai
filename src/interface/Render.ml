@@ -339,6 +339,23 @@ let renderer = object(self)
     (ui_manager : UIManager.ui_manager) =
     ui_manager#draw target texture_library
 
+  (* Reads the stack to update unit informations *)
+  method private handle_updates (data : ClientData.client_data) = 
+    Types.( match data#pop_update with
+    | Some(u) -> begin
+      match u with
+      | Move_unit (u,path,id_p) ->
+        let pl = Logics.find_player id_p data#players in
+        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
+        Sounds.play_sound "boots";
+      | Game_over -> Sounds.play_sound "lose"
+      | Set_unit_hp(_,_,_) -> Sounds.play_sound "shots"
+      | Building_changed(b) -> data#toggle_neutral_building b 
+      | _ -> ()
+      end; self#handle_updates data
+    | None -> ()
+    );
+
   (* Draw the whole game *)
   method render_game (target : render_window)
     (data : ClientData.client_data) =
@@ -346,16 +363,7 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    (* Reads the log to update unit informations *)
-    Types.( match data#pop_update with
-    | Some(Move_unit (u,path,id_p)) ->
-        let pl = Logics.find_player id_p data#players in
-        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
-        Sounds.play_sound "boots"
-    | Some(Set_unit_hp(_,_,_)) -> Sounds.play_sound "shots"
-    | Some(Game_over) -> Sounds.play_sound "lose"
-    | _ -> ()
-    );
+    self#handle_updates data;
     (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
     let get_chara = let x = ref 0 in fun () ->

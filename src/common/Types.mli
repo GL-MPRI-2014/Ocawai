@@ -22,6 +22,7 @@ type update =
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list
   | Map of string
+  | Building_changed of Building.t
 
                        
 
