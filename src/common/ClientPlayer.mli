@@ -1,6 +1,7 @@
 type action_state = Idle | Waiting | Received of Action.t
 
-class client_player : (Types.update -> unit) -> ?id:Types.id_player -> Unit.t list -> Building.t list -> object
+class client_player : (Types.update -> unit) -> ?id:Types.id_player -> object
+
 
   inherit Player.player
 

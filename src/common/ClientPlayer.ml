@@ -2,11 +2,13 @@ open Player
 
 type action_state = Idle | Waiting | Received of Action.t
 
-class client_player add_update ?(id) (a : Unit.t list) (b : Building.t list) = 
+
+class client_player add_update ?(id) = 
+
 
   object (self) 
 
-  inherit player ?id:id a b
+  inherit player ?id:id 
 
   val mutable event_state = Idle
 
