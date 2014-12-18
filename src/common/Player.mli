@@ -4,6 +4,7 @@ type log_item =
 class logicPlayer :  ?id:Types.id_player -> Unit.t list -> Building.t list  -> object
     method get_id : Types.id_player
     method get_army : Unit.t list
+    method get_visible_army_for : logicPlayer -> Unit.t list
     method get_fog : Fog.t
     method add_unit : Unit.t -> unit
     method set_army : Unit.t list -> unit

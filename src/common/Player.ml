@@ -30,6 +30,11 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
     method get_army =
       Hashtbl.fold (fun id u l -> u::l) army []
 
+    method get_visible_army_for (p:logicPlayer) =
+        if Array.length fog > 0 then 
+            Fog.visible_army p#get_fog self#get_army
+        else
+            self#get_army
     method get_id = id_
 
     method get_fog = fog

@@ -42,39 +42,16 @@ let set_fog_for_unit (fog: t) (p:Position.t) range k=
 
 let add_unit_fog fog (p:Position.t) range= set_fog_for_unit fog p range 1
 let delete_unit_fog fog (p:Position.t) range= set_fog_for_unit fog p range (-1)
-
-
-(*
-let update_fog fog (u:Types.update) = 
-    match u with
-        | Set_army(u_list,id) -> List.iter (fun x -> add_unit_fog fog x#position x#vision_range) u_list;
-        | Add_unit(u,id)->add_unit_fog fog u#position u#vision_range
-       (* | Delete_unit(u,id)->delete_unit_fog u#position u#vision_range
-        | Move_unit(u,mov,id) -> (delete_unit_fog (List.head mov) u#vision_range;
-                                  add_unit_fog fog (List.head (List.rev mov)) u#vision_range) *)
-
 let unit_is_visible fog (u:Unit.t)=
     let (x,y) = Position.topair u#position in
         fog.(x).(y) = 0
-let apply_fog_to_update fog (u:Types.update) = 
-    match u with
-        | Set_army(u_list,id) -> (let res = ref [] in List.iter (fun x -> if unit_is_visible then res := x::!res) u_list;
-                                  Set_army(!res,id)
-        | Add_unit(u,id)->if unit_is_
-       (* | Delete_unit(u,id)->delete_unit_fog u#position u#vision_range
-        | Move_unit(u,mov,id) -> (delete_unit_fog (List.head mov) u#vision_range;
-                                  add_unit_fog fog (List.head (List.rev mov)) u#vision_range) *) 
-*)
+
+let rec visible_army fog (a:Unit.t list)=
+    match a with
+    |[]->[]
+    |u::t-> if unit_is_visible fog u then
+                u::(visible_army fog t)
+            else
+                (visible_army fog t)
 
 
-(*Passer par les updates a l'air plutot compliqué, voir impossible. Types d'updates non cohérent, parfois unit, parfois unit_id. De plus, si par exemple une unit enemie arrive soudain dans notre champ de vision. Ben, si tout ce qu'on reçoit, c'est l'udpate contenant un mouvement troncqué, on aura l'id d'une unité qu'on ne connait pas.    
-Proposition, implémenté un mask niveau interface graphique pour les players normaux, et pour les IA, modifié quelques fonctions de ScriptCore (ex scr_armyof) pour qu'elles renvoie les informations partiels. *)
-(* Le fog deviant une value de la Class Player ? *)
-
-(*
-let init_fog (player:Player.logicPlayer) (field: Battlefield.t) = 
-    let (size_x,size_y) = Battlefield.size field in
-    let fog = Array.make_matrix size_x size_y 0 in
-    List.iter (fun x -> add_unit_fog fog x#position x#vision_range) player#get_army;
-    fog
-*)
