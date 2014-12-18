@@ -54,12 +54,15 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 
     method set_buildings b =
       List.iter (fun building -> self#add_building building) b
+
     method get_buildings =
       Hashtbl.fold (fun id b l -> b::l) buildings []
     method get_base = base
     method set_base b = base <- Some b
 
-    method add_building (b:Building.t) = Hashtbl.add buildings b#get_id b
+    method add_building (b:Building.t) =
+        Hashtbl.add buildings b#get_id b;
+        if Array.length fog > 0 then Fog.add_unit_fog fog b#position b#vision_range
 
     (* TODO *)
     method set_unit_hp (u : Unit.id) (h : int) = ()
@@ -82,10 +85,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
       if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
 
     method delete_building (id_building : Building.id) =
-      try
-        ignore(Hashtbl.find buildings id_building);
-          Hashtbl.remove buildings id_building
-      with Not_found -> raise Not_found
+        let b = Hashtbl.find buildings id_building in
+        if Array.length fog > 0 then Fog.delete_unit_fog fog b#position b#vision_range;
+        Hashtbl.remove buildings id_building
 
     method get_value_resource = resource
 
