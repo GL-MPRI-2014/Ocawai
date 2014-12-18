@@ -1,7 +1,7 @@
-class scripted_player : string -> Unit.t list -> Building.t list ->
+class scripted_player : ?id:Types.id_player -> string ->
 object
 
-  inherit Player.player
+  inherit Player.player 
 	    
   method init_script : Battlefield.t -> (Player.logicPlayer list) -> unit
 								       

@@ -3,12 +3,12 @@ open Player
 type action_state = Idle | Waiting | Received of Action.t
 
 
-class client_player add_update ?(id) = 
+class client_player ?(id) add_update = 
 
 
   object (self) 
 
-  inherit player ?id:id 
+  inherit player ?id:id
 
   val mutable event_state = Idle
 
