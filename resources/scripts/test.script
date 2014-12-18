@@ -4,7 +4,7 @@ fun next_playable l = {
   }
   else {
     var u = list_hd l;
-    var acc = accessible_positions u self players map;
+    var acc = accessible_positions u;
     if ((unit_has_played u) || (list_empty acc)) {
       next_playable (list_tl l)
     } else {
@@ -40,11 +40,11 @@ fun log_position p = {
 }
 
 move default {
-  var acc = accessible_positions selected_unit self players map;
+  var acc = accessible_positions selected_unit;
   fun has_army player = {
     !(list_empty (army_of player));
   }
-  var undead_players = list_filter has_army players ;
+  var undead_players = list_filter has_army players;
   if (list_empty undead_players) { end_turn (); };
   var ptarget = list_hd undead_players;
   var parmy = army_of ptarget;
@@ -56,12 +56,12 @@ move default {
   log_str "Moving unit to : ";
   log_position select_pos;
   log_str "\n";
-  dijkstra_to selected_unit map select_pos
+  dijkstra_to selected_unit select_pos
 }
 
 attack default {
   var range = unit_range selected_unit;
-  var inrange = ennemies_in_range selected_pos range self players;
+  var inrange = ennemies_in_range selected_pos range;
   if (list_empty inrange) {
     do_nothing ()
   } else {
