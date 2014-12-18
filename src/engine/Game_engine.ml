@@ -29,7 +29,7 @@ class game_engine () = object (self)
   method private create_n_scripted =
     (* create one scripted from its id 1..n *)
     let create_one = function
-      | _ -> new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] []
+      | _ -> new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script")
       in
     (* create n scripted calling create_one *)
     let rec create_n = function
@@ -49,7 +49,7 @@ class game_engine () = object (self)
 
   method init_net port nbplayers =
       let connections = Network_tool.open_n_connections port nbplayers in
-      let player_list = List.map (fun x -> new NetPlayer.netPlayer x [] [] ) connections in
+      let player_list = List.map (fun x -> new NetPlayer.netPlayer x) connections in
       players <- (Array.of_list (player_list :> Player.player list));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
@@ -134,7 +134,7 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(x#get_id))) ) players;
+    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players;
     u#set_played true
 end
 

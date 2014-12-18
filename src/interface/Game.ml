@@ -10,7 +10,7 @@ let new_game () =
 
   let m_cdata = new ClientData.client_data in
 
-  let my_player = new ClientPlayer.client_player m_cdata#push_update [] [] in
+  let my_player = new ClientPlayer.client_player m_cdata#push_update in
 
   let m_engine = new Game_engine.game_engine () in
 

@@ -8,7 +8,7 @@ exception Not_enough_ressource
 
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
-class logicPlayer : ?id:Types.id_player -> Unit.t list -> Building.t list  ->
+class logicPlayer : ?id:Types.id_player ->
 object
 
   (** Get the units visible by the player due to the fog
@@ -83,7 +83,7 @@ object
 end
 (**A player is a enhanced logic player. It has a get_next_action that ask for the next action of the player. And it knows the other players on the game.
 @param id a logic player can be created with a specific id.*)
-class virtual player : ?id:Types.id_player ->  Unit.t list -> Building.t list  ->
+class virtual player : ?id:Types.id_player ->
 object
   inherit logicPlayer
 	    
