@@ -7,6 +7,7 @@ type unbound_t = <
   name : string;
   product : string list;
   income : int;
+  vision_range : int;
   spawn_number_per_player : int;
   spawn_number_neutral : int;
   movement_types : Unit.movement list
@@ -19,6 +20,7 @@ type t = <
   player_id : int option;
   product : string list;
   income : int;
+  vision_range : int;
   spawn_number_per_player : int;
   spawn_number_neutral : int;
   set_owner : int -> unit;
