@@ -6,10 +6,9 @@
 
 (* SEND *)
 
-let rec string2int64 s = function
+let rec string2int s = function
     | 0 -> 0
-    | n -> (int_of_char s.[n - 1]) +
-               (256 * (string2int64 s (n-1)))
+    | n -> (int_of_char s.[n - 1]) + (256 * (string2int s (n-1)))
 
 let int2string i size =
   let result = String.create size in
@@ -17,7 +16,8 @@ let int2string i size =
       result.[size - j] <- (char_of_int ((i lsr (8 * (j - 1))) mod 256))
   done;
   result
-  
+
+(*  
 let string_of_length length =
   let length_string = string_of_int length in
   let size = String.length length_string in
@@ -32,6 +32,7 @@ let string_of_length length =
   | 3 -> String.make 1 '0' ^ length_string
   | 4 -> length_string
   | _ -> assert false
+*)
     
 
 (**
@@ -73,7 +74,7 @@ let send sock magic string timeout =
   let break_time = timeout +. Sys.time () in
   let magic_char = char_of_int magic in
   let magic_string = String.make 1 magic_char in
-  let length_string = string_of_length (String.length string) in
+  let length_string =  int2string (String.length string) 4 in
 Log.infof "%s" length_string;
   let data = String.concat "" [magic_string;length_string;string] in
   send_string sock data break_time
@@ -153,7 +154,7 @@ let combine_results sock break_time magic_string data =
  *)
 let recv_data sock break_time magic_string length_string =
 Log.infof "%s" length_string;
-  let length = int_of_string length_string in
+  let length = string2int length_string in
 Log.infof "%s" length_string;
   let data = recv_string sock length break_time in
   data |>> (combine_results sock break_time magic_string)
