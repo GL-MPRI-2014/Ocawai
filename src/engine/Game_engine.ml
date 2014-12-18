@@ -45,7 +45,7 @@ class game_engine () = object (self)
       let sc_players = self#create_n_scripted (nbplayers - 1) in
       players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in 
+      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in
       List.iter (fun p -> p#init_script map players) sc_players;
       (players, map)
 
@@ -64,7 +64,7 @@ class game_engine () = object (self)
                                 fun p2 -> (
       (* Pour chaque couple de players (p1,p2), on donne a p1 les updates contenant l'armée et les batiments de p2 *)
                                         p1#update (Types.Set_army(p2#get_army,p2#get_id));
-                                        p1#update (Types.Set_building(p2#get_buildings,p2#get_id)); 
+                                        p1#update (Types.Set_building(p2#get_buildings,p2#get_id));
                                            )
                                     )
                                  players)
@@ -106,7 +106,7 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           let player_u2 = self#player_of_unit u2 in
-          if u2#hp <= 0 then 
+          if u2#hp <= 0 then
             (
             player_u2#delete_unit (u2#get_id);
             Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players
@@ -114,7 +114,7 @@ class game_engine () = object (self)
           else
             Array.iter (fun x -> x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id))) ) players
       |(_, Create_unit (b,uu)) ->
-        if List.mem b player#get_buildings 
+        if List.mem b player#get_buildings
 	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
 	  && player#has_resource uu#price
 		then (
@@ -127,9 +127,9 @@ class game_engine () = object (self)
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
-    if (* test gameover here *) 
-      List.exists 
-	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
+    if (* test gameover here *)
+      List.exists
+	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p))
 	(self#get_players :> Player.logicPlayer list)
     then self#run
     else (
@@ -143,12 +143,13 @@ class game_engine () = object (self)
     player#harvest_buildings_income;
     actual_player <- self#next_player;
     (*update buildings at the start of a new turn*)
-    let changed_buildings = Logics.capture_buildings 
+    let changed_buildings = Logics.capture_buildings
       (self#get_players :> Player.logicPlayer list)
       (players.(actual_player) :> Player.logicPlayer)
       (get_opt field)#buildings
     in
     (*send the list of changed buildings to the players*)
+    (* TODO *)
    ()
 
 
