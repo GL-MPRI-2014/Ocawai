@@ -4,6 +4,10 @@ open Path
 type log_item =
   | Moved of Unit.t * Action.movement
 
+
+exception Not_enough_ressource
+
+			
 class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
 
@@ -85,7 +89,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 
     method get_value_resource = resource
 
-    method use_resource amount = if resource < amount then false else ( resource <- resource - amount;true)
+	method has_resource amount = if resource < amount then false else true
+																		
+    method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
     method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
 
@@ -108,11 +114,13 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
   inherit logicPlayer ?id:id a b
-  val mutable logicPlayerList = []
+  val mutable logic_player_list:logicPlayer list = []
   method virtual get_next_action :  Action.t
-  method virtual set_logicPlayerList : (logicPlayer list) -> unit
-  method virtual get_logicPlayerList : logicPlayer list
+
+  method set_logic_player_list playerList = logic_player_list <- playerList
+  method get_logic_player_list = logic_player_list
   method virtual update : (Types.update)  -> unit
+
 end
 
 type t = player
@@ -129,14 +137,9 @@ class dummy_player army_ buildings_ (a: Action.t list) =
         actions<-tl(actions);
         action
 
-    method set_logicPlayerList playersList =
-	()
-
-    method get_logicPlayerList =
-	logicPlayerList
-
     method update (u:Types.update) =
     ()
+
   end
 
 let create_player () = new dummy_player [] []  []
