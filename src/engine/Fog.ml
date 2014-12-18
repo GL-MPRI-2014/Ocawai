@@ -47,7 +47,7 @@ let delete_unit_fog fog (p:Position.t) range= set_fog_for_unit fog p range (-1)
 (* retourne si l'unité est visible ou pas *)
 let unit_is_visible fog (u:Unit.t)=
     let (x,y) = Position.topair u#position in
-        fog.(x).(y) = 0
+        fog.(x).(y) > 0
 
 (* retourne l'armée tronquée, contenant uniquement les unités visible par rapport au fog *)
 let rec visible_army fog (a:Unit.t list)=
