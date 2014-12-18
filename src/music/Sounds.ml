@@ -6,7 +6,6 @@ exception Not_a_valid_sound_file of string
 let sound_bank = Hashtbl.create 13
 let path = (Utils.base_path ()) ^ "sounds/"
 
-let player = ref (new sound ())
 let volume = ref 100.
 
 
@@ -29,16 +28,14 @@ let load_sounds () =
 
 let play_sound sound =
   try
-    !player#stop;
-    !player#set_buffer (Hashtbl.find sound_bank sound);
-    !player#play
+    let player = new sound ~buffer:(Hashtbl.find sound_bank sound) ~volume:(!volume) () in
+    player#play
   with
     | Not_found ->
       SoundsLog.errorf "Couldn't retreive sound %s" sound;
       raise (Unknown_sound sound)
 
 let set_volume f =
-  player := new sound ~volume:f ();
   volume := f
 
 let get_volume () = !volume
