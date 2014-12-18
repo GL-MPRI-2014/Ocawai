@@ -301,6 +301,15 @@ let new_game () =
                               new item ("flatman_" ^ s) s (fun () ->
                                 build_menu#toggle;
                                 ui_manager#unfocus build_menu;
+                                cdata#actual_player#set_state (
+                                  ClientPlayer.Received ([],
+                                    Action.Create_unit (b,
+                                      List.find
+                                        (fun u -> u#name = s)
+                                        Config.config#unbound_units_list
+                                    )
+                                  )
+                                ) ;
                                 cursor#set_state Cursor.Idle
                               )
                               |> (fun i -> i#toggle ; build_menu#add_child i)
