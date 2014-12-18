@@ -2,7 +2,7 @@ open Player
 
 type action_state = Idle | Waiting | Received of Action.t
 
-class client_player ?(id) (a : Unit.t list) (b : Building.t list) = 
+class client_player add_update ?(id) (a : Unit.t list) (b : Building.t list) = 
 
   object (self) 
 
@@ -27,8 +27,8 @@ class client_player ?(id) (a : Unit.t list) (b : Building.t list) =
     in get_aux ()
 
 
-  method update (u:Types.update) =
-	()
+  method update (u:Types.update) = add_update u
+    
 
 
 end

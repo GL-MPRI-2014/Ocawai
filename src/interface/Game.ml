@@ -8,7 +8,9 @@ open Menus
 
 let new_game () =
 
-  let my_player = new ClientPlayer.client_player [] [] in
+  let m_cdata = new ClientData.client_data in
+
+  let my_player = new ClientPlayer.client_player m_cdata#push_update [] [] in
 
   let m_engine = new Game_engine.game_engine () in
 
@@ -22,13 +24,6 @@ let new_game () =
       (Position.create (1,1)))
   in
 
-  let m_cdata = (new ClientData.client_data ~camera:m_camera
-      ~map:m_map
-      ~players:m_players
-      ~actual_player:my_player
-      ~neutral_buildings:(fun () -> m_engine#get_neutral_buildings))
-  in
-
   object(self)
 
   inherit State.state as super
@@ -38,7 +33,7 @@ let new_game () =
   val camera = m_camera
 
   val cdata : ClientData.client_data = m_cdata
-
+ 
   val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action"
@@ -46,6 +41,11 @@ let new_game () =
   val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.red_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
+
+  initializer 
+    cdata#init_core m_map my_player m_players;
+    cdata#init_buildings m_engine#get_neutral_buildings;
+    cdata#init_interface m_camera
 
   method private create_ui =
     (* Main ingame menu *)
