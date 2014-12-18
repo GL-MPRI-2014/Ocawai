@@ -12,7 +12,7 @@ let new_game () =
 
   let m_engine = new Game_engine.game_engine () in
 
-  let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 30 30 in
+  let (m_players, m_map) = m_engine#init_local (my_player :> player) 3 in
 
   let m_camera = new Camera.camera
     ~def_tile_size:50
@@ -25,7 +25,8 @@ let new_game () =
   let m_cdata = (new ClientData.client_data ~camera:m_camera
       ~map:m_map
       ~players:m_players
-      ~actual_player:my_player)
+      ~actual_player:my_player
+      ~neutral_buildings:(fun () -> m_engine#get_neutral_buildings))
   in
 
   object(self)
@@ -83,7 +84,7 @@ let new_game () =
     in
 
     (* Ingame menu items *)
-    new item "cancel" "End turn" (fun () -> 
+    new item "cancel" "End turn" (fun () ->
       if cdata#actual_player#event_state = ClientPlayer.Waiting then
         cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
@@ -93,9 +94,9 @@ let new_game () =
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    new item "info" "Info" (fun () -> print_endline "info activated";
+    (* new item "info" "Info" (fun () -> print_endline "info activated";
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
-    |> my_menu#add_child;
+    |> my_menu#add_child; *)
 
     new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)

@@ -7,7 +7,7 @@ type movement = Position.t list
 
 type action = 
 | Attack_unit of (Unit.t * Unit.t)
-| Attack_building of (Unit.t * Building.t)
+| Create_unit of (Building.t * Unit.unbound_t)
 | Wait
 | End_turn
 
@@ -29,3 +29,6 @@ exception Bad_path
 (** Exception raised if the attack is illegal, i.e. wrong unit attacking, 
     attacked unit not in range, or ranged attack just after moving. *)
 exception Bad_attack
+
+(** Exception raised if a Create_unit order fails. *)
+exception Bad_create

@@ -28,23 +28,23 @@ let (%) : t -> t -> t = fun (Tile(events1)) (Tile(events2)) ->
   Tile(DList.(/::/) events1 events2)
 
 let make_withDelay : Music.event -> t = fun event ->
-  make event % delay (Music.getDur event) 
+  make event % delay (Music.duration event) 
 
-let getDur : t -> time = function
-  | Tile(events) -> DList.getDur events
+let duration : t -> time = function
+  | Tile(events) -> DList.duration events
 
 let reset : t -> t = fun t ->
-  let dur = getDur t in
+  let dur = duration t in
   let back_delay = delay (Time.inverse dur) in
   t % back_delay
 
 let coreset : t -> t = fun t ->
-  let dur = getDur t in
+  let dur = duration t in
   let back_delay = delay (Time.inverse dur) in
   back_delay % t
 
 let inverse : t -> t = fun t ->
-  let dur = getDur t in
+  let dur = duration t in
   let back_delay = delay (Time.inverse dur) in
   back_delay % t % back_delay
 
@@ -80,3 +80,20 @@ let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
   
 let rec printf : t -> unit = fprintf Format.std_formatter
 
+let play : ?samplerate:int -> ?division:MIDI.division ->
+	   ?tempo:Time.Tempo.t -> t -> unit =
+  fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
+      ?tempo:(tempo = Time.Tempo.base) ->
+  fun t ->
+  let Tile(dl) = normalize t in
+  let events = DList.toMidi ~samplerate ~division ~tempo dl in
+  match events with
+  | None -> ()
+  | Some(buf) -> 
+     let duration = MIDI.Multitrack.duration [|buf|] in
+     let midi_player = new MidiPlayer.asynchronousMidiPlayer
+     and multi_track = MIDI.Multitrack.create 16 duration in
+     multi_track.(0) <- buf;
+     midi_player#add multi_track;
+     ignore (Thread.create midi_player#play ());
+     midi_player#stop ()

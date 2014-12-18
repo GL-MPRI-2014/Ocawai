@@ -256,7 +256,7 @@ config.status: configure
 
 
 #Generate documentation -I _builld/$(network_dir) removed for now
-doc: interface engine
+doc: interface engine client
 	mkdir -p $(documentation_dir)
 	ocamlfind ocamldoc -stars -package $(interface_dependencies) -d doc \
 	-t "Projet_Genie_Logiciel_MPRI_2014" \
@@ -295,6 +295,10 @@ check_player: engine
 check_logics: engine
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) logics_test.native -tag $(engine_tags)
 	./logics_test.native
+
+check_fog: interface
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) fog_test.native -tag $(interface_tags)
+	./fog_test.native
 
 check_interface: interface
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) interface_test.native -tag $(interface_tags)

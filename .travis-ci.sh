@@ -32,7 +32,7 @@ sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam \
 			 ${LIB_DEPENDS} ${COMPILER_DEPENDS} ${TESTING_DEPENDS}
 
 export OPAMYES=1
-opam init 
+opam init
 
 if [ "$OCAML_VERSION" = "4.02.1" ]
 then
@@ -41,6 +41,8 @@ fi
 
 eval `opam config env`
 opam install ${OPAM_DEPENDS}
+# Temporary: before we update dolog to 1.0
+opam uninstall dolog && opam pin add dolog 0.5 && opam install dolog
 aclocal -I m4
 autoreconf configure.ac
 ./configure

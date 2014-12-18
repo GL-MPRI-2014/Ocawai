@@ -13,6 +13,7 @@ class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
   val mutable actual_player = 0
+  val mutable is_over = false
 
   method private next_player =
     (actual_player + 1) mod (Array.length players)
@@ -20,15 +21,17 @@ class game_engine () = object (self)
   method get_players =
     Array.to_list players
 
+  method get_neutral_buildings =
+    (get_opt field)#neutral_buildings
+
+  method is_over = is_over
+
   method private create_n_scripted = function
     |0 -> []
     |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
       ::(self#create_n_scripted (n-1))
 
-  method init_local player nbplayers map_wht map_hgt =
-      let config = Config.config in
-      config#settings.map_width <- map_wht;
-      config#settings.map_height <- map_hgt;
+  method init_local player nbplayers =
       let sc_players = self#create_n_scripted (nbplayers - 1) in
       players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
@@ -36,10 +39,7 @@ class game_engine () = object (self)
       List.iter (fun p -> p#init_script map players) sc_players;
       (players, map)
 
-  method init_net port nbplayers map_wht map_hgt =
-      let config = Config.config in
-      config#settings.map_width <- map_wht;
-      config#settings.map_height <- map_hgt;
+  method init_net port nbplayers =
       let connections = Network_tool.open_n_connections port nbplayers in
       let player_list = List.map (fun x -> new NetPlayer.netPlayer x [] [] ) connections in
       players <- (Array.of_list (player_list :> Player.player list));
@@ -55,6 +55,13 @@ class game_engine () = object (self)
       |[] -> assert false
       |t::q -> if aux t#get_army then t else player_aux q
     in player_aux self#get_players
+
+  method private is_dead player =
+    player#get_army = [] (*no more units*)
+    || (match player#get_base with
+      | None -> true
+      | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
+    )
 
   method run : unit =
     Log.infof "One step (%d)..." actual_player ;
@@ -76,16 +83,39 @@ class game_engine () = object (self)
           if u2#hp <= 0 then (
             (self#player_of_unit u2)#delete_unit (u2#get_id);
             Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(x#get_id))) ) players)
-      |(move, _) -> self#apply_movement move
+      |(_, Create_unit (b,uu)) ->
+        if List.mem b player#get_buildings 
+	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
+	  && player#use_resource uu#price 
+	then (
+          let u = Unit.bind uu b#position player#get_id in
+          player#add_unit u;
+          u#set_played true)
+        else raise Bad_create
     with
-      |Bad_unit |Bad_path |Bad_attack |Has_played -> self#end_turn
+      |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
-    if true (* test gameover here *) then self#run
+    if (* test gameover here *) 
+      List.exists 
+	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
+	(self#get_players :> Player.logicPlayer list)
+    then self#run
+    else is_over <- true
 
   method private end_turn =
     let player = players.(actual_player) in
     List.iter (fun u -> u#set_played false) player#get_army;
-    actual_player <- self#next_player
+    player#harvest_buildings_income;
+    actual_player <- self#next_player;
+    (*update buildings at the start of a new turn*)
+    let changed_buildings = Logics.capture_buildings 
+      (self#get_players :> Player.logicPlayer list)
+      (players.(actual_player) :> Player.logicPlayer)
+      (get_opt field)#buildings
+    in
+    (*send the list of changed buildings to the players*)
+   ()
+
 
   method private apply_movement movement =
     let player = players.(actual_player) in

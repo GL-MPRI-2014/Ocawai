@@ -24,7 +24,7 @@ let shuffle l =
 
 let init_string n f =
   if n < 0 || n > Sys.max_string_length then
-    raise (Invalid_argument "init_string");
+    failwith "init_string";
   let s = String.make n ' ' in
   for i = 0 to n - 1 do
     s.[i] <- f i

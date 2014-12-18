@@ -9,7 +9,7 @@ type time = Time.t
 type event = Music.event
 
 let (/+/) : time -> time -> time = fun x y -> (Time.plus x y)
-let (/-/) : time -> time -> time = fun x y ->  (Time.minus x y)
+let (/-/) : time -> time -> time = fun x y -> (Time.minus x y)
 
 (** Tag manipulation functions *)
 
@@ -20,7 +20,7 @@ type tag = Tag of (time (** Value dur *)
 (** Base DLists *)
 
 type t = Sync of time
-	 | Event of Music.event
+	 | Event of event
 	 | Prod of (tag * t * t)
 
 let getTag : t -> tag = function
@@ -34,7 +34,7 @@ let tagProd : tag -> tag -> tag =
       | (None, None) -> None
       | (None, Some st_time) -> Some (st_time /+/ dur1)
       | (Some st_time, None) -> Some st_time
-      | (Some st_time1, Some st_time2) -> Some (Time.min st_time1 (st_time2 /+/ dur2))
+      | (Some st_time1, Some st_time2) -> Some (Time.min st_time1 (st_time2 /+/ dur1))
     in Tag (dur1 /+/ dur2, newStart)
 
 let sync : time -> t = fun time -> Sync time
@@ -45,7 +45,7 @@ let isZero : t -> bool = fun t -> t = zero
 
 let return : Music.event -> t = fun event -> Event event
 
-let getDur : t -> Time.t = fun t ->
+let duration : t -> Time.t = fun t ->
   let Tag(dur, _) = getTag t in
   dur
 
@@ -64,7 +64,7 @@ let (/::/) : t -> t -> t = fun t1 t2 ->
       end
 
 let returnWithDelay : Music.event -> t = fun event ->
-  let dur = Music.getDur event in
+  let dur = Music.duration event in
   (return event) /::/ (sync dur)
 
 (** List <-> DList functions *)
@@ -98,7 +98,6 @@ type headTail = {mutable to_events : time;
 let makeHeadTail to_events events to_next tail =
   {to_events = to_events; events = events; to_next = to_next; tailT = tail}
 
-
 let rec headTail_tuple : t -> headTail =
   (** Returns a tuple containing a decomposition of
       the input tail where :
@@ -129,7 +128,7 @@ let rec headTail_tuple : t -> headTail =
     | (Some _, None) ->
       (** t2 is pure sync. *)
       let headTuple1 = headTail_tuple t1
-      in if (headTuple1.to_next <= Time.zero)
+      in if (Time.sign (headTuple1.to_next) <= 0)
         then (** There are no more events in t1's tail and t2 is empty :
 		 the tail is pure sync. *)
           ( headTuple1.to_next <- dur2;
@@ -144,7 +143,9 @@ let rec headTail_tuple : t -> headTail =
       | (true, false) -> (* t1 starts first *)
         let headTuple1 = headTail_tuple t1 in
 	let next_of_head = start1 /+/ headTuple1.to_next in
-	if next_of_head <= shifted_start2 then
+	if (* next_of_head <= shifted_start2 *)
+	  ((Time.compare next_of_head shifted_start2) <= 0)
+	then
 	    ( headTuple1.tailT <- headTuple1.tailT /::/ t2;
 	      headTuple1 )
           else (
@@ -165,7 +166,7 @@ let rec headTail_tuple : t -> headTail =
             (headTuple1.tailT /::/ (sync sync_endTail1ToNext2)
              /::/ headTuple2.tailT)
         in
-        if (headTuple2.to_next < headTuple1.to_next) then
+        if ((Time.compare headTuple2.to_next headTuple1.to_next) < 0) then
           ( newHT.to_next <- headTuple2.to_next;
 	    newHT.tailT <- (sync (headTuple1.to_next /-/ headTuple2.to_next)) /::/
               headTuple1.tailT /::/
@@ -178,7 +179,8 @@ let rec headTail_tuple : t -> headTail =
 	let headTuple2 = headTail_tuple t2 in
 	let next_of_head = shifted_start2 /+/ headTuple2.to_next in
 	let newHT = makeHeadTail shifted_start2 headTuple2.events in
-        if next_of_head <= start1 then
+        if (* next_of_head <= start1 *)
+	  (Time.compare next_of_head start1 <= 0) then
             newHT headTuple2.to_next
 	      (
 		(sync (Time.inverse next_of_head)) /::/
@@ -201,6 +203,14 @@ let headTail : t -> t * t =
     let head = (sync (headTailT.to_events)) /::/
       fromList_parallel (MusicSet.elements headTailT.events) /::/ (sync headTailT.to_next)
     in (head, headTailT.tailT)
+
+(*
+type normalized_t = NormSync of time
+		  | NormEvent of event
+		  | NormProd of (tag * t * t)
+
+let normalize : t -> normalized_t
+ *)
 
 (** {2 Testing functions} *)
 
@@ -227,3 +237,87 @@ and fprint_start fmt = function
   | Some(dur) -> Format.fprintf fmt "@[%a@]" Time.fprintf dur
 
 let printf : t -> unit = fprintf Format.std_formatter
+
+(** {2 MIDI conversion} *)
+
+(**
+let compute_pos : t -> Time.t = function
+  | Event event -> 
+  | Sync dur -> dur
+  | Prod(Tag(dur, start), t1, t2) -> 
+ *)
+
+(** Representation of (Pre, Pos, Events buffer) *)
+(* type tiledBuffer = TiledB of (time * time * (MIDI.buffer option))
+ *)
+
+(**
+   Converts a DList to a MIDI.buffer
+
+   Semantics : the MIDI.buffer's beginning is the first event in the DList
+ *)
+let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
+		 ?tempo:Time.Tempo.t -> t -> MIDI.buffer option =
+  fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
+      ?tempo:(tempo = Time.Tempo.base) ->
+  let local_musicToMidi : Music.event -> MIDI.buffer =
+    Music.toMidi ~samplerate ~division ~tempo
+  in 
+  function
+  | Event event -> Some(local_musicToMidi event)
+  | Sync dur -> None
+  | Prod (Tag(dur, _), t1, t2) (* as t *) ->
+     (*
+     print_string "Converting DList product to midi\n";
+     printf t;
+      *)     
+     let local_DLtoMidi : t -> MIDI.buffer option =
+       toMidi ~samplerate ~division ~tempo in
+     let b1_opt = local_DLtoMidi t1 
+     and b2_opt = local_DLtoMidi t2 in
+     let Tag(dur1, start1) as tag1 = getTag t1
+     and Tag(dur2, start2) as tag2 = getTag t2
+     in
+     match (b1_opt, b2_opt) with
+     | (None, None) -> (* print_string "Conversion completed";
+			*) None
+     | (None, Some b2) -> (* print_string "Conversion completed"; *) Some b2
+     | (Some b1, None) -> (* print_string "Conversion completed"; *) Some b1
+     | (Some b1, Some b2) -> (
+       (** Computes the duration from the first event in the whole DList
+	     to the first event of the DList in the product which does not
+             hold the global first event, also return its sign. *) 
+       let (midi_offset, offset_sign) = match (start1, start2) with
+	 | (Some st1, Some st2) -> 
+	    let rel_offset = dur1 /+/ st2 /-/ st1 in
+	    let midi_duration ~duration =
+	      MidiV.timeToMidiDuration ~samplerate ~division
+				       ~tempo ~duration in
+	    (midi_duration (Time.abs rel_offset), Time.sign rel_offset)
+	 | _ -> failwith "Empty but non-None MIDI.buffer"
+       in
+       let localDuration buf =
+	 MIDI.Multitrack.duration [|buf|] in 
+       let b1_dur = localDuration b1
+       and b2_dur = localDuration b2
+       in
+       let new_duration =
+	 if offset_sign >= 0 then
+	   max b1_dur (b2_dur + midi_offset)
+	 else max (b1_dur + midi_offset) b2_dur
+       in
+       let new_buffer = MIDI.create(new_duration) in
+       
+       (match offset_sign with
+	| -1 -> (** t2 starts first, shift t1. *)
+	   MIDI.add new_buffer midi_offset b1 0 new_duration;
+	   MIDI.add new_buffer 0 b2 0 new_duration
+	| 0 -> (** Both tiles start at the same time. *)
+	   MIDI.add new_buffer 0 b1 0 new_duration;
+	   MIDI.add new_buffer 0 b2 0 new_duration
+	| _ -> (** t1 starts first, shift t2. *)
+	   MIDI.add new_buffer midi_offset b2 0 new_duration;
+	   MIDI.add new_buffer 0 b1 0 new_duration
+       );
+       (* print_string "Conversion completed"; *) Some(new_buffer)
+     )
