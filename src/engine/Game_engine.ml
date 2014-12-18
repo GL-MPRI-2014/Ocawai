@@ -26,10 +26,17 @@ class game_engine () = object (self)
 
   method is_over = is_over
 
-  method private create_n_scripted = function
-    |0 -> []
-    |n -> (new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] [])
-      ::(self#create_n_scripted (n-1))
+  method private create_n_scripted =
+    (* create one scripted from its id 1..n *)
+    let create_one id = function
+      | _ -> new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script") [] []
+      in
+    (* create n scripted calling create_one *)
+    let create_n = function
+      | 0 -> []
+      | n -> (create_one n) :: (create_n (n-1))
+      in
+    create_n
 
   method init_local player nbplayers =
       let sc_players = self#create_n_scripted (nbplayers - 1) in
