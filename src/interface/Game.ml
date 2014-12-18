@@ -140,7 +140,8 @@ let new_game () =
       match cursor#get_state with
       |Cursor.Displace(_,u,(r,_)) ->
         let in_range = Logics.units_inrange cursor#position
-               u#attack_range (cdata#actual_player :> Player.logicPlayer)
+               (u#min_attack_range, u#attack_range) 
+               (cdata#actual_player :> Player.logicPlayer)
                cdata#players
         in
         if List.mem cursor#position r && in_range <> [] then begin

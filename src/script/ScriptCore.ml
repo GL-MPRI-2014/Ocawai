@@ -315,24 +315,6 @@ let position_to_pair p =
   let (a,b) = Position.topair p in
   `Pair(`Int a, `Int b)
 
-let scr_accessibles =
-  `Fun(function
-    |`Soldier(u) -> `Fun(function
-      |`Player(s) -> `Fun(function
-        |`List(l) -> `Fun(function
-          |`Map(m) ->
-            fst (Logics.available_positions u s (List.map get_logic_player l) m)
-            |> List.map position_to_pair
-            |> fun l -> `List l
-          | _ -> assert false
-        )
-        | _ -> assert false
-      )
-      | _ -> assert false
-    )
-    | _ -> assert false
-  )
-
 let scr_armyof =
   `Fun(function
     |`Player(p) ->
@@ -342,46 +324,9 @@ let scr_armyof =
     | _ -> assert false
   )
 
-let scr_dijkstra =
-  `Fun(function
-    |`Soldier(u) -> `Fun(function
-      |`Map(m) -> `Fun(function
-        |`Pair(`Int(a), `Int(b)) ->
-            Path.dijkstra m u#position u#movement_type (Position.create (a,b))
-            |> (function
-                |Some(i,p) -> Path.get_move p
-                | _ -> assert false)
-            |> List.map position_to_pair
-            |> fun l -> `List l
-        | _ -> assert false
-        )
-      | _ -> assert false
-      )
-    | _ -> assert false
-    )
-
-let scr_inrange =
-  `Fun(function
-    |`Pair(`Int(a), `Int(b)) -> `Fun(function
-      |`Int(r) -> `Fun(function
-        |`Player(p) -> `Fun(function
-          |`List(l) ->
-            List.map (function |`Player(p) -> p |_ -> assert false) l
-            |> Logics.units_inrange (Position.create (a,b)) r p
-            |> List.map (function u -> `Soldier(u))
-            |> (fun l -> `List l)
-          | _ -> assert false
-          )
-        | _ -> assert false
-        )
-      | _ -> assert false
-      )
-    | _ -> assert false
-    )
-
 let scr_range =
   `Fun(function
-    |`Soldier(u) -> `Int(u#attack_range)
+    |`Soldier(u) -> `Pair(`Int(u#min_attack_range), `Int(u#attack_range))
     | _ -> assert false
   )
 
@@ -458,15 +403,10 @@ let init () =
     "list_flatten";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
-  expose scr_range (`Fun_t(`Soldier_t, `Int_t)) "unit_range";
+  expose scr_range (`Fun_t(`Soldier_t, intpair)) "unit_range";
   expose scr_expected_damage (`Fun_t(`Soldier_t , `Fun_t(`Soldier_t , `Int_t ))) "expected_damage";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
-  expose scr_inrange (`Fun_t(intpair, `Fun_t(`Int_t, `Fun_t(`Player_t,
-  `Fun_t(`List_t(`Player_t), `List_t(`Soldier_t)))))) "ennemies_in_range";
-  expose scr_accessibles (`Fun_t(`Soldier_t, `Fun_t(`Player_t,
-    `Fun_t(`List_t(`Player_t), `Fun_t(`Map_t, `List_t(intpair)))))) "accessible_positions";
   expose scr_armyof (`Fun_t(`Player_t, `List_t(`Soldier_t))) "army_of";
-  expose scr_dijkstra (`Fun_t(`Soldier_t, `Fun_t(`Map_t, `Fun_t(intpair,`List_t(intpair))))) "dijkstra_to";
   expose scr_rand (`Fun_t(`Int_t, `Int_t)) "rand";
   expose scr_endturn (`Fun_t(`Unit_t, `Alpha_t(0))) "end_turn";
   expose scr_donothing (`Fun_t(`Unit_t, `Alpha_t(0))) "do_nothing";

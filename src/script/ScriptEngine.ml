@@ -28,6 +28,7 @@ let parse_with_errors lexbuf =
         ScriptTypes.Empty
 
 let script_from_file f env typesenv =
+  let env = ScriptCDFunctions.get_functions env in
   let input = open_in f in
   let lexbuf = from_channel input in
   lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};

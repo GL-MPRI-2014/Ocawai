@@ -212,7 +212,8 @@ let units_inrange pos range player pl =
   let ennemy_list = List.filter (fun p -> p <> player) pl in
   List.map (fun p ->
     List.filter (fun u ->
-      Position.dist pos u#position <= range
+      Position.dist pos u#position <= snd range &&
+      Position.dist pos u#position >= fst range
     ) p#get_army
   ) ennemy_list
   |> List.flatten
