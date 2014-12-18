@@ -62,4 +62,7 @@ class scripted_player (scr : string) (a : Unit.t list) (b : Building.t list) =
   method get_logicPlayerList =
 	logicPlayerList
 
+  method update (u:Types.update) =
+	()
+
 end

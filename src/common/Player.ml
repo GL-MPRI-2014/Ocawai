@@ -112,8 +112,7 @@ class virtual player  ?(id) (a : Unit.t list) (b : Building.t list) =
   method virtual get_next_action :  Action.t
   method virtual set_logicPlayerList : (logicPlayer list) -> unit
   method virtual get_logicPlayerList : logicPlayer list
-  method  update (u:Types.update) =
-    ()
+  method virtual update : (Types.update)  -> unit
 end
 
 type t = player
@@ -135,6 +134,9 @@ class dummy_player army_ buildings_ (a: Action.t list) =
 
     method get_logicPlayerList =
 	logicPlayerList
+
+    method update (u:Types.update) =
+    ()
   end
 
 let create_player () = new dummy_player [] []  []
