@@ -44,7 +44,7 @@ let new_game () =
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
 
   val build_menu = new ingame_menu ~m_position:(0,0)
-    ~m_width:200
+    ~m_width:220
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
@@ -302,7 +302,9 @@ let new_game () =
                                 (fun u -> u#name = s)
                                 Config.config#unbound_units_list
                               in
-                              new item ("flatman_" ^ s)
+                              new item
+                                ~enabled:(u#price <= p#get_value_resource)
+                                ("flatman_" ^ s)
                                 (s ^ " (" ^ (string_of_int u#price) ^ ")")
                                 (fun () ->
                                   build_menu#toggle;
