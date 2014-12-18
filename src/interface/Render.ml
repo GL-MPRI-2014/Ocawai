@@ -406,6 +406,11 @@ let renderer = object(self)
     let drawer s pos =
       self#draw_txr target s ?position:(Some pos) ?size:(Some (30.,30.)) ()
     in
+    let tile_drawer s pos =
+      let set = TilesetLibrary.get_tileset tileset_library "tileset" in
+      self#draw_direct_tile target set s
+        ~position:pos ~scale:(30./.50.,30./.50.) ()
+    in
     let s_unit = data#unit_at_position data#camera#cursor#position in
     let chara = match s_unit with
     | Some selected_unit ->
@@ -428,7 +433,8 @@ let renderer = object(self)
     let s_tile =
       Battlefield.get_tile data#map data#camera#cursor#position
     in
-    data#case_info#draw target drawer s_unit chara s_building b_chara s_tile;
+    data#case_info#draw
+      target drawer tile_drawer s_unit chara s_building b_chara s_tile;
     (* Display resources *)
     let resources = string_of_int data#actual_player#get_value_resource in
     let (w,h) = foi2D target#get_size in

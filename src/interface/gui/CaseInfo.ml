@@ -11,9 +11,9 @@ let height = 150.
 class case_info = object(self)
 
   method draw : 'a. (#render_target as 'a) ->
-  (string -> (float * float) -> unit) -> Unit.t option -> string ->
-  Building.t option -> string -> Tile.t -> unit =
-    fun target drawer u chara building b_chara tile ->
+  (string -> (float * float) -> unit) -> (string -> (float * float) -> unit) ->
+  Unit.t option -> string -> Building.t option -> string -> Tile.t -> unit =
+    fun target drawer tile_drawer u chara building b_chara tile ->
       let (w,h) = foi2D target#get_size in
       let x = 10.
       and y = h -. 160. in
@@ -99,12 +99,10 @@ class case_info = object(self)
             { left = 30. ; top = h -. 95. ; width = 170. ; height = 50. }
       end ;
       (* Tile information *)
-      (* TODO *)
-      (* let tileset = TilesetLibrary.get_tileset tileset_library "tileset" in
-      drawer (Tile.get_name tile) (30.,h-.50.) ; *)
-      rect_print target (Tile.get_name tile) font (Color.rgb 99 99 99)
+      tile_drawer (Tile.get_name tile) (20.,h-.50.) ;
+      rect_print target (Tile.get_name tile) font (Color.rgb 66 66 66)
         (Pix 15) (Pix 2)
-        Center
-        { left = 30. ; top = h -. 50. ; width = 170. ; height = 50. }
+        Left
+        { left = 60. ; top = h -. 45. ; width = 170. ; height = 50. }
 
 end
