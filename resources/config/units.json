@@ -97,7 +97,7 @@
     "percentage_light": 70,
     "percentage_normal": 10,
     "percentage_heavy": 1,
-    "percentage_flying": 100
+    "percentage_flying": 100,
     "price": 30,
     "life_max": 40
   },
