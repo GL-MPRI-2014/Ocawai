@@ -154,7 +154,7 @@ let combine_results sock break_time magic_string data =
  *)
 let recv_data sock break_time magic_string length_string =
 Log.infof "%s" length_string;
-  let length = string2int length_string in
+  let length = string2int length_string 4 in
 Log.infof "%s" length_string;
   let data = recv_string sock length break_time in
   data |>> (combine_results sock break_time magic_string)

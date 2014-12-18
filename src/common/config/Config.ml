@@ -177,12 +177,12 @@ object (self)
   val mutable safe_engine_s = (None: Settings_engine_t.t option)
   val mutable safe_interface_s = (None: Settings_interface_t.t option)
 
-  method private update_safe_s = safe_s <- match s with | None -> None | Some ss -> Some {ss with none=()}
-  method private revert_s = s <- match safe_s with | None -> None | Some ss -> Some {ss with none=()}
-  method private update_safe_engine_s = safe_engine_s <- match engine_s with | None -> None | Some ss -> Some {ss with none=()}
-  method private revert_engine_s = engine_s <- match safe_engine_s with | None -> None | Some ss -> Some {ss with none=()}
-  method private update_safe_interface_s = safe_interface_s <- match interface_s with | None -> None | Some ss -> Some {ss with none=()}
-  method private revert_interface_s = interface_s <- match safe_interface_s with | None -> None | Some ss -> Some {ss with none=()}
+  method private update_safe_s = safe_s <- match s with | None -> None | Some ss -> Some {ss with Settings_t.none=()}
+  method private revert_s = s <- match safe_s with | None -> None | Some ss -> Some {ss with Settings_t.none=()}
+  method private update_safe_engine_s = safe_engine_s <- match engine_s with | None -> None | Some ss -> Some {ss with Settings_engine_t.none=()}
+  method private revert_engine_s = engine_s <- match safe_engine_s with | None -> None | Some ss -> Some {ss with Settings_engine_t.none=()}
+  method private update_safe_interface_s = safe_interface_s <- match interface_s with | None -> None | Some ss -> Some {ss with Settings_interface_t.none=()}
+  method private revert_interface_s = interface_s <- match safe_interface_s with | None -> None | Some ss -> Some {ss with Settings_interface_t.none=()}
 
   method private available_settings = if Sys.file_exists settings_temp then settings_temp else settings_default
   method private available_engine_settings = if Sys.file_exists engine_settings_temp then engine_settings_temp else engine_settings_default
