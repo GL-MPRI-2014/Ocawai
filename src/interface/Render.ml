@@ -350,6 +350,7 @@ let renderer = object(self)
         let pl = Logics.find_player id_p data#players in
         Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
         Sounds.play_sound "boots"
+    | Some(Set_unit_hp(_,_,_)) -> Sounds.play_sound "shots"
     | _ -> ()
     );
     (* Hardcoded: to alternate characters *)
