@@ -68,11 +68,11 @@ let renderer = object(self)
       ~color
       ~tex_coords:(texture_rect.xmin, texture_rect.ymax) ())
 
-  method draw_direct_tile (target : render_window) (set : Tileset.tileset) 
+  method draw_direct_tile (target : render_window) (set : Tileset.tileset)
     tilename ?position ?rotation ?scale
     ?color ?origin () =
     let texture_rect = set#int_rect tilename in
-    let spr = new sprite ~texture:set#texture ?position ?rotation 
+    let spr = new sprite ~texture:set#texture ?position ?rotation
       ?scale ?color ?origin ~texture_rect () in
     target#draw spr
 
@@ -267,7 +267,9 @@ let renderer = object(self)
             Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
         | e :: n :: _ ->
             (* Beware of magic numbers *)
-            let o = (float_of_int frames) /. (float_of_int animation_time) *. 50. in
+            let o =
+              (float_of_int frames) /. (float_of_int animation_time) *. 50.
+            in
             e, Position.(
               if      n = left  e then (-. o,   0.)
               else if n = right e then (o   ,   0.)
@@ -280,7 +282,7 @@ let renderer = object(self)
       else (my_unit#position, (0.,0.))
     in
     let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map ~offset target camera name u_position ~color();
+    self#draw_from_map ~offset target camera name u_position ~color ();
     let size = int_of_float (camera#zoom *. 14.) in
     let (ox,oy) = offset in
     let position = addf2D
@@ -300,7 +302,9 @@ let renderer = object(self)
   (target : render_window) camera resource character building =
     let name = character ^ "_" ^ building#name in
     self#draw_from_map target camera name (building#position) ();
-    if (building#name = "base") then (let size = int_of_float (camera#zoom *. 14.) in
+    if (building#name = "base") then
+      (let size = int_of_float (camera#zoom *. 14.)
+    in
     let position = addf2D
       (foi2D (camera#project building#position))
       (camera#zoom *. 5.,camera#zoom *. 10.)
@@ -354,7 +358,7 @@ let renderer = object(self)
     self#draw_cursor target data#camera;
     (* Reads the log to update unit informations *)
     Types.( match data#pop_update with
-    | Some(Move_unit (u,path,id_p)) -> 
+    | Some(Move_unit (u,path,id_p)) ->
         let pl = Logics.find_player id_p data#players in
         Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
         Sounds.play_sound "boots"

@@ -19,10 +19,14 @@ class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
 
   method draw target lib = if self#active then begin
     (* First draw the icon *)
+    let color = if enabled
+      then Color.rgb 255 255 255
+      else Color.rgb 150 150 150
+    in
     let position = foi2D self#position in
     let (selfx, selfy) = foi2D size in
     Render.renderer#draw_txr target icon ~position:position
-      ~size:(selfy, selfy) ~centered:false ();
+      ~size:(selfy, selfy) ~centered:false ~color ();
     (* Then draw the text *)
     rect_print
       target text my_font
