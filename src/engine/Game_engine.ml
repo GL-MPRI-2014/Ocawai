@@ -91,6 +91,7 @@ class game_engine () = object (self)
 	then (
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
+          Array.iter (fun x -> x#update (Types.Add_unit(u#get_id,(player#get_id))) ) players;
           u#set_played true)
         else raise Bad_create
     with
