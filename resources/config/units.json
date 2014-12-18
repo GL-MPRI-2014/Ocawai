@@ -43,6 +43,7 @@
     "percentage_light": 40,
     "percentage_normal": 100,
     "percentage_heavy": 100,
+    "percentage_boat": 20,
     "price": 60,
     "life_max": 100
   },
@@ -117,6 +118,7 @@
     "percentage_light": 40,
     "percentage_normal": 70,
     "percentage_heavy": 100,
+    "percentage_boat": 70,
     "price": 30,
     "life_max": 40
   },
@@ -133,6 +135,7 @@
     "percentage_normal": 70,
     "percentage_heavy": 100,
     "percentage_flying": 50,
+    "percentage_boat": 70,
     "price": 60,
     "life_max": 30
   },
@@ -165,6 +168,7 @@
     "percentage_light": 40,
     "percentage_normal": 100,
     "percentage_heavy": 100,
+    "percentage_boat": 50,
     "price": 60,
     "life_max": 80
   },
@@ -177,9 +181,6 @@
     "move_range": 10,
     "attack_base": 70,
     "armor": "Flying",
-    "percentage_light": 0,
-    "percentage_normal": 0,
-    "percentage_heavy": 0,
     "percentage_flying": 100, 
     "price": 50,
     "life_max": 80
@@ -189,11 +190,7 @@
     "movement_type": "Fly",
     "vision_range": 7,
     "move_range": 10,
-    "attack_base": 0,
     "armor": "Flying",
-    "percentage_light": 0,
-    "percentage_normal": 0,
-    "percentage_heavy": 0,
     "price": 30,
     "life_max": 1
   },
@@ -203,7 +200,12 @@
     "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 6
+    "move_range": 6,
+    "attack_base": 70,
+    "armor": "Boat",
+    "percentage_boat": 100,
+    "price": 40,
+    "life_max": 50
   },
   {
     "name": "barge",

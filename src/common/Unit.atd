@@ -2,7 +2,7 @@
 type movement = [ Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
   | Amphibious_Roll | Amphibious_Tread | All ]
 
-type armor = [ Light | Normal | Heavy | Flying ]
+type armor = [ Light | Normal | Heavy | Flying | Boat ]
 
 type name_v = string
   <ocaml validator="Utils.check_validity (
@@ -29,14 +29,15 @@ type t = {
   ~attack_range_max<ocaml default="0"> : positive;
   move_range : positive;
   ~spawn_number<ocaml default="0"> : positive;
-  ~attack_base<ocaml default="50"> : positive;
-  ~armor<ocaml default="`Normal"> : armor;
-  ~percentage_light<ocaml default="100"> : percentage;
-  ~percentage_normal<ocaml default="100"> : percentage;
+  ~attack_base<ocaml default="0"> : positive;
+  ~armor<ocaml default="`Light"> : armor;
+  ~percentage_light<ocaml default="0"> : percentage;
+  ~percentage_normal<ocaml default="0"> : percentage;
   ~percentage_heavy<ocaml default="0"> : percentage;
   ~percentage_flying<ocaml default="0"> : percentage;
-  ~price<ocaml default="50"> : positive;
-  ~life_max<ocaml default="100"> : s_positive;
+  ~percentage_boat<ocaml default="0"> : percentage;
+  ~price<ocaml default="10"> : positive;
+  ~life_max<ocaml default="10"> : s_positive;
 }
   <ocaml validator="Utils.check_validity (
     fun u -> u.attack_range_min <= u.attack_range_max

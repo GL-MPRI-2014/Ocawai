@@ -330,7 +330,8 @@ let scr_expected_damage =
         | Unit.Light -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_light)/100
         | Unit.Normal -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_normal)/100
         | Unit.Heavy -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_heavy)/100
-	| Unit.Flying -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_flying)/100 )
+	| Unit.Flying -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_flying)/100 
+        | Unit.Boat -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_boat)/100)
       | _ -> assert false
       in `Int(b)
     )
