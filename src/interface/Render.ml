@@ -395,7 +395,8 @@ let renderer = object(self)
     (* Draw units *)
     List.iter (fun p ->
       let chara = get_chara () in
-      List.iter (self#draw_unit target data#camera chara) p#get_army
+      List.iter (self#draw_unit target data#camera chara) 
+        (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
     ) data#players;
     (* Displaying minimap *)
     data#minimap#draw target data#camera#cursor;
