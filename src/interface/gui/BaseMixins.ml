@@ -54,7 +54,7 @@ class virtual ['a] evq_container = object(self)
     w#set_position (0, (List.length children - 1) * item_height)
 
   method clear_children =
-    List.iter (fun w -> size <- (fst size, snd size - item_height));
+    List.iter (fun w -> size <- (fst size, snd size - item_height)) children;
     super#clear_children
 
 
