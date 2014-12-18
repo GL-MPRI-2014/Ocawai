@@ -44,7 +44,7 @@ let new_game () =
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
 
   val build_menu = new ingame_menu ~m_position:(0,0)
-    ~m_width:150
+    ~m_width:220
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
@@ -298,11 +298,24 @@ let new_game () =
                               cursor#set_state Cursor.Idle)
                             in item#toggle ; build_menu#add_child item;
                             List.iter (fun s ->
-                              new item ("flatman_" ^ s) s (fun () ->
-                                build_menu#toggle;
-                                ui_manager#unfocus build_menu;
-                                cursor#set_state Cursor.Idle
-                              )
+                              let u = List.find
+                                (fun u -> u#name = s)
+                                Config.config#unbound_units_list
+                              in
+                              new item
+                                ~enabled:(u#price <= p#get_value_resource)
+                                ("flatman_" ^ s)
+                                (s ^ " (" ^ (string_of_int u#price) ^ ")")
+                                (fun () ->
+                                  build_menu#toggle;
+                                  ui_manager#unfocus build_menu;
+                                  cdata#actual_player#set_state (
+                                    ClientPlayer.Received ([],
+                                      Action.Create_unit (b,u)
+                                    )
+                                  ) ;
+                                  cursor#set_state Cursor.Idle
+                                )
                               |> (fun i -> i#toggle ; build_menu#add_child i)
                             ) b#product;
                             build_menu#toggle;
