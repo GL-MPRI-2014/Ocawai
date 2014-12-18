@@ -81,8 +81,9 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           if u2#hp <= 0 then (
-            (self#player_of_unit u2)#delete_unit (u2#get_id);
-            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(x#get_id))) ) players)
+            let player_u2 = self#player_of_unit u2 in
+            player_u2#delete_unit (u2#get_id);
+            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players)
       |(_, Create_unit (b,uu)) ->
         if List.mem b player#get_buildings 
 	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
