@@ -54,13 +54,16 @@ class game_engine () = object (self)
       let player_list = List.map (fun x -> new NetPlayer.netPlayer x) connections in
       players <- (Array.of_list (player_list :> Player.player list));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      (* Pour chaque couple de players (p1,p2), on donne a p1 les updates contenant l'armée et les batiments de p2 *)
       Array.iter (
             fun p1 -> (
                         Array.iter (
                                 fun p2 -> (
+      (* On envoie a chaque joueur les var d'initialisation *)
                                         p1#update (Types.Set_client_player(p1#get_id));
                                         p1#update (Types.Set_logic_player_list( List.map (fun x -> x#get_id) player_list));
+                                        p1#update (Types.Map( Config.config#string_of_battlefield (get_opt field)#field));
+
+      (* Pour chaque couple de players (p1,p2), on donne a p1 les updates contenant l'armée et les batiments de p2 *)
                                         p1#update (Types.Set_army(p2#get_army,p2#get_id));
                                         p1#update (Types.Set_building(p2#get_buildings,p2#get_id)); 
                                            )
