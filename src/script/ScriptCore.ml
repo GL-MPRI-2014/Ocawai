@@ -337,7 +337,8 @@ let scr_expected_damage =
       |(`Soldier(u), `Soldier(v)) -> let a = u#attack_base in ( match v#armor with
         | Unit.Light -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_light)/100
         | Unit.Normal -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_normal)/100
-        | Unit.Heavy -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_heavy)/100 )
+        | Unit.Heavy -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_heavy)/100
+	| Unit.Flying -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_flying)/100 )
       | _ -> assert false
       in `Int(b)
     )
