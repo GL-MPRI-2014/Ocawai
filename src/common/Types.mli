@@ -9,6 +9,7 @@ type id_player = int
 (** Type of the data sent from the engine to the player/client *)
 type update =
     Game_over
+  | Your_turn
   | Classement 
   | Set_army of Unit.t list * id_player
   | Set_building of Building.t list * id_player

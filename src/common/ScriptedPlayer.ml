@@ -22,7 +22,10 @@ class scripted_player ?(id) (scr : string)  =
 
   val mutable output = stdout
 
+  val mutable playable_buildings = []
+
   initializer
+    playable_buildings <- self#get_buildings;
     output <- open_out (Printf.sprintf "log/player_%i.log" self#get_id)
 
   method init_script map players =
@@ -36,12 +39,12 @@ class scripted_player ?(id) (scr : string)  =
        ("players", `List_t(`Player_t));
        ("map", `Map_t);
        ("selected_unit", `Soldier_t);
+       ("selected_building", `Building_t);
        ("selected_pos", `Pair_t(`Int_t, `Int_t));
        ("log_int", `Fun_t(`Int_t, `Unit_t));
        ("log_str", `Fun_t(`String_t, `Unit_t))]
 
-  method get_next_action =
-    Thread.delay 0.10;
+  method private get_next_movement =
     try
       let u = Interpreter.main_script script in
       let m = Interpreter.move_script script u in
@@ -56,9 +59,33 @@ class scripted_player ?(id) (scr : string)  =
         print_endline ("Warning, script invalid argument : " ^ s);
         ([], Action.End_turn)
 
+  method private get_next_build = 
+    try 
+      let b = List.hd playable_buildings in
+      playable_buildings <- List.tl playable_buildings;
+      let u = Interpreter.building_script script b in
+      ([], Action.Create_unit (b,u))
+    with
+    | ScriptCore.Do_nothing -> self#get_next_action
+    | ScriptCore.End_turn -> ([], Action.End_turn)
+    | Invalid_argument(s) ->
+        print_endline ("Warning, script invalid argument : " ^ s);
+        ([], Action.End_turn)
+
+  method get_next_action = 
+    Thread.delay 0.10;
+    if self#has_playable_unit then 
+      self#get_next_movement
+    else if playable_buildings <> [] then
+      self#get_next_build
+    else
+      ([], Action.End_turn)
+
 
   method update (u:Types.update) =
-	()
+    match u with
+    |Types.Your_turn -> playable_buildings <- self#get_buildings
+    | _ -> ()
 
 
 end

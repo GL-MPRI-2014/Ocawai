@@ -31,6 +31,9 @@ class logicPlayer ?(id) () =
       | None -> 0
       | Some(id__) -> id__
 
+    method has_playable_unit = 
+      List.fold_left (fun b u -> b || (not u#has_played)) false (self#get_army)
+
     method get_army =
       Hashtbl.fold (fun id u l -> u::l) army []
 

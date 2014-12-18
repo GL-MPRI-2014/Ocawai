@@ -15,6 +15,7 @@
     |> h_add "attack"   ATK
     |> h_add "main"     MAIN
     |> h_add "init"     INIT
+    |> h_add "build"    BUILD
     |> h_add "true"     TRUE
     |> h_add "false"    FALSE
 

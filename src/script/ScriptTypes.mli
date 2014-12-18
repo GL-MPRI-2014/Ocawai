@@ -9,6 +9,7 @@ type procedure_type =
   | Attack of (string list * seq_type) * location
   | Main of seq_type * location
   | Init of seq_type * location
+  | Build of (string list * seq_type) * location
 
 (** Type of the values manipulated by the AIs *)
 and values_type =
@@ -58,7 +59,8 @@ and static = [
   `Pair_tc  of term_type * term_type |
   `Alpha_tc of int       |
   `None       |
-  `Pointer  of term_type
+  `Pointer  of term_type |
+  `Building_tc
 ]
 
 and term_type = static ref

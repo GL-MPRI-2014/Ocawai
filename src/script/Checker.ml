@@ -51,6 +51,7 @@ let type_to_string t =
     | `Soldier_tc    -> "soldier"
     | `Map_tc        -> "map"
     | `Player_tc     -> "player"
+    | `Building_tc   -> "building"
     | `Alpha_tc i    -> "'a" ^ (string_of_int i)
     | `List_tc v     -> (aux true v) ^ " list"
     | `Array_tc v    -> (aux true v) ^ " array"
@@ -108,6 +109,7 @@ exception Not_unit_seq of term_type * location
 exception Wrong_type_set of string * term_type * term_type * location
 exception Move_return of term_type * location
 exception Main_return of term_type * location
+exception Build_return of term_type * location
 exception Attack_return of term_type * location
 exception Init_return of term_type * location
 exception Hetero_list of term_type * term_type * location
@@ -156,7 +158,7 @@ and check_decl = function
       end
 
   | Fundecl ((s,sl,sqt),l) ->
-      debug (lazy "function decleration");
+      debug (lazy "function declaration");
       (* First, for each variable, we associate a type *)
       List.iter (fun s -> Hashtbl.add assignment s (ref `None)) sl ;
       let tl = List.map (fun s -> Hashtbl.find assignment s) sl in
@@ -177,7 +179,6 @@ and check_procedure = function
 
   | Move ((sl,st),l) ->
       debug (lazy "move");
-      Hashtbl.add assignment "selected_unit" (ref `Soldier_tc) ;
       let t = seq_type st in
       begin
         try unify t (ref (`List_tc (ref (`Pair_tc (ref `Int_tc, ref `Int_tc)))))
@@ -198,6 +199,14 @@ and check_procedure = function
       begin
         try unify t (ref `Soldier_tc)
         with Unification_failure -> raise (Main_return (t,l))
+      end
+
+  | Build ((sl,st),l) ->
+      debug (lazy "attack");
+      let t = seq_type st in
+      begin
+        try unify t (ref `String_tc)
+        with Unification_failure -> raise (Build_return (t,l))
       end
 
   | Init (st,l) ->
@@ -330,6 +339,7 @@ let rec v_to_tctype = function
   |`Soldier_t     -> ref `Soldier_tc
   |`Map_t         -> ref `Map_tc
   |`Player_t      -> ref `Player_tc
+  |`Building_t    -> ref `Building_tc
   |`Alpha_t (i)   -> ref (`Alpha_tc (i))
   |`List_t  (v)   -> ref (`List_tc (v_to_tctype v))
   |`Array_t (v)   -> ref (`Array_tc (v_to_tctype v))
@@ -430,6 +440,7 @@ let rec vt_to_tt = function
   | `Array_t v    -> ref (`Array_tc (vt_to_tt v))
   | `Fun_t (a,b)  -> ref (`Fun_tc (vt_to_tt a, vt_to_tt b))
   | `Pair_t (a,b) -> ref (`Pair_tc (vt_to_tt a, vt_to_tt b))
+  | `Building_t   -> ref `Building_tc
 
 let expose (v:ScriptValues.value_type) s =
   Hashtbl.add assignment s (vt_to_tt v)

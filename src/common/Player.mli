@@ -22,6 +22,9 @@ object
   (**Get the id of the player*)
   method get_id : Types.id_player
 
+  (** Returns true iff there is at least one playable unit *)
+  method has_playable_unit : bool
+
   (** Get the buildings owned by the player*)
   method get_army : Unit.t list
 

@@ -153,7 +153,9 @@ class game_engine () = object (self)
       List.iter (fun b -> 
         p#update (Types.Building_changed (fst b)))
         changed_buildings)
-      players
+      players;
+    (* Notify the player *)
+    players.(actual_player)#update Types.Your_turn
 
 
   method private apply_movement movement =

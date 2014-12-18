@@ -75,6 +75,14 @@ attack default {
   }
 }
 
+build factory {
+  "infantry";
+}
+
+build default {
+  do_nothing ()
+}
+
 init {
 }
 
