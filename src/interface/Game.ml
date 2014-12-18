@@ -288,22 +288,24 @@ let new_game () =
                     begin match cdata#building_at_position cursor#position with
                       | (Some b, Some p) when
                         p = (cdata#actual_player :> logicPlayer) ->
-                          (* Compute the list of producibles into a menu *)
-                          build_menu#clear_children;
-                          new item "cancel" "Cancel" (fun () ->
-                            build_menu#toggle;
-                            ui_manager#unfocus build_menu;
-                            cursor#set_state Cursor.Idle)
-                          |> build_menu#add_child;
-                          List.iter (fun s ->
-                            new item ("flatman_" ^ s) s (fun () ->
+                          if b#product <> [] then begin
+                            (* Compute the list of producibles into a menu *)
+                            build_menu#clear_children;
+                            new item "cancel" "Cancel" (fun () ->
                               build_menu#toggle;
                               ui_manager#unfocus build_menu;
-                              cursor#set_state Cursor.Idle
-                            )
-                            |> build_menu#add_child
-                          ) b#product;
-                          cursor#set_state (Build b)
+                              cursor#set_state Cursor.Idle)
+                            |> build_menu#add_child;
+                            List.iter (fun s ->
+                              new item ("flatman_" ^ s) s (fun () ->
+                                build_menu#toggle;
+                                ui_manager#unfocus build_menu;
+                                cursor#set_state Cursor.Idle
+                              )
+                              |> build_menu#add_child
+                            ) b#product;
+                            cursor#set_state (Build b)
+                          end
                       | _ -> ()
                     end
                 | _ -> ()
