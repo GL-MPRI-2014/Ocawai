@@ -6,6 +6,21 @@
 
 (* SEND *)
 
+let string_of_length length =
+  let length_string = string_of_int length in
+  let size = String.length length_string in
+  
+
+  (* written by Mazzocchi *)
+  match size with
+  | 0 -> String.make 4 (Char.chr 0) ^ length_string
+  | 1 -> String.make 3 (Char.chr 0) ^ length_string
+  | 2 -> String.make 2 (Char.chr 0) ^ length_string
+  | 3 -> String.make 1 (Char.chr 0) ^ length_string
+  | 4 -> length_string
+  | _ -> assert false
+    
+
 (**
  * This function send bytes regardless of protocol.
  * @param sock File descriptor
@@ -14,15 +29,20 @@
  * @return [true] if successful in shipment and [false] otherwise
  *)
 let rec send_string sock string break_time =
-  let timeout = break_time -. Sys.time () in
+  let timeout = max (break_time -. Sys.time ()) 0. in
   let length = String.length string in
+
   let size = Network_tool.write_timeout sock string length 0 timeout in
-  
+
+  Log.infof "break_time %f systime %f" break_time (Sys.time ());
+
+  Log.infof "In send";
   match size with
-    | None -> false
-    | Some(n) when length = n -> true
+    | None -> Log.infof "None";false
+    | Some(n) when length = n -> Log.infof "Ok";true
     | Some(n) ->
       begin
+	Log.infof "Partiel %d sur %d" n length;
 	let rest = String.sub string n (length - n) in
 	send_string sock rest break_time
       end	
@@ -38,8 +58,9 @@ let rec send_string sock string break_time =
  *)
 let send sock magic string timeout =
   let break_time = timeout +. Sys.time () in
-  let magic_string = string_of_int magic in
-  let length_string = string_of_int (String.length string) in 
+  let magic_char = char_of_int magic in
+  let magic_string = String.make 1 magic_char in
+  let length_string = string_of_length (String.length string) in 
   let data = String.concat "" [magic_string;length_string;string] in
   send_string sock data break_time
 

@@ -137,6 +137,8 @@ all_files_atd_ml := $(files_atd_t) $(files_atd_t:_t.ml=_j.ml) $(files_atd_t:_t.m
 all_files_atd_mli := $(files_atd_ml:.ml=.mli)
 
 #TO DO : log shouldn't be here
+all: interface engine client
+
 interface: $(files_atd_ml) log
 	$(interface_command)
 

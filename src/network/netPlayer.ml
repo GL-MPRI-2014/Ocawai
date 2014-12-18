@@ -29,22 +29,25 @@ object (self)
   method get_next_action = 
     Log.infof "#get_next_action" ;
 
-    let boolean = Send_recv.send sockfd 0 "" 3.0 in
+    let success = Send_recv.send sockfd 0 "" 3.0 in
     (* TODO: if boolean is false then kill this player*)
+    Log.infof "Sent";
     flush out_channel ;
-    
-    if not boolean
-    then () (* kill the player *)
+
+    if not success then
+      failwith "toto" (* kill the player *)
     else
-      Log.infof "#get_next_action sent" ;
-    
-    let receipt  = Send_recv.recv sockfd 3.0 in 
-    Log.infof "#get_next_action received";
-    match receipt with
-    | Some(2, str) -> Action.from_string str
-    | None -> [Position.create (0,0)], Action.Wait (* kill this player *)
-    | _ -> [Position.create (0,0)], Action.Wait (* Wait by default *)
-		       
+      begin
+	Log.infof "#get_next_action sent" ;
+	
+	let receipt  = Send_recv.recv sockfd 3.0 in 
+	Log.infof "#get_next_action received";
+	match receipt with
+	| Some(2, str) -> Action.from_string str
+	| None -> [Position.create (0,0)], Action.Wait (* kill this player *)
+	| _ -> [Position.create (0,0)], Action.Wait (* Wait by default *)
+      end
+	  
   method set_logicPlayerList playersList =
 	()
 

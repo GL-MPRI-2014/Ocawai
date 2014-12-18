@@ -137,11 +137,16 @@ let open_connection ip port =
  * @return Option of read caractere number
  *)
 let read_timeout sock buffer flags buffer_size timeout =
-  let (fd_read, _, _) = Unix.select [sock] [] [] timeout in
-  if fd_read = [] then
+  if timeout = 0. then
     None
   else 
-    Some (Unix.read sock buffer flags buffer_size)
+    begin
+      let (fd_read, _, _) = Unix.select [sock] [] [] timeout in
+      if fd_read = [] then
+	None
+      else 
+	Some (Unix.read sock buffer flags buffer_size)
+    end
 
 
 (**
@@ -151,8 +156,13 @@ let read_timeout sock buffer flags buffer_size timeout =
  * @return Option of write caractere number
  *)
 let write_timeout sock buffer flags buffer_size timeout =
-  let (_, fd_write, _) = Unix.select [] [sock] [] timeout in
-  if fd_write = [] then
+  if timeout = 0. then
     None
-  else 
-    Some (Unix.single_write sock buffer flags buffer_size)
+  else
+    begin
+      let (_, fd_write, _) = Unix.select [] [sock] [] timeout in
+      if fd_write = [] then
+	None
+      else
+	Some (Unix.write sock buffer flags buffer_size)
+    end

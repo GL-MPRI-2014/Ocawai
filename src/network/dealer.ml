@@ -124,9 +124,10 @@ object (self)
       let receipt  = Send_recv.recv sockfd 3.0 in
       Log.infof "Received." ;
       match receipt with
-      | Some (0, _) -> self#manage_gna
-      | Some(1, update) -> self#manage_update (Types.from_string update)
-      | _ -> (* kill this player *) ()
+      | Some (0, _) -> Log.infof "0";  self#manage_gna
+      | Some(1, update) -> Log.infof "1";self#manage_update (Types.from_string update)
+      | None -> Log.infof "None"
+      | Some (n,_) -> Log.infof "%d" n
     done
 
 end
