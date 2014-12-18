@@ -2,6 +2,9 @@
 type log_item =
   | Moved of Unit.t * Action.movement
 
+(**Raise by the function use_resource*)
+exception Not_enough_ressource
+
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
 class logicPlayer : ?id:Types.id_player -> Unit.t list -> Building.t list  ->
@@ -58,10 +61,12 @@ object
   (** Get the amount of resource owned by the player*)
   method get_value_resource : int
 
-  (**Try to use some resources.
+  (**Check if the player has enough ressource.
    @return True if it is possible, False otherwise*)
-  method use_resource : int -> bool
-
+  method has_resource : int -> bool
+  (**Try to use resource from the player. Raise en exception if the player has not enough resource*)
+  method use_resource : int -> unit
+								 
   (**Harvest the resources producted by the buildings owned by the player*)
   method harvest_buildings_income : unit
 

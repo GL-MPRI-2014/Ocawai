@@ -4,6 +4,10 @@ open Path
 type log_item =
   | Moved of Unit.t * Action.movement
 
+
+exception Not_enough_ressource
+
+			
 class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
   object (self)
 
@@ -72,7 +76,9 @@ class logicPlayer ?(id) (a : Unit.t list) (b : Building.t list) =
 
     method get_value_resource = resource
 
-    method use_resource amount = if resource < amount then false else ( resource <- resource - amount;true)
+	method has_resource amount = if resource < amount then false else true
+																		
+    method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
     method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
 
