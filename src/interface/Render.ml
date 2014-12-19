@@ -358,7 +358,7 @@ let renderer = object(self)
 
   (* Draw the whole game *)
   method render_game (target : render_window)
-    (data : ClientData.client_data) =
+    (data : ClientData.client_data) character_id =
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
@@ -366,7 +366,7 @@ let renderer = object(self)
     self#handle_updates data;
     (* Hardcoded: to alternate characters *)
     let characters = [|"flatman";"blub";"limboy"|] in
-    let get_chara = let x = ref 0 in fun () ->
+    let get_chara = let x = ref character_id in fun () ->
       let ret = characters.(!x) in
       incr x ;
       if !x = Array.length characters then x := 0 ;

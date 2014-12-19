@@ -6,7 +6,7 @@ open Manager
 open Player
 open Menus
 
-let new_game () =
+let new_game character () =
 
   let m_cdata = new ClientData.client_data in
 
@@ -363,7 +363,7 @@ let new_game () =
     cdata#minimap#compute cdata#map cdata#players;
 
     (* Rendering goes here *)
-    Render.renderer#render_game window cdata;
+    Render.renderer#render_game window cdata character;
     Render.renderer#draw_gui window ui_manager;
 
     window#display
