@@ -20,17 +20,17 @@ class state = object(self)
         (* Choosing flatman *)
         new Home.textured_actionnable "flatman" "flatman_hover"
           (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push
+          (fun () -> manager#pop ; manager#push
             (new LoadScreen.state (Game.new_game 0) :> State.state)) ;
         (* Choosing Blub as main character *)
         new Home.textured_actionnable "blub" "blub_hover"
           (w/.2. -. 220., h /. 2. +. 30.)
-          (fun () -> manager#push
+          (fun () -> manager#pop ; manager#push
             (new LoadScreen.state (Game.new_game 1) :> State.state)) ;
         (* Or limboy *)
         new Home.textured_actionnable "limboy" "limboy_hover"
           (w/.2. +. 220., h /. 2. +. 30.)
-          (fun () -> manager#push
+          (fun () -> manager#pop ; manager#push
             (new LoadScreen.state (Game.new_game 2) :> State.state)) ;
         (* Back button *)
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
