@@ -302,9 +302,10 @@ let new_game character () =
                                 (fun u -> u#name = s)
                                 Config.config#unbound_units_list
                               in
+                              let characters = [|"flatman";"blub";"limboy"|] in
                               new item
                                 ~enabled:(u#price <= p#get_value_resource)
-                                ("flatman_" ^ s)
+                                (characters.(character) ^ "_" ^ s)
                                 (s ^ " (" ^ (string_of_int u#price) ^ ")")
                                 (fun () ->
                                   build_menu#toggle;
