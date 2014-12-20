@@ -33,8 +33,7 @@ class client_data = object(self)
     minimap <- Some(minim);
     players <- player_list;
     actual_player <- Some (self_player);
-    map <- Some(m);
-    self_player#init m players 
+    map <- Some(m)
 
   method init_buildings neutral = 
     neutral_buildings <- neutral

@@ -69,6 +69,7 @@ class game_engine () = object (self)
       let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in
       List.iter (fun p -> p#init_script map players) sc_players;
       actual_player_l <- actual_player_list nbplayers;
+      List.iter (fun x -> x#init map players) self#get_players;
       (players, map)
 
   method init_net port nbplayers =
