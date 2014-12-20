@@ -22,19 +22,25 @@ class state = object(self)
           (w/.2., h /. 2. +. 30.)
           (fun () -> manager#pop ; manager#push
             (new LoadScreen.state
-              (Game.new_game Characters.Flatman) :> State.state)) ;
+              (Game.new_game ~character:Characters.Flatman) :> State.state)) ;
         (* Choosing Blub as main character *)
         new Home.textured_actionnable "blub" "blub_hover"
           (w/.2. -. 220., h /. 2. +. 30.)
           (fun () -> manager#pop ; manager#push
             (new LoadScreen.state
-              (Game.new_game Characters.Blub) :> State.state)) ;
+              (Game.new_game ~character:Characters.Blub) :> State.state)) ;
         (* Or limboy *)
         new Home.textured_actionnable "limboy" "limboy_hover"
           (w/.2. +. 220., h /. 2. +. 30.)
           (fun () -> manager#pop ; manager#push
             (new LoadScreen.state
-              (Game.new_game Characters.Limboy) :> State.state)) ;
+              (Game.new_game ~character:Characters.Limboy) :> State.state)) ;
+        (* Or you don't care *)
+        new Home.textured_actionnable "random" "random_hover"
+          (w -. 200., h -. 100.)
+          (fun () -> manager#pop ; manager#push
+            (new LoadScreen.state
+              (Game.new_game) :> State.state)) ;
         (* Back button *)
         new Home.textured_actionnable "back" "back_hover" (200., h -. 100.)
           (fun () -> manager#pop)

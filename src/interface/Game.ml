@@ -6,7 +6,7 @@ open Manager
 open Player
 open Menus
 
-let new_game character () =
+let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
 
@@ -27,8 +27,12 @@ let new_game character () =
 
   (* Distributing characters *)
   let () =
+    let constraints = match character with
+      | Some c -> [((my_player :> player)#get_id,c)]
+      | None -> []
+    in
     Characters.handler#init
-      [((my_player :> player)#get_id,character)]
+      constraints
       (List.map (fun p -> p#get_id) m_engine#get_players)
   in
 
