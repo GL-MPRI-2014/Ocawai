@@ -12,8 +12,9 @@ class case_info = object(self)
 
   method draw : 'a. (#render_target as 'a) ->
   (string -> (float * float) -> unit) -> (string -> (float * float) -> unit) ->
-  Unit.t option -> string -> Building.t option -> string -> Tile.t -> unit =
-    fun target drawer tile_drawer u chara building b_chara tile ->
+  (int * int) option -> Unit.t option -> string -> Building.t option ->
+  string -> Tile.t -> unit =
+    fun target drawer tile_drawer damage u chara building b_chara tile ->
       let (w,h) = foi2D target#get_size in
       let x = 10.
       and y = h -. 160. in
@@ -25,6 +26,27 @@ class case_info = object(self)
         then 50.
         else 0.
       in
+      (* Damage estimation *)
+      begin match damage with
+      | Some (dmin,dmax) ->
+          new rectangle_shape
+            ~position:(x,y-.25.+.uh_offset+.bh_offset)
+            ~size:(width,25.)
+            ~fill_color:(Color.rgba 255 34 0 240)
+            ()
+          |> target#draw;
+          rect_print target
+            ("Estimated damage: "
+            ^ (string_of_int dmin)
+            ^ " - " ^ (string_of_int dmax))
+            font Color.white (Pix 15) (Pix 2) Left
+            { left = x+.3. ;
+              top = y-.25.+.uh_offset+.bh_offset+.2. ;
+              width = 214. ;
+              height = 25. }
+      | None -> ()
+      end;
+      (* Case information background *)
       new rectangle_shape
         ~position:(x,y+.uh_offset+.bh_offset)
         ~size:(width,height-.uh_offset-.bh_offset)

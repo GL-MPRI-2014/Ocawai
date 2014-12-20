@@ -420,6 +420,13 @@ let renderer = object(self)
             "" data#players
     | None -> ""
     in
+    let damage = Cursor.(
+        match (data#camera#cursor#get_state,s_unit) with
+        | (Action(u1,_,_), Some u2) ->
+            Some (Logics.damage_interval u1 u2)
+        | _ -> None
+      )
+    in
     let (s_building, b_player) =
       data#building_at_position data#camera#cursor#position
     in
@@ -434,7 +441,7 @@ let renderer = object(self)
       Battlefield.get_tile data#map data#camera#cursor#position
     in
     data#case_info#draw
-      target drawer tile_drawer s_unit chara s_building b_chara s_tile;
+      target drawer tile_drawer damage s_unit chara s_building b_chara s_tile;
     (* Display resources *)
     let resources = string_of_int data#actual_player#get_value_resource in
     let (w,h) = foi2D target#get_size in
