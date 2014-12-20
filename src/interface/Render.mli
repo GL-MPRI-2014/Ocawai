@@ -1,5 +1,6 @@
 (** Rendering module *)
 
+(** The renderer in itself *)
 val renderer : <
 
   (** Draw a tile from a tileset *)

@@ -1,3 +1,5 @@
+(** Mixins: widget bases / properties for the GUI to mix by inheritance *)
+
 open OcsfmlWindow
 
 (** A mixin that represents widget containers *)

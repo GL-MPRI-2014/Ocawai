@@ -1,5 +1,7 @@
+(** Definition of the camera class *)
+
 (** Camera for displaying *)
-class camera : def_tile_size:int -> w:int -> h:int -> initpos:Position.t -> maxpos:Position.t 
+class camera : def_tile_size:int -> w:int -> h:int -> initpos:Position.t -> maxpos:Position.t
   -> object
 
   method cursor : Cursor.cursor

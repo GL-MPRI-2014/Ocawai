@@ -1,3 +1,5 @@
+(** Definitio of the client data class *)
+
 (** Class representing the data hold by the client *)
 class client_data : object
 
@@ -9,7 +11,7 @@ class client_data : object
   method top_update : Types.update option
 
   (* Initialization methods *)
-  method init_core : Battlefield.t -> 
+  method init_core : Battlefield.t ->
     ClientPlayer.client_player -> Player.logicPlayer list -> unit
 
   method init_buildings : Building.t list -> unit

@@ -37,7 +37,7 @@ object
 
 end
 
-(** Toogle (typically for boolean parameters)
+(** Toggle (typically for boolean parameters)
   * @param default the default value (on/off)
   * @param pos the center position of the setter
   * @param name name of the parameter
