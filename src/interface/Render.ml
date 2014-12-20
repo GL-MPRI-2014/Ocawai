@@ -358,39 +358,30 @@ let renderer = object(self)
 
   (* Draw the whole game *)
   method render_game (target : render_window)
-    (data : ClientData.client_data) character_id =
+    (data : ClientData.client_data) =
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
     self#handle_updates data;
-    (* Hardcoded: to alternate characters *)
-    let characters = [|"flatman";"blub";"limboy"|] in
-    let get_chara = let x = ref character_id in fun () ->
-      let ret = characters.(!x) in
-      incr x ;
-      if !x = Array.length characters then x := 0 ;
-      ret
-    in
     (* Draw buildings *)
     List.iter
       (self#draw_building target data#camera "neutral")
       data#neutral_buildings;
     List.iter (fun p ->
-      let chara = get_chara () in
+      let chara = Characters.to_string (Characters.handler#character_of p) in
       List.iter
         (self#draw_building target data#camera chara)
         p#get_buildings
     ) data#players;
     (* Draw units *)
     List.iter (fun p ->
-      let chara = get_chara () in
+      let chara = Characters.to_string (Characters.handler#character_of p) in
       List.iter (self#draw_unit target data#camera chara)
         (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
     ) data#players;
     (* Displaying fog *)
     let camera = data#camera in
-    (* TODO fog is empty *)
     let fog = data#actual_player#get_fog in
     let foggy p =
       let (i,j) = Position.topair p in
@@ -416,7 +407,12 @@ let renderer = object(self)
     | Some selected_unit ->
         let player = data#player_of selected_unit in
         List.fold_left
-            (fun a p -> let c = get_chara () in if p = player then c else a)
+            (fun a p ->
+              let c =
+                Characters.to_string (Characters.handler#character_of p)
+              in
+              if p = player then c else a
+            )
             "" data#players
     | None -> ""
     in
@@ -433,7 +429,10 @@ let renderer = object(self)
     let b_chara = match b_player with
     | Some player ->
         List.fold_left
-          (fun a p -> let c = get_chara () in if p = player then c else a)
+          (fun a p ->
+            let c = Characters.to_string (Characters.handler#character_of p) in
+            if p = player then c else a
+          )
           "" data#players
     | None -> "neutral"
     in

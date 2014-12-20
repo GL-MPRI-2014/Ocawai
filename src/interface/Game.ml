@@ -25,6 +25,13 @@ let new_game character () =
       (Position.create (1,1)))
   in
 
+  (* Distributing characters *)
+  let () =
+    Characters.handler#init
+      [((my_player :> player)#get_id,character)]
+      (List.map (fun p -> p#get_id) m_engine#get_players)
+  in
+
   object(self)
 
   inherit State.state as super
@@ -302,10 +309,9 @@ let new_game character () =
                                 (fun u -> u#name = s)
                                 Config.config#unbound_units_list
                               in
-                              let characters = [|"flatman";"blub";"limboy"|] in
                               new item
                                 ~enabled:(u#price <= p#get_value_resource)
-                                (characters.(character) ^ "_" ^ s)
+                                (Characters.handler#texture_from_id (p#get_id) s)
                                 (s ^ " (" ^ (string_of_int u#price) ^ ")")
                                 (fun () ->
                                   build_menu#toggle;
@@ -364,7 +370,7 @@ let new_game character () =
     cdata#minimap#compute cdata#map cdata#players;
 
     (* Rendering goes here *)
-    Render.renderer#render_game window cdata character;
+    Render.renderer#render_game window cdata;
     Render.renderer#draw_gui window ui_manager;
 
     window#display
