@@ -55,7 +55,7 @@ let new_game ?character () =
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
 
   val build_menu = new ingame_menu ~m_position:(0,0)
-    ~m_width:220
+    ~m_width:290
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
