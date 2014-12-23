@@ -3,7 +3,7 @@
 (** Class representing the data hold by the client *)
 class client_data : object
 
-  (* Update methods *)
+  (* Update methods (using a queue) *)
   method pop_update : Types.update option
 
   method push_update : Types.update -> unit

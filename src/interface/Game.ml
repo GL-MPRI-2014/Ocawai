@@ -10,6 +10,8 @@ let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
 
+  let m_uphandle = new Updates.handler m_cdata in
+
   let my_player = new ClientPlayer.client_player m_cdata#push_update in
 
   let m_engine = new Game_engine.game_engine () in
@@ -45,6 +47,8 @@ let new_game ?character () =
   val camera = m_camera
 
   val cdata : ClientData.client_data = m_cdata
+
+  val uphandle = m_uphandle
 
   val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
@@ -374,7 +378,7 @@ let new_game ?character () =
     cdata#minimap#compute cdata#map cdata#players;
 
     (* Rendering goes here *)
-    Render.renderer#render_game window cdata;
+    Render.renderer#render_game window cdata uphandle;
     Render.renderer#draw_gui window ui_manager;
 
     window#display

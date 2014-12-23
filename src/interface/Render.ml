@@ -2,11 +2,6 @@ open OcsfmlGraphics
 open Utils
 open Tileset
 
-(* Time to move of 1 cell *)
-(* let animation_time = 0.03 *)
-(* Number of frames for the animation *)
-let animation_time = 2
-
 let renderer = object(self)
 
   val texture_library = TextureLibrary.create ()
@@ -16,12 +11,6 @@ let renderer = object(self)
   val font = Fonts.load_font "FreeSansBold.ttf"
 
   val mutable rect_vao = new vertex_array ~primitive_type:Quads []
-
-  (* Marks items of the log as read *)
-  val log_history = Hashtbl.create 91
-
-  (* Associates every unit to its graphical state *)
-  val unit_ginfo = Hashtbl.create 91
 
   method init =
     let folder = (Utils.base_path ()) ^ "textures/" in
@@ -249,38 +238,14 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) camera character my_unit =
+  method private draw_unit
+  (target : render_window) uphandle camera character my_unit =
     let color =
       if my_unit#has_played
       then Color.rgb 150 150 150
       else Color.rgb 255 255 255
     in
-    let (u_position,offset) = if Hashtbl.mem unit_ginfo my_unit then
-      begin
-        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
-        if frames + 1 = animation_time
-        then Hashtbl.replace unit_ginfo my_unit (List.tl path, 0)
-        else Hashtbl.replace unit_ginfo my_unit (path, frames + 1);
-        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
-        match path with
-        | []          ->
-            Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
-        | e :: n :: _ ->
-            (* Beware of magic numbers *)
-            let o =
-              (float_of_int frames) /. (float_of_int animation_time) *. 50.
-            in
-            e, Position.(
-              if      n = left  e then (-. o,   0.)
-              else if n = right e then (o   ,   0.)
-              else if n = up    e then (0.  , -. o)
-              else if n = down  e then (0.  ,    o)
-              else assert false
-            )
-        | e :: _      -> (e,(0.,0.))
-      end
-      else (my_unit#position, (0.,0.))
-    in
+    let (u_position,offset) = uphandle#unit_position my_unit in
     let name = character ^ "_" ^ my_unit#name in
     self#draw_from_map ~offset target camera name u_position ~color ();
     let size = int_of_float (camera#zoom *. 14.) in
@@ -289,10 +254,6 @@ let renderer = object(self)
       (foi2D (camera#project u_position))
       (ox *. camera#zoom, oy *. camera#zoom)
     in
-    (* new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
-        string_of_int (my_unit#hp * 10 / my_unit#life_max))
-      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
-    |> target#draw *)
     new text ~string:(string_of_int (my_unit#hp))
       ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
     |> target#draw
@@ -339,31 +300,14 @@ let renderer = object(self)
     (ui_manager : UIManager.ui_manager) =
     ui_manager#draw target texture_library
 
-  (* Reads the stack to update unit informations *)
-  method private handle_updates (data : ClientData.client_data) =
-    Types.( match data#pop_update with
-    | Some(u) -> begin
-      match u with
-      | Move_unit (u,path,id_p) ->
-        let pl = Logics.find_player id_p data#players in
-        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
-        Sounds.play_sound "boots";
-      | Game_over -> Sounds.play_sound "lose"
-      | Set_unit_hp(_,_,_) -> Sounds.play_sound "shots"
-      | Building_changed(b) -> data#toggle_neutral_building b
-      | _ -> ()
-      end; self#handle_updates data
-    | None -> ()
-    );
-
   (* Draw the whole game *)
   method render_game (target : render_window)
-    (data : ClientData.client_data) =
+    (data : ClientData.client_data) (uphandle : Updates.handler) =
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    self#handle_updates data;
+    uphandle#update;
     (* Draw buildings *)
     List.iter
       (self#draw_building target data#camera "neutral")
@@ -377,7 +321,7 @@ let renderer = object(self)
     (* Draw units *)
     List.iter (fun p ->
       let chara = Characters.to_string (Characters.handler#character_of p) in
-      List.iter (self#draw_unit target data#camera chara)
+      List.iter (self#draw_unit target uphandle data#camera chara)
         (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
     ) data#players;
     (* Displaying fog *)
