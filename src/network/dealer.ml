@@ -126,6 +126,8 @@ if boolean is false then kill this player
     | Set_client_player id -> self#set_player_id id
     | Set_logic_player_list lst -> self#set_logicPlayerList lst
     | Map str -> self#set_map str
+    | Your_turn -> (* TODO ? *) ()
+    | Building_changed -> (* TODO ? *) ()
 
   (* please give a call to this method just after having created this object *)
 
