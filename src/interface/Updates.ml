@@ -2,6 +2,7 @@ open Types
 
 type animation =
   | Moving_unit of Unit.t * Position.t list
+  | Pause of int
   | Nothing
 
 (* Number of frames for a unit to run through a tile *)
@@ -94,10 +95,12 @@ class handler data camera = object(self)
         begin
           frame_counter <- 0 ;
           match path with
-          | [] -> current_animation <- Nothing
+          | [] -> current_animation <- Pause 20
           | e :: r -> current_animation <- Moving_unit (u, r)
         end
         else frame_counter <- frame_counter + 1
+    | Pause 0 -> current_animation <- Nothing
+    | Pause i -> current_animation <- Pause (i-1)
     | Nothing -> ()
 
   method update =
