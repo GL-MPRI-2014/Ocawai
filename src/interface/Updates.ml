@@ -65,10 +65,10 @@ class handler data camera = object(self)
               if self#visible u#position then begin
                 camera#set_position u#position ;
                 Sounds.play_sound "shots" ;
-              end ;
-              (* TODO Add animations instead of continuing *)
-              (* (and put it in the else) *)
-              self#read_update
+                current_animation <- Pause 30
+                (* TODO Add animations *)
+              end
+              else self#read_update
           | Building_changed b ->
               if self#visible b#position then
                 camera#set_position b#position ;
