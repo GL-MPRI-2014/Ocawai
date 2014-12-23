@@ -48,7 +48,8 @@ class handler data camera = object(self)
           | Move_unit (u,path,id_p) ->
               (* We only take it into account if there is a visible part *)
               if List.exists self#visible path then begin
-                camera#set_position (List.nth path (List.length path - 1)) ;
+                let vpath = List.filter self#visible path in
+                camera#set_position (List.nth vpath (List.length vpath - 1)) ;
                 Sounds.play_sound "boots" ;
                 let player = Logics.find_player id_p data#players in
                 current_animation <- Moving_unit (player#get_unit_by_id u, path)

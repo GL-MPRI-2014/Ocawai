@@ -239,24 +239,27 @@ let renderer = object(self)
 
   (* Render a unit *)
   method private draw_unit
-  (target : render_window) uphandle camera character my_unit =
-    let color =
-      if my_unit#has_played
-      then Color.rgb 150 150 150
-      else Color.rgb 255 255 255
-    in
+  (target : render_window) uphandle camera foggy character my_unit =
     let (u_position,offset) = uphandle#unit_position my_unit in
-    let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map ~offset target camera name u_position ~color ();
-    let size = int_of_float (camera#zoom *. 14.) in
-    let (ox,oy) = offset in
-    let position = addf2D
-      (foi2D (camera#project u_position))
-      (ox *. camera#zoom, oy *. camera#zoom)
-    in
-    new text ~string:(string_of_int (my_unit#hp))
-      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
-    |> target#draw
+    if foggy u_position then ()
+    else begin
+      let color =
+        if my_unit#has_played
+        then Color.rgb 150 150 150
+        else Color.rgb 255 255 255
+      in
+      let name = character ^ "_" ^ my_unit#name in
+      self#draw_from_map ~offset target camera name u_position ~color ();
+      let size = int_of_float (camera#zoom *. 14.) in
+      let (ox,oy) = offset in
+      let position = addf2D
+        (foi2D (camera#project u_position))
+        (ox *. camera#zoom, oy *. camera#zoom)
+      in
+      new text ~string:(string_of_int (my_unit#hp))
+        ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+      |> target#draw
+    end
 
   (* Draw a building *)
   method private draw_building
@@ -303,6 +306,14 @@ let renderer = object(self)
   (* Draw the whole game *)
   method render_game (target : render_window)
     (data : ClientData.client_data) (uphandle : Updates.handler) =
+    (* For the fog *)
+    let fog = data#actual_player#get_fog in
+    let foggy p =
+      let (i,j) = Position.topair p in
+      try fog.(i).(j) = 0
+      with _ -> false
+    in
+    (* Rendering *)
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
@@ -321,17 +332,12 @@ let renderer = object(self)
     (* Draw units *)
     List.iter (fun p ->
       let chara = Characters.to_string (Characters.handler#character_of p) in
-      List.iter (self#draw_unit target uphandle data#camera chara)
-        (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
+      List.iter
+        (self#draw_unit target uphandle data#camera foggy chara)
+        p#get_army
     ) data#players;
     (* Displaying fog *)
     let camera = data#camera in
-    let fog = data#actual_player#get_fog in
-    let foggy p =
-      let (i,j) = Position.topair p in
-      try fog.(i).(j) = 0
-      with _ -> false
-    in
     List.iter
       (fun p -> if (foggy p) then self#draw_from_map target camera "fog" p ())
       (Position.square camera#top_left camera#bottom_right);
