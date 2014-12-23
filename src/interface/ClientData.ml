@@ -12,7 +12,7 @@ class client_data = object(self)
 
   val case_info = new CaseInfo.case_info
 
-  val updates : Types.update Stack.t = Stack.create ()
+  val updates : Types.update Queue.t = Queue.create ()
 
   val mutable players : Player.logicPlayer list = []
 
@@ -42,14 +42,14 @@ class client_data = object(self)
     camera <- Some cam
 
   method pop_update =
-    try Some (Stack.pop updates)
-    with Stack.Empty -> None
+    try Some (Queue.pop updates)
+    with Queue.Empty -> None
 
-  method push_update u = Stack.push u updates
+  method push_update u = Queue.push u updates
 
   method top_update =
-    try Some (Stack.top updates)
-    with Stack.Empty -> None
+    try Some (Queue.top updates)
+    with Queue.Empty -> None
 
   method map = get_option map
 
