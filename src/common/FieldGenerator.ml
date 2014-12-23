@@ -671,7 +671,7 @@ let create_buildings m =
   let takenlist = ref [] in
   let rec position ub =function
   | 0 -> []
-  | nb -> if !poslist = [] then raise NotEnoughPlace else (
+  | nb -> if !poslist = [] then [] else (
     poslist := Utils.shuffle (!poslist);
     let pos = List.hd !poslist in
     poslist := List.tl !poslist;
