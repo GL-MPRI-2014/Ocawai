@@ -40,9 +40,15 @@ class client_data : object
   method player_unit_at_position : Position.t ->
     #Player.logicPlayer -> Unit.t option
 
+  method player_visible_unit_at_position : Position.t ->
+    Player.logicPlayer -> Unit.t option
+
   method enemy_unit_at_position : Position.t -> bool
 
   method unit_at_position : Position.t -> Unit.t option
+
+  (** Returns some only if not in the fog *)
+  method visible_unit_at_position : Position.t -> Unit.t option
 
   method player_of : Unit.t -> Player.logicPlayer
 

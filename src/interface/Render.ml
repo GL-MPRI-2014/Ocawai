@@ -402,7 +402,7 @@ let renderer = object(self)
       self#draw_direct_tile target set s
         ~position:pos ~scale:(30./.50.,30./.50.) ()
     in
-    let s_unit = data#unit_at_position data#camera#cursor#position in
+    let s_unit = data#visible_unit_at_position data#camera#cursor#position in
     let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
