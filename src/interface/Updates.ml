@@ -5,7 +5,7 @@ type animation =
   | Nothing
 
 (* Number of frames for a unit to run through a tile *)
-let walking_time = 6
+let walking_time = 3
 
 class handler data camera = object(self)
 
@@ -17,6 +17,15 @@ class handler data camera = object(self)
 
   (* Blocks yet-to-move units *)
   val mutable frozen_units = []
+
+  (* Tells if a position is foggy *)
+  method private foggy p =
+    let (i,j) = Position.topair p in
+    try data#actual_player#get_fog.(i).(j) = 0
+    with _ -> false
+
+  method private visible p =
+    not (self#foggy p)
 
   (* Temporary (I hope) fix for teleportation *)
   method private forsee_updates =
@@ -36,25 +45,31 @@ class handler data camera = object(self)
     | Some u ->
         begin match u with
           | Move_unit (u,path,id_p) ->
-              (* TODO Only take into account visible units *)
-              camera#set_position (List.nth path (List.length path - 1)) ;
-              Sounds.play_sound "boots" ;
-              let player = Logics.find_player id_p data#players in
-              current_animation <- Moving_unit (player#get_unit_by_id u, path)
+              (* We only take it into account if there is a visible part *)
+              if List.exists self#visible path then begin
+                camera#set_position (List.nth path (List.length path - 1)) ;
+                Sounds.play_sound "boots" ;
+                let player = Logics.find_player id_p data#players in
+                current_animation <- Moving_unit (player#get_unit_by_id u, path)
+              end
+              else self#read_update
           | Game_over ->
               Sounds.play_sound "lose" ;
               (* There should'nt be any update but still... *)
               self#read_update
           | Set_unit_hp (uid,_,pid) ->
-              (* TODO Only if visible *)
               let player = Logics.find_player pid data#players in
               let u = player#get_unit_by_id uid in
-              camera#set_position u#position ;
-              Sounds.play_sound "shots" ;
+              if self#visible u#position then begin
+                camera#set_position u#position ;
+                Sounds.play_sound "shots" ;
+              end ;
               (* TODO Add animations instead of continuing *)
+              (* (and put it in the else) *)
               self#read_update
           | Building_changed b ->
-              camera#set_position b#position ;
+              if self#visible b#position then
+                camera#set_position b#position ;
               (* TODO Play some sound here? *)
               data#toggle_neutral_building b ;
               (* TODO Add some animation? *)
