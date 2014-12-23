@@ -51,6 +51,8 @@ class client_data = object(self)
     try Some (Queue.top updates)
     with Queue.Empty -> None
 
+  method update_iter f = Queue.iter f updates
+
   method map = get_option map
 
   method camera = get_option camera

@@ -5,7 +5,7 @@ type animation =
   | Nothing
 
 (* Number of frames for a unit to run through a tile *)
-let walking_time = 2
+let walking_time = 6
 
 class handler data camera = object(self)
 
@@ -15,11 +15,24 @@ class handler data camera = object(self)
   (* Number of frames since the beginning of the animation *)
   val mutable frame_counter = 0
 
+  (* Blocks yet-to-move units *)
+  val mutable frozen_units = []
+
+  (* Temporary (I hope) fix for teleportation *)
+  method private forsee_updates =
+    frozen_units <- [] ;
+    data#update_iter (function
+      | Move_unit (u, e :: _, id_p) ->
+          let player = Logics.find_player id_p data#players in
+          frozen_units <- (player#get_unit_by_id u, e) :: frozen_units
+      | _ -> ()
+    )
+
   method private read_update =
     (* We reset since it will be a new animation either way *)
     frame_counter <- 0 ;
     (* Reading oldest unread update *)
-    match data#pop_update with
+    begin match data#pop_update with
     | Some u ->
         begin match u with
           | Move_unit (u,path,id_p) ->
@@ -55,6 +68,9 @@ class handler data camera = object(self)
               self#read_update
         end
     | None -> ()
+    end ;
+    (* Freeze units that will move *)
+    self#forsee_updates ;
 
   method private process_animation =
     match current_animation with
@@ -88,6 +104,10 @@ class handler data camera = object(self)
           else assert false
         )
     | Moving_unit (soldier, e :: _) when soldier = u -> e, (0.,0.)
-    | _ -> u#position, (0.,0.)
+    | _ ->
+        begin
+          try (List.assoc u frozen_units), (0.,0.)
+          with Not_found -> u#position, (0.,0.)
+        end
 
 end
