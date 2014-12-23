@@ -4,6 +4,7 @@ open Manager
 
 (* Helps compiling doc -- to be removed ! *)
 open TPTM
+open PrioQueue
 
 let () = begin
 
