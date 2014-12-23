@@ -7,7 +7,7 @@ type animation =
 (* Number of frames for a unit to run through a tile *)
 let walking_time = 2
 
-class handler data = object(self)
+class handler data camera = object(self)
 
   (* Holds the animation ongoing *)
   val mutable current_animation = Nothing
@@ -24,6 +24,7 @@ class handler data = object(self)
         begin match u with
           | Move_unit (u,path,id_p) ->
               (* TODO Only take into account visible units *)
+              camera#set_position (List.nth path (List.length path - 1)) ;
               Sounds.play_sound "boots" ;
               let player = Logics.find_player id_p data#players in
               current_animation <- Moving_unit (player#get_unit_by_id u, path)
@@ -31,14 +32,23 @@ class handler data = object(self)
               Sounds.play_sound "lose" ;
               (* There should'nt be any update but still... *)
               self#read_update
-          | Set_unit_hp _ ->
+          | Set_unit_hp (uid,_,pid) ->
+              (* TODO Only if visible *)
+              let player = Logics.find_player pid data#players in
+              let u = player#get_unit_by_id uid in
+              camera#set_position u#position ;
               Sounds.play_sound "shots" ;
               (* TODO Add animations instead of continuing *)
               self#read_update
           | Building_changed b ->
+              camera#set_position b#position ;
               (* TODO Play some sound here? *)
               data#toggle_neutral_building b ;
               (* TODO Add some animation? *)
+              self#read_update
+          | Your_turn ->
+              (* TODO Center the camera on the player (how?) *)
+              (* camera#set_position (data#actual_player) *)
               self#read_update
           | _ ->
               (* TODO Stop ignoring them *)

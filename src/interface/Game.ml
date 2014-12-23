@@ -10,8 +10,6 @@ let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
 
-  let m_uphandle = new Updates.handler m_cdata in
-
   let my_player = new ClientPlayer.client_player m_cdata#push_update in
 
   let m_engine = new Game_engine.game_engine () in
@@ -26,6 +24,8 @@ let new_game ?character () =
       (Position.create (Battlefield.size m_map))
       (Position.create (1,1)))
   in
+
+  let m_uphandle = new Updates.handler m_cdata m_camera in
 
   (* Distributing characters *)
   let () =
