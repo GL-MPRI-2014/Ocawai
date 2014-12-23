@@ -1,12 +1,9 @@
 (** Launcher of the interface *)
+
 open Manager
-open TPTM
 
 (* Helps compiling doc -- to be removed ! *)
-open Logics
-open Theme
-open Setters
-open PrioQueue
+open TPTM
 
 let () = begin
 
