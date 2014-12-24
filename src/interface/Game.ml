@@ -6,6 +6,12 @@ open Manager
 open Player
 open Menus
 
+(* Type of selectable *)
+type selectable = [
+  | `Unit of Unit.t
+  | `Building of Building.t
+]
+
 let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
@@ -63,6 +69,66 @@ let new_game ?character () =
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
+
+  (* Last unit selected through X/W *)
+  val mutable last_selected : selectable option = None
+
+  (* Select next unit given a way to go *)
+  method private select_playable lu lb =
+    let rec list_after x = function
+      | [] -> []
+      | e :: r when x = e -> r
+      | e :: r -> list_after x r
+    in
+    (* Selectable unit *)
+    let oku u = not u#has_played in
+    (* Selectable building *)
+    let okb b =
+      b#product <> []
+      && cdata#player_unit_at_position
+          b#position
+          cdata#actual_player
+         = None
+    in
+    let find_u lu fail () =
+      try last_selected <- Some ( `Unit (List.find oku lu) )
+      with Not_found -> fail ()
+    in
+    let find_b lb fail () =
+      try last_selected <- Some ( `Building (List.find okb lb) )
+      with Not_found -> fail ()
+    in
+    let fail () =
+      last_selected <- None
+    in
+    begin
+      match last_selected with
+      | None -> find_u lu (find_b lb fail)
+      | Some (`Unit u) -> find_u (list_after u lu) (find_b lb (find_u lu fail))
+      | Some (`Building b) ->
+          find_b (list_after b lb) (find_u lu (find_b lb fail))
+    end () ;
+    begin match last_selected with
+    | None -> ()
+    | Some (`Unit u) -> cdata#camera#set_position u#position
+    | Some (`Building b) -> cdata#camera#set_position b#position
+    end
+
+  (* Select next playable unit or building *)
+  method private select_next =
+    (* List of units *)
+    let lu = cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = cdata#actual_player#get_buildings in
+    self#select_playable lu lb
+
+  (* Select previous playable unit or building *)
+  method private select_pred =
+    (* List of units *)
+    let lu = List.rev cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = List.rev cdata#actual_player#get_buildings in
+    self#select_playable lu lb
 
   initializer
     cdata#init_core m_map my_player m_players;
@@ -254,6 +320,7 @@ let new_game ?character () =
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
+            (* TODO Remove? *)
             camera#set_position (Position.create (80,80))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
@@ -285,6 +352,12 @@ let new_game ?character () =
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
+            self#select_next
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.W ; _ } ->
+            self#select_pred
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
