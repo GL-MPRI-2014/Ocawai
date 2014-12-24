@@ -6,6 +6,12 @@ open Manager
 open Player
 open Menus
 
+(* Type of selectable *)
+type selectable = [
+  | `Unit of Unit.t
+  | `Building of Building.t
+]
+
 let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
@@ -59,6 +65,8 @@ let new_game ?character () =
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
+
+  val mutable last_selected : selectable option = None
 
   initializer
     cdata#init_core m_map my_player m_players;
@@ -284,22 +292,76 @@ let new_game ?character () =
             camera#toggle_zoom
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
-            List.filter (fun u -> not u#has_played) cdata#actual_player#get_army
-            |> (function
-              | [] ->
-                  begin match List.filter
-                                (fun b -> b#product <> []
-                                  && cdata#player_unit_at_position
-                                      b#position
-                                      cdata#actual_player
-                                     = None)
-                                cdata#actual_player#get_buildings
-                    with
-                    | [] -> ()
-                    | b :: _ -> cdata#camera#set_position b#position
+            let rec list_after x = function
+              | [] -> []
+              | e :: r when x = e -> r
+              | e :: r -> list_after x r
+            in
+            let oku u = not u#has_played in
+            let okb b =
+              b#product <> []
+              && cdata#player_unit_at_position
+                  b#position
+                  cdata#actual_player
+                 = None
+            in
+            begin match last_selected with
+              | None ->
+                  begin
+                    try
+                      last_selected <- Some (`Unit (
+                        List.find
+                          oku
+                          cdata#actual_player#get_army
+                      ))
+                    with Not_found ->
+                      begin
+                        try
+                          last_selected <- Some (`Building (
+                            List.find
+                              okb
+                              cdata#actual_player#get_buildings
+                          ))
+                        with Not_found -> last_selected <- None
+                      end
                   end
-              | u :: _ -> cdata#camera#set_position u#position
-            )
+
+              | Some (`Unit u) ->
+                  let nexts = list_after u cdata#actual_player#get_army in
+                  begin
+                    try
+                      last_selected <- Some (`Unit (
+                        List.find oku nexts
+                      ))
+                    with Not_found ->
+                      begin
+                        try
+                          last_selected <- Some (`Building (
+                            List.find
+                              okb
+                              cdata#actual_player#get_buildings
+                          ))
+                        with Not_found ->
+                          begin
+                            try
+                              last_selected <- Some (`Unit (
+                                List.find
+                                  oku
+                                  cdata#actual_player#get_army
+                              ))
+                            with Not_found -> last_selected <- None
+                          end
+                      end
+                  end
+
+              | Some (`Building b) -> ()
+
+            end;
+            begin match last_selected with
+            | None -> ()
+            | Some (`Unit u) -> cdata#camera#set_position u#position
+            | Some (`Building b) -> cdata#camera#set_position b#position
+            end
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
