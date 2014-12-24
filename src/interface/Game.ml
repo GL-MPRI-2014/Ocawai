@@ -250,6 +250,7 @@ let new_game ?character () =
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
+            (* TODO Remove? *)
             camera#set_position (Position.create (80,80))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
@@ -281,6 +282,24 @@ let new_game ?character () =
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
+            List.filter (fun u -> not u#has_played) cdata#actual_player#get_army
+            |> (function
+              | [] ->
+                  begin match List.filter
+                                (fun b -> b#product <> []
+                                  && cdata#player_unit_at_position
+                                      b#position
+                                      cdata#actual_player
+                                     = None)
+                                cdata#actual_player#get_buildings
+                    with
+                    | [] -> ()
+                    | b :: _ -> cdata#camera#set_position b#position
+                  end
+              | u :: _ -> cdata#camera#set_position u#position
+            )
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
