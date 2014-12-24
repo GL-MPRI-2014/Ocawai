@@ -4,6 +4,7 @@
 type cursor_state = Idle
   | Displace of Battlefield.t * Unit.t * Logics.accessibles
   | Action of Unit.t * Position.t * Unit.t list
+  | Watched_attack
   | Build of Building.t
 
 (** This class represents the cursor on the map *)

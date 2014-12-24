@@ -436,7 +436,7 @@ let new_game ?character () =
                   atk_menu#toggle;
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
-              | Build b -> ())
+              | _ -> ())
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle

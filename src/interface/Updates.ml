@@ -2,11 +2,15 @@ open Types
 
 type animation =
   | Moving_unit of Unit.t * Position.t list
+  | Attack
   | Pause of int
   | Nothing
 
 (* Number of frames for a unit to run through a tile *)
 let walking_time = 3
+
+(* Number of frames of the focus on an attacked unit *)
+let attack_time = 30
 
 class handler data camera = object(self)
 
@@ -57,6 +61,7 @@ class handler data camera = object(self)
               else self#read_update
           | Game_over ->
               Sounds.play_sound "lose" ;
+              (* TODO Animation *)
               (* There should'nt be any update but still... *)
               self#read_update
           | Set_unit_hp (uid,_,pid) ->
@@ -64,8 +69,9 @@ class handler data camera = object(self)
               let u = player#get_unit_by_id uid in
               if self#visible u#position then begin
                 camera#set_position u#position ;
+                camera#cursor#set_state Cursor.Watched_attack ;
                 Sounds.play_sound "shots" ;
-                current_animation <- Pause 30
+                current_animation <- Attack
                 (* TODO Add animations *)
               end
               else self#read_update
@@ -98,6 +104,13 @@ class handler data camera = object(self)
           match path with
           | [] -> current_animation <- Pause 20
           | e :: r -> current_animation <- Moving_unit (u, r)
+        end
+        else frame_counter <- frame_counter + 1
+    | Attack ->
+        if frame_counter + 1 = attack_time
+        then begin
+          current_animation <- Nothing ;
+          camera#cursor#set_state Cursor.Idle
         end
         else frame_counter <- frame_counter + 1
     | Pause 0 -> current_animation <- Nothing

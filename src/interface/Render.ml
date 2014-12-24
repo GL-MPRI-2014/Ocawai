@@ -284,7 +284,7 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 50 50 255)) attack_range
     end
-    | Cursor.Build _ -> ()
+    | Cursor.Build _ | Cursor.Watched_attack -> ()
 
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
@@ -292,7 +292,7 @@ let renderer = object(self)
     let texname =
       Cursor.(match camera#cursor#get_state with
       | Idle | Displace(_,_,_) | Build _ -> "cursor"
-      | Action(_,_,_) -> "sight")
+      | Action(_,_,_) | Watched_attack -> "sight")
     in
     self#draw_from_map target camera texname camera#cursor#position
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
