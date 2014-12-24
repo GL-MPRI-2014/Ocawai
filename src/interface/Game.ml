@@ -66,7 +66,65 @@ let new_game ?character () =
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
 
+  (* Last unit selected through X/W *)
   val mutable last_selected : selectable option = None
+
+  (* Select next unit given a way to go *)
+  method private select_playable lu lb =
+    let rec list_after x = function
+      | [] -> []
+      | e :: r when x = e -> r
+      | e :: r -> list_after x r
+    in
+    (* Selectable unit *)
+    let oku u = not u#has_played in
+    (* Selectable building *)
+    let okb b =
+      b#product <> []
+      && cdata#player_unit_at_position
+          b#position
+          cdata#actual_player
+         = None
+    in
+    let find_u lu fail () =
+      try last_selected <- Some ( `Unit (List.find oku lu) )
+      with Not_found -> fail ()
+    in
+    let find_b lb fail () =
+      try last_selected <- Some ( `Building (List.find okb lb) )
+      with Not_found -> fail ()
+    in
+    let fail () =
+      last_selected <- None
+    in
+    begin
+      match last_selected with
+      | None -> find_u lu (find_b lb fail)
+      | Some (`Unit u) -> find_u (list_after u lu) (find_b lb (find_u lu fail))
+      | Some (`Building b) ->
+          find_b (list_after b lb) (find_u lu (find_b lb fail))
+    end () ;
+    begin match last_selected with
+    | None -> ()
+    | Some (`Unit u) -> cdata#camera#set_position u#position
+    | Some (`Building b) -> cdata#camera#set_position b#position
+    end
+
+  (* Select next playable unit or building *)
+  method private select_next =
+    (* List of units *)
+    let lu = cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = cdata#actual_player#get_buildings in
+    self#select_playable lu lb
+
+  (* Select previous playable unit or building *)
+  method private select_pred =
+    (* List of units *)
+    let lu = List.rev cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = List.rev cdata#actual_player#get_buildings in
+    self#select_playable lu lb
 
   initializer
     cdata#init_core m_map my_player m_players;
@@ -292,76 +350,10 @@ let new_game ?character () =
             camera#toggle_zoom
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
-            let rec list_after x = function
-              | [] -> []
-              | e :: r when x = e -> r
-              | e :: r -> list_after x r
-            in
-            let oku u = not u#has_played in
-            let okb b =
-              b#product <> []
-              && cdata#player_unit_at_position
-                  b#position
-                  cdata#actual_player
-                 = None
-            in
-            begin match last_selected with
-              | None ->
-                  begin
-                    try
-                      last_selected <- Some (`Unit (
-                        List.find
-                          oku
-                          cdata#actual_player#get_army
-                      ))
-                    with Not_found ->
-                      begin
-                        try
-                          last_selected <- Some (`Building (
-                            List.find
-                              okb
-                              cdata#actual_player#get_buildings
-                          ))
-                        with Not_found -> last_selected <- None
-                      end
-                  end
+            self#select_next
 
-              | Some (`Unit u) ->
-                  let nexts = list_after u cdata#actual_player#get_army in
-                  begin
-                    try
-                      last_selected <- Some (`Unit (
-                        List.find oku nexts
-                      ))
-                    with Not_found ->
-                      begin
-                        try
-                          last_selected <- Some (`Building (
-                            List.find
-                              okb
-                              cdata#actual_player#get_buildings
-                          ))
-                        with Not_found ->
-                          begin
-                            try
-                              last_selected <- Some (`Unit (
-                                List.find
-                                  oku
-                                  cdata#actual_player#get_army
-                              ))
-                            with Not_found -> last_selected <- None
-                          end
-                      end
-                  end
-
-              | Some (`Building b) -> ()
-
-            end;
-            begin match last_selected with
-            | None -> ()
-            | Some (`Unit u) -> cdata#camera#set_position u#position
-            | Some (`Building b) -> cdata#camera#set_position b#position
-            end
+        | KeyPressed { code = OcsfmlWindow.KeyCode.W ; _ } ->
+            self#select_pred
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(

@@ -23,7 +23,7 @@ sélectionné **game on!** pour lancer le jeu.
 * **M** : Zoome au minimum/Rétablit le zoom
 * **0** : Réinitialiser le zoom
 * **X** : Prochaine unité (ou bâtiment) n'ayant pas joué
-* **W** : Idem à l'envers (TODO)
+* **W** : Idem à l'envers
 
 
 # Compilation
