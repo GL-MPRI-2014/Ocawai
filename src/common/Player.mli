@@ -1,7 +1,4 @@
-(**Represent an item in the log file of the player.*)
-type log_item =
-  | Moved of Unit.t * Action.movement
-
+(** Represents a player *)
 
 (**Raise by the function use_resource*)
 exception Not_enough_ressource
@@ -50,9 +47,6 @@ object
   method add_building : Building.t -> unit
   (* TODO *)
   method set_unit_hp : Unit.id -> int -> unit
-
-  (** @return the list of entries [log_line, item]  taken by this player.*)
-  method get_log : (int * log_item) list
 
 
   (**Get a unit owned by the player using the unit id.

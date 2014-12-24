@@ -1,24 +1,12 @@
 open List
 open Path
 
-type log_item =
-  | Moved of Unit.t * Action.movement
-
 
 exception Not_enough_ressource
 
 
 class logicPlayer ?(id) () =
   object (self)
-
-    val mutable log : (int * log_item) list = []
-    val mutable log_c = 0
-
-    method private log action =
-      log <- (log_c, action) :: log ;
-      log_c <- log_c + 1
-
-    method get_log = log
 
     val mutable army = Hashtbl.create 97
     val mutable buildings = Hashtbl.create 23
@@ -31,7 +19,7 @@ class logicPlayer ?(id) () =
       | None -> 0
       | Some(id__) -> id__
 
-    method has_playable_unit = 
+    method has_playable_unit =
       List.fold_left (fun b u -> b || (not u#has_played)) false (self#get_army)
 
     method get_army =
@@ -84,7 +72,6 @@ class logicPlayer ?(id) () =
     method move_unit (id_unit : Unit.id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
       if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
-      self#log (Moved (u, p));
       u#move (final_position (get_path p));
       if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
 
