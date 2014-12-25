@@ -80,11 +80,26 @@ let new_game ?character () =
     let oku u = not u#has_played in
     (* Selectable building *)
     let okb b =
+      (* It can actually build things *)
       b#product <> []
+      (* There is nobody occupying it *)
       && cdata#player_unit_at_position
           b#position
           cdata#actual_player
          = None
+      (* The prices aren't too high *)
+      && (
+        let prices = List.map
+          (fun s ->
+            List.find
+              (fun u -> u#name = s)
+              Config.config#unbound_units_list
+            |> (fun u -> u#price)
+          )
+          b#product
+        in List.fold_left min (List.hd prices) (List.tl prices)
+           <= cdata#actual_player#get_value_resource
+      )
     in
     let find_u lu fail () =
       try last_selected <- Some ( `Unit (List.find oku lu) )
@@ -177,10 +192,6 @@ let new_game ?character () =
     new item "forfeit" "Forfeit" (fun () -> forfeit_popup#toggle;
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
-
-    (* new item "info" "Info" (fun () -> print_endline "info activated";
-      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
-    |> my_menu#add_child; *)
 
     new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
