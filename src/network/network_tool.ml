@@ -136,7 +136,7 @@ let open_connection ip port =
  * The other parameters are those of [read]
  * @return Option of read caractere number
  *)
-let read_timeout sock buffer flags buffer_size timeout =
+let read_timeout sock buffer buffer_size timeout =
   if timeout = 0. then
     None
   else 
@@ -145,7 +145,7 @@ let read_timeout sock buffer flags buffer_size timeout =
       if fd_read = [] then
 	None
       else 
-	Some (Unix.read sock buffer flags buffer_size)
+	Some (Unix.read sock buffer 0 buffer_size)
     end
 
 
@@ -155,7 +155,7 @@ let read_timeout sock buffer flags buffer_size timeout =
  * The other parameters are those of [write]
  * @return Option of write caractere number
  *)
-let write_timeout sock buffer flags buffer_size timeout =
+let write_timeout sock buffer buffer_size timeout =
   if timeout = 0. then
     None
   else
@@ -164,5 +164,5 @@ let write_timeout sock buffer flags buffer_size timeout =
       if fd_write = [] then
 	None
       else
-	Some (Unix.write sock buffer flags buffer_size)
+	Some (Unix.write sock buffer 0 buffer_size)
     end

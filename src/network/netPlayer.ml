@@ -49,10 +49,20 @@ match chars with
 	
 	let receipt  = Send_recv.recv sockfd 3.0 in 
 	Log.infof "#get_next_action received";
+	flush out_channel ;
 	match receipt with
-	| Some(2, str) -> Action.from_string str
-	| None -> [Position.create (0,0)], Action.Wait (* kill this player *)
-	| _ -> [Position.create (0,0)], Action.Wait (* Wait by default *)
+	| Some(2, str) -> 
+	  Log.infof "#next_action";
+	  flush out_channel;
+	  Action.from_string str
+	| None ->
+	  Log.infof "#None";
+	  flush out_channel;
+	  [Position.create (0,0)], Action.Wait (* kill this player *)
+	| _ ->
+	  Log.infof "#Error Fatal";
+	  flush out_channel;
+	  [Position.create (0,0)], Action.Wait (* Wait by default *)
       end
 
 	  

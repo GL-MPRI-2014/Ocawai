@@ -46,7 +46,7 @@ let rec send_string sock string break_time =
   let timeout = max (break_time -. Sys.time ()) 0. in
   let length = String.length string in
 
-  let size = Network_tool.write_timeout sock string 0 length timeout in
+  let size = Network_tool.write_timeout sock string length timeout in
 
   Log.infof "break_time %f systime %f" break_time (Sys.time ());
 
@@ -75,7 +75,7 @@ let send sock magic string timeout =
   let magic_char = char_of_int magic in
   let magic_string = String.make 1 magic_char in
   let length_string =  int2string (String.length string) 4 in
-Log.infof "%s" length_string;
+  Log.infof "length string send : '%s'" length_string;
   let data = String.concat "" [magic_string;length_string;string] in
   send_string sock data break_time
 
@@ -94,24 +94,44 @@ let recv_string sock length break_time =
 
   let rec recv_string' sock accum length break_time =
     let timeout = break_time -. Sys.time () in
-    let buffer = String.make length ' ' in
-    let size = Network_tool.read_timeout sock buffer 0 length timeout in
+    let buffer = String.create length in
     
-    match size with
-      | None -> None
-      | Some(n) when length = n -> 
-	begin
-	  let string = String.sub buffer 0 n in
-	  let rev = List.rev (string::accum) in
-	  let data = String.concat "" rev in
-	  Some(data)
-	end 
-      | Some(n) ->
-	begin
+    try
+      let size = Network_tool.read_timeout sock buffer length timeout in
+ 
+      match size with
+	| None ->
+	  begin
+	    Log.infof "recv_string : None\n";
+	    None
+	  end
+	| Some(0) -> 
+	  begin
+	    Log.infof "recv_string : 0\n";
+	    None
+	  end
+	| Some(n) when length = n -> 
+	  begin
+	    Log.infof "recv_string : %d = length\n" n;
+	    let string = String.sub buffer 0 n in
+	    Log.infof "recv_string : '%s'\n" string;
+	    Log.infof "recv_string : '%s'\n" buffer;
+	    let rev = List.rev (string::accum) in
+	    let data = String.concat "" rev in
+	    Log.infof "recv_string finish with : '%s'\n" data;
+	    Some(data)
+	  end 
+	| Some(n) ->
+	  begin
+	    Log.infof "recv_string : %d <> %d\n" n length;
 	  let string = String.sub buffer 0 n in
 	  recv_string' sock (string::accum) (length - n) break_time
-	end
-	  
+	  end
+	    
+    with
+      | Unix.Unix_error (_, _, _) ->
+        Printf.printf "Client disconnected !\n";
+	None
   in
 
   if length <= 0 then 
@@ -141,7 +161,10 @@ let (|>>) arg funct =
  * @return [None] if successful on receipt and [None] otherwise
  *)
 let combine_results sock break_time magic_string data =
+  Log.infof "magic : '%s'\n" magic_string;
+  Log.infof "magic lenght : %d\n" (String.length magic_string);
   let magic = int_of_string magic_string in
+  Log.infof "magic : %d\n" magic;
   Some (magic, data)
 
 
@@ -153,9 +176,9 @@ let combine_results sock break_time magic_string data =
  * @return [None] if successful on receipt and [None] otherwise
  *)
 let recv_data sock break_time magic_string length_string =
-Log.infof "%s" length_string;
+  Log.infof "length : '%s'\n" length_string;
   let length = string2int length_string 4 in
-Log.infof "%s" length_string;
+  Log.infof "length : %d\n" length;
   let data = recv_string sock length break_time in
   data |>> (combine_results sock break_time magic_string)
 
