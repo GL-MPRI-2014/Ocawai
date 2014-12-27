@@ -93,6 +93,30 @@ let pitch_to_string : pitch -> string = function
 
 (** {3 MIDI conversion} *)
 
+let of_string s =
+    if (String.length s < 2) then failwith "Couldn't parse this note.";
+    let note = String.sub s 0 (String.length s - 1) in
+    let oct = int_of_char s.[String.length s - 1] - int_of_char '0' in
+    let off = ref (match s.[0] with
+        | 'a' | 'A' -> 0
+        | 'b' | 'B' -> 2
+        | 'c' | 'C' -> 3
+        | 'd' | 'D' -> 5
+        | 'e' | 'E' -> 7
+        | 'f' | 'F' -> 8
+        | 'g' | 'G' -> 10
+        | _ -> raise Not_found)
+    in
+    if String.length s > 2 then begin
+      if s.[1] = 's' then incr off
+      else if s.[1] = 'f' then decr off;
+      if String.length s > 3 then begin
+        if s.[2] = 's' then incr off
+        else if s.[2] = 'f' then decr off;
+      end
+    end;
+    64 + 12 * (oct - 4) + !off
+
 let toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	     ?tempo:Time.Tempo.t -> event -> MIDI.buffer
   = fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -108,8 +132,9 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
      let midi_duration = MidiV.timeToMidiDuration ~samplerate ~division
 						  ~tempo ~duration
      in
+     Printf.printf "%s\n" (pitch_to_string (param#pitch));
      let buffer = MIDI.create(midi_duration)
-     and note = Audio.Note.of_string (pitch_to_string (param#pitch))
+     and note = of_string (pitch_to_string (param#pitch))
      (** TODO : Requires patching mm.Audio.Note to read sharp
                                  and flat notes *)
      and velocity = MidiV.velocityFromInt (param#velocity)
