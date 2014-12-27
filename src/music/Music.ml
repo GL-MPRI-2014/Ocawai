@@ -95,7 +95,6 @@ let pitch_to_string : pitch -> string = function
 
 let of_string s =
     if (String.length s < 2) then failwith "Couldn't parse this note.";
-    let note = String.sub s 0 (String.length s - 1) in
     let oct = int_of_char s.[String.length s - 1] - int_of_char '0' in
     let off = ref (match s.[0] with
         | 'a' | 'A' -> 0
