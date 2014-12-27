@@ -132,7 +132,6 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
      let midi_duration = MidiV.timeToMidiDuration ~samplerate ~division
 						  ~tempo ~duration
      in
-     Printf.printf "%s\n" (pitch_to_string (param#pitch));
      let buffer = MIDI.create(midi_duration)
      and note = of_string (pitch_to_string (param#pitch))
      (** TODO : Requires patching mm.Audio.Note to read sharp
