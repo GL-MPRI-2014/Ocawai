@@ -7,14 +7,11 @@ open Music
 open DList
 open TPTM
 
-let dummy_event =
-  note (Time.fromInt 1) (new Music.param (C, 4) 127)
-
 let dummy_event_plus (a, b) (pitch, velocity) =
   note (Time.fromPair (a, b)) (new Music.param pitch velocity)
 
-let dummy_simple_event (a, pitch) =
-  dummy_event_plus (a, 1) ((pitch, 4), 127)
+let dummy_simple_event (a, pitch, octave, vel) =
+  dummy_event_plus (a, 1) ((pitch, octave), vel)
 
 let dummy_delay : int -> TPTM.t = fun dur ->
   delay (Time.fromInt dur)
@@ -28,22 +25,59 @@ let sequence notes =
   in
   List.fold_left aggregate TPTM.zero notes
 
-let pierrot =
-  sequence [(1, C); (1, C); (1, C); (1, D); (2, E); (2, D);
-	    (1, C); (1, E); (1, D); (1, D); (4, C)]
+let random_note () =
+  match (Random.int 6) with
+    | 0 -> C | 1 -> Ds | 2 -> F | 3 -> Fs | 4 -> G | 5 -> As | 6 -> C
+    | _ -> failwith "Not a note"
 
-let pierrot_canon = fork pierrot ((dummy_delay 8) % pierrot)   
+let incr_note n = match n with
+  | A -> B | B -> C | C -> D | D -> E | E -> F | F -> G | G -> A
+  | _ -> failwith "Get lost this is just a test."
+
+let blues_bass note =
+  [(1, note, 3, 63) ; (2, note, 3, 0); (1, note, 3, 63) ;
+  (1, incr_note note, 3, 63) ; (2, note, 3, 0); (1, incr_note note, 3, 63)]
+
+let blues_ending note =
+  blues_bass note @ blues_bass note
+
+let blues_grid =
+  sequence
+    (blues_bass C @
+    blues_bass C @
+    blues_bass C @
+    blues_bass C @
+    blues_bass F @
+    blues_bass F @
+    blues_bass C @
+    blues_bass C @
+    blues_bass G @
+    blues_bass F @
+    blues_ending C)
+
+let min a b = if a < b then a else b
 
 let () =
-  print_string "Testing Time module\n";
-  print_int (Time.Tempo.tempoToMspq (Num.Int 1));
-  print_newline ();
+  Random.self_init ();
+  let l1 = ref [] and l2 = ref [] in
+  let i = ref 0 in
+  while !i < (12*4*2) do
+    let len = min (Random.int 2 + 1) (12*4*2 - (!i)) in
+    i := !i + len;
+    let mute = 64 + (Random.int 4) * (64 / 3) in
+    (*Printf.printf "%d\n%!" mute;*)
+    l1 := (len, random_note (), 3 + (Random.int 2), mute) :: (!l1)
+  done;
+  i := 0;
+  while !i < (12*4*2) do
+    let len = min (Random.int 2 + 1) (12*4*2 - (!i)) in
+    i := !i + len;
+    let mute = 64 + (Random.int 4) * (64 / 3) in
+    l2 := (len, random_note (), 3 + (Random.int 2), mute) :: (!l2)
+  done;
+  let s1 = sequence (!l1) in
+  let s2 = sequence (!l2) in
+  let s = fork (fork s1 s2) blues_grid in
+  (*let s = blues_grid in*)
+  TPTM.play ~tempo:(Num.Int 2) s
 
-  Format.fprintf Format.std_formatter "@[%a@]@." Time.fprintf (Time.min (Time.inverse bn) wn);
-  print_newline ();
-  
-  let print_TPTM t = TPTM.fprintf Format.std_formatter t; print_newline () in
-  
-  let myTPTM = normalize pierrot in
-  print_TPTM myTPTM;
-  TPTM.play pierrot_canon
