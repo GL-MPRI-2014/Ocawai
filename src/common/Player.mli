@@ -5,7 +5,13 @@ exception Not_enough_ressource
 
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
-class logicPlayer : ?id:Types.id_player -> ?army:(Unit.id, Unit.t) Hashtbl.t -> unit ->
+class logicPlayer : ?id:Types.id_player ->
+  ?army:(Unit.id, Unit.t) Hashtbl.t ->
+  ?buildings:(Building.id, Building.t) Hashtbl.t ->
+  ?resource:int ->
+  ?base:Building.t option ->
+  ?fog:Fog.t ->
+  unit ->
 object
 
   (** Get the units visible by the player due to the fog
