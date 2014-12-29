@@ -5,10 +5,10 @@ open Path
 exception Not_enough_ressource
 
 
-class logicPlayer ?(id) () =
+class logicPlayer ?id ?(army = Hashtbl.create 97) () =
   object (self)
 
-    val mutable army = Hashtbl.create 97
+    val mutable army = army
     val mutable buildings = Hashtbl.create 23
     val mutable resource = 0
     val mutable base : Building.t option = None
@@ -82,7 +82,7 @@ class logicPlayer ?(id) () =
 
     method get_value_resource = resource
 
-	method has_resource amount = if resource < amount then false else true
+    method has_resource amount = if resource < amount then false else true
 
     method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
@@ -93,6 +93,7 @@ class logicPlayer ?(id) () =
         fog <- Array.make_matrix size_x size_y 0;
         List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) self#get_army;
 
+    method copy = new logicPlayer ~id:(id_) ~army:(Hashtbl.copy army) ()
 
     initializer
       match id with

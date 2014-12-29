@@ -12,6 +12,22 @@ type selectable = [
   | `Building of Building.t
 ]
 
+(* Ugly (moreover here!) *)
+let rec copy t =
+  if Obj.is_int t then t else
+  let tag = Obj.tag t in
+  if tag = Obj.double_tag then t else
+  if tag = Obj.closure_tag then t else
+  if tag = Obj.string_tag then Obj.repr (String.copy (Obj.obj t)) else
+  if tag = 0 || tag = Obj.double_array_tag then begin
+  let size = Obj.size t in
+  let r = Obj.new_block tag size in
+  for i = 0 to pred size do
+  Obj.set_field r i (copy (Obj.field t i))
+  done;
+  r
+  end else failwith "copy"
+
 let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
@@ -131,7 +147,7 @@ let new_game ?character () =
     self#select_playable lu lb
 
   initializer
-    cdata#init_core m_map my_player m_players;
+    cdata#init_core m_map my_player (List.map (fun p -> p#copy) m_players);
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
 
