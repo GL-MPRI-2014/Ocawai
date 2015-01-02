@@ -71,6 +71,7 @@ val bind_extended : unbound_t -> Position.t -> int -> int -> int -> bool -> t
 (** Create an unbound unit from a parsed record *)
 val create_unbound_from_parsed_unit : Unit_t.t -> unbound_t
 
-(** Create a parsed record from an unbound unit *)
+(** Create a parsed record from an unbound unit.
+  @see Config.mli *)
 val create_parsed_unit_from_unbound : unbound_t -> Unit_t.t
 

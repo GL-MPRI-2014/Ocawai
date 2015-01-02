@@ -35,7 +35,11 @@ val bind : unbound_t -> Position.t -> int option -> t
 (** Bound a building to a position and maybe a player using if the building id is known*)
 val bind_extended : unbound_t -> Position.t -> int option -> building_id -> t
 
+(** Create a building from a parsed record*)
 val create_unbound_from_parsed_building : Building_t.t -> unbound_t
+
+(** Create a parsed record from a building
+    @see Config.mli *)
 val create_parsed_building_from_unbound : unbound_t -> Building_t.t
 
 
