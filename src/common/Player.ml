@@ -78,7 +78,7 @@ class logicPlayer ?(id) () =
 																  
     method get_building_by_id (id_building : Building.building_id) = Hashtbl.find buildings id_building
 
-    (*it is quite dirty*)
+
     method move_unit (id_unit : Unit.unit_id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
       if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
