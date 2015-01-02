@@ -29,10 +29,11 @@ val sign : t -> int
 
 (** {2 Comparison functions} *)
 
-(** [compare t1 t2] @return a negative int
-    if t1 is strictly less than t2,
-    zero if t1 equals t2,
-    a positive int if t1 is greater than t2
+(** Same specification as [Pervasives.compare]
+
+    @return |-1] if [t1] is strictly less than [t2],
+    [0] if [t1] equals [t2],
+    [+1] if [t1] is strictly greater than [t2]
 *)
 val compare : t -> t -> int
 
@@ -58,10 +59,10 @@ val fromInt : int -> t
 val fromPair : int * int -> t
 
 val bn : t (** brevis *)
-val wn : t (** whole note *)
-val hn : t (** half note *)
-val qn : t (** quarter note *)
-val en : t (** eighth note *)
+val wn : t (** whole note = une ronde*)
+val hn : t (** half note = une blanche *)
+val qn : t (** quarter note = une noire *)
+val en : t (** eighth note = une croche *)
 val sn : t (** sixteenth note *)
 val tn : t (** thirty-second note *)
 val sfn : t (** sixty-fourth note *)
@@ -105,7 +106,10 @@ module Tempo : sig
    accelerations / decelerations.
    *)
 
-  type t = Num.num
+  type t
+
+  (** Input integer tempo value *)
+  val fromInt : int -> t
 
   (** {2 Basic values} *)
 

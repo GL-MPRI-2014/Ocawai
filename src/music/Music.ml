@@ -36,6 +36,21 @@ end
 
 type event = param t
 
+(** 
+   Event comparison function, a bit arbitrary, used during
+   the DList normalisation process to build sets of events.
+ *)
+let compare : 'a t -> 'a t -> int = fun t1 t2 ->
+  match (t1, t2) with
+  | (Rest dur1, Rest dur2) -> Time.compare dur1 dur2
+  | (Rest _, Note _) -> -1
+  | (Note _, Rest _) -> +1
+  | (Note (dur1, param1), Note (dur2, param2)) ->
+     let comp_time = Time.compare dur1 dur2 in
+     if comp_time = 0 then
+       Pervasives.compare param1 param2
+     else comp_time
+
 let note : time -> 'a -> 'a t = fun dur a ->
   Note(dur, a)
   
@@ -44,6 +59,32 @@ let rest : time -> 'a t = fun dur -> Rest (dur)
 let duration : 'a t -> time = function
   | Note(dur, _) -> dur
   | Rest(dur) -> dur		 
+
+let pitchClass_of_string : string -> pitchClass = fun str ->
+  if String.length str > 3 then raise Not_found;
+  match str with
+    | "Cff" | "cff" -> Cff | "Cf" | "cf" -> Cf   | "C" | "c" -> C
+    | "Dff" | "dff" -> Dff | "Cs" | "cs" -> Cs   | "Df" | "df" -> Df 
+    | "Css" | "css" -> Css | "D" | "d" -> D     | "Eff" | "eff" -> Eff 
+    | "Ds" | "ds" -> Ds   | "Ef" | "ef" -> Ef   | "Fff" | "fff" -> Fff 
+    | "Dss" | "dss" -> Dss | "E" | "e" -> E     | "Ff" | "ff" -> Ff 
+    | "Es" | "es" -> Es   | "F" | "f" -> F     | "Gff" | "gff" -> Gff 
+    | "Ess" | "ess" -> Ess | "Fs" | "fs" -> Fs   | "Gf" | "gf" -> Gf 
+    | "Fss" | "fss" -> Fss | "G" | "g" -> G     | "Aff" | "aff" -> Aff 
+    | "Gs" | "gs" -> Gs   | "Af" | "af" -> Af   | "Gss" | "gss" -> Gss 
+    | "A" | "a" -> A     | "Bff" | "bff" -> Bff | "As" | "as" -> As 
+    | "Bf" | "bf" -> Bf   | "Ass" | "ass" -> Ass | "B" | "b" -> B
+    | "Bs" | "bs" -> Bs   | "Bss" | "bss" -> Bss
+    | _ -> raise Not_found
+
+let pitch_of_string : string -> pitch = fun str ->
+  let n = String.length str in
+  if n > 4 then raise Not_found;
+  try let pitchClass_str = String.sub str 0 (n-1)
+      and octave = int_of_string @@ String.sub str (n-1) 1 
+      in
+      (pitchClass_of_string @@ pitchClass_str, octave)
+  with _ -> raise Not_found  
 
 (** {2 Various utilities} *)
 
@@ -93,7 +134,7 @@ let pitch_to_string : pitch -> string = function
 
 (** {3 MIDI conversion} *)
 
-let of_string s =
+let frequency_of_string s =
     if (String.length s < 2) then failwith "Couldn't parse this note.";
     let oct = int_of_char s.[String.length s - 1] - int_of_char '0' in
     let off = ref (match s.[0] with
@@ -132,7 +173,7 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
 						  ~tempo ~duration
      in
      let buffer = MIDI.create(midi_duration)
-     and note = of_string (pitch_to_string (param#pitch))
+     and note = frequency_of_string (pitch_to_string (param#pitch))
      (** TODO : Requires patching mm.Audio.Note to read sharp
                                  and flat notes *)
      and velocity = MidiV.velocityFromInt (param#velocity)
