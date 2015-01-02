@@ -79,7 +79,35 @@ let get_functions env =
     )
   in
 
-  let scr_buildingsof = 
+  let scr_unit_count = 
+    `Fun(function
+      |`Player(p) -> `Fun(function
+        |`String(s) -> 
+            p#get_visible_army_for self
+            |> List.fold_left 
+              (fun v u -> v + (if u#name = s then 1 else 0)) 0
+            |> fun l -> `Int l
+        | _ -> assert false
+        )
+      |_ -> assert false
+    )
+  in
+
+  let scr_building_count : ScriptValues.value = 
+    `Fun(function
+      |`Player(p) -> `Fun(function
+        |`String(s) ->
+            p#get_buildings
+            |> List.fold_left 
+              (fun v u -> v + (if u#name = s then 1 else 0)) 0
+            |> fun l -> `Int l 
+        | _ -> assert false
+        )
+      |_ -> assert false
+    )
+  in
+
+  let scr_buildingsof : ScriptValues.value = 
     `Fun(function
       |`Player(p) ->
           p#get_buildings
@@ -102,3 +130,7 @@ let get_functions env =
     (`Fun_t(`Player_t, `List_t(`Soldier_t)))
   |> expose scr_buildingsof "buildings_of"
     (`Fun_t(`Player_t, `List_t(`Building_t)))
+  |> expose scr_building_count "building_count"
+    (`Fun_t(`Player_t, `Fun_t(`String_t, `Int_t)))
+  |> expose scr_unit_count "unit_count"
+    (`Fun_t(`Player_t, `Fun_t(`String_t, `Int_t)))

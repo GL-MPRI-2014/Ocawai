@@ -17,7 +17,7 @@ object
 
   (** Get the buildings visible by the player due to the fog
       @return buildings visible by the player*)
-  method get_visible_buildings_for : logicPlayer -> Unit.t list
+  method get_visible_buildings_for : logicPlayer -> Building.t list
 
   (**@return The fog for the player*)
   method get_fog : Fog.t
