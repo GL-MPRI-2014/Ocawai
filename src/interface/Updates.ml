@@ -23,6 +23,9 @@ class handler data camera = object(self)
   (* Blocks yet-to-move units *)
   val mutable frozen_units = []
 
+  (* Last staged update *)
+  val mutable last_update = None
+
   (* Tells if a position is foggy *)
   method private foggy p =
     let (i,j) = Position.topair p in
@@ -42,29 +45,70 @@ class handler data camera = object(self)
       | _ -> ()
     )
 
+  (* The purpose of this method is to do the update for real *)
+  method private ack_update : Types.update -> unit = function
+    | Game_over -> () (* TODO *)
+    | Your_turn -> () (* TODO *)
+    | Classement -> () (* WTF?! *)
+    | Set_army _ -> () (* TODO *)
+    | Set_building _ -> () (* TODO *)
+    | Add_unit _ -> () (* TODO *)
+    | Add_building _ -> () (* TODO *)
+    | Delete_unit _ -> () (* TODO *)
+    | Delete_building _ -> () (* TODO *)
+    | Move_unit (uid,path,pid) ->
+        let player = Logics.find_player pid data#players in
+        (player#get_unit_by_id uid)#move (List.hd @@ List.rev path)
+    | Set_unit_hp (uid,damage,pid) ->
+        let player = Logics.find_player pid data#players in
+        (player#get_unit_by_id uid)#take_damage damage
+    | Set_client_player _ -> () (* TODO *)
+    | Set_logic_player_list _ -> () (* TODO *)
+    | Map _ -> () (* TODO *)
+    | Building_changed _ -> () (* TODO *)
+
+  method private ack_staged =
+    begin
+      match last_update with
+      | Some u -> self#ack_update u
+      | None -> ()
+    end ;
+    last_update <- None
+
+  method private stage_ack u =
+    match last_update with
+    | None    -> last_update <- Some u
+    | Some u' -> self#ack_staged ; last_update <- Some u
+
   method private read_update =
     (* We reset since it will be a new animation either way *)
     frame_counter <- 0 ;
+    (* We ack the last update staged if necessary *)
+    self#ack_staged ;
     (* Reading oldest unread update *)
     begin match data#pop_update with
     | Some u ->
         begin match u with
-          | Move_unit (u,path,id_p) ->
+          | Move_unit (un,path,id_p) ->
               (* We only take it into account if there is a visible part *)
               if List.exists self#visible path then begin
                 let vpath = List.filter self#visible path in
                 camera#set_position (List.nth vpath (List.length vpath - 1)) ;
                 Sounds.play_sound "boots" ;
                 let player = Logics.find_player id_p data#players in
-                current_animation <- Moving_unit (player#get_unit_by_id u, path)
+                current_animation <-
+                  Moving_unit (player#get_unit_by_id un, path) ;
+                self#ack_update u
               end
-              else self#read_update
+              else (self#ack_update u ; self#read_update)
           | Game_over ->
               Sounds.play_sound "lose" ;
               (* TODO Animation *)
+              self#ack_update u ;
               (* There should'nt be any update but still... *)
               self#read_update
           | Set_unit_hp (uid,_,pid) ->
+              self#stage_ack u ;
               let player = Logics.find_player pid data#players in
               let u = player#get_unit_by_id uid in
               if self#visible u#position then begin
@@ -80,14 +124,18 @@ class handler data camera = object(self)
                 camera#set_position b#position ;
               (* TODO Play some sound here? *)
               data#toggle_neutral_building b ;
+              self#ack_update u ;
               (* TODO Add some animation? *)
               self#read_update
           | Your_turn ->
+              (* TODO Animation. One needed for the others turn. *)
               (* TODO Center the camera on the player (how?) *)
               (* camera#set_position (data#actual_player) *)
+              self#ack_update u ;
               self#read_update
           | _ ->
               (* TODO Stop ignoring them *)
+              self#ack_update u ;
               self#read_update
         end
     | None -> ()

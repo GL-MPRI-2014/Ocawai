@@ -318,7 +318,7 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    (* uphandle#update; *)
+    uphandle#update;
     (* Draw buildings *)
     List.iter
       (self#draw_building target data#camera "neutral")
@@ -353,7 +353,8 @@ let renderer = object(self)
         ~position:pos ~scale:(30./.50.,30./.50.) ()
     in
     let s_unit = data#visible_unit_at_position data#camera#cursor#position in
-    let chara = match s_unit with
+    (* TODO Fix player_of line (maybe by ID) *)
+    (* let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
         List.fold_left
@@ -365,7 +366,8 @@ let renderer = object(self)
             )
             "" data#players
     | None -> ""
-    in
+    in *)
+    let chara = "flatman" in
     let damage = Cursor.(
         match (data#camera#cursor#get_state,s_unit) with
         | (Action(u1,_,_), Some u2) ->
