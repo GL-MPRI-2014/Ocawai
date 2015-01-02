@@ -77,6 +77,9 @@ module Tempo = struct
 
   type t = Num.num
 
+  let fromInt : int -> t = fun new_tempo ->
+    Num.( // ) (Int new_tempo) (Int 120)
+
   (** {2 Basic values} *)
 
   (** The basic tempo ratio 1, defines a tempo of 120BPM *)

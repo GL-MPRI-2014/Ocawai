@@ -82,7 +82,7 @@ let fromList_sequence : Music.event list -> t =
 module MusicT =
   struct
     type t = event
-    let compare = Pervasives.compare
+    let compare = Music.compare
   end
     
 module MusicSet = Set.Make(MusicT)
@@ -138,7 +138,7 @@ let rec headTail_tuple : t -> headTail =
 
     | (Some start1, Some start2) ->
       let shifted_start2 = start2 /+/ dur1 in
-      match (let comp = compare start1 shifted_start2 in
+      match (let comp = Time.compare start1 shifted_start2 in
 	     (comp < 0, comp > 0)) with
       | (true, false) -> (* t1 starts first *)
         let headTuple1 = headTail_tuple t1 in
