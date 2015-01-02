@@ -5,6 +5,8 @@ type movement = Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
 
 type armor = Light | Normal | Heavy | Flying | Boat
 
+type unit_id = int
+				 
 class unbound_soldier (s : string) (m : movement) (v : int) (min_a : int)
   (a : int) (r : int) (sp : int) (ab : int) (ar : armor) (pl : int) (pn : int)
   (ph : int) (pf : int) (pb : int) (price : int) (l_m : int)=
@@ -65,9 +67,10 @@ object (self)
 end
 
 
-type id = int
 type t = soldier
+		   
 type unbound_t = unbound_soldier
+
 
 let bind uu pos p_id =
   new soldier uu pos p_id (-1)

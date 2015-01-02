@@ -4,7 +4,7 @@ type log_item =
 
 
 (**Raise by the function use_resource*)
-exception Not_enough_ressource
+exception Not_enough_resources
 
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
@@ -48,27 +48,26 @@ object
 
   (** Add a building to the player*)
   method add_building : Building.t -> unit
-  (* TODO *)
-  method set_unit_hp : Unit.id -> int -> unit
 
+										
   (** @return the list of entries [log_line, item]  taken by this player.*)
   method get_log : (int * log_item) list
 
 
   (**Get a unit owned by the player using the unit id.
    @return the unit corresponding to the id*)
-  method get_unit_by_id : Unit.id -> Unit.t
+  method get_unit_by_id : Unit.unit_id -> Unit.t
 
   (**Get a building owned by the player using the building id.
    @return the building corresponding to the id*)
-  method get_building_by_id : Building.id -> Building.t
+  method get_building_by_id : Building.building_id -> Building.t
 
   (**Delete a unit owned by the player using the id of the unit*)
-  method delete_unit : Unit.id -> unit
+  method delete_unit : Unit.unit_id -> unit
   (**Delete a building owned by the player using the id of the unit*)
-  method delete_building : Building.id -> unit
+  method delete_building : Building.building_id -> unit
   (**Move the unit referenced by its id. Action.movement is the path of this unit. *)
-  method move_unit : Unit.id -> Action.movement -> unit
+  method move_unit : Unit.unit_id -> Action.movement -> unit
 
   (** Get the amount of resource owned by the player*)
   method get_value_resource : int

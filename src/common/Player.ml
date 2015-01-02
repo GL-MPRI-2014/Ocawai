@@ -5,7 +5,7 @@ type log_item =
   | Moved of Unit.t * Action.movement
 
 
-exception Not_enough_ressource
+exception Not_enough_resources
 
 
 class logicPlayer ?(id) () =
@@ -68,27 +68,25 @@ class logicPlayer ?(id) () =
         Hashtbl.add buildings b#get_id b;
         if Array.length fog > 0 then Fog.add_unit_fog fog b#position b#vision_range
 
-    (* TODO *)
-    method set_unit_hp (u : Unit.id) (h : int) = ()
-
-    method delete_unit (id_unit : Unit.id) =
+    method delete_unit (id_unit : Unit.unit_id) =
       let u = (Hashtbl.find army id_unit) in
       if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
       Hashtbl.remove army id_unit
 
 
-    method get_unit_by_id (id_unit : Unit.id) = Hashtbl.find army id_unit
-    method get_building_by_id (id_building : Building.id) = Hashtbl.find buildings id_building
+    method get_unit_by_id (id_unit : Unit.unit_id) = Hashtbl.find army id_unit
+																  
+    method get_building_by_id (id_building : Building.building_id) = Hashtbl.find buildings id_building
 
     (*it is quite dirty*)
-    method move_unit (id_unit : Unit.id) (p : Action.movement) =
+    method move_unit (id_unit : Unit.unit_id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
       if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
       self#log (Moved (u, p));
       u#move (final_position (get_path p));
       if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
 
-    method delete_building (id_building : Building.id) =
+    method delete_building (id_building : Building.building_id) =
         let b = Hashtbl.find buildings id_building in
         if Array.length fog > 0 then Fog.delete_unit_fog fog b#position b#vision_range;
         Hashtbl.remove buildings id_building
@@ -97,7 +95,7 @@ class logicPlayer ?(id) () =
 
 	method has_resource amount = if resource < amount then false else true
 
-    method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
+    method use_resource amount = if resource < amount then raise Not_enough_resources else ( resource <- resource - amount)
 
     method harvest_buildings_income = List.iter (fun b -> resource <- max 0 (resource + b#income)) self#get_buildings
 

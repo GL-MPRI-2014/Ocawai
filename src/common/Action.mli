@@ -5,12 +5,14 @@
     the destination. *)
 type movement = Position.t list
 
+(** Action allowed for a player during it's turn*)
 type action = 
 | Attack_unit of (Unit.t * Unit.t)
 | Create_unit of (Building.t * Unit.unbound_t)
 | Wait
 | End_turn
 
+(** Type use to move a unit*)
 type t = movement * action
 
 
