@@ -354,7 +354,7 @@ let renderer = object(self)
     in
     let s_unit = data#visible_unit_at_position data#camera#cursor#position in
     (* TODO Fix player_of line (maybe by ID) *)
-    (* let chara = match s_unit with
+    let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
         List.fold_left
@@ -366,8 +366,8 @@ let renderer = object(self)
             )
             "" data#players
     | None -> ""
-    in *)
-    let chara = "flatman" in
+    in
+    (* let chara = "flatman" in *)
     let damage = Cursor.(
         match (data#camera#cursor#get_state,s_unit) with
         | (Action(u1,_,_), Some u2) ->
