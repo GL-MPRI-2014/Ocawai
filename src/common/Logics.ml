@@ -284,7 +284,7 @@ let damage_interval att def =
 
 
 let units_inrange pos range player pl =
-  let ennemy_list = List.filter (fun p -> p <> player) pl in
+  let ennemy_list = List.filter (fun p -> p#get_id <> player#get_id) pl in
   List.map (fun p ->
     List.filter (fun u ->
       Position.dist pos u#position <= snd range &&
