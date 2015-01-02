@@ -318,7 +318,7 @@ let renderer = object(self)
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    uphandle#update;
+    (* uphandle#update; *)
     (* Draw buildings *)
     List.iter
       (self#draw_building target data#camera "neutral")

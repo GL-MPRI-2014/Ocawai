@@ -14,8 +14,8 @@ class logicPlayer ?id
   () =
   object (self)
 
-    val mutable army = army
-    val mutable buildings = buildings
+    val army = army
+    val buildings = buildings
     val mutable resource = resource
     val mutable base : Building.t option = base
     val mutable fog = fog
@@ -100,9 +100,14 @@ class logicPlayer ?id
         List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) self#get_army;
 
     method copy =
+      let copy_hashtbl h =
+        let h' = Hashtbl.create 97 in
+        Hashtbl.iter (fun k v -> Hashtbl.add h' k (Oo.copy v)) h ;
+        h'
+      in
       new logicPlayer
         ~id:(id_)
-        ~army:(Hashtbl.copy army)
+        ~army:(copy_hashtbl army)
         ~buildings:(Hashtbl.copy buildings)
         ~resource:(resource)
         ~base:(base)
