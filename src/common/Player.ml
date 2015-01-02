@@ -43,6 +43,12 @@ class logicPlayer ?(id) () =
         else
             self#get_army
 
+    method get_visible_buildings_for (p:logicPlayer) =
+        if Array.length fog > 0 then
+            Fog.visible_buildings p#get_fog self#get_buildings
+        else
+            self#get_buildings
+
     method get_id = id_
 
     method get_fog = fog

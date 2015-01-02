@@ -79,6 +79,16 @@ let get_functions env =
     )
   in
 
+  let scr_buildingsof = 
+    `Fun(function
+      |`Player(p) ->
+          p#get_buildings
+          |> List.map (fun u -> `Building u)
+          |> fun l -> `List l
+      | _ -> assert false
+    )
+  in
+
   let intpair = `Pair_t(`Int_t, `Int_t) in
   (* New environment *)
   env 
@@ -90,3 +100,5 @@ let get_functions env =
     (`Fun_t (intpair, `Fun_t(intpair, `List_t(`Soldier_t))))
   |> expose scr_armyof "army_of"
     (`Fun_t(`Player_t, `List_t(`Soldier_t)))
+  |> expose scr_buildingsof "buildings_of"
+    (`Fun_t(`Player_t, `List_t(`Building_t)))
