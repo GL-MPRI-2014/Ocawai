@@ -105,13 +105,27 @@ class logicPlayer ?id
         Hashtbl.iter (fun k v -> Hashtbl.add h' k (Oo.copy v)) h ;
         h'
       in
+      let copy_matrix a =
+        if a = [||] then [||]
+        else begin
+          let n = Array.length a
+          and m = Array.length (a.(0)) in
+          let a' = Array.make_matrix n m (a.(0).(0)) in
+          for i = 0 to n - 1 do
+            for j = 0 to m - 1 do
+              a'.(i).(j) <- a.(i).(j)
+            done
+          done ;
+          a'
+        end
+      in
       new logicPlayer
         ~id:(id_)
         ~army:(copy_hashtbl army)
         ~buildings:(Hashtbl.copy buildings)
         ~resource:(resource)
         ~base:(base)
-        ~fog:(Array.copy fog)
+        ~fog:(copy_matrix fog)
         ()
 
     initializer

@@ -49,7 +49,7 @@ class handler data camera = object(self)
   method private ack_update : Types.update -> unit = function
     | Game_over -> () (* TODO *)
     | Your_turn -> () (* TODO *)
-    | Classement -> () (* WTF?! *)
+    | Classement -> () (* WTF?! TODO ? *)
     | Set_army _ -> () (* TODO *)
     | Set_building _ -> () (* TODO *)
     | Add_unit _ -> () (* TODO *)
