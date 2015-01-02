@@ -108,5 +108,5 @@ let () =
   Thread.delay 10. *)
   print_endline "Starting the big test !";
   let my_music_player = music_player () in
-  ignore@@ Thread.create my_music_player#play_next_measure (); 
+  ignore @@ Thread.create my_music_player#play_next_measure (); 
   my_music_player#read_note
