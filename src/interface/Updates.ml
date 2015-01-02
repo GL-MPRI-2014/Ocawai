@@ -50,12 +50,30 @@ class handler data camera = object(self)
     | Game_over -> () (* TODO *)
     | Your_turn -> () (* TODO *)
     | Classement -> () (* WTF?! TODO ? *)
-    | Set_army _ -> () (* TODO *)
-    | Set_building _ -> () (* TODO *)
-    | Add_unit _ -> () (* TODO *)
-    | Add_building _ -> () (* TODO *)
-    | Delete_unit _ -> () (* TODO *)
-    | Delete_building _ -> () (* TODO *)
+    | Set_army (army,pid) ->
+        (* TODO Check if we're not doing it for nothing *)
+        let player = Logics.find_player pid data#players in
+        List.map Oo.copy army
+        |> player#set_army
+    | Set_building (buildings,pid) ->
+        (* TODO Same here *)
+        let player = Logics.find_player pid data#players in
+        List.map Oo.copy buildings
+        |> player#set_buildings
+    | Add_unit (u,pid) ->
+        let player = Logics.find_player pid data#players in
+        Oo.copy u
+        |> player#add_unit
+    | Add_building (b,pid) ->
+        let player = Logics.find_player pid data#players in
+        Oo.copy b
+        |> player#add_building
+    | Delete_unit (uid,pid) ->
+        let player = Logics.find_player pid data#players in
+        player#delete_unit uid
+    | Delete_building (bid,pid) ->
+        let player = Logics.find_player pid data#players in
+        player#delete_building bid
     | Move_unit (uid,path,pid) ->
         let player = Logics.find_player pid data#players in
         (player#get_unit_by_id uid)#move (List.hd @@ List.rev path)
@@ -65,7 +83,31 @@ class handler data camera = object(self)
     | Set_client_player _ -> () (* TODO *)
     | Set_logic_player_list _ -> () (* TODO *)
     | Map _ -> () (* TODO *)
-    | Building_changed _ -> () (* TODO *)
+    | Building_changed b ->
+        let b = Oo.copy b in
+        let old_b =
+            Logics.building_of_id b#get_id data#players data#neutral_buildings
+        in
+        (* If it was or becomes a neutral -- normally always *)
+        if b#player_id = None || old_b#player_id = None then
+          data#toggle_neutral_building old_b ;
+        (* If it belonged to a player, we remove from its list *)
+        begin match old_b#player_id with
+        | Some pid ->
+            let player = Logics.find_player pid data#players in
+            (* TODO Debug! *)
+            (* player#delete_building old_b#get_id *)
+            ()
+        | None -> ()
+        end ;
+        (* We add it to the new player list if there is one *)
+        begin match b#player_id with
+        | Some pid ->
+            let player = Logics.find_player pid data#players in
+            player#add_building b
+        | None -> ()
+        end
+
 
   method private ack_staged =
     begin
@@ -123,7 +165,7 @@ class handler data camera = object(self)
               if self#visible b#position then
                 camera#set_position b#position ;
               (* TODO Play some sound here? *)
-              data#toggle_neutral_building b ;
+              (* data#toggle_neutral_building b ; *)
               self#ack_update u ;
               (* TODO Add some animation? *)
               self#read_update
