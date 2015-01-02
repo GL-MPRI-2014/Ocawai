@@ -84,7 +84,9 @@ class scripted_player ?(id) (scr : string)  =
 
   method update (u:Types.update) =
     match u with
-    |Types.Your_turn -> playable_buildings <- self#get_buildings
+    |Types.Your_turn -> 
+        Interpreter.init_script script;
+        playable_buildings <- self#get_buildings
     | _ -> ()
 
 
