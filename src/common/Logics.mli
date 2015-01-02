@@ -7,7 +7,7 @@ val unit_vision : Unit.t -> Battlefield.t -> Position.t list
 (** @return the list of all positions that a given player can see *)
 val player_vision : Player.logicPlayer -> Battlefield.t -> Position.t list
 
-(** [is_unit_on pos player_list] returns true iff there is an unit on 
+(** [is_unit_on pos player_list] returns true iff there is an unit on
     position [pos]*)
 val is_unit_on : Position.t -> Player.logicPlayer list -> bool
 
@@ -31,6 +31,15 @@ val try_next_action : Player.logicPlayer list -> Player.logicPlayer ->
     Raises Bad_unit if it could not be found. *)
 val find_unit : Position.t -> Player.logicPlayer -> Unit.t
 
+(** @param id the id of the buildin
+  * @param players the list of players
+  * @param neutrals the list of neutral buildings
+  * @return the building associated to the id [id] *)
+val building_of_id : Building.id ->
+                     Player.logicPlayer list ->
+                     Building.t list ->
+                     Building.t
+
 (** [find_player id player_list] returns the player with id [id] *)
 val find_player : int -> Player.logicPlayer list -> Player.logicPlayer
 
@@ -46,5 +55,5 @@ val capture_buildings : Player.logicPlayer list -> Player.logicPlayer ->
 val damage_interval : Unit.t -> Unit.t -> int * int
 
 (** Returns the list of the ennemy units in range *)
-val units_inrange : Position.t -> (int*int) -> Player.logicPlayer -> 
+val units_inrange : Position.t -> (int*int) -> Player.logicPlayer ->
   Player.logicPlayer list -> Unit.t list

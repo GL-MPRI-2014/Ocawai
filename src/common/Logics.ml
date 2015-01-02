@@ -157,7 +157,7 @@ let try_movement unit bf player player_list mvt =
       if mvt_pt - cost < 0 then raise Bad_path;
       let (b1,b2) = unit_of_position dst player player_list in
       if b1 then (* if there is a unit on this position *)
-	b2 (* check it's an ally *) 
+	b2 (* check it's an ally *)
 	&& (t <> []) (* but we can't finish on an ally *)
 	&& aux (mvt_pt - cost) (dst::t)
       else (
@@ -217,6 +217,22 @@ let apply_attack att def =
   let a = attack_coeff att def in
   let damage = att#attack def#armor a in
   def#take_damage damage
+
+(* Finds a building *)
+let building_of_id bid players neutrals =
+  (* Trying among neutral buildings *)
+  try List.find (fun b -> b#get_id = bid) neutrals
+  with Not_found ->
+  begin
+    let rec find = function
+    | [] -> failwith "building_of_id: not found"
+    | p :: r ->
+        begin
+          try List.find (fun b -> b#get_id = bid) p#get_buildings
+          with Not_found -> find r
+        end
+    in find players
+  end
 
 (* Finds player with given id *)
 let rec find_player id player_list = match player_list with

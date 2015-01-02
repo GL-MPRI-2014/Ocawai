@@ -1,37 +1,31 @@
 open List
 open Path
 
-type log_item =
-  | Moved of Unit.t * Action.movement
-
 
 exception Not_enough_ressource
 
 
-class logicPlayer ?(id) () =
+class logicPlayer ?id
+  ?(army = Hashtbl.create 97)
+  ?(buildings = Hashtbl.create 23)
+  ?(resource = 0)
+  ?(base = None)
+  ?(fog = [||])
+  () =
   object (self)
 
-    val mutable log : (int * log_item) list = []
-    val mutable log_c = 0
-
-    method private log action =
-      log <- (log_c, action) :: log ;
-      log_c <- log_c + 1
-
-    method get_log = log
-
-    val mutable army = Hashtbl.create 97
-    val mutable buildings = Hashtbl.create 23
-    val mutable resource = 0
-    val mutable base : Building.t option = None
-    val mutable fog = [||]
+    val army = army
+    val buildings = buildings
+    val mutable resource = resource
+    val mutable base : Building.t option = base
+    val mutable fog = fog
     (*Quite dirty mutable id. Can't we do without it ?*)
     val mutable id_ =
       match id with
       | None -> 0
       | Some(id__) -> id__
 
-    method has_playable_unit = 
+    method has_playable_unit =
       List.fold_left (fun b u -> b || (not u#has_played)) false (self#get_army)
 
     method get_army =
@@ -90,7 +84,6 @@ class logicPlayer ?(id) () =
     method move_unit (id_unit : Unit.id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
       if Array.length fog > 0 then Fog.delete_unit_fog fog u#position u#vision_range;
-      self#log (Moved (u, p));
       u#move (final_position (get_path p));
       if Array.length fog > 0 then Fog.add_unit_fog fog u#position u#vision_range
 
@@ -101,7 +94,7 @@ class logicPlayer ?(id) () =
 
     method get_value_resource = resource
 
-	method has_resource amount = if resource < amount then false else true
+    method has_resource amount = if resource < amount then false else true
 
     method use_resource amount = if resource < amount then raise Not_enough_ressource else ( resource <- resource - amount)
 
@@ -112,6 +105,34 @@ class logicPlayer ?(id) () =
         fog <- Array.make_matrix size_x size_y 0;
         List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) self#get_army;
 
+    method copy =
+      let copy_hashtbl h =
+        let h' = Hashtbl.create 97 in
+        Hashtbl.iter (fun k v -> Hashtbl.add h' k (Oo.copy v)) h ;
+        h'
+      in
+      let copy_matrix a =
+        if a = [||] then [||]
+        else begin
+          let n = Array.length a
+          and m = Array.length (a.(0)) in
+          let a' = Array.make_matrix n m (a.(0).(0)) in
+          for i = 0 to n - 1 do
+            for j = 0 to m - 1 do
+              a'.(i).(j) <- a.(i).(j)
+            done
+          done ;
+          a'
+        end
+      in
+      new logicPlayer
+        ~id:(id_)
+        ~army:(copy_hashtbl army)
+        ~buildings:(Hashtbl.copy buildings)
+        ~resource:(resource)
+        ~base:(base)
+        ~fog:(copy_matrix fog)
+        ()
 
     initializer
       match id with

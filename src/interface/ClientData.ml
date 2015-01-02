@@ -51,6 +51,8 @@ class client_data = object(self)
     try Some (Queue.top updates)
     with Queue.Empty -> None
 
+  method update_iter f = Queue.iter f updates
+
   method map = get_option map
 
   method camera = get_option camera
@@ -119,8 +121,8 @@ class client_data = object(self)
     |Some(_) when u' = None -> true
     | _ -> false
 
-  method player_of u =
-    let rec aux = function
+  method player_of (u:Unit.t) =
+    (* let rec aux = function
       |[] -> false
       |t::q -> t = u || aux q
     in
@@ -128,7 +130,11 @@ class client_data = object(self)
       |[] -> assert false
       |t::q -> if aux t#get_army then t else iter_player q
     in
-    iter_player players
+    iter_player players *)
+    let rec iter = function
+    | []     -> failwith "player not found"
+    | p :: r -> if p#get_id = u#player_id then p else iter r
+    in iter players
 
   method private listed_building_at_position pos blist =
     let rec aux = function

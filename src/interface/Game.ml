@@ -31,6 +31,8 @@ let new_game ?character () =
       (Position.create (1,1)))
   in
 
+  let m_uphandle = new Updates.handler m_cdata m_camera in
+
   (* Distributing characters *)
   let () =
     let constraints = match character with
@@ -51,6 +53,8 @@ let new_game ?character () =
   val camera = m_camera
 
   val cdata : ClientData.client_data = m_cdata
+
+  val uphandle = m_uphandle
 
   val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
@@ -142,7 +146,7 @@ let new_game ?character () =
     self#select_playable lu lb
 
   initializer
-    cdata#init_core m_map my_player m_players;
+    cdata#init_core m_map my_player (List.map (fun p -> p#copy) m_players);
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
 
@@ -443,7 +447,7 @@ let new_game ?character () =
                   atk_menu#toggle;
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
-              | Build b -> ())
+              | _ -> ())
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle
@@ -458,7 +462,7 @@ let new_game ?character () =
     cdata#minimap#compute cdata#map cdata#players;
 
     (* Rendering goes here *)
-    Render.renderer#render_game window cdata;
+    Render.renderer#render_game window cdata uphandle;
     Render.renderer#draw_gui window ui_manager;
 
     window#display

@@ -1,14 +1,17 @@
-(**Represent an item in the log file of the player.*)
-type log_item =
-  | Moved of Unit.t * Action.movement
-
+(** Represents a player *)
 
 (**Raise by the function use_resource*)
 exception Not_enough_ressource
 
 (**A logic player is an abstract player. It represents the vision for one player of its opponents.
 @param id a logic player can be created with a specific id.*)
-class logicPlayer : ?id:Types.id_player -> unit ->
+class logicPlayer : ?id:Types.id_player ->
+  ?army:(Unit.id, Unit.t) Hashtbl.t ->
+  ?buildings:(Building.id, Building.t) Hashtbl.t ->
+  ?resource:int ->
+  ?base:Building.t option ->
+  ?fog:Fog.t ->
+  unit ->
 object
 
   (** Get the units visible by the player due to the fog
@@ -55,9 +58,6 @@ object
   (* TODO *)
   method set_unit_hp : Unit.id -> int -> unit
 
-  (** @return the list of entries [log_line, item]  taken by this player.*)
-  method get_log : (int * log_item) list
-
 
   (**Get a unit owned by the player using the unit id.
    @return the unit corresponding to the id*)
@@ -87,7 +87,11 @@ object
   method harvest_buildings_income : unit
 
   method init : Battlefield.t -> logicPlayer list -> unit
+
+  method copy : logicPlayer
+
 end
+
 (**A player is a enhanced logic player. It has a get_next_action that ask for the next action of the player. And it knows the other players on the game.
 @param id a logic player can be created with a specific id.*)
 class virtual player : ?id:Types.id_player -> unit ->
