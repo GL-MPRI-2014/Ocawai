@@ -8,7 +8,7 @@ type id_player = int
 
 (** Type of the data sent from the engine to the player/client *)
 type update =
-    Game_over
+  | Game_over
   | Your_turn
   | Classement
   | Set_army of Unit.t list * id_player
@@ -21,6 +21,7 @@ type update =
   | Set_unit_hp of Unit.id * int * id_player
   | Building_changed of Building.t
   | Set_unit_played of Unit.id * id_player * bool
+  | Harvest_income
 (* for initialization only *)
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list

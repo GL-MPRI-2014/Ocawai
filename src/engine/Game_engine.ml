@@ -178,6 +178,7 @@ class game_engine () = object (self)
       )
       player#get_army;
     player#harvest_buildings_income;
+    player#update Types.Harvest_income ;
 
     (*update buildings at the end of a turn*)
     let changed_buildings = Logics.capture_buildings
