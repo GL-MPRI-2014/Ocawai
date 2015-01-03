@@ -375,6 +375,7 @@ let renderer = object(self)
         | _ -> None
       )
     in
+    let is_foggy = foggy data#camera#cursor#position in
     let (s_building, b_player) =
       data#building_at_position data#camera#cursor#position
     in
@@ -392,7 +393,16 @@ let renderer = object(self)
       Battlefield.get_tile data#map data#camera#cursor#position
     in
     data#case_info#draw
-      target drawer tile_drawer damage s_unit chara s_building b_chara s_tile;
+      target
+      drawer
+      tile_drawer
+      damage
+      is_foggy
+      s_unit
+      chara
+      s_building
+      b_chara
+      s_tile ;
     (* Display resources *)
     let resources = string_of_int data#actual_player#get_value_resource in
     let (w,h) = foi2D target#get_size in
