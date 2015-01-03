@@ -157,7 +157,7 @@ let try_movement unit bf player player_list mvt =
       if mvt_pt - cost < 0 then raise Bad_path;
       let (b1,b2) = unit_of_position dst player player_list in
       if b1 then (* if there is a unit on this position *)
-	b2 (* check it's an ally *) 
+	b2 (* check it's an ally *)
 	&& (t <> []) (* but we can't finish on an ally *)
 	&& aux (mvt_pt - cost) (dst::t)
       else (
@@ -167,6 +167,16 @@ let try_movement unit bf player player_list mvt =
   in
   if aux mvt_pt mvt then (mvt, true)
   else (subpath mvt (!last_viable_pos), false)
+
+let unit_of_id uid players =
+  let rec find = function
+    | [] -> failwith "unit_of_id: not found"
+    | p :: r ->
+        begin
+          try List.find (fun u -> u#get_id = uid) p#get_army
+          with Not_found -> find r
+        end
+  in find players
 
 let try_next_action player_list player bf order =
   let mvt = fst order and action = snd order in
@@ -188,6 +198,8 @@ let try_next_action player_list player bf order =
       | Wait -> (mvt, Wait)
       | Attack_unit (att, def) ->
         let dest = List.nth mvt (List.length mvt - 1) in
+        let att = unit_of_id att player_list in
+        let def = unit_of_id def player_list in
 	if att <> u then raise Bad_attack (*only the unit who moved can attack*)
 	else (
 	  let dist = Position.dist dest (def#position) in
@@ -218,6 +230,22 @@ let apply_attack att def =
   let damage = att#attack def#armor a in
   def#take_damage damage
 
+(* Finds a building *)
+let building_of_id bid players neutrals =
+  (* Trying among neutral buildings *)
+  try List.find (fun b -> b#get_id = bid) neutrals
+  with Not_found ->
+  begin
+    let rec find = function
+    | [] -> failwith "building_of_id: not found"
+    | p :: r ->
+        begin
+          try List.find (fun b -> b#get_id = bid) p#get_buildings
+          with Not_found -> find r
+        end
+    in find players
+  end
+
 (* Finds player with given id *)
 let rec find_player id player_list = match player_list with
   | [] -> failwith "find_player: not found"
@@ -230,6 +258,8 @@ let capture_buildings player_list player building_list =
   let unit_list = player#get_army in
   let p_id = player#get_id in
   let changed = ref [] in
+  let added = ref [] in
+  let removed = ref [] in
   let aux u =
     match u#movement_type with (* only ground units can capture buildings *)
     | Unit.Walk | Unit.Roll | Unit.Tread
@@ -243,6 +273,7 @@ let capture_buildings player_list player building_list =
 	    | None -> (* if neutral, change owner to player *)
 	      b#set_owner p_id;
 	      player#add_building b;
+        added := (b,p_id) :: !added ;
 	      changed := (b, None) :: (!changed)
 	    | Some id when id = p_id -> (* if already to player, do nothing *)
 	      ()
@@ -250,6 +281,7 @@ let capture_buildings player_list player building_list =
 	      b#set_neutral;
 	      let p = find_player id player_list in
 	      p#delete_building (b#get_id);
+        removed := (b#get_id,p_id) :: !removed ;
 	      changed := (b, Some p) :: (!changed)
 	  )
 	  else find_building t
@@ -259,7 +291,7 @@ let capture_buildings player_list player building_list =
     | _ -> ()
   in
   List.iter aux unit_list;
-  (!changed)
+  (!changed,!added,!removed)
 
 
 let damage_interval att def =
@@ -268,7 +300,7 @@ let damage_interval att def =
 
 
 let units_inrange pos range player pl =
-  let ennemy_list = List.filter (fun p -> p <> player) pl in
+  let ennemy_list = List.filter (fun p -> p#get_id <> player#get_id) pl in
   List.map (fun p ->
     List.filter (fun u ->
       Position.dist pos u#position <= snd range &&

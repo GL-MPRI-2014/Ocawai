@@ -29,28 +29,29 @@ end
 
 class soldier (uu : unbound_soldier) (p : Position.t) (p_id : int) (id0 : int) =
 object (self)
-  inherit unbound_soldier uu#name uu#movement_type 
-    uu#vision_range uu#min_attack_range uu#attack_range uu#move_range 
-    uu#spawn_number uu#attack_base uu#armor uu#percentage_light 
-    uu#percentage_normal uu#percentage_heavy uu#percentage_flying 
+  inherit unbound_soldier uu#name uu#movement_type
+    uu#vision_range uu#min_attack_range uu#attack_range uu#move_range
+    uu#spawn_number uu#attack_base uu#armor uu#percentage_light
+    uu#percentage_normal uu#percentage_heavy uu#percentage_flying
     uu#percentage_boat uu#price uu#life_max
   val mutable pos = p
   val mutable life = uu#life_max
   val mutable played = false
   val mutable id = id0
   method hp = life
+  method set_hp hp = life <- hp
   method get_id = id
   method player_id = p_id
   method position = pos
   method move newpos = pos<-newpos
-  method private attack_rand arm a r = 
+  method private attack_rand arm a r =
     match arm with
     | Light -> a*self#attack_base*self#percentage_light*r/1000000
     | Normal -> a*self#attack_base*self#percentage_normal*r/1000000
     | Heavy -> a*self#attack_base*self#percentage_heavy*r/1000000
     | Flying -> a*self#attack_base*self#percentage_flying*r/1000000
     | Boat -> a*self#attack_base*self#percentage_boat*r/1000000
-  method attack arm a = 
+  method attack arm a =
   (* fonction affine gérée par l'engine -> gérer les ripostes *)
     let _ = Random.self_init() in
     let r = 85 + Random.int 31 in
@@ -89,7 +90,7 @@ let create_unbound_from_parsed_unit u = new unbound_soldier (u.Unit_t.name)
 | `Amphibious_Roll -> Amphibious_Roll
 | `Amphibious_Tread -> Amphibious_Tread
 | `All -> All
-) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max) 
+) (u.Unit_t.vision_range) (u.Unit_t.attack_range_min) (u.Unit_t.attack_range_max)
 (u.Unit_t.move_range) (u.Unit_t.spawn_number) (u.Unit_t.attack_base)
 (match u.Unit_t.armor with
 | `Light -> Light
@@ -134,4 +135,3 @@ let create_parsed_unit_from_unbound (u :unbound_t) =
     price = u#price;
     life_max = u#life_max;
   }
-
