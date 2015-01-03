@@ -39,7 +39,7 @@ val bind_extended : unbound_t -> Position.t -> int option -> building_id -> t
 val create_unbound_from_parsed_building : Building_t.t -> unbound_t
 
 (** Create a parsed record from a building
-    @see Config.mli *)
+    @see 'Config.mli' useful for serialization *)
 val create_parsed_building_from_unbound : unbound_t -> Building_t.t
 
 
