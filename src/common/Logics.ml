@@ -258,6 +258,8 @@ let capture_buildings player_list player building_list =
   let unit_list = player#get_army in
   let p_id = player#get_id in
   let changed = ref [] in
+  let added = ref [] in
+  let removed = ref [] in
   let aux u =
     match u#movement_type with (* only ground units can capture buildings *)
     | Unit.Walk | Unit.Roll | Unit.Tread
@@ -271,6 +273,7 @@ let capture_buildings player_list player building_list =
 	    | None -> (* if neutral, change owner to player *)
 	      b#set_owner p_id;
 	      player#add_building b;
+        added := (b,p_id) :: !added ;
 	      changed := (b, None) :: (!changed)
 	    | Some id when id = p_id -> (* if already to player, do nothing *)
 	      ()
@@ -278,6 +281,7 @@ let capture_buildings player_list player building_list =
 	      b#set_neutral;
 	      let p = find_player id player_list in
 	      p#delete_building (b#get_id);
+        removed := (b#get_id,p_id) :: !removed ;
 	      changed := (b, Some p) :: (!changed)
 	  )
 	  else find_building t
@@ -287,7 +291,7 @@ let capture_buildings player_list player building_list =
     | _ -> ()
   in
   List.iter aux unit_list;
-  (!changed)
+  (!changed,!added,!removed)
 
 
 let damage_interval att def =

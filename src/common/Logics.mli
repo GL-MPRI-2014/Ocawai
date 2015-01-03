@@ -55,8 +55,12 @@ val find_player : int -> Player.logicPlayer list -> Player.logicPlayer
 val apply_attack : Unit.t -> Unit.t -> unit
 
 (** Computes owner changes for buildings at the start of a turn *)
-val capture_buildings : Player.logicPlayer list -> Player.logicPlayer ->
-  Building.t list -> (Building.t * (Player.logicPlayer option)) list
+val capture_buildings : Player.logicPlayer list ->
+                        Player.logicPlayer ->
+                        Building.t list ->
+                        ((Building.t  * (Player.logicPlayer option)) list
+                       * (Building.t  * int) list
+                       * (Building.id * int) list)
 
 (** @return the minimum and maximum damage for an attack *)
 val damage_interval : Unit.t -> Unit.t -> int * int

@@ -79,28 +79,7 @@ class handler data camera = object(self)
     | Map _ -> ()
     | Building_changed b ->
         let b = Oo.copy b in
-        let old_b =
-            Logics.building_of_id b#get_id data#players data#neutral_buildings
-        in
-        (* If it was or becomes a neutral -- normally always *)
-        (* if b#player_id = None || old_b#player_id = None then *)
-        data#toggle_neutral_building b ;
-        (* If it belonged to a player, we remove from its list *)
-        begin match old_b#player_id with
-        | Some pid ->
-            let player = Logics.find_player pid data#players in
-            (* TODO Debug! *)
-            (* player#delete_building old_b#get_id *)
-            ()
-        | None -> ()
-        end ;
-        (* We add it to the new player list if there is one *)
-        begin match b#player_id with
-        | Some pid ->
-            let player = Logics.find_player pid data#players in
-            player#add_building b
-        | None -> ()
-        end
+        data#toggle_neutral_building b
 
 
   method private ack_staged =

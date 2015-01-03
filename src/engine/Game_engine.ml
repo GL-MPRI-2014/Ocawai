@@ -229,7 +229,7 @@ class game_engine () = object (self)
     player#update Types.Harvest_income ;
 
     (*update buildings at the end of a turn*)
-    let changed_buildings = Logics.capture_buildings
+    let (changed_buildings,added,removed) = Logics.capture_buildings
       (self#get_players :> Player.logicPlayer list)
       (players.(self#actual_player) :> Player.logicPlayer)
       (get_opt field)#buildings
@@ -238,9 +238,12 @@ class game_engine () = object (self)
     (*send the list of changed buildings to the players*)
     Array.iter (fun p ->
       List.iter (fun b ->
-        p#update (Types.Building_changed (fst b)))
-        changed_buildings)
-      players;
+        p#update (Types.Building_changed (fst b))
+      ) changed_buildings
+    ) players;
+
+    List.iter (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid))) added ;
+    List.iter (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid))) removed ;
 
     let rec aux lst =
       match lst with
