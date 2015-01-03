@@ -3,31 +3,15 @@ open Player
 type action_state = Idle | Waiting | Received of Action.t
 
 
-class client_player ?(id) add_update =
-
+class client_player ?(id) add_update get_next_action =
 
   object (self)
 
-  inherit player ?id:id ()
-
-  val mutable event_state = Idle
+  inherit player ?id:id () as super
 
   val mutable logicPlayerList = []
 
-  method event_state = event_state
-
-  method set_state s = event_state <- s
-
-  method get_next_action =
-    event_state <- Waiting;
-    let rec get_aux () =
-      Thread.delay 0.25;
-      match event_state with
-      |Received(a) ->
-          event_state <- Idle; a
-      | _ -> get_aux ()
-    in get_aux ()
-
+  method get_next_action = get_next_action ()
 
   method update (u:Types.update) = add_update u
 
