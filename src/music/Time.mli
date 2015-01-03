@@ -10,6 +10,8 @@
 
 type t
 
+exception Unsupported_MIDI_division
+
 (** {2 Group operators} *)
 
 (** Neutral value *)
@@ -91,6 +93,8 @@ val toInt : t -> int
    @param division the MIDI division, given in ticks per quarter
    
    @return the number of MIDI ticks corresponding to the duration d
+   Raises [!Unsupported_MIDI_division] if called with a [MIDI.division]
+   type other than [MIDI.Ticks_per_quarter].
  *)
 val toMidiTicks : division:MIDI.division -> t -> int
 
@@ -108,20 +112,21 @@ module Tempo : sig
 
   type t
 
-  (** Input integer tempo value *)
+  (** Input integer tempo value
+      @return the [int] Beats Per Minute tempo *)
   val fromInt : int -> t
 
   (** {2 Basic values} *)
 
-  (** The basic tempo value, corresponds to 120BPM *)
+  (** The default tempo value, 120 BPM *)
   val base : t
 
   (** {2 Tempo conversions} *)
 
   (**
-   @return the conversion to milliseconds per quarter of the inupt [tempo] ratio
+   @return the conversion to microseconds per quarter of the input [tempo] ratio
    *)
-  val tempoToMspq : t -> int
+  val toMicrosecondsPerQuarters : t -> int
 end
 
 (** {2 Testing functions} *)
