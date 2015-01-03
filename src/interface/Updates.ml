@@ -72,9 +72,9 @@ class handler data camera = object(self)
         (player#get_unit_by_id uid)#set_played b
     | Harvest_income ->
         (data#actual_player :> Player.logicPlayer)#harvest_buildings_income
-    | Set_client_player _ -> () (* TODO *)
-    | Set_logic_player_list _ -> () (* TODO *)
-    | Map _ -> () (* TODO *)
+    | Set_client_player _ -> ()
+    | Set_logic_player_list _ -> ()
+    | Map _ -> ()
     | Building_changed b ->
         let b = Oo.copy b in
         let old_b =

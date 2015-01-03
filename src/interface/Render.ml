@@ -352,8 +352,13 @@ let renderer = object(self)
       self#draw_direct_tile target set s
         ~position:pos ~scale:(30./.50.,30./.50.) ()
     in
-    let s_unit = data#visible_unit_at_position data#camera#cursor#position in
-    (* TODO Fix player_of line (maybe by ID) *)
+    let is_foggy = foggy data#camera#cursor#position in
+    (* It seems we cannot trust the following function *)
+    (* let s_unit = data#visible_unit_at_position data#camera#cursor#position in *)
+    let s_unit =
+      if is_foggy then None
+      else data#unit_at_position data#camera#cursor#position
+    in
     let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
@@ -375,7 +380,6 @@ let renderer = object(self)
         | _ -> None
       )
     in
-    let is_foggy = foggy data#camera#cursor#position in
     let (s_building, b_player) =
       data#building_at_position data#camera#cursor#position
     in
