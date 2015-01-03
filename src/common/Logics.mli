@@ -31,7 +31,14 @@ val try_next_action : Player.logicPlayer list -> Player.logicPlayer ->
     Raises Bad_unit if it could not be found. *)
 val find_unit : Position.t -> Player.logicPlayer -> Unit.t
 
-(** @param id the id of the buildin
+(** @param id the id of the unit
+  * @param players the list of players
+  * @return the unit corresponding to [id] *)
+val unit_of_id : Unit.id ->
+                 Player.logicPlayer list ->
+                 Unit.t
+
+(** @param id the id of the building
   * @param players the list of players
   * @param neutrals the list of neutral buildings
   * @return the building associated to the id [id] *)

@@ -168,6 +168,16 @@ let try_movement unit bf player player_list mvt =
   if aux mvt_pt mvt then (mvt, true)
   else (subpath mvt (!last_viable_pos), false)
 
+let unit_of_id uid players =
+  let rec find = function
+    | [] -> failwith "unit_of_id: not found"
+    | p :: r ->
+        begin
+          try List.find (fun u -> u#get_id = uid) p#get_army
+          with Not_found -> find r
+        end
+  in find players
+
 let try_next_action player_list player bf order =
   let mvt = fst order and action = snd order in
   match action with
@@ -188,6 +198,8 @@ let try_next_action player_list player bf order =
       | Wait -> (mvt, Wait)
       | Attack_unit (att, def) ->
         let dest = List.nth mvt (List.length mvt - 1) in
+        let att = unit_of_id att player_list in
+        let def = unit_of_id def player_list in
 	if att <> u then raise Bad_attack (*only the unit who moved can attack*)
 	else (
 	  let dist = Position.dist dest (def#position) in

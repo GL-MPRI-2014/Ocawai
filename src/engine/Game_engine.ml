@@ -154,6 +154,12 @@ class game_engine () = object (self)
       | (move, Wait) -> self#apply_movement move
       | (move, Attack_unit (u1,u2)) ->
           self#apply_movement move;
+          let u1 =
+            Logics.unit_of_id u1 (self#get_players :> Player.logicPlayer list)
+          in
+          let u2 =
+            Logics.unit_of_id u2 (self#get_players :> Player.logicPlayer list)
+          in
           Logics.apply_attack u1 u2;
           let player_u2 = self#player_of_unit u2 in
           if u2#hp <= 0 then
@@ -171,8 +177,14 @@ class game_engine () = object (self)
                 x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id)))
               )
               players
-      | (_, Create_unit (b,uu)) ->
-        if List.exists (fun bb -> b#get_id = bb#get_id) player#get_buildings
+      | (_, Create_unit (bid,uu)) ->
+        let b =
+          Logics.building_of_id
+            bid
+            (self#get_players :> Player.logicPlayer list)
+            self#get_neutral_buildings
+        in
+        if List.exists (fun bb -> bid = bb#get_id) player#get_buildings
         && not (Logics.is_unit_on
                   b#position
                   (self#get_players :> Player.logicPlayer list))

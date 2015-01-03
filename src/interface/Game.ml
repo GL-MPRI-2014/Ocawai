@@ -255,7 +255,8 @@ let new_game ?character () =
         |None -> assert false
       in
       set_client_state (ClientPlayer.Received
-        (cdata#current_move, Action.Attack_unit (atking_unit, atked_unit)));
+        (cdata#current_move,
+         Action.Attack_unit (atking_unit#get_id, atked_unit#get_id)));
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
@@ -439,7 +440,7 @@ let new_game ?character () =
                                   ui_manager#unfocus build_menu;
                                   set_client_state (
                                     ClientPlayer.Received ([],
-                                      Action.Create_unit (b,u)
+                                      Action.Create_unit (b#get_id,u)
                                     )
                                   ) ;
                                   cursor#set_state Cursor.Idle
