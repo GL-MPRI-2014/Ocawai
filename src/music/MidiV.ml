@@ -56,4 +56,14 @@ let timeToMidiDuration : ?samplerate:int -> ?division:MIDI.division ->
   fun ?samplerate:(sr = samplerate) ?division:(div = division)
       ?tempo:(tempo = Time.Tempo.base) ~duration ->
   let tempo_mspq = Time.Tempo.tempoToMspq tempo in
-  samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration)
+  let time_times_four time =
+    let rec mult = function
+      | 0 -> Time.zero
+      | k -> Time.plus time @@ mult @@ k-1
+    in mult 4
+  in 
+  (** The duration are implemented in a whole-note based reference scale.
+      Since the tempo is in quarters per minutes, we convert our duration
+      to quarters. *) 
+  let duration_quarters = time_times_four duration in 
+  samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration_quarters)

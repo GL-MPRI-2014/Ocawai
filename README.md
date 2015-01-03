@@ -42,6 +42,12 @@ Si c'est la première fois que vous générer le projet, lancer la commande `acl
 
 Si vous faites une modification dans le Makefile.in (et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile` pour le mettre à jour.
 
+# Backtrace
+
+Lors qu'une exception est levée, il est possible d'afficher la trace d'éxécution
+si on a au préalable lancé `export OCAMLRUNPARAM=b` (ce qui peut être mis
+dans son `.bashrc` ou `.bash_profile`).
+
 # Distribuer le projet
 
 * `make dist` : Créer une archive **tar.gz** du projet

@@ -1,0 +1,3 @@
+Compile the tests with :
+
+ocamlbuild -tag thread -pkgs str,num,pulseaudio,mm,dolog,oUnit Test.ml ./Test.native

@@ -349,15 +349,39 @@ let scr_endturn =
     | _ -> assert false
   )
 
+(** Associative maps *)
+(* it is a pair : a setter and a getter *)
+let scr_assoc_create =
+  let setter l =
+    `Fun(fun key ->
+    `Fun(fun value ->
+      l := List.remove_assoc key !l;
+      l := (key, value) :: !l;
+      `Unit
+    )) in
+  let getter l default =
+    `Fun(fun key ->
+      try
+        List.assoc key !l
+      with
+        Not_found -> default
+    ) in
+  `Fun(fun default ->
+    let l = ref [] in
+    `Pair(setter l, getter l default)
+  )
+
 let intpair = `Pair_t (`Int_t, `Int_t)
 
 let init () =
+  let a0 = `Alpha_t 0 in
+  let a1 = `Alpha_t 1 in
   (* Functions on base types *)
   expose scr_or  (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_or" ;
   expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
   expose scr_gt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_gt" ;
   expose scr_lt  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_lt" ;
-  expose scr_eq  (`Fun_t(`Alpha_t(0) , `Fun_t(`Alpha_t(0) , `Bool_t))) "_eq" ;
+  expose scr_eq  (`Fun_t(a0 , `Fun_t(a0 , `Bool_t))) "_eq" ;
   expose scr_ge  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_ge" ;
   expose scr_le  (`Fun_t(`Int_t , `Fun_t(`Int_t , `Bool_t))) "_le" ;
   expose scr_mul (`Fun_t(`Int_t , `Fun_t(`Int_t , `Int_t ))) "_mul";
@@ -368,32 +392,32 @@ let init () =
   expose scr_not (`Fun_t(`Bool_t, `Bool_t)) "_not";
   expose scr_printf (`Fun_t(`String_t, `Unit_t)) "print_string";
   expose scr_printi (`Fun_t(`Int_t   , `Unit_t)) "print_int";
-  expose scr_listhd (`Fun_t(`List_t (`Alpha_t(0)), `Alpha_t(0))) "list_hd";
-  expose scr_listtl (`Fun_t(`List_t (`Alpha_t(0)), `List_t(`Alpha_t(0)))) "list_tl";
-  expose scr_listmem(`Fun_t(`List_t (`Alpha_t(0)), `Fun_t(`Alpha_t(0), `Bool_t))) "list_mem";
-  expose scr_listnth(`Fun_t(`List_t (`Alpha_t(0)), `Fun_t(`Int_t, `Alpha_t(0)))) "list_nth";
-  expose scr_fst    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(0))) "fst";
-  expose scr_snd    (`Fun_t(`Pair_t (`Alpha_t(0), `Alpha_t(1)), `Alpha_t(1))) "snd";
+  expose scr_listhd (`Fun_t(`List_t (a0), a0)) "list_hd";
+  expose scr_listtl (`Fun_t(`List_t (a0), `List_t(a0))) "list_tl";
+  expose scr_listmem(`Fun_t(`List_t (a0), `Fun_t(a0, `Bool_t))) "list_mem";
+  expose scr_listnth(`Fun_t(`List_t (a0), `Fun_t(`Int_t, a0))) "list_nth";
+  expose scr_fst    (`Fun_t(`Pair_t (a0, a1), a0)) "fst";
+  expose scr_snd    (`Fun_t(`Pair_t (a0, a1), a1)) "snd";
   expose scr_add2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "add2D";
   expose scr_sub2   (`Fun_t(intpair, `Fun_t(intpair, intpair))) "sub2D";
   expose scr_dist2  (`Fun_t(intpair, `Fun_t(intpair, `Int_t))) "dist2D";
   expose scr_prop2  (`Fun_t(`Int_t, `Fun_t(intpair, intpair))) "prop2D";
-  expose scr_listempty (`Fun_t(`List_t (`Alpha_t(0)), `Bool_t)) "list_empty";
-  expose scr_listlength(`Fun_t(`List_t (`Alpha_t(0)), `Int_t)) "list_length";
-  expose scr_listmap (`Fun_t(`Fun_t(`Alpha_t(0), `Alpha_t(1)),
-    `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(1))))) "list_map";
-  expose scr_listiter (`Fun_t(`Fun_t(`Alpha_t(0), `Unit_t),
-    `Fun_t(`List_t(`Alpha_t(0)), `Unit_t))) "list_iter";
-  expose scr_listfilter (`Fun_t(`Fun_t(`Alpha_t(0), `Bool_t),
-    `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0))))) "list_filter";
+  expose scr_listempty (`Fun_t(`List_t (a0), `Bool_t)) "list_empty";
+  expose scr_listlength(`Fun_t(`List_t (a0), `Int_t)) "list_length";
+  expose scr_listmap (`Fun_t(`Fun_t(a0, a1),
+    `Fun_t(`List_t(a0), `List_t(a1)))) "list_map";
+  expose scr_listiter (`Fun_t(`Fun_t(a0, `Unit_t),
+    `Fun_t(`List_t(a0), `Unit_t))) "list_iter";
+  expose scr_listfilter (`Fun_t(`Fun_t(a0, `Bool_t),
+    `Fun_t(`List_t(a0), `List_t(a0)))) "list_filter";
   expose scr_listappend
-    (`Fun_t(`Alpha_t(0), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
+    (`Fun_t(a0, `Fun_t(`List_t(a0), `List_t(a0))))
     "list_append";
   expose scr_listconcat
-    (`Fun_t(`List_t(`Alpha_t(0)), `Fun_t(`List_t(`Alpha_t(0)), `List_t(`Alpha_t(0)))))
+    (`Fun_t(`List_t(a0), `Fun_t(`List_t(a0), `List_t(a0))))
     "list_concat";
   expose scr_listflatten
-    (`Fun_t(`List_t(`List_t(`Alpha_t(0))), `List_t(`Alpha_t(0))))
+    (`Fun_t(`List_t(`List_t(a0)), `List_t(a0)))
     "list_flatten";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
@@ -401,5 +425,14 @@ let init () =
   expose scr_expected_damage (`Fun_t(`Soldier_t , `Fun_t(`Soldier_t , `Int_t ))) "expected_damage";
   expose scr_unitpos (`Fun_t(`Soldier_t, intpair)) "unit_position";
   expose scr_rand (`Fun_t(`Int_t, `Int_t)) "rand";
-  expose scr_endturn (`Fun_t(`Unit_t, `Alpha_t(0))) "end_turn";
-  expose scr_donothing (`Fun_t(`Unit_t, `Alpha_t(0))) "do_nothing";
+  expose scr_endturn (`Fun_t(`Unit_t, a0)) "end_turn";
+  expose scr_donothing (`Fun_t(`Unit_t, a0)) "do_nothing";
+  (* Functions on associative lists *)
+  let setter_t = `Fun_t(a0, `Fun_t(a1, `Unit_t)) in
+  let getter_t = `Fun_t(a0, a1) in
+  let assoc_t a b = `Pair_t(setter_t, getter_t) in
+  expose scr_assoc_create (`Fun_t(a1, assoc_t a0 a1)) "assoc_create";
+  expose scr_fst (`Fun_t(assoc_t a0 a1, setter_t)) "assoc_set";
+  expose scr_snd (`Fun_t(assoc_t a0 a1, getter_t)) "assoc_get";
+
+
