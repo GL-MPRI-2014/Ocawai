@@ -25,7 +25,7 @@ class entrypoints = object(self)
 
   method add_main t = main <- Some(t)
 
-  method add_init t = main <- Some(t)
+  method add_init t = init <- Some(t)
 
   method add_move (sl, t) =
     List.iter (fun s -> Hashtbl.add moves s t) sl
