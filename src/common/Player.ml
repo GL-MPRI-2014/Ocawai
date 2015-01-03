@@ -75,7 +75,7 @@ class logicPlayer ?(id) () =
         if Array.length fog > 0 then Fog.add_unit_fog fog b#position b#vision_range
 																		 
 	(* TODO *)
-    method set_unit_hp (u : Unit.id) (h : int) = ()
+    method set_unit_hp (u : Unit.unit_id) (h : int) = ()
 												   
     method delete_unit (id_unit : Unit.unit_id) =
       let u = (Hashtbl.find army id_unit) in

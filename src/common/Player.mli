@@ -54,7 +54,7 @@ object
   method add_building : Building.t -> unit
 
   (* TODO *)
-  method set_unit_hp : Unit.id -> int -> unit
+  method set_unit_hp : Unit.unit_id -> int -> unit
 										   										
   (** @return the list of entries [log_line, item]  taken by this player.*)
   method get_log : (int * log_item) list
