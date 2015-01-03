@@ -387,7 +387,7 @@ let new_game ?character () =
                     (* We only check out buildings where there are no unit *)
                     begin match cdata#building_at_position cursor#position with
                       | (Some b, Some p) when
-                        p = (cdata#actual_player :> logicPlayer) ->
+                        p#get_id = (cdata#actual_player :> logicPlayer)#get_id ->
                           if b#product <> [] then begin
                             (* Compute the list of producibles into a menu *)
                             build_menu#clear_children;
