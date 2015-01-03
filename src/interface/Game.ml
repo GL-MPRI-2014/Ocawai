@@ -371,8 +371,9 @@ let new_game ?character () =
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> begin
-                match cdata#player_unit_at_position cursor#position
-                      cdata#actual_player with
+                match cdata#player_unit_at_position
+                        cursor#position
+                        cdata#actual_player with
                 | Some u when (not u#has_played) ->
                     cursor#set_state (Displace (cdata#map, u,
                       Logics.accessible_positions u
@@ -431,7 +432,8 @@ let new_game ?character () =
                         (cdata#camera#project cursor#position);
                       ui_manager#focus disp_menu;
                       disp_menu#toggle
-                  |Some (u') when u = u' && List.mem cursor#position acc ->
+                  |Some (u')
+                    when u#get_id = u'#get_id && List.mem cursor#position acc ->
                       disp_menu#set_position
                         (cdata#camera#project cursor#position);
                       ui_manager#focus disp_menu;
