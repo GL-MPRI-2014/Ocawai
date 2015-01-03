@@ -63,7 +63,7 @@ class handler data camera = object(self)
         player#delete_building bid
     | Move_unit (uid,path,pid) ->
         let player = Logics.find_player pid data#players in
-        (player#get_unit_by_id uid)#move (List.hd @@ List.rev path)
+        player#move_unit uid path
     | Set_unit_hp (uid,damage,pid) ->
         let player = Logics.find_player pid data#players in
         (player#get_unit_by_id uid)#take_damage damage
@@ -77,7 +77,7 @@ class handler data camera = object(self)
         in
         (* If it was or becomes a neutral -- normally always *)
         (* if b#player_id = None || old_b#player_id = None then *)
-          data#toggle_neutral_building b ;
+        data#toggle_neutral_building b ;
         (* If it belonged to a player, we remove from its list *)
         begin match old_b#player_id with
         | Some pid ->
