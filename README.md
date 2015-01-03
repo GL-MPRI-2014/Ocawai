@@ -22,6 +22,8 @@ sélectionné **game on!** pour lancer le jeu.
 * **Z** : Zoomer
 * **M** : Zoome au minimum/Rétablit le zoom
 * **0** : Réinitialiser le zoom
+* **X** : Prochaine unité (ou bâtiment) n'ayant pas joué
+* **W** : Idem à l'envers
 
 
 # Compilation
@@ -39,6 +41,12 @@ Si c'est la première fois que vous générer le projet, lancer la commande `acl
 * `make run` : Compile le jeu et le lance
 
 Si vous faites une modification dans le Makefile.in (et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile` pour le mettre à jour.
+
+# Backtrace
+
+Lors qu'une exception est levée, il est possible d'afficher la trace d'éxécution
+si on a au préalable lancé `export OCAMLRUNPARAM=b` (ce qui peut être mis
+dans son `.bashrc` ou `.bash_profile`).
 
 # Distribuer le projet
 

@@ -47,6 +47,5 @@ type t_list = t list
 
 type t_valid_list = { list : t_list}
   <ocaml validator="Utils.check_validity (
-    (* contains at least a general *)
-    fun lr -> List.exists (fun t -> t.name = \"general\") lr.list
+    fun _ -> true
   )">

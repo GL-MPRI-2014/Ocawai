@@ -31,7 +31,7 @@ val sign : t -> int
 
 (** Same specification as [Pervasives.compare]
 
-    @return |-1] if [t1] is strictly less than [t2],
+    @return [-1] if [t1] is strictly less than [t2],
     [0] if [t1] equals [t2],
     [+1] if [t1] is strictly greater than [t2]
 *)

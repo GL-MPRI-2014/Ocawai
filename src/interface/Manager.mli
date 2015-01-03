@@ -1,5 +1,6 @@
 (** The State Manager *)
 
+(** The manager in itself *)
 val manager : <
 
   (** Pushes a state on the stack to become the current *)

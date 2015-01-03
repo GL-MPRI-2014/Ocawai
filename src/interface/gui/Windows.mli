@@ -1,3 +1,5 @@
+(** Defining dialog windows *)
+
 (** Creates a simple item without icon and a colored frame *)
 class text_framed_item : (int * int) -> (int * int) -> string ->
   (unit -> unit) -> Theme.t -> object
@@ -16,9 +18,9 @@ end
 
 
 (** Creates an ingame popup window *)
-class ingame_popup : m_position:(int * int) -> m_size:(int * int) -> 
-  m_theme:Theme.t -> m_text:string -> m_bar_height:int -> 
-  m_bar_icon:string -> m_bar_text:string -> 
+class ingame_popup : m_position:(int * int) -> m_size:(int * int) ->
+  m_theme:Theme.t -> m_text:string -> m_bar_height:int ->
+  m_bar_icon:string -> m_bar_text:string ->
     object
 
   inherit [text_framed_item] BaseMixins.widget_container

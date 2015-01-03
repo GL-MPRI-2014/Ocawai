@@ -6,7 +6,13 @@ open Manager
 open Player
 open Menus
 
-let new_game () =
+(* Type of selectable *)
+type selectable = [
+  | `Unit of Unit.t
+  | `Building of Building.t
+]
+
+let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
 
@@ -23,6 +29,17 @@ let new_game () =
     ~maxpos:(Position.diff
       (Position.create (Battlefield.size m_map))
       (Position.create (1,1)))
+  in
+
+  (* Distributing characters *)
+  let () =
+    let constraints = match character with
+      | Some c -> [((my_player :> player)#get_id,c)]
+      | None -> []
+    in
+    Characters.handler#init
+      constraints
+      (List.map (fun p -> p#get_id) m_engine#get_players)
   in
 
   object(self)
@@ -44,10 +61,85 @@ let new_game () =
     ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
 
   val build_menu = new ingame_menu ~m_position:(0,0)
-    ~m_width:150
+    ~m_width:290
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
     ~m_bar_text:"Build"
+
+  (* Last unit selected through X/W *)
+  val mutable last_selected : selectable option = None
+
+  (* Select next unit given a way to go *)
+  method private select_playable lu lb =
+    let rec list_after x = function
+      | [] -> []
+      | e :: r when x = e -> r
+      | e :: r -> list_after x r
+    in
+    (* Selectable unit *)
+    let oku u = not u#has_played in
+    (* Selectable building *)
+    let okb b =
+      (* It can actually build things *)
+      b#product <> []
+      (* There is nobody occupying it *)
+      && cdata#player_unit_at_position
+          b#position
+          cdata#actual_player
+         = None
+      (* The prices aren't too high *)
+      && (
+        let prices = List.map
+          (fun s ->
+            List.find
+              (fun u -> u#name = s)
+              Config.config#unbound_units_list
+            |> (fun u -> u#price)
+          )
+          b#product
+        in List.fold_left min (List.hd prices) (List.tl prices)
+           <= cdata#actual_player#get_value_resource
+      )
+    in
+    let find_u lu fail () =
+      try last_selected <- Some ( `Unit (List.find oku lu) )
+      with Not_found -> fail ()
+    in
+    let find_b lb fail () =
+      try last_selected <- Some ( `Building (List.find okb lb) )
+      with Not_found -> fail ()
+    in
+    let fail () =
+      last_selected <- None
+    in
+    begin
+      match last_selected with
+      | None -> find_u lu (find_b lb fail)
+      | Some (`Unit u) -> find_u (list_after u lu) (find_b lb (find_u lu fail))
+      | Some (`Building b) ->
+          find_b (list_after b lb) (find_u lu (find_b lb fail))
+    end () ;
+    begin match last_selected with
+    | None -> ()
+    | Some (`Unit u) -> cdata#camera#set_position u#position
+    | Some (`Building b) -> cdata#camera#set_position b#position
+    end
+
+  (* Select next playable unit or building *)
+  method private select_next =
+    (* List of units *)
+    let lu = cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = cdata#actual_player#get_buildings in
+    self#select_playable lu lb
+
+  (* Select previous playable unit or building *)
+  method private select_pred =
+    (* List of units *)
+    let lu = List.rev cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = List.rev cdata#actual_player#get_buildings in
+    self#select_playable lu lb
 
   initializer
     cdata#init_core m_map my_player m_players;
@@ -101,10 +193,6 @@ let new_game () =
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    (* new item "info" "Info" (fun () -> print_endline "info activated";
-      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
-    |> my_menu#add_child; *)
-
     new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
@@ -155,7 +243,7 @@ let new_game () =
         if List.mem cursor#position r && in_range <> [] then begin
           cursor#set_state (Cursor.Action
             (u, cursor#position, in_range));
-          camera#set_position (Position.right cursor#position)
+          camera#set_position (List.hd in_range)#position
         end else if List.mem cursor#position r then begin
           cdata#actual_player#set_state (ClientPlayer.Received
             (cdata#current_move, Action.Wait));
@@ -239,6 +327,7 @@ let new_game () =
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
         | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
+            (* TODO Remove? *)
             camera#set_position (Position.create (80,80))
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
@@ -271,6 +360,12 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
+            self#select_next
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.W ; _ } ->
+            self#select_pred
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
@@ -298,11 +393,24 @@ let new_game () =
                               cursor#set_state Cursor.Idle)
                             in item#toggle ; build_menu#add_child item;
                             List.iter (fun s ->
-                              new item ("flatman_" ^ s) s (fun () ->
-                                build_menu#toggle;
-                                ui_manager#unfocus build_menu;
-                                cursor#set_state Cursor.Idle
-                              )
+                              let u = List.find
+                                (fun u -> u#name = s)
+                                Config.config#unbound_units_list
+                              in
+                              new item
+                                ~enabled:(u#price <= p#get_value_resource)
+                                (Characters.handler#texture_from_id (p#get_id) s)
+                                (s ^ " (" ^ (string_of_int u#price) ^ ")")
+                                (fun () ->
+                                  build_menu#toggle;
+                                  ui_manager#unfocus build_menu;
+                                  cdata#actual_player#set_state (
+                                    ClientPlayer.Received ([],
+                                      Action.Create_unit (b,u)
+                                    )
+                                  ) ;
+                                  cursor#set_state Cursor.Idle
+                                )
                               |> (fun i -> i#toggle ; build_menu#add_child i)
                             ) b#product;
                             build_menu#toggle;

@@ -7,7 +7,8 @@ open Utils
 
 let my_font = Fonts.load_font "FreeSans.ttf"
 
-class item icon text (action : unit -> unit) = object(self)
+class item ?enabled:(enabled = true) icon text (action : unit -> unit) =
+  object(self)
 
   inherit widget
 
@@ -18,20 +19,26 @@ class item icon text (action : unit -> unit) = object(self)
 
   method draw target lib = if self#active then begin
     (* First draw the icon *)
+    let color = if enabled
+      then Color.rgb 255 255 255
+      else Color.rgb 150 150 150
+    in
     let position = foi2D self#position in
     let (selfx, selfy) = foi2D size in
     Render.renderer#draw_txr target icon ~position:position
-      ~size:(selfy, selfy) ~centered:false ();
+      ~size:(selfy, selfy) ~centered:false ~color ();
     (* Then draw the text *)
     rect_print
-      target text my_font Color.black (Pix (snd size - 3)) (Pix 2) Left {
+      target text my_font
+        (if enabled then Color.black else Color.rgba 0 0 0 127)
+        (Pix (snd size - 3)) (Pix 2) Left {
         left = fst position +. selfy ;
         top = snd position ;
         width = selfx -. selfy ;
         height = selfy }
   end
 
-  method action = action ()
+  method action = if enabled then action ()
 
 end
 

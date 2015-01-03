@@ -30,19 +30,11 @@ class cursor ~position = object(self)
       else if abs dx >= abs dy && dx <= 0 then (-1,0)
       else (0,-1)
     in
-    Printf.printf "Dir : %i/%i\n" dx' dy';
-    let (fx, fy) = Position.topair from_p in
-    Printf.printf "From : %i/%i\n" fx fy;
     let scal_list = List.map (fun u ->
       let (x,y) = Position.topair (Position.diff u#position from_p) in
       (u, x * dx' + y * dy', abs(x * dy' - y * dx') )
     ) ul in
-    Printf.printf "New list : \n";
     let new_list = List.filter (fun (_,b,_) -> b > 0) scal_list in
-    List.iter (fun (u,b,c) ->
-      let (ux, uy) = Position.topair u#position in
-      Printf.printf "%i/%i  %i/%i" ux uy b c; print_endline "")
-    new_list;
     let sorted_list = List.sort (fun (_,b,c) (_,b',c') ->
       if b + 2*c < b' + 2*c' then -1 else if b+2*c > b'+2*c' then 1 else 0)
       new_list

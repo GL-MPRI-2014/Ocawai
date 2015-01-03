@@ -73,8 +73,7 @@ class main_menu = object(self)
       [
         new Home.textured_actionnable "gameon" "gameon_hover"
           (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push
-            (new LoadScreen.state Game.new_game :> State.state)) ;
+          (fun () -> new CharacterScreen.state |> manager#push) ;
         new Home.textured_actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;

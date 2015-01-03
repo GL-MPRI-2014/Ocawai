@@ -1,3 +1,5 @@
+(** Definitio of the client data class *)
+
 (** Class representing the data hold by the client *)
 class client_data : object
 
@@ -9,7 +11,7 @@ class client_data : object
   method top_update : Types.update option
 
   (* Initialization methods *)
-  method init_core : Battlefield.t -> 
+  method init_core : Battlefield.t ->
     ClientPlayer.client_player -> Player.logicPlayer list -> unit
 
   method init_buildings : Building.t list -> unit
@@ -29,6 +31,8 @@ class client_data : object
 
   method neutral_buildings : Building.t list
 
+  method toggle_neutral_building : Building.t -> unit
+
   method actual_player : ClientPlayer.client_player
 
   method current_move : Position.t list
@@ -36,9 +40,15 @@ class client_data : object
   method player_unit_at_position : Position.t ->
     #Player.logicPlayer -> Unit.t option
 
+  method player_visible_unit_at_position : Position.t ->
+    Player.logicPlayer -> Unit.t option
+
   method enemy_unit_at_position : Position.t -> bool
 
   method unit_at_position : Position.t -> Unit.t option
+
+  (** Returns some only if not in the fog *)
+  method visible_unit_at_position : Position.t -> Unit.t option
 
   method player_of : Unit.t -> Player.logicPlayer
 

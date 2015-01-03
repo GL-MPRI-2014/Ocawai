@@ -1,4 +1,4 @@
-let get_option o = 
+let get_option o =
   match o with
   |Some(t) -> t
   |None -> failwith "Bad client data initialization"
@@ -12,7 +12,7 @@ class client_data = object(self)
 
   val case_info = new CaseInfo.case_info
 
-  val updates : Types.update Stack.t = Stack.create ()
+  val updates : Types.update Queue.t = Queue.create ()
 
   val mutable players : Player.logicPlayer list = []
 
@@ -24,7 +24,7 @@ class client_data = object(self)
 
   val mutable neutral_buildings : Building.t list = []
 
-  method init_core m self_player player_list = 
+  method init_core m self_player player_list =
     let minim = new Minimap.minimap 30
       (fst (Battlefield.size m))
       (snd (Battlefield.size m))
@@ -35,21 +35,21 @@ class client_data = object(self)
     actual_player <- Some (self_player);
     map <- Some(m)
 
-  method init_buildings neutral = 
+  method init_buildings neutral =
     neutral_buildings <- neutral
 
   method init_interface cam =
     camera <- Some cam
 
-  method pop_update = 
-    try Some (Stack.pop updates)
-    with Stack.Empty -> None
+  method pop_update =
+    try Some (Queue.pop updates)
+    with Queue.Empty -> None
 
-  method push_update u = Stack.push u updates
+  method push_update u = Queue.push u updates
 
-  method top_update = 
-    try Some (Stack.top updates)
-    with Stack.Empty -> None
+  method top_update =
+    try Some (Queue.top updates)
+    with Queue.Empty -> None
 
   method map = get_option map
 
@@ -63,7 +63,13 @@ class client_data = object(self)
 
   method neutral_buildings = neutral_buildings
 
-  method actual_player = 
+  method toggle_neutral_building b =
+    if List.mem b neutral_buildings then
+      neutral_buildings <- (List.filter (fun bd -> bd <> b) neutral_buildings)
+    else
+      neutral_buildings <- (b :: neutral_buildings)
+
+  method actual_player =
     match actual_player with
     |None -> failwith "Bad client data initialization"
     |Some(p) -> p
@@ -79,6 +85,13 @@ class client_data = object(self)
         |t::q -> unit_aux q
       in unit_aux player#get_army
 
+  method player_visible_unit_at_position pos player =
+    let rec unit_aux = function
+      | [] -> None
+      | e :: r when e#position = pos -> Some e
+      | e :: r -> unit_aux r
+    in unit_aux (self#actual_player#get_visible_army_for player)
+
   method unit_at_position p =
     let rec aux_player = function
       |[] -> None
@@ -87,6 +100,16 @@ class client_data = object(self)
           |None -> aux_player q
           |Some(s) -> Some(s)
       end
+    in aux_player players
+
+  method visible_unit_at_position p =
+    let rec aux_player = function
+      |[] -> None
+      |t::q -> begin
+          match self#player_visible_unit_at_position p t with
+          |None -> aux_player q
+          |Some(s) -> Some(s)
+        end
     in aux_player players
 
   method enemy_unit_at_position p =

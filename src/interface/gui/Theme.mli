@@ -1,5 +1,8 @@
+(** Definition of themes for widgets *)
+
 open OcsfmlGraphics
 
+(** The type of a theme *)
 type t = {
   bar_color         : Color.t;
   default_color     : Color.t;

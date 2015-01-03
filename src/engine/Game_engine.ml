@@ -9,14 +9,35 @@ let get_opt o =
   |Some(s) -> s
   |None -> failwith "Failed to init game engine"
 
+let rec actual_player_list nb_players = 
+    if nb_players > 0 then
+        (actual_player_list (nb_players-1)) @ [nb_players-1]
+    else 
+        []
+
+let rec remove_indice i lst =
+    match lst with
+    |[] -> []
+    |p::q -> if p = i then q else p::(remove_indice i q)
+
+
 class game_engine () = object (self)
   val mutable players = ([||]: Player.player array)
   val mutable field = None
-  val mutable actual_player = 0
+  val mutable actual_player_l = []
   val mutable is_over = false
 
   method private next_player =
-    (actual_player + 1) mod (Array.length players)
+    actual_player_l <- (List.tl actual_player_l) @ [List.hd actual_player_l]
+  method private actual_player =
+    List.hd actual_player_l
+
+  method private remove_player i=
+    actual_player_l <- remove_indice i actual_player_l;
+    Array.iter (
+        fun x -> (List.iter (fun u -> x#delete_unit u#get_id; x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id))) 
+                        ) players.(i)#get_army)
+    ) players
 
   method get_players =
     Array.to_list players
@@ -45,8 +66,10 @@ class game_engine () = object (self)
       let sc_players = self#create_n_scripted (nbplayers - 1) in
       players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
       field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in 
+      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in
       List.iter (fun p -> p#init_script map players) sc_players;
+      actual_player_l <- actual_player_list nbplayers;
+      List.iter (fun x -> x#init map players) self#get_players;
       (players, map)
 
   method init_net port nbplayers =
@@ -64,11 +87,12 @@ class game_engine () = object (self)
                                 fun p2 -> (
       (* Pour chaque couple de players (p1,p2), on donne a p1 les updates contenant l'armée et les batiments de p2 *)
                                         p1#update (Types.Set_army(p2#get_army,p2#get_id));
-                                        p1#update (Types.Set_building(p2#get_buildings,p2#get_id)); 
+                                        p1#update (Types.Set_building(p2#get_buildings,p2#get_id));
                                            )
                                     )
                                  players)
                  ) players;
+      actual_player_l <- actual_player_list nbplayers;
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
   method private player_of_unit u =
@@ -89,8 +113,8 @@ class game_engine () = object (self)
     )
 
   method run : unit =
-    Log.infof "One step (%d)..." actual_player ;
-    let player = players.(actual_player) in
+    Log.infof "One step (%d)..." self#actual_player ;
+    let player = players.(self#actual_player) in
     let next_wanted_action =  player#get_next_action in
     begin try
       let next_action = Logics.try_next_action
@@ -106,7 +130,7 @@ class game_engine () = object (self)
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           let player_u2 = self#player_of_unit u2 in
-          if u2#hp <= 0 then 
+          if u2#hp <= 0 then
             (
             player_u2#delete_unit (u2#get_id);
             Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players
@@ -114,7 +138,7 @@ class game_engine () = object (self)
           else
             Array.iter (fun x -> x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id))) ) players
       |(_, Create_unit (b,uu)) ->
-        if List.mem b player#get_buildings 
+        if List.mem b player#get_buildings
 	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
 	  && player#has_resource uu#price
 		then (
@@ -127,33 +151,61 @@ class game_engine () = object (self)
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
-    if (* test gameover here *) 
-      List.exists 
-	(fun p -> p <> (player :> Player.logicPlayer) && not (self#is_dead p)) 
-	(self#get_players :> Player.logicPlayer list)
-    then self#run
-    else (
-        Array.iter (fun x -> x#update (Types.Game_over) ) players;
-        is_over <- true
+    if List.length actual_player_l = 2 then
+        (
+        let enemy_id = (List.hd (List.tl actual_player_l))  in 
+        if self#is_dead players.(enemy_id) then
+            (is_over <- true;
+             players.(self#actual_player)#update (Types.Game_over);
+             players.(enemy_id)#update (Types.Game_over)
+            )
+        else self#run
         )
+    else self#run
+
 
   method private end_turn =
-    let player = players.(actual_player) in
+    let player = players.(self#actual_player) in
     List.iter (fun u -> u#set_played false) player#get_army;
     player#harvest_buildings_income;
-    actual_player <- self#next_player;
-    (*update buildings at the start of a new turn*)
-    let changed_buildings = Logics.capture_buildings 
+
+    (*update buildings at the end of a turn*)
+    let changed_buildings = Logics.capture_buildings
       (self#get_players :> Player.logicPlayer list)
-      (players.(actual_player) :> Player.logicPlayer)
+      (players.(self#actual_player) :> Player.logicPlayer)
       (get_opt field)#buildings
     in
-    (*send the list of changed buildings to the players*)
-   ()
 
+    (*send the list of changed buildings to the players*)
+    Array.iter (fun p ->
+      List.iter (fun b ->
+        p#update (Types.Building_changed (fst b)))
+        changed_buildings)
+      players;
+
+    let rec aux lst = 
+      match lst with
+          |[] -> ()
+          |p::q ->  (if self#is_dead players.(p) then
+                          (
+                          self#remove_player p;
+                          players.(p)#update (Types.Game_over) 
+                          );
+                    aux q 
+                      )
+    in
+    aux actual_player_l;
+    if List.length actual_player_l = 1 then
+      players.(self#actual_player)#update (Types.Game_over)
+    else (
+      (* Enfin, on change de joueur en cours *)
+      self#next_player;
+      (* Notify the player *)
+      players.(self#actual_player)#update Types.Your_turn;
+    )
 
   method private apply_movement movement =
-    let player = players.(actual_player) in
+    let player = players.(self#actual_player) in
     let u = Logics.find_unit (List.hd movement)
       (player :> Player.logicPlayer) in
 
