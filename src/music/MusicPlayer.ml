@@ -51,22 +51,20 @@ let music_player =
       buffer <- reset @@ buffer % t
 				    
     method play_next_measure : unit -> unit = fun () ->
-      let minisleep (sec: float) =
-	ignore (Unix.select [] [] [] sec)
-      and one_measure =
-	let duration_seconds_num =
-	  Num.mult_num (Num.num_of_int @@ MidiV.timeToSamplesNumber Time.wn)
-		       (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
-	in
+      let one_measure =
+        let duration_seconds_num =
+          Num.mult_num (Num.num_of_int @@ MidiV.timeToMidiDuration Time.wn)
+                 (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
+        in
         Num.float_of_num duration_seconds_num
       in
       while true do
-	let (next_measure, rest) =
-	  TPTM.extract_by_time wn buffer
-	in
-	buffer <- reset rest;
-	TPTM.fork_play next_measure;
-	minisleep (one_measure)
+        let (next_measure, rest) =
+          TPTM.extract_by_time wn buffer
+        in
+        buffer <- reset rest;
+        TPTM.fork_play next_measure;
+        Thread.delay (one_measure)
       done
 
     method read_note : unit =
@@ -76,15 +74,15 @@ let music_player =
 		     (You can even let it run in the background, \
 		     it won't eat all your CPU-time :) !)\n";
       while true do
-	try
-	  let notes_strings = Str.split (Str.regexp " ") (read_line ()) in
-	  let note_reader = fun str ->
-	    TPTM.make_withDelay @@ dummy_simple_event_pitchclass @@
-	      (wn, Music.pitch_of_string str)
-	  in 
-	  let notes = List.map note_reader notes_strings in
-	  List.iter self#bufferize notes
-	with Not_found -> ()
+        try
+          let notes_strings = Str.split (Str.regexp " ") (read_line ()) in
+          let note_reader = fun str ->
+            TPTM.make_withDelay @@ dummy_simple_event_pitchclass @@
+              (wn, Music.pitch_of_string str)
+          in 
+          let notes = List.map note_reader notes_strings in
+          List.iter self#bufferize notes
+        with Not_found -> ()
       done
   end
 
