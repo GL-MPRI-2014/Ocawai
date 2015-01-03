@@ -326,10 +326,6 @@ let new_game ?character () =
   method handle_event e =
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
-            (* TODO Remove? *)
-            camera#set_position (Position.create (80,80))
-
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
             if not dir_key_pressed then begin
               camera#move (-1,0);

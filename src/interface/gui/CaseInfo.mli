@@ -7,6 +7,7 @@ class case_info : object
     * @param drawer a function to print a sprite (to avoid circular build)
     * @param tile_drawer function to draw a tile (likewise)
     * @param damage estimation of the damage (if attacking)
+    * @param foggy is the case foggy?
     * @param u the selected unit
     * @param chara a string representing the character of the unit
     * @param building the selected building
@@ -17,6 +18,7 @@ class case_info : object
     (string -> (float * float) -> unit) ->
     (string -> (float * float) -> unit) ->
     (int * int) option ->
+    bool ->
     Unit.t option ->
     string ->
     Building.t option ->
