@@ -150,9 +150,9 @@ class game_engine () = object (self)
             next_wanted_action
       in
       match next_action with
-      |(_, End_turn) -> self#end_turn
-      |(move, Wait) -> self#apply_movement move
-      |(move, Attack_unit (u1,u2)) ->
+      | (_, End_turn) -> self#end_turn
+      | (move, Wait) -> self#apply_movement move
+      | (move, Attack_unit (u1,u2)) ->
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           let player_u2 = self#player_of_unit u2 in
@@ -171,17 +171,20 @@ class game_engine () = object (self)
                 x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id)))
               )
               players
-      |(_, Create_unit (b,uu)) ->
-        if List.mem b player#get_buildings
+      | (_, Create_unit (b,uu)) ->
+        if List.exists (fun bb -> b#get_id = bb#get_id) player#get_buildings
         && not (Logics.is_unit_on
                   b#position
                   (self#get_players :> Player.logicPlayer list))
         && player#has_resource uu#price
         then (
           player#use_resource uu#price;
+          player#update (Types.Use_resource uu#price);
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
-          Array.iter (fun x -> x#update (Types.Add_unit(u,(player#get_id))) ) players;
+          Array.iter (fun x ->
+            x#update (Types.Add_unit(u,(player#get_id)))
+          ) players;
           u#set_played true ;
           self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true)))
         else raise Bad_create

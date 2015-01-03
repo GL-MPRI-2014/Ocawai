@@ -72,6 +72,8 @@ class handler data camera = object(self)
         (player#get_unit_by_id uid)#set_played b
     | Harvest_income ->
         (data#actual_player :> Player.logicPlayer)#harvest_buildings_income
+    | Use_resource price ->
+        (data#actual_player :> Player.logicPlayer)#use_resource price
     | Set_client_player _ -> ()
     | Set_logic_player_list _ -> ()
     | Map _ -> ()

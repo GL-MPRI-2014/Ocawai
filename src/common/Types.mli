@@ -22,6 +22,7 @@ type update =
   | Building_changed of Building.t
   | Set_unit_played of Unit.id * id_player * bool
   | Harvest_income
+  | Use_resource of int
 (* for initialization only *)
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list
