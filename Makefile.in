@@ -301,11 +301,15 @@ check_fog: interface
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) fog_test.native -tag $(interface_tags)
 	./fog_test.native
 
+check_music: interface
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) music_test.native -tag $(interface_tags)
+	./music_test.native
+
 check_interface: interface
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) interface_test.native -tag $(interface_tags)
 	./interface_test.native
 
-check: check_player check_generation check_logics check_interface
+check: check_player check_generation check_logics check_music check_interface
 
 log:
 	mkdir -p $(log_dir)
