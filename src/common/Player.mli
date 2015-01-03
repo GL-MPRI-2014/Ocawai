@@ -53,10 +53,11 @@ object
   (** Add a building to the player*)
   method add_building : Building.t -> unit
 
-										
+  (* TODO *)
+  method set_unit_hp : Unit.id -> int -> unit
+										   										
   (** @return the list of entries [log_line, item]  taken by this player.*)
   method get_log : (int * log_item) list
-
 
   (**Get a unit owned by the player using the unit id.
    @return the unit corresponding to the id*)
@@ -68,8 +69,10 @@ object
 
   (**Delete a unit owned by the player using the id of the unit*)
   method delete_unit : Unit.unit_id -> unit
+										 
   (**Delete a building owned by the player using the id of the unit*)
   method delete_building : Building.building_id -> unit
+													 
   (**Move the unit referenced by its id. Action.movement is the path of this unit. *)
   method move_unit : Unit.unit_id -> Action.movement -> unit
 
