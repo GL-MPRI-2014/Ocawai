@@ -36,11 +36,13 @@ class game_engine () = object (self)
   method private actual_player =
     List.hd actual_player_l
 
-  method private remove_player i=
+  method private remove_player i =
     actual_player_l <- remove_indice i actual_player_l;
-    Array.iter (
-        fun x -> (List.iter (fun u -> x#delete_unit u#get_id; x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id)))
-                        ) players.(i)#get_army)
+    Array.iter (fun x ->
+      List.iter (fun u ->
+        x#delete_unit u#get_id;
+        x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id)))
+      ) players.(i)#get_army
     ) players
 
   method get_players =
@@ -49,28 +51,38 @@ class game_engine () = object (self)
   method get_neutral_buildings =
     (get_opt field)#neutral_buildings
 
-  method cursor_init_position = Hashtbl.find (get_opt field)#cursor_init_positions
+  method cursor_init_position =
+    Hashtbl.find (get_opt field)#cursor_init_positions
 
   method is_over = is_over
 
   method private create_n_scripted =
     (* create one scripted from its id 1..n *)
-    let create_one = function
-      | _ -> new ScriptedPlayer.scripted_player ((Utils.base_path ()) ^ "scripts/test.script")
-      in
+    let create_one _ =
+      new ScriptedPlayer.scripted_player
+        ((Utils.base_path ()) ^ "scripts/test.script")
+    in
     (* create n scripted calling create_one *)
     let rec create_n = function
       | 0 -> []
       | n -> (create_one n) :: (create_n (n-1))
-      in
+    in
     create_n
 
 
   method init_local player nbplayers =
       let sc_players = self#create_n_scripted (nbplayers - 1) in
-      players <- Array.init nbplayers (fun n -> if n = 0 then player else (List.nth sc_players (n-1) :> Player.player));
-      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      let players, map = ((self#get_players :> Player.logicPlayer list), (get_opt field)#field) in
+      players <-
+        Array.init nbplayers (fun n ->
+          if n = 0 then player
+          else (List.nth sc_players (n-1) :> Player.player)
+        );
+      field <-
+        Some (new FieldGenerator.t
+          (self#get_players : Player.player list :> Player.logicPlayer list));
+      let players, map =
+        ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
+      in
       List.iter (fun p -> p#init_script map players) sc_players;
       actual_player_l <- actual_player_list nbplayers;
       List.iter (fun x -> x#init map players) self#get_players;
@@ -78,24 +90,34 @@ class game_engine () = object (self)
 
   method init_net port nbplayers =
       let connections = Network_tool.open_n_connections port nbplayers in
-      let player_list = List.map (fun x -> new NetPlayer.netPlayer x) connections in
+      let player_list =
+        List.map (fun x -> new NetPlayer.netPlayer x) connections
+      in
       players <- (Array.of_list (player_list :> Player.player list));
-      field <- Some (new FieldGenerator.t (self#get_players : Player.player list :> Player.logicPlayer list));
-      Array.iter (
-            fun p1 -> (
-                        (* On envoie a chaque joueur les var d'initialisation *)
-                        p1#update (Types.Set_client_player(p1#get_id));
-                        p1#update (Types.Set_logic_player_list( List.map (fun x -> x#get_id) player_list));
-                        p1#update (Types.Map( Config.config#string_of_battlefield (get_opt field)#field));
-                        Array.iter (
-                                fun p2 -> (
-      (* Pour chaque couple de players (p1,p2), on donne a p1 les updates contenant l'armée et les batiments de p2 *)
-                                        p1#update (Types.Set_army(p2#get_army,p2#get_id));
-                                        p1#update (Types.Set_building(p2#get_buildings,p2#get_id));
-                                           )
-                                    )
-                                 players)
-                 ) players;
+      field <-
+        Some (new FieldGenerator.t
+          (self#get_players : Player.player list :> Player.logicPlayer list));
+      Array.iter
+        (fun p1 ->
+          (* On envoie a chaque joueur les var d'initialisation *)
+          p1#update (Types.Set_client_player(p1#get_id));
+          p1#update
+            (Types.Set_logic_player_list
+              (List.map (fun x -> x#get_id) player_list));
+          p1#update
+            (Types.Map
+              (Config.config#string_of_battlefield (get_opt field)#field));
+          Array.iter
+            (fun p2 ->
+              (* Pour chaque couple de players (p1,p2), *)
+              (* on donne a p1 les updates contenant l'armée *)
+              (* et les batiments de p2 *)
+              p1#update (Types.Set_army (p2#get_army, p2#get_id));
+              p1#update (Types.Set_building (p2#get_buildings, p2#get_id))
+            )
+            players
+        )
+        players ;
       actual_player_l <- actual_player_list nbplayers;
       ((self#get_players :> Player.logicPlayer list), (get_opt field)#field)
 
@@ -122,31 +144,41 @@ class game_engine () = object (self)
     let next_wanted_action =  player#get_next_action in
     begin try
       let next_action = Logics.try_next_action
-          (self#get_players :> Player.logicPlayer list)
-          (player :> Player.logicPlayer)
-          (get_opt field)#field
-          next_wanted_action
+            (self#get_players :> Player.logicPlayer list)
+            (player :> Player.logicPlayer)
+            (get_opt field)#field
+            next_wanted_action
       in
       match next_action with
       |(_, End_turn) -> self#end_turn
-      |(move, Wait ) -> self#apply_movement move
+      |(move, Wait) -> self#apply_movement move
       |(move, Attack_unit (u1,u2)) ->
           self#apply_movement move;
           Logics.apply_attack u1 u2;
           let player_u2 = self#player_of_unit u2 in
           if u2#hp <= 0 then
-            (
+          (
             player_u2#delete_unit (u2#get_id);
-            Array.iter (fun x -> x#update (Types.Delete_unit(u2#get_id,(player_u2#get_id))) ) players
-            )
+            Array.iter
+              (fun x ->
+                x#update (Types.Delete_unit (u2#get_id, (player_u2#get_id)))
+              )
+              players
+          )
           else
-            Array.iter (fun x -> x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id))) ) players
+            Array.iter
+              (fun x ->
+                x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id)))
+              )
+              players
       |(_, Create_unit (b,uu)) ->
         if List.mem b player#get_buildings
-	  && not (Logics.is_unit_on b#position (self#get_players :> Player.logicPlayer list))
-	  && player#has_resource uu#price
-		then (
-		  player#use_resource uu#price;
+        && not (Logics.is_unit_on
+                  b#position
+                  (self#get_players :> Player.logicPlayer list))
+        && player#has_resource uu#price
+        then (
+          player#use_resource uu#price;
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
           Array.iter (fun x -> x#update (Types.Add_unit(u,(player#get_id))) ) players;

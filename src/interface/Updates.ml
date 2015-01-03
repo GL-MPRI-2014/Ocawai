@@ -64,9 +64,9 @@ class handler data camera = object(self)
     | Move_unit (uid,path,pid) ->
         let player = Logics.find_player pid data#players in
         player#move_unit uid path
-    | Set_unit_hp (uid,damage,pid) ->
+    | Set_unit_hp (uid,hp,pid) ->
         let player = Logics.find_player pid data#players in
-        (player#get_unit_by_id uid)#take_damage damage
+        (player#get_unit_by_id uid)#set_hp hp
     | Set_unit_played (uid,pid,b) ->
         let player = Logics.find_player pid data#players in
         (player#get_unit_by_id uid)#set_played b
