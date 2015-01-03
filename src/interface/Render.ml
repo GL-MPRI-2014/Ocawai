@@ -411,7 +411,7 @@ let renderer = object(self)
     let resources = string_of_int data#actual_player#get_value_resource in
     let (w,h) = foi2D target#get_size in
     GuiTools.(rect_print
-      target resources font Color.white (Pix 30) (Pix 10) Right
+      target (resources ^ " flowers") font Color.white (Pix 30) (Pix 10) Right
       { left = 20. ; top = 5. ; width = w -. 40. ; height = 100. });
     (* Display players turn *)
     let current = Updates.(match uphandle#current_turn with
