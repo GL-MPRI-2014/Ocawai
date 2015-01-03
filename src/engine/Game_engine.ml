@@ -167,6 +167,7 @@ class game_engine () = object (self)
             player_u2#delete_unit (u2#get_id);
             Array.iter
               (fun x ->
+                x#update (Types.Set_unit_hp(u2#get_id,u2#hp,(player_u2#get_id)));
                 x#update (Types.Delete_unit (u2#get_id, (player_u2#get_id)))
               )
               players
