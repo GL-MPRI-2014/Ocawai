@@ -146,13 +146,17 @@ let new_game ?character () =
     self#select_playable lu lb
 
   initializer
-    (* We need to copy my_player *)
+    let actual_player = my_player#copy in
     cdata#init_core
       m_map
-      my_player
+      actual_player
       (List.map
-        (fun p -> if p#get_id = my_player#get_id then (my_player :> logicPlayer) else p#copy)
+        (fun p ->
+          if p#get_id = actual_player#get_id then
+            (actual_player :> logicPlayer)
+          else p#copy)
         m_players) ;
+    (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
 
