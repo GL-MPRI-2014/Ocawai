@@ -291,7 +291,7 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	 | (Some st1, Some st2) -> 
 	    let rel_offset = dur1 /+/ st2 /-/ st1 in
 	    let midi_duration ~duration =
-	      MidiV.timeToMidiDuration ~samplerate ~division
+	      MidiV.timeToSamplesNumber ~samplerate ~division
 				       ~tempo ~duration in
 	    (midi_duration (Time.abs rel_offset), Time.sign rel_offset)
 	 | _ -> failwith "Empty but non-None MIDI.buffer"
