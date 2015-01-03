@@ -349,6 +349,33 @@ let scr_endturn =
     | _ -> assert false
   )
 
+let scr_validunit = 
+  `Fun(function
+    |`String(s) -> `Bool (List.exists (fun u -> u#name = s) Config.config#unbound_units_list)
+    | _ -> assert false
+  )
+
+let scr_producible_units = 
+  `Fun(function
+    |`Building(b) -> 
+        b#product
+        |> List.map (fun u -> `String u)
+        |> fun l -> `List l
+    | _ -> assert false
+  )
+
+let scr_funds = 
+  `Fun(function
+    |`Player(p) -> `Int p#get_value_resource
+    | _ -> assert false
+  )
+
+let scr_cost = 
+  `Fun(function
+    |`String(s) -> `Int (Config.config#unbound_unit s)#price
+    | _ -> assert false
+  )
+
 (** Associative maps *)
 (* it is a pair : a setter and a getter *)
 let scr_assoc_create =
@@ -434,5 +461,9 @@ let init () =
   expose scr_assoc_create (`Fun_t(a1, assoc_t a0 a1)) "assoc_create";
   expose scr_fst (`Fun_t(assoc_t a0 a1, setter_t)) "assoc_set";
   expose scr_snd (`Fun_t(assoc_t a0 a1, getter_t)) "assoc_get";
+  expose scr_validunit (`Fun_t(`String_t, `Bool_t)) "is_valid_unit";
+  expose scr_producible_units (`Fun_t(`Building_t, `List_t(`Soldier_t))) "producible_units";
+  expose scr_funds (`Fun_t(`Player_t,`Int_t)) "funds_of";
+  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of"
 
 
