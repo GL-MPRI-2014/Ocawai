@@ -19,7 +19,6 @@ let dummy_simple_event (dur, pitch) =
 let dummy_simple_event_pitchclass (dur, pitchClass) =
   dummy_event_plus dur (pitchClass, 127)
 
-
 (**
    notes : [(int, Music.pitch)], duration and pitch, all on octave 4.
 *) 
@@ -53,7 +52,7 @@ let music_player =
     method play_next_measure : unit -> unit = fun () ->
       let one_measure =
         let duration_seconds_num =
-          Num.mult_num (Num.num_of_int @@ MidiV.timeToMidiDuration Time.wn)
+          Num.mult_num (Num.num_of_int @@ MidiV.timeToSamplesNumber Time.wn)
                  (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
         in
         Num.float_of_num duration_seconds_num
@@ -68,21 +67,25 @@ let music_player =
       done
 
     method read_note : unit =
+      let running = ref true in
       print_endline "\n\027[32mInput some notes (for instance C5 A4 A3 Aff2), \
-		     then press ENTER\027[0m";
+		     then press ENTER\027[0m (Input <q> to quit)";
       print_endline "\027[1;31m\t=======> Be amazed ! <=======\027[0m\n\
 		     (You can even let it run in the background, \
 		     it won't eat all your CPU-time :) !)\n";
-      while true do
-        try
-          let notes_strings = Str.split (Str.regexp " ") (read_line ()) in
+      while !running do
+        let notes_strings = Str.split (Str.regexp " ") (read_line ()) in
+	try
           let note_reader = fun str ->
             TPTM.make_withDelay @@ dummy_simple_event_pitchclass @@
               (wn, Music.pitch_of_string str)
           in 
           let notes = List.map note_reader notes_strings in
           List.iter self#bufferize notes
-        with Not_found -> ()
+        with Not_found ->
+	     match notes_strings with
+	     | ["q"] -> running := false
+	     | _ -> ()
       done
   end
 
