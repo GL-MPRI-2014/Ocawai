@@ -9,10 +9,10 @@ let get_opt o =
   |Some(s) -> s
   |None -> failwith "Failed to init game engine"
 
-let rec actual_player_list nb_players = 
+let rec actual_player_list nb_players =
     if nb_players > 0 then
         (actual_player_list (nb_players-1)) @ [nb_players-1]
-    else 
+    else
         []
 
 let rec remove_indice i lst =
@@ -27,6 +27,10 @@ class game_engine () = object (self)
   val mutable actual_player_l = []
   val mutable is_over = false
 
+  (* Sends the update to all players *)
+  method private notify_all u =
+    Array.iter (fun p -> p#update u) players
+
   method private next_player =
     actual_player_l <- (List.tl actual_player_l) @ [List.hd actual_player_l]
   method private actual_player =
@@ -35,7 +39,7 @@ class game_engine () = object (self)
   method private remove_player i=
     actual_player_l <- remove_indice i actual_player_l;
     Array.iter (
-        fun x -> (List.iter (fun u -> x#delete_unit u#get_id; x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id))) 
+        fun x -> (List.iter (fun u -> x#delete_unit u#get_id; x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id)))
                         ) players.(i)#get_army)
     ) players
 
@@ -146,14 +150,15 @@ class game_engine () = object (self)
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
           Array.iter (fun x -> x#update (Types.Add_unit(u,(player#get_id))) ) players;
-          u#set_played true)
+          u#set_played true ;
+          self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true)))
         else raise Bad_create
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
     end;
     if List.length actual_player_l = 2 then
         (
-        let enemy_id = (List.hd (List.tl actual_player_l))  in 
+        let enemy_id = (List.hd (List.tl actual_player_l))  in
         if self#is_dead players.(enemy_id) then
             (is_over <- true;
              players.(self#actual_player)#update (Types.Game_over);
@@ -166,7 +171,12 @@ class game_engine () = object (self)
 
   method private end_turn =
     let player = players.(self#actual_player) in
-    List.iter (fun u -> u#set_played false) player#get_army;
+    List.iter
+      (fun u ->
+        u#set_played false ;
+        self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,false))
+      )
+      player#get_army;
     player#harvest_buildings_income;
 
     (*update buildings at the end of a turn*)
@@ -183,15 +193,15 @@ class game_engine () = object (self)
         changed_buildings)
       players;
 
-    let rec aux lst = 
+    let rec aux lst =
       match lst with
           |[] -> ()
           |p::q ->  (if self#is_dead players.(p) then
                           (
                           self#remove_player p;
-                          players.(p)#update (Types.Game_over) 
+                          players.(p)#update (Types.Game_over)
                           );
-                    aux q 
+                    aux q
                       )
     in
     aux actual_player_l;
@@ -211,7 +221,9 @@ class game_engine () = object (self)
 
     player#move_unit (u#get_id) movement;
     Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players;
-    u#set_played true
+    u#set_played true ;
+    self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true))
+
 end
 
 type t = game_engine

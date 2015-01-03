@@ -27,7 +27,7 @@ let get_next_action () =
   let rec get_aux () =
     Thread.delay 0.25;
     match !client_state with
-    | Received a -> client_state := ClientPlayer.Idle ; a
+    | ClientPlayer.Received a -> client_state := ClientPlayer.Idle ; a
     | _ -> get_aux ()
   in get_aux ()
 
