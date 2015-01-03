@@ -10,6 +10,7 @@ type id_player = int
 type update =
   | Game_over
   | Your_turn
+  | Turn_of of id_player
   | Classement
   | Set_army of Unit.t list * id_player
   | Set_building of Building.t list * id_player

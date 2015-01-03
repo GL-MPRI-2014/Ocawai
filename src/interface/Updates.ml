@@ -1,5 +1,10 @@
 open Types
 
+type turn =
+  | Your_turn
+  | Turn_of of int
+  | Nobody_s_turn
+
 type animation =
   | Moving_unit of Unit.t * Position.t list
   | Attack
@@ -23,6 +28,9 @@ class handler data camera = object(self)
   (* Last staged update *)
   val mutable last_update = None
 
+  (* Current player *)
+  val mutable current_turn = Nobody_s_turn
+
   (* Tells if a position is foggy *)
   method private foggy p =
     let (i,j) = Position.topair p in
@@ -35,7 +43,10 @@ class handler data camera = object(self)
   (* The purpose of this method is to do the update for real *)
   method private ack_update : Types.update -> unit = function
     | Game_over -> () (* TODO *)
-    | Your_turn -> () (* TODO *)
+    | Your_turn ->
+        current_turn <- Your_turn
+    | Turn_of id ->
+        current_turn <- Turn_of id
     | Classement -> () (* WTF?! TODO ? *)
     | Set_army (army,pid) ->
         (* TODO Check if we're not doing it for nothing *)
@@ -198,5 +209,7 @@ class handler data camera = object(self)
         )
     | Moving_unit (soldier, e :: _) when soldier = u -> e, (0.,0.)
     | _ -> u#position, (0.,0.)
+
+  method current_turn = current_turn
 
 end

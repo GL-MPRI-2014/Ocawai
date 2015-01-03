@@ -264,6 +264,11 @@ class game_engine () = object (self)
       self#next_player;
       (* Notify the player *)
       players.(self#actual_player)#update Types.Your_turn;
+      (* Notify the others *)
+      let pid = players.(self#actual_player)#get_id in
+      Array.to_list players
+      |> List.filter (fun p -> p <> players.(self#actual_player))
+      |> List.iter (fun p -> p#update (Types.Turn_of pid))
     )
 
   method private apply_movement movement =

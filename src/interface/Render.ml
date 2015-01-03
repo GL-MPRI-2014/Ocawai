@@ -413,6 +413,15 @@ let renderer = object(self)
     GuiTools.(rect_print
       target resources font Color.white (Pix 30) (Pix 10) Right
       { left = 20. ; top = 5. ; width = w -. 40. ; height = 100. });
+    (* Display players turn *)
+    let current = Updates.(match uphandle#current_turn with
+      | Your_turn -> "Your turn"
+      | Turn_of id -> Printf.sprintf "Turn of #%d" id
+      | Nobody_s_turn -> "Nobody's turn..." (* TODO Maybe just empty string *)
+    ) in
+    GuiTools.(rect_print
+      target current font Color.white (Pix 30) (Pix 10) Right
+      { left = 20. ; top = h -. 50. ; width = w -. 40. ; height = 100. });
     (* Display framerate *)
     FPS.display target
 
