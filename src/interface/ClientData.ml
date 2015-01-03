@@ -66,10 +66,11 @@ class client_data = object(self)
   method neutral_buildings = neutral_buildings
 
   method toggle_neutral_building b =
-    if List.mem b neutral_buildings then
-      neutral_buildings <- (List.filter (fun bd -> bd <> b) neutral_buildings)
+    if List.exists (fun bd -> bd#get_id = b#get_id) neutral_buildings then
+      neutral_buildings <-
+        List.filter (fun bd -> bd#get_id <> b#get_id) neutral_buildings
     else
-      neutral_buildings <- (b :: neutral_buildings)
+      neutral_buildings <- b :: neutral_buildings
 
   method actual_player =
     match actual_player with
@@ -122,15 +123,6 @@ class client_data = object(self)
     | _ -> false
 
   method player_of (u:Unit.t) =
-    (* let rec aux = function
-      |[] -> false
-      |t::q -> t = u || aux q
-    in
-    let rec iter_player = function
-      |[] -> assert false
-      |t::q -> if aux t#get_army then t else iter_player q
-    in
-    iter_player players *)
     let rec iter = function
     | []     -> failwith "player not found"
     | p :: r -> if p#get_id = u#player_id then p else iter r

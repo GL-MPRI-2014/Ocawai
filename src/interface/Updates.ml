@@ -76,8 +76,8 @@ class handler data camera = object(self)
             Logics.building_of_id b#get_id data#players data#neutral_buildings
         in
         (* If it was or becomes a neutral -- normally always *)
-        if b#player_id = None || old_b#player_id = None then
-          data#toggle_neutral_building old_b ;
+        (* if b#player_id = None || old_b#player_id = None then *)
+          data#toggle_neutral_building b ;
         (* If it belonged to a player, we remove from its list *)
         begin match old_b#player_id with
         | Some pid ->
