@@ -2,6 +2,9 @@
    Music module
 *)
 
+exception Negative_duration_note
+exception Not_found
+
 type time = Time.t
 
 type 'a t = Note of (time * 'a)
@@ -52,6 +55,7 @@ let compare : 'a t -> 'a t -> int = fun t1 t2 ->
      else comp_time
 
 let note : time -> 'a -> 'a t = fun dur a ->
+  if Time.compare dur Time.zero < 0 then raise Negative_duration_note;
   Note(dur, a)
   
 let rest : time -> 'a t = fun dur -> Rest (dur)
@@ -162,15 +166,15 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
   = fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
 	?tempo:(tempo = Time.Tempo.base)
   -> function  
-  | Rest(duration) -> MIDI.create(MidiV.timeToMidiDuration ~samplerate ~division
-							   ~tempo ~duration)
+  | Rest(duration) -> MIDI.create(MidiV.timeToSamplesNumber ~samplerate ~division
+							    ~tempo ~duration)
   | Note(duration, param) ->
      (*
         Time.fprintf Format.std_formatter duration;
         print_newline ();
       *)
-     let midi_duration = MidiV.timeToMidiDuration ~samplerate ~division
-						  ~tempo ~duration
+     let midi_duration = MidiV.timeToSamplesNumber ~samplerate ~division
+						   ~tempo ~duration
      in
      let buffer = MIDI.create(midi_duration)
      and note = frequency_of_string (pitch_to_string (param#pitch))

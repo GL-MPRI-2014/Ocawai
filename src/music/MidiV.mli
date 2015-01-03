@@ -20,7 +20,9 @@ val velocityFromInt : int -> float
 
 (**
    Converts a duration in [Time.t] into an integer number of MIDI pulses,
-   with respect to the given [tempo] 
+   with respect to the given [tempo]
+
+  @param samplerate A value in samples per second 
 *)
-val timeToMidiDuration : ?samplerate:int -> ?division:MIDI.division ->
-			 ?tempo:Time.Tempo.t -> duration:Time.t -> int
+val timeToSamplesNumber : ?samplerate:int -> ?division:MIDI.division ->
+			  ?tempo:Time.Tempo.t -> duration:Time.t -> int

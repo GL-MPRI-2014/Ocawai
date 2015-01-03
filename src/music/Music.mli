@@ -9,6 +9,9 @@
    Borrows much from @author "Paul Hudak"'s Haskell library Euterpea 
 *)
 
+exception Negative_duration_note
+exception Not_found
+
 (** {2 Type definitions} *)
 
 type 'a t = Note of (Time.t * 'a)
@@ -20,6 +23,8 @@ type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Gf | Fss | G | Aff | Gs | Af | Gss | A | Bff | As 
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
+
+(** Velocity values [vel] should be verify : [0 <= vel <= 127] *)  
 type velocity = int
 
 val pitch_to_string : pitch -> string 

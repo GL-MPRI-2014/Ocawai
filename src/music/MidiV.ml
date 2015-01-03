@@ -21,7 +21,8 @@ let velocityFromInt : int -> float =
     let trim x = max 0. (min x 1.) in
     trim ((float_of_int x) /. 127.)
 
-(** Code courtesy of the savonet project *)
+(** Code courtesy of the savonet project
+   @author "D. Baelde" "S. Mimram" *)
 
 type delta = int
 
@@ -33,37 +34,20 @@ let samples_of_delta samplerate division tempo delta =
      let tpq = Int64.of_int tpq in
      let tempo = Int64.of_int tempo in
      let tps = Int64.of_int samplerate in
-     let ten = Int64.of_int 1000000 in
+     let microseconds_to_seconds = Int64.of_int 1000000 in
      let delta = Int64.of_int delta in
      let ( * ) = Int64.mul in
      let ( / ) = Int64.div in
-     let return_val = 
-       ((((delta * tempo) / tpq) * tps) / ten)
+     let return_val =
+       ((((delta * tempo) / tpq) * tps) / microseconds_to_seconds)
      in
-     (*
-     print_newline ();
-     print_int (Int64.to_int ten);
-     print_newline ();
-     print_int (Int64.to_int return_val);
-     print_newline ();
-      *)
      Int64.to_int return_val
   | MIDI.SMPTE (fps,res) ->
      (samplerate * delta) / (fps * res)
 
-let timeToMidiDuration : ?samplerate:int -> ?division:MIDI.division ->
-			 ?tempo:Time.Tempo.t -> duration:Time.t -> int =
+let timeToSamplesNumber : ?samplerate:int -> ?division:MIDI.division ->
+			  ?tempo:Time.Tempo.t -> duration:Time.t -> int =
   fun ?samplerate:(sr = samplerate) ?division:(div = division)
       ?tempo:(tempo = Time.Tempo.base) ~duration ->
-  let tempo_mspq = Time.Tempo.tempoToMspq tempo in
-  let time_times_four time =
-    let rec mult = function
-      | 0 -> Time.zero
-      | k -> Time.plus time @@ mult @@ k-1
-    in mult 4
-  in 
-  (** The duration are implemented in a whole-note based reference scale.
-      Since the tempo is in quarters per minutes, we convert our duration
-      to quarters. *) 
-  let duration_quarters = time_times_four duration in 
-  samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration_quarters)
+  let tempo_mspq = Time.Tempo.toMicrosecondsPerQuarters tempo in
+  samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration)
