@@ -12,11 +12,33 @@ type selectable = [
   | `Building of Building.t
 ]
 
+
+(* Relocating get_next_action outside ClientPlayer *)
+let client_state = ref ClientPlayer.Idle
+
+let set_client_state s =
+  client_state := s
+
+let event_state () =
+  !client_state
+
+let get_next_action () =
+  client_state := ClientPlayer.Waiting ;
+  let rec get_aux () =
+    Thread.delay 0.25;
+    match !client_state with
+    | Received a -> client_state := ClientPlayer.Idle ; a
+    | _ -> get_aux ()
+  in get_aux ()
+
+
 let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
 
-  let my_player = new ClientPlayer.client_player m_cdata#push_update in
+  let my_player =
+    new ClientPlayer.client_player m_cdata#push_update get_next_action
+  in
 
   let m_engine = new Game_engine.game_engine () in
 
@@ -198,8 +220,8 @@ let new_game ?character () =
 
     (* Ingame menu items *)
     new item "cancel" "End turn" (fun () ->
-      if cdata#actual_player#event_state = ClientPlayer.Waiting then
-        cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
+      if event_state () = ClientPlayer.Waiting then
+        set_client_state (ClientPlayer.Received ([], Action.End_turn));
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
@@ -232,7 +254,7 @@ let new_game ?character () =
         |Some(u) -> u
         |None -> assert false
       in
-      cdata#actual_player#set_state (ClientPlayer.Received
+      set_client_state (ClientPlayer.Received
         (cdata#current_move, Action.Attack_unit (atking_unit, atked_unit)));
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
@@ -259,7 +281,7 @@ let new_game ?character () =
             (u, cursor#position, in_range));
           camera#set_position (List.hd in_range)#position
         end else if List.mem cursor#position r then begin
-          cdata#actual_player#set_state (ClientPlayer.Received
+          set_client_state (ClientPlayer.Received
             (cdata#current_move, Action.Wait));
           cursor#set_state Cursor.Idle
         end else
@@ -270,7 +292,7 @@ let new_game ?character () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cdata#actual_player#set_state (ClientPlayer.Received
+      set_client_state (ClientPlayer.Received
         (cdata#current_move, Action.Wait));
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
@@ -377,7 +399,7 @@ let new_game ?character () =
             self#select_pred
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
-            cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
+            event_state () = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> begin
@@ -415,7 +437,7 @@ let new_game ?character () =
                                 (fun () ->
                                   build_menu#toggle;
                                   ui_manager#unfocus build_menu;
-                                  cdata#actual_player#set_state (
+                                  set_client_state (
                                     ClientPlayer.Received ([],
                                       Action.Create_unit (b,u)
                                     )
