@@ -80,17 +80,18 @@ let new_game ?character () =
 
   val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action"
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" ()
 
   val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.red_theme
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack" ()
 
-  val build_menu = new ingame_menu ~m_position:(0,0)
+  val build_menu = new ingame_menu
+    ~m_position:(0,0)
     ~m_width:290
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
-    ~m_bar_text:"Build"
+    ~m_bar_text:"Build" ()
 
   (* Last unit selected through X/W *)
   val mutable last_selected : selectable option = None
@@ -187,7 +188,7 @@ let new_game ?character () =
     let my_menu = new ingame_menu
       ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150
       ~m_item_height:30 ~m_theme:Theme.blue_theme
-      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" in
+      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" () in
 
     (* Forfeit confirmation popup *)
     let forfeit_popup = new Windows.ingame_popup
@@ -233,9 +234,16 @@ let new_game ?character () =
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "cancel" "Cancel" (fun () -> print_endline "canceled";
-      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
+    let cancel_menu () =
+      my_menu#toggle;
+      main_button#toggle;
+      ui_manager#unfocus my_menu
+    in
+
+    new item "cancel" "Cancel" cancel_menu
     |> my_menu#add_child;
+
+    my_menu#set_escape cancel_menu;
 
     let cursor = cdata#camera#cursor in
 
@@ -260,11 +268,16 @@ let new_game ?character () =
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
-    new item "cancel" "Cancel" (fun () ->
+    let atk_cancel () =
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" atk_cancel
     |> atk_menu#add_child;
+
+    atk_menu#set_escape atk_cancel;
 
     (* Displacement menu items *)
     new item "attack" "Attack" (fun () ->
@@ -298,19 +311,29 @@ let new_game ?character () =
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
-    new item "cancel" "Cancel" (fun () ->
+    let move_cancel () =
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" move_cancel
     |> disp_menu#add_child;
+
+    disp_menu#set_escape move_cancel;
 
     (* Build menu items *)
 
-    new item "cancel" "Cancel" (fun () ->
+    let build_cancel () =
       build_menu#toggle;
       ui_manager#unfocus build_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" build_cancel
     |> build_menu#add_child;
+
+    build_menu#set_escape build_cancel;
 
     my_menu#toggle;
     disp_menu#toggle;

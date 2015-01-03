@@ -28,7 +28,8 @@ sélectionné **game on!** pour lancer le jeu.
 
 # Compilation
 
-Si c'est la première fois que vous générer le projet, lancer la commande `aclocal -I m4`.
+Si c'est la première fois que vous générer le projet, lancer la
+commande `aclocal -I m4`.
 
 
 * `autoreconf configure.ac` : Générer le fichier *configure*
@@ -40,7 +41,9 @@ Si c'est la première fois que vous générer le projet, lancer la commande `acl
 * `make` : Compile l'interface
 * `make run` : Compile le jeu et le lance
 
-Si vous faites une modification dans le Makefile.in (et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile` pour le mettre à jour.
+Si vous faites une modification dans le Makefile.in
+(et surtout pas le Makefile). Vous avez juste à utiliser `make Makefile`
+pour le mettre à jour.
 
 # Backtrace
 
