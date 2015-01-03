@@ -1,5 +1,5 @@
 (**
-   Some testing facilities
+   Music reading and playback object
 *)
 
 open Time
@@ -89,24 +89,6 @@ let music_player =
   end
 
 let () =
-  (*
-  print_string "Testing Time module\n";
-  print_int (Time.Tempo.toMicrosecondsPerQuarters (Time.Tempo.base));
-  print_newline ();
-
-  Format.fprintf Format.std_formatter "@[%a@]@." Time.fprintf (Time.min (Time.inverse bn) wn);
-  print_newline ();
-  
-  let print_TPTM t = TPTM.fprintf Format.std_formatter t; print_newline () in
-  
-  let myTPTM = normalize pierrot in
-  print_TPTM myTPTM; 
-  TPTM.play ~tempo:(Time.Tempo.fromInt 100) pierrot_canon;
-  Unix.sleep 3; 
-  print_TPTM first_measure;
-  TPTM.fork_play ~tempo:(Time.Tempo.fromInt 100) first_measure;
-  Thread.delay 10. *)
-  print_endline "Starting the big test !";
   let my_music_player = music_player () in
   ignore @@ Thread.create my_music_player#play_next_measure (); 
   my_music_player#read_note
