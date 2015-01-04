@@ -26,62 +26,46 @@ object (self)
   (* asks for the next action over the network
      does not handle timeout yet *)
 
-  method get_next_action =
-    Log.infof "#get_next_action" ;
+  method get_next_action = 
+    Log.infof "send \"get_next_action\"" ;
+    let success = Send_recv.send sockfd Types.get_next_action_code "" Types.clock in
+    
+    if not success then
+      failwith "send \"get_next_action\" failure in netPlayer !"
+    else
+      begin
+	Log.infof "recv";
+	let receipt  = Send_recv.recv sockfd Types.clock in 
 
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let boolean = Send_recv.send sockfd 0 (to_string [Closures]) 3.0
+	match receipt with
+	  | Some(code, str) when code = Types.next_action_code -> 
+	    Log.infof "-> \"next_action\"";
+	    Action.from_string str
+	  | None ->
+	    Log.infof "-> None";
+	    failwith "kill the player in netPlayer !"
+            (* [Position.create (0,0)], Action.Wait *)
+	  | _ ->
+	    failwith "Error fatal in netPlayer !"
+            (* [Position.create (0,0)], Action.Wait *)
+      end
 
-With
- -> sockfd the socket
- -> 0 the code for "Get_next_action"
- -> to_string [Closures]
- -> 3.0 is the timeout
+	
+  method set_logicPlayerList playersList =
+    ()
 
-if boolean is false then kill this player
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    to_channel out_channel (Get_next_action) [Closures];
-(*#############################################*)
-
-    flush out_channel ;
-    Log.infof "#get_next_action sent" ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let receipt  = Send_recv.recv sockfd 3.0
-
-With
- -> sockfd the socket
- -> 3.0 is the timeout
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    let s = (from_channel in_channel : receive) in
-(*#############################################*)
-
-    Log.infof "#get_next_action received" ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-match receipt with
- | Some(2, _) -> self#manage_gna
- | Some(3, _) -> [Position.create (0,0)], Action.Wait
- | None -> kill this player
-
-With
- -> '2' is the code for "Next_action"
- -> '3' is the code for "Error"
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    match s with
-    | Next_action a -> a
-    | Error _ -> [Position.create (0,0)], Action.Wait (* By default Wait *)
-(*#############################################*)
+  method get_logicPlayerList =
+    logicPlayerList
 
   (* send updates over the network *)
+      
 
   method update u =
-    to_channel out_channel (Update u) [Closures];
+    Log.infof "send  \"update\"";
+    
+    let success = Send_recv.send sockfd Types.update_code (Types.to_string u) Types.clock in
 
+    if not success then
+      failwith "send \"update\" failure in netPlayer !"
+	
 end

@@ -59,7 +59,7 @@ common_dependencies = atdgen,dolog,unix
 engine_dependencies = $(common_dependencies),threads
 music_dependencies = num,ocsfml.audio,mm,pulseaudio
 script_dependencies = $(common_dependencies)
-
+network_dependencies = dolog
 
 #music dependencies must be before ocsfml.graphics otherwise ocamlbuild fail.
 interface_dependencies = bigarray,threads,$(music_dependencies),ocsfml.graphics,$(common_dependencies)
@@ -99,7 +99,7 @@ engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(
 
 client_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_client) -tag $(engine_tags)
 
-network_command = $(command) -Is $(network_src) $(output_network)
+network_command = $(command) -Is $(network_src) -package $(network_dependencies) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
@@ -138,6 +138,8 @@ all_files_atd_ml := $(files_atd_t) $(files_atd_t:_t.ml=_j.ml) $(files_atd_t:_t.m
 all_files_atd_mli := $(files_atd_ml:.ml=.mli)
 
 #TO DO : log shouldn't be here
+all: interface engine client
+
 interface: $(files_atd_ml) log
 	$(interface_command)
 
