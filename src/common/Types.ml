@@ -28,6 +28,8 @@ let update_code = 1
 let next_action_code = 2
 let error_code = 3
 
+let clock = 3.0
+
 
 let from_string (str : string) = 
   Game_over

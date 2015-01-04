@@ -88,13 +88,11 @@ object (self)
     let clip = self#is_set in 
     let action = clip#get_next_action in
 
-    Log.infof "Sending..." ;
-    let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) 3.0 in
+    Log.infof "send \"next_action\"" ;
+    let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) Types.clock in
+    
     if not success then
-     failwith "kill the player in dealer !"
-    else
-    Log.infof "Sent." ;
-    flush out_channel
+      failwith "send \"next_action failure in dealer !"
     
 
   (* do what has to be done with an update... *)
@@ -120,20 +118,20 @@ object (self)
   method run = 
     while true 
     do 
-      Log.infof "Receiving..." ;
-      let receipt  = Send_recv.recv sockfd 3.0 in
-      Log.infof "Received." ;
+      Log.infof "recv" ;
+      let receipt  = Send_recv.recv sockfd Types.clock in
+
       match receipt with
 	| Some (code, _) when code = Types.get_next_action_code ->
-	  Log.infof "0";
+	  Log.infof "-> \"get_next_action\"";
 	  self#manage_gna
 	| Some(code, update) when code = Types.update_code ->
-	  Log.infof "1";
+	  Log.infof "-> \"update\"";
 	  self#manage_update (Types.from_string update)
-	| None -> Log.infof "None"
-	| Some (n,_) -> Log.infof "%d" n
+	| None -> Log.infof "-> None"
+	| Some (n,_) -> Log.infof "-> code : %d" n
     done
-
+      
 end
 
 type t = dealer

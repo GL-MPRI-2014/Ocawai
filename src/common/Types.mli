@@ -27,6 +27,8 @@ val update_code : int
 val next_action_code : int
 val error_code : int
 
+val clock : float
+
 
 val from_string : string -> update
 val to_string : update -> string

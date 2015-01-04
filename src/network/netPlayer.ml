@@ -27,42 +27,27 @@ object (self)
      does not handle timeout yet *)
 
   method get_next_action = 
-    Log.infof "#get_next_action" ;
-
-   (*
-    let chars = Network_tool.write_timeout sockfd "titi" 0 4 1. in
-match chars with 
-| Some (n) -> Log.infof "nb chars %d" n;failwith "end"
-| None ->  Log.infof "None";failwith "end"
-   *)
-
- let success = Send_recv.send sockfd Types.get_next_action_code "" 3.0 in
-    (* TODO: if boolean is false then kill this player*)
-    Log.infof "Sent";
-    flush out_channel ;
-
+    Log.infof "send \"get_next_action\"" ;
+    let success = Send_recv.send sockfd Types.get_next_action_code "" Types.clock in
+    
     if not success then
-      failwith "kill the player in netPlayer !" (* kill the player *)
+      failwith "send \"get_next_action\" failure in netPlayer !"
     else
       begin
-	Log.infof "#get_next_action sent" ;
-	
-	let receipt  = Send_recv.recv sockfd 3.0 in 
-	Log.infof "#get_next_action received";
-	flush out_channel ;
+	Log.infof "recv";
+	let receipt  = Send_recv.recv sockfd Types.clock in 
+
 	match receipt with
 	| Some(code, str) when code = Types.next_action_code -> 
-	  Log.infof "#next_action";
-	  flush out_channel;
+	  Log.infof "-> \"next_action\"";
 	  Action.from_string str
 	| None ->
-	  Log.infof "#None";
-	  flush out_channel;
-	  [Position.create (0,0)], Action.Wait (* kill this player *)
+	  Log.infof "-> None";
+	  failwith "kill the player in netPlayer !"
+	  (* [Position.create (0,0)], Action.Wait *)
 	| _ ->
-	  Log.infof "#Error Fatal";
-	  flush out_channel;
-	  [Position.create (0,0)], Action.Wait (* Wait by default *)
+	  failwith "Error fatal in netPlayer !"
+	  (* [Position.create (0,0)], Action.Wait *)
       end
 
 	  
@@ -75,13 +60,11 @@ match chars with
   (* send updates over the network *)
 	  
   method update u =
-    Log.infof "#update";
+    Log.infof "send  \"update\"";
     
-    let success = Send_recv.send sockfd Types.update_code (Types.to_string u) 3.0 in
-    flush out_channel ;
+    let success = Send_recv.send sockfd Types.update_code (Types.to_string u) Types.clock in
+
     if not success then
-      failwith "kill the player in netPlayer !"
-    else
-      Log.infof "#update sent"
+      failwith "send \"update\" failure in netPlayer !"
     
 end
