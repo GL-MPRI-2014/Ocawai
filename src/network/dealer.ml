@@ -89,9 +89,9 @@ object (self)
     let action = clip#get_next_action in
 
     Log.infof "Sending..." ;
-    let boolean = Send_recv.send sockfd 2 (Action.to_string action) 3.0 in
-    if not boolean
-    then (* kill the player *) ()
+    let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) 3.0 in
+    if not success then
+     failwith "kill the player in dealer !"
     else
     Log.infof "Sent." ;
     flush out_channel
@@ -124,10 +124,14 @@ object (self)
       let receipt  = Send_recv.recv sockfd 3.0 in
       Log.infof "Received." ;
       match receipt with
-      | Some (0, _) -> Log.infof "0";  self#manage_gna
-      | Some(1, update) -> Log.infof "1";self#manage_update (Types.from_string update)
-      | None -> Log.infof "None"
-      | Some (n,_) -> Log.infof "%d" n
+	| Some (code, _) when code = Types.get_next_action_code ->
+	  Log.infof "0";
+	  self#manage_gna
+	| Some(code, update) when code = Types.update_code ->
+	  Log.infof "1";
+	  self#manage_update (Types.from_string update)
+	| None -> Log.infof "None"
+	| Some (n,_) -> Log.infof "%d" n
     done
 
 end

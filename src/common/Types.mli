@@ -22,5 +22,11 @@ type update =
   | Set_logic_player_list of id_player list
   | Map of string
 
+val get_next_action_code : int
+val update_code : int
+val next_action_code : int
+val error_code : int
+
+
 val from_string : string -> update
 val to_string : update -> string

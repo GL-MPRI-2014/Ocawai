@@ -36,13 +36,13 @@ match chars with
 | None ->  Log.infof "None";failwith "end"
    *)
 
- let success = Send_recv.send sockfd 0 "" 3.0 in
+ let success = Send_recv.send sockfd Types.get_next_action_code "" 3.0 in
     (* TODO: if boolean is false then kill this player*)
     Log.infof "Sent";
     flush out_channel ;
 
     if not success then
-      failwith "toto" (* kill the player *)
+      failwith "kill the player in netPlayer !" (* kill the player *)
     else
       begin
 	Log.infof "#get_next_action sent" ;
@@ -51,7 +51,7 @@ match chars with
 	Log.infof "#get_next_action received";
 	flush out_channel ;
 	match receipt with
-	| Some(2, str) -> 
+	| Some(code, str) when code = Types.next_action_code -> 
 	  Log.infof "#next_action";
 	  flush out_channel;
 	  Action.from_string str
@@ -77,10 +77,10 @@ match chars with
   method update u =
     Log.infof "#update";
     
-    let boolean = Send_recv.send sockfd 1 (Types.to_string u) 3.0 in
+    let success = Send_recv.send sockfd Types.update_code (Types.to_string u) 3.0 in
     flush out_channel ;
-    if not boolean
-    then ()    (* TODO: kill this player*)
+    if not success then
+      failwith "kill the player in netPlayer !"
     else
       Log.infof "#update sent"
     

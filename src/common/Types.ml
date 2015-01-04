@@ -22,6 +22,13 @@ type update =
   | Set_logic_player_list of id_player list
   | Map of string
 
+
+let get_next_action_code = 0
+let update_code = 1
+let next_action_code = 2
+let error_code = 3
+
+
 let from_string (str : string) = 
   Game_over
 
