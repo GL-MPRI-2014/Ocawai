@@ -251,8 +251,12 @@ class game_engine () = object (self)
       ) changed_buildings
     ) players;
 
-    List.iter (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid))) added ;
-    List.iter (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid))) removed ;
+    List.iter
+      (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid)))
+      added ;
+    List.iter
+      (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid)))
+      removed ;
 
     let rec aux lst =
       match lst with

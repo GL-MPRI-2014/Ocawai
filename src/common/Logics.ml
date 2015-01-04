@@ -281,7 +281,7 @@ let capture_buildings player_list player building_list =
 	      b#set_neutral;
 	      let p = find_player id player_list in
 	      p#delete_building (b#get_id);
-        removed := (b#get_id,p_id) :: !removed ;
+        removed := (b#get_id,id) :: !removed ;
 	      changed := (b, Some p) :: (!changed)
 	  )
 	  else find_building t
