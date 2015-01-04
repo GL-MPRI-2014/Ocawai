@@ -93,7 +93,7 @@ object
   inherit logicPlayer
 
   (**Get the next action of the player*)
-  method virtual get_next_action :  Action.t
+  method virtual get_next_action : Mutex.t -> Action.t
 
   (**Set the logic player (the opponents) of this player.*)
   method set_logic_player_list : (logicPlayer list) -> unit

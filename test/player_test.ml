@@ -7,6 +7,8 @@ open Action
 
 let config = let c = new Config.t in c#set_config_name "test_config ";c#init Config.default_config_files;c
 
+let dummy_mutex = Mutex.create ()
+
 (*check empty player*)
 let test_player_0 test_ctxt =
   let p = create_dummy_player [] in
@@ -43,7 +45,7 @@ let test_player_4 test_ctxt =
 (*check empty try_next_action in dummy_player*)
 let test_player_5 test_ctxt =
   let p = create_dummy_player [] in
-  assert_equal ([], Action.End_turn) p#get_next_action
+  assert_equal ([], Action.End_turn) (p#get_next_action dummy_mutex)
 
 
 let suite_player =

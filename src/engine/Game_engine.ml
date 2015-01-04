@@ -142,10 +142,13 @@ class game_engine () = object (self)
       | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
     )
 
-  method run : unit =
+  method run mutex : unit =
     Log.infof "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
+    Mutex.unlock mutex;
+    Thread.yield ();
+    Mutex.lock mutex;
     (* Notify the player *)
     player#update Types.Your_turn;
     (* Notify the others *)
@@ -154,7 +157,10 @@ class game_engine () = object (self)
     |> List.filter (fun p -> p <> players.(self#actual_player))
     |> List.iter (fun p -> p#update (Types.Turn_of pid));
 
-    let next_wanted_action =  player#get_next_action in
+    Mutex.unlock mutex;
+    let next_wanted_action = player#get_next_action mutex in
+    Mutex.lock mutex;
+
     begin try
       let next_action = Logics.try_next_action
             (self#get_players :> Player.logicPlayer list)
@@ -225,9 +231,9 @@ class game_engine () = object (self)
              players.(self#actual_player)#update (Types.Game_over);
              players.(enemy_id)#update (Types.Game_over)
             )
-        else self#run
+        else self#run mutex
         )
-    else self#run
+    else self#run mutex
 
 
   method private end_turn =
