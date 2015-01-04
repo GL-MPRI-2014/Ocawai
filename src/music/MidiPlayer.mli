@@ -6,6 +6,10 @@
    @author Mathias Sable Meyer
 *)
 
+(** Volume is here an int from 0 to 100*)
+val get_volume : unit -> int
+val set_volume : int -> unit
+
 (**
   The class of the midi player that has {b shiny} buffer behaviour.
 

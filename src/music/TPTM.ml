@@ -95,63 +95,37 @@ let extract_by_time : Time.t -> t -> t * t = fun extract_dur t ->
   in
   aux Time.zero zero t
 
-let play_and_wait : ?samplerate:int -> ?division:MIDI.division ->
-	       ?tempo:Time.Tempo.t -> t -> unit =
+let to_MIDI_buffer : ?samplerate:int -> ?division:MIDI.division ->
+		?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
       ?tempo:(tempo = Time.Tempo.base) ->
   fun t ->
   let Tile(dl) = normalize t in
   let events = DList.toMidi ~samplerate ~division ~tempo dl in
   match events with
-  | None -> ()
+  | None -> MIDI.Multitrack.create 16 0
   | Some(buf) -> 
      let duration = MIDI.Multitrack.duration [|buf|] in
-     let midi_player = new MidiPlayer.asynchronousMidiPlayer
-     and multi_track = MIDI.Multitrack.create 16 duration in
-     let duration_seconds_num =
-       Num.mult_num (Num.num_of_int duration)
-	 (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
-     in
-     let duration_seconds =
-       Num.float_of_num duration_seconds_num
-     in
-
+     let multi_track = MIDI.Multitrack.create 16 duration in
      multi_track.(0) <- buf;
-     midi_player#add multi_track;
-     ignore (Thread.create midi_player#play ());
-     Thread.delay duration_seconds;
-     midi_player#stop ()
+     multi_track
 
-
-let fork_play : ?samplerate:int -> ?division:MIDI.division ->
+let play : ?samplerate:int -> ?division:MIDI.division ->
 		?tempo:Time.Tempo.t -> t -> unit =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
       ?tempo:(tempo = Time.Tempo.base) ->
   fun t ->
-  let Tile(dl) = normalize t in
-  let events = DList.toMidi ~samplerate ~division ~tempo dl in
-  match events with
-  | None -> ()
-  | Some(buf) -> 
-     let duration = MIDI.Multitrack.duration [|buf|] in
-     let midi_player = new MidiPlayer.asynchronousMidiPlayer
-     and multi_track = MIDI.Multitrack.create 16 duration in
-     let duration_seconds_num =
-       Num.mult_num (Num.num_of_int duration) @@
-		    Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate)
-     in
-     let duration_seconds =
-       Num.float_of_num duration_seconds_num
-     in
-
-     multi_track.(0) <- buf;
-     midi_player#add multi_track;
-     let killer () =
-       Thread.delay duration_seconds;
-       midi_player#stop ()
-     in
-     ignore @@ Thread.create midi_player#play ();
-     ignore @@ Thread.create killer ()
+  let midi_player = new MidiPlayer.asynchronousMidiPlayer in
+  let buffer = to_MIDI_buffer ~samplerate ~division ~tempo t in
+  let duration = MIDI.Multitrack.duration buffer in
+  let duration_seconds = MidiV.samplesToSeconds ~samplerate duration in
+  midi_player#add buffer;
+  let killer () =
+    Thread.delay duration_seconds;
+    midi_player#stop ()
+  in
+  ignore @@ Thread.create midi_player#play ();
+  ignore @@ Thread.create killer ()
 			      
 (** {2 Testing functions} *)
 

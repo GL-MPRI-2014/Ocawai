@@ -117,6 +117,12 @@ class main_menu = object(self)
 
     window#display
 
+  method paused =
+    music_run := false
+
+  method resumed =
+    music_run := true
+
   initializer
     let window = manager#window in
     let (w,h) = window#get_size in
