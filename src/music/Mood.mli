@@ -5,6 +5,7 @@
  the interface (that is, what the player actually sees).
 
  @authors Mathias Sablé Meyer
+ @authors Théis Bazin
 *)
 
 type t = int
