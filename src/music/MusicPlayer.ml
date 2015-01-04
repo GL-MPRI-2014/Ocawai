@@ -64,12 +64,15 @@ let music_player =
       (* TODO, right now *)()
       
     method play_next_measure : Tempo.t -> unit = fun tempo ->
+      let midi_player = new MidiPlayer.asynchronousMidiPlayer in
+      ignore @@ Thread.create (midi_player#play) ();
       while true do
         let (next_measure, rest) =
           TPTM.extract_by_time wn buffer
         in
         buffer <- reset rest;
-        TPTM.fork_play ~tempo next_measure;
+        let new_buffer = TPTM.to_MIDI_buffer ~tempo next_measure in
+	midi_player#add new_buffer;
         Thread.delay (self#duration_one_measure ~tempo)
       done
 

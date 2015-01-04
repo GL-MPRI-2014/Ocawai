@@ -103,19 +103,17 @@ val normalize : t -> t
 val extract_by_time : Time.t -> t -> t * t
 
 (**
-   Convert [t] to MIDI and stream it to the user, freezing the
-   current process during playback.
+   [TPTM.t] to [MIDI.Multitrack.buffer] conversion
  *)
-val play_and_wait : ?samplerate:int -> ?division:MIDI.division ->
-		    ?tempo:Time.Tempo.t -> t -> unit 
-					 
+val to_MIDI_buffer : ?samplerate:int -> ?division:MIDI.division ->
+		     ?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer
+
 (**
    Convert [t] to MIDI and stream it to the user, all in another
    forked process, without stopping the current process
  *)
-val fork_play : ?samplerate:int -> ?division:MIDI.division ->
-		?tempo:Time.Tempo.t -> t -> unit 
-
+val play : ?samplerate:int -> ?division:MIDI.division ->
+	   ?tempo:Time.Tempo.t -> t -> unit 
 
 (** {2 Testing functions} *) 
 
