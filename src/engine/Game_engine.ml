@@ -40,10 +40,12 @@ class game_engine () = object (self)
     actual_player_l <- remove_indice i actual_player_l;
     Array.iter (fun x ->
       List.iter (fun u ->
-        x#delete_unit u#get_id;
         x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id)))
       ) players.(i)#get_army
-    ) players
+    ) players ;
+    List.iter (fun u ->
+      players.(i)#delete_unit u#get_id
+    ) players.(i)#get_army
 
   method get_players =
     Array.to_list players
