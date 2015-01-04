@@ -44,10 +44,17 @@ end
 (** Usage : [new ingame_menu position width item_height theme bar_height
   * bar_icon bar_text]
   * Creates a simple ingame menu *)
-class ingame_menu : m_position:(int * int) -> m_width:int ->
-  m_item_height:int -> m_theme:Theme.t -> m_bar_height:int ->
-  m_bar_icon:string -> m_bar_text:string ->
-    object
+class ingame_menu :
+  ?escape:(unit -> unit) ->
+  m_position:(int * int) ->
+  m_width:int ->
+  m_item_height:int ->
+  m_theme:Theme.t ->
+  m_bar_height:int ->
+  m_bar_icon:string ->
+  m_bar_text:string ->
+  unit ->
+  object
 
   inherit [item] BaseMixins.evq_container
 
@@ -60,6 +67,10 @@ class ingame_menu : m_position:(int * int) -> m_width:int ->
   val mutable nb_items : int
 
   val mutable item_height : int
+
+  val mutable escape : (unit -> unit) option
+
+  method set_escape : (unit -> unit) -> unit
 
   method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 

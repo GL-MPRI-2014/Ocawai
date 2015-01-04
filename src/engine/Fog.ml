@@ -49,6 +49,10 @@ let unit_is_visible fog (u:Unit.t)=
     let (x,y) = Position.topair u#position in
     fog.(x).(y) > 0
 
+let building_is_visible fog (u:Building.t)=
+    let (x,y) = Position.topair u#position in
+    fog.(x).(y) > 0
+
 (* retourne l'armée tronquée, contenant uniquement les unités visibles par rapport au fog *)
 let rec visible_army fog (a:Unit.t list)=
     match a with
@@ -57,5 +61,13 @@ let rec visible_army fog (a:Unit.t list)=
                 u::(visible_army fog t)
             else
                 (visible_army fog t)
+
+let rec visible_buildings fog (a:Building.t list)=
+    match a with
+    |[]-> []
+    |u::t-> if building_is_visible fog u then
+                u::(visible_buildings fog t)
+            else
+                (visible_buildings fog t)
 
 

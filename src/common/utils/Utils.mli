@@ -34,6 +34,6 @@ val init_string : int -> (int -> char) -> string
 (** Test the validity of a json file parameter according to a test function*)
 val check_validity : ('a -> bool) -> Ag_util.Validation.path -> 'a -> Ag_util.Validation.error option
 
-(** @returns the base path to load resources. *)
+(** @return the base path to load resources. *)
 val base_path : unit -> string
 

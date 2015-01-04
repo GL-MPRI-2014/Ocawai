@@ -2,11 +2,6 @@ open OcsfmlGraphics
 open Utils
 open Tileset
 
-(* Time to move of 1 cell *)
-(* let animation_time = 0.03 *)
-(* Number of frames for the animation *)
-let animation_time = 2
-
 let renderer = object(self)
 
   val texture_library = TextureLibrary.create ()
@@ -16,12 +11,6 @@ let renderer = object(self)
   val font = Fonts.load_font "FreeSansBold.ttf"
 
   val mutable rect_vao = new vertex_array ~primitive_type:Quads []
-
-  (* Marks items of the log as read *)
-  val log_history = Hashtbl.create 91
-
-  (* Associates every unit to its graphical state *)
-  val unit_ginfo = Hashtbl.create 91
 
   method init =
     let folder = (Utils.base_path ()) ^ "textures/" in
@@ -249,53 +238,28 @@ let renderer = object(self)
       | [] -> ()
 
   (* Render a unit *)
-  method private draw_unit (target : render_window) camera character my_unit =
-    let color =
-      if my_unit#has_played
-      then Color.rgb 150 150 150
-      else Color.rgb 255 255 255
-    in
-    let (u_position,offset) = if Hashtbl.mem unit_ginfo my_unit then
-      begin
-        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
-        if frames + 1 = animation_time
-        then Hashtbl.replace unit_ginfo my_unit (List.tl path, 0)
-        else Hashtbl.replace unit_ginfo my_unit (path, frames + 1);
-        let (path,frames) = Hashtbl.find unit_ginfo my_unit in
-        match path with
-        | []          ->
-            Hashtbl.remove unit_ginfo my_unit ; (my_unit#position,(0.,0.))
-        | e :: n :: _ ->
-            (* Beware of magic numbers *)
-            let o =
-              (float_of_int frames) /. (float_of_int animation_time) *. 50.
-            in
-            e, Position.(
-              if      n = left  e then (-. o,   0.)
-              else if n = right e then (o   ,   0.)
-              else if n = up    e then (0.  , -. o)
-              else if n = down  e then (0.  ,    o)
-              else assert false
-            )
-        | e :: _      -> (e,(0.,0.))
-      end
-      else (my_unit#position, (0.,0.))
-    in
-    let name = character ^ "_" ^ my_unit#name in
-    self#draw_from_map ~offset target camera name u_position ~color ();
-    let size = int_of_float (camera#zoom *. 14.) in
-    let (ox,oy) = offset in
-    let position = addf2D
-      (foi2D (camera#project u_position))
-      (ox *. camera#zoom, oy *. camera#zoom)
-    in
-    (* new text ~string:(if my_unit#hp * 10 < my_unit#life_max then "1" else
-        string_of_int (my_unit#hp * 10 / my_unit#life_max))
-      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
-    |> target#draw *)
-    new text ~string:(string_of_int (my_unit#hp))
-      ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
-    |> target#draw
+  method private draw_unit
+  (target : render_window) uphandle camera foggy character my_unit =
+    let (u_position,offset) = uphandle#unit_position my_unit in
+    if foggy u_position then ()
+    else begin
+      let color =
+        if my_unit#has_played
+        then Color.rgb 150 150 150
+        else Color.rgb 255 255 255
+      in
+      let name = character ^ "_" ^ my_unit#name in
+      self#draw_from_map ~offset target camera name u_position ~color ();
+      let size = int_of_float (camera#zoom *. 14.) in
+      let (ox,oy) = offset in
+      let position = addf2D
+        (foi2D (camera#project u_position))
+        (ox *. camera#zoom, oy *. camera#zoom)
+      in
+      new text ~string:(string_of_int (my_unit#hp))
+        ~position ~font ~color:(Color.rgb 230 230 240) ~character_size:size ()
+      |> target#draw
+    end
 
   (* Draw a building *)
   method private draw_building
@@ -320,7 +284,7 @@ let renderer = object(self)
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 50 50 255)) attack_range
     end
-    | Cursor.Build _ -> ()
+    | Cursor.Build _ | Cursor.Watched_attack -> ()
 
   (* Draw the cursor *)
   method private draw_cursor (target : render_window)
@@ -328,7 +292,7 @@ let renderer = object(self)
     let texname =
       Cursor.(match camera#cursor#get_state with
       | Idle | Displace(_,_,_) | Build _ -> "cursor"
-      | Action(_,_,_) -> "sight")
+      | Action(_,_,_) | Watched_attack -> "sight")
     in
     self#draw_from_map target camera texname camera#cursor#position
       ~offset:(Utils.subf2D (0.,0.) camera#cursor#offset)
@@ -339,31 +303,22 @@ let renderer = object(self)
     (ui_manager : UIManager.ui_manager) =
     ui_manager#draw target texture_library
 
-  (* Reads the stack to update unit informations *)
-  method private handle_updates (data : ClientData.client_data) =
-    Types.( match data#pop_update with
-    | Some(u) -> begin
-      match u with
-      | Move_unit (u,path,id_p) ->
-        let pl = Logics.find_player id_p data#players in
-        Hashtbl.replace unit_ginfo (pl#get_unit_by_id u) (path,0);
-        Sounds.play_sound "boots";
-      | Game_over -> Sounds.play_sound "lose"
-      | Set_unit_hp(_,_,_) -> Sounds.play_sound "shots"
-      | Building_changed(b) -> data#toggle_neutral_building b
-      | _ -> ()
-      end; self#handle_updates data
-    | None -> ()
-    );
-
   (* Draw the whole game *)
   method render_game (target : render_window)
-    (data : ClientData.client_data) =
+    (data : ClientData.client_data) (uphandle : Updates.handler) =
+    (* For the fog *)
+    let fog = data#actual_player#get_fog in
+    let foggy p =
+      let (i,j) = Position.topair p in
+      try fog.(i).(j) = 0
+      with _ -> false
+    in
+    (* Rendering *)
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;
     self#draw_path target data#camera data#current_move;
     self#draw_cursor target data#camera;
-    self#handle_updates data;
+    uphandle#update;
     (* Draw buildings *)
     List.iter
       (self#draw_building target data#camera "neutral")
@@ -377,17 +332,12 @@ let renderer = object(self)
     (* Draw units *)
     List.iter (fun p ->
       let chara = Characters.to_string (Characters.handler#character_of p) in
-      List.iter (self#draw_unit target data#camera chara)
-        (p#get_visible_army_for (data#actual_player :> Player.logicPlayer))
+      List.iter
+        (self#draw_unit target uphandle data#camera foggy chara)
+        p#get_army
     ) data#players;
     (* Displaying fog *)
     let camera = data#camera in
-    let fog = data#actual_player#get_fog in
-    let foggy p =
-      let (i,j) = Position.topair p in
-      try fog.(i).(j) = 0
-      with _ -> false
-    in
     List.iter
       (fun p -> if (foggy p) then self#draw_from_map target camera "fog" p ())
       (Position.square camera#top_left camera#bottom_right);
@@ -402,7 +352,13 @@ let renderer = object(self)
       self#draw_direct_tile target set s
         ~position:pos ~scale:(30./.50.,30./.50.) ()
     in
-    let s_unit = data#visible_unit_at_position data#camera#cursor#position in
+    let is_foggy = foggy data#camera#cursor#position in
+    (* It seems we cannot trust the following function *)
+    (* let s_unit = data#visible_unit_at_position data#camera#cursor#position in *)
+    let s_unit =
+      if is_foggy then None
+      else data#unit_at_position data#camera#cursor#position
+    in
     let chara = match s_unit with
     | Some selected_unit ->
         let player = data#player_of selected_unit in
@@ -416,6 +372,7 @@ let renderer = object(self)
             "" data#players
     | None -> ""
     in
+    (* let chara = "flatman" in *)
     let damage = Cursor.(
         match (data#camera#cursor#get_state,s_unit) with
         | (Action(u1,_,_), Some u2) ->
@@ -440,13 +397,31 @@ let renderer = object(self)
       Battlefield.get_tile data#map data#camera#cursor#position
     in
     data#case_info#draw
-      target drawer tile_drawer damage s_unit chara s_building b_chara s_tile;
+      target
+      drawer
+      tile_drawer
+      damage
+      is_foggy
+      s_unit
+      chara
+      s_building
+      b_chara
+      s_tile ;
     (* Display resources *)
     let resources = string_of_int data#actual_player#get_value_resource in
     let (w,h) = foi2D target#get_size in
     GuiTools.(rect_print
-      target resources font Color.white (Pix 30) (Pix 10) Right
+      target (resources ^ " flowers") font Color.white (Pix 30) (Pix 10) Right
       { left = 20. ; top = 5. ; width = w -. 40. ; height = 100. });
+    (* Display players turn *)
+    let current = Updates.(match uphandle#current_turn with
+      | Your_turn -> "Your turn"
+      | Turn_of id -> Printf.sprintf "Turn of #%d" id
+      | Nobody_s_turn -> "Nobody's turn..." (* TODO Maybe just empty string *)
+    ) in
+    GuiTools.(rect_print
+      target current font Color.white (Pix 30) (Pix 10) Right
+      { left = 20. ; top = h -. 50. ; width = w -. 40. ; height = 100. });
     (* Display framerate *)
     FPS.display target
 

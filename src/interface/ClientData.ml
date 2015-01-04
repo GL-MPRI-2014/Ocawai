@@ -51,6 +51,8 @@ class client_data = object(self)
     try Some (Queue.top updates)
     with Queue.Empty -> None
 
+  method update_iter f = Queue.iter f updates
+
   method map = get_option map
 
   method camera = get_option camera
@@ -64,10 +66,11 @@ class client_data = object(self)
   method neutral_buildings = neutral_buildings
 
   method toggle_neutral_building b =
-    if List.mem b neutral_buildings then
-      neutral_buildings <- (List.filter (fun bd -> bd <> b) neutral_buildings)
+    if List.exists (fun bd -> bd#get_id = b#get_id) neutral_buildings then
+      neutral_buildings <-
+        List.filter (fun bd -> bd#get_id <> b#get_id) neutral_buildings
     else
-      neutral_buildings <- (b :: neutral_buildings)
+      neutral_buildings <- b :: neutral_buildings
 
   method actual_player =
     match actual_player with
@@ -119,16 +122,11 @@ class client_data = object(self)
     |Some(_) when u' = None -> true
     | _ -> false
 
-  method player_of u =
-    let rec aux = function
-      |[] -> false
-      |t::q -> t = u || aux q
-    in
-    let rec iter_player = function
-      |[] -> assert false
-      |t::q -> if aux t#get_army then t else iter_player q
-    in
-    iter_player players
+  method player_of (u:Unit.t) =
+    let rec iter = function
+    | []     -> failwith "player not found"
+    | p :: r -> if p#get_id = u#player_id then p else iter r
+    in iter players
 
   method private listed_building_at_position pos blist =
     let rec aux = function

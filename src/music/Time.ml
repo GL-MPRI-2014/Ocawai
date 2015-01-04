@@ -19,6 +19,8 @@ let inverse = minus_num
 
 let compare = compare_num
 
+let is_equal = eq_num
+
 let sign = sign_num
 
 let min = min_num
@@ -58,6 +60,7 @@ let dden : t = fromPair (7, 32)
  *)
 let toFloat : t -> float = Num.float_of_num
 let toInt : t -> int = Num.int_of_num
+let toNum : t -> Num.num = fun t -> t
 
 let toMidiTicks : division:MIDI.division -> t -> int = fun
     ~division duration ->
