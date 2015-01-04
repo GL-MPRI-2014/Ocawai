@@ -6,11 +6,39 @@ open Manager
 open Player
 open Menus
 
-let new_game () =
+(* Type of selectable *)
+type selectable = [
+  | `Unit of Unit.t
+  | `Building of Building.t
+]
+
+
+(* Relocating get_next_action outside ClientPlayer *)
+let client_state = ref ClientPlayer.Idle
+
+let set_client_state s =
+  client_state := s
+
+let event_state () =
+  !client_state
+
+let get_next_action () =
+  client_state := ClientPlayer.Waiting ;
+  let rec get_aux () =
+    Thread.delay 0.25;
+    match !client_state with
+    | ClientPlayer.Received a -> client_state := ClientPlayer.Idle ; a
+    | _ -> get_aux ()
+  in get_aux ()
+
+
+let new_game ?character () =
 
   let m_cdata = new ClientData.client_data in
 
-  let my_player = new ClientPlayer.client_player m_cdata#push_update in
+  let my_player =
+    new ClientPlayer.client_player m_cdata#push_update get_next_action
+  in
 
   let m_engine = new Game_engine.game_engine () in
 
@@ -25,6 +53,19 @@ let new_game () =
       (Position.create (1,1)))
   in
 
+  let m_uphandle = new Updates.handler m_cdata m_camera in
+
+  (* Distributing characters *)
+  let () =
+    let constraints = match character with
+      | Some c -> [((my_player :> player)#get_id,c)]
+      | None -> []
+    in
+    Characters.handler#init
+      constraints
+      (List.map (fun p -> p#get_id) m_engine#get_players)
+  in
+
   object(self)
 
   inherit State.state as super
@@ -35,22 +76,111 @@ let new_game () =
 
   val cdata : ClientData.client_data = m_cdata
 
+  val uphandle = m_uphandle
+
   val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action"
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" ()
 
   val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.red_theme
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack"
+    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Attack" ()
 
-  val build_menu = new ingame_menu ~m_position:(0,0)
-    ~m_width:220
+  val build_menu = new ingame_menu
+    ~m_position:(0,0)
+    ~m_width:290
     ~m_item_height:30 ~m_theme:Theme.yellow_theme
     ~m_bar_height:30 ~m_bar_icon:"menu_icon"
-    ~m_bar_text:"Build"
+    ~m_bar_text:"Build" ()
+
+  (* Last unit selected through X/W *)
+  val mutable last_selected : selectable option = None
+
+  (* Select next unit given a way to go *)
+  method private select_playable lu lb =
+    let rec list_after x = function
+      | [] -> []
+      | e :: r when x = e -> r
+      | e :: r -> list_after x r
+    in
+    (* Selectable unit *)
+    let oku u = not u#has_played in
+    (* Selectable building *)
+    let okb b =
+      (* It can actually build things *)
+      b#product <> []
+      (* There is nobody occupying it *)
+      && cdata#player_unit_at_position
+          b#position
+          cdata#actual_player
+         = None
+      (* The prices aren't too high *)
+      && (
+        let prices = List.map
+          (fun s ->
+            List.find
+              (fun u -> u#name = s)
+              Config.config#unbound_units_list
+            |> (fun u -> u#price)
+          )
+          b#product
+        in List.fold_left min (List.hd prices) (List.tl prices)
+           <= cdata#actual_player#get_value_resource
+      )
+    in
+    let find_u lu fail () =
+      try last_selected <- Some ( `Unit (List.find oku lu) )
+      with Not_found -> fail ()
+    in
+    let find_b lb fail () =
+      try last_selected <- Some ( `Building (List.find okb lb) )
+      with Not_found -> fail ()
+    in
+    let fail () =
+      last_selected <- None
+    in
+    begin
+      match last_selected with
+      | None -> find_u lu (find_b lb fail)
+      | Some (`Unit u) -> find_u (list_after u lu) (find_b lb (find_u lu fail))
+      | Some (`Building b) ->
+          find_b (list_after b lb) (find_u lu (find_b lb fail))
+    end () ;
+    begin match last_selected with
+    | None -> ()
+    | Some (`Unit u) -> cdata#camera#set_position u#position
+    | Some (`Building b) -> cdata#camera#set_position b#position
+    end
+
+  (* Select next playable unit or building *)
+  method private select_next =
+    (* List of units *)
+    let lu = cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = cdata#actual_player#get_buildings in
+    self#select_playable lu lb
+
+  (* Select previous playable unit or building *)
+  method private select_pred =
+    (* List of units *)
+    let lu = List.rev cdata#actual_player#get_army
+    (* List of buildings *)
+    and lb = List.rev cdata#actual_player#get_buildings in
+    self#select_playable lu lb
 
   initializer
-    cdata#init_core m_map my_player m_players;
+    let actual_player = my_player#copy in
+    cdata#init_core
+      m_map
+      actual_player
+      (List.map
+        (fun p ->
+          if p#get_id = actual_player#get_id then
+            (actual_player :> logicPlayer)
+          else p#copy)
+        m_players) ;
+    Mood.init cdata;
+    (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
 
@@ -59,7 +189,7 @@ let new_game () =
     let my_menu = new ingame_menu
       ~m_position:(manager#window#get_width / 2 - 75, 30) ~m_width:150
       ~m_item_height:30 ~m_theme:Theme.blue_theme
-      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" in
+      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Menu" () in
 
     (* Forfeit confirmation popup *)
     let forfeit_popup = new Windows.ingame_popup
@@ -67,8 +197,7 @@ let new_game () =
         manager#window#get_height / 2 - 80)
       ~m_size:(400, 110) ~m_theme:Theme.blue_theme
       ~m_text:("Do you really want to forfeit ? The game will be considered "
-                ^ "lost... Also, notice how this text is perfectly handled ! "
-                ^ "This is beautiful isn't it ?")
+                ^ "lost...")
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
 
     (* Buttons for the forfeit popup *)
@@ -92,8 +221,8 @@ let new_game () =
 
     (* Ingame menu items *)
     new item "cancel" "End turn" (fun () ->
-      if cdata#actual_player#event_state = ClientPlayer.Waiting then
-        cdata#actual_player#set_state (ClientPlayer.Received ([], Action.End_turn));
+      if event_state () = ClientPlayer.Waiting then
+        set_client_state (ClientPlayer.Received ([], Action.End_turn));
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
@@ -101,17 +230,20 @@ let new_game () =
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    (* new item "info" "Info" (fun () -> print_endline "info activated";
-      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
-    |> my_menu#add_child; *)
-
     new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
-    new item "cancel" "Cancel" (fun () -> print_endline "canceled";
-      my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
+    let cancel_menu () =
+      my_menu#toggle;
+      main_button#toggle;
+      ui_manager#unfocus my_menu
+    in
+
+    new item "cancel" "Cancel" cancel_menu
     |> my_menu#add_child;
+
+    my_menu#set_escape cancel_menu;
 
     let cursor = cdata#camera#cursor in
 
@@ -130,16 +262,22 @@ let new_game () =
         |Some(u) -> u
         |None -> assert false
       in
-      cdata#actual_player#set_state (ClientPlayer.Received
-        (cdata#current_move, Action.Attack_unit (atking_unit, atked_unit)));
+      set_client_state (ClientPlayer.Received
+        (cdata#current_move,
+         Action.Attack_unit (atking_unit#get_id, atked_unit#get_id)));
       cursor#set_state Cursor.Idle)
     |> atk_menu#add_child;
 
-    new item "cancel" "Cancel" (fun () ->
+    let atk_cancel () =
       atk_menu#toggle;
       ui_manager#unfocus atk_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" atk_cancel
     |> atk_menu#add_child;
+
+    atk_menu#set_escape atk_cancel;
 
     (* Displacement menu items *)
     new item "attack" "Attack" (fun () ->
@@ -157,7 +295,7 @@ let new_game () =
             (u, cursor#position, in_range));
           camera#set_position (List.hd in_range)#position
         end else if List.mem cursor#position r then begin
-          cdata#actual_player#set_state (ClientPlayer.Received
+          set_client_state (ClientPlayer.Received
             (cdata#current_move, Action.Wait));
           cursor#set_state Cursor.Idle
         end else
@@ -168,24 +306,34 @@ let new_game () =
     new item "move" "Move" (fun () ->
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cdata#actual_player#set_state (ClientPlayer.Received
+      set_client_state (ClientPlayer.Received
         (cdata#current_move, Action.Wait));
       cursor#set_state Cursor.Idle)
     |> disp_menu#add_child;
 
-    new item "cancel" "Cancel" (fun () ->
+    let move_cancel () =
       disp_menu#toggle;
       ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" move_cancel
     |> disp_menu#add_child;
+
+    disp_menu#set_escape move_cancel;
 
     (* Build menu items *)
 
-    new item "cancel" "Cancel" (fun () ->
+    let build_cancel () =
       build_menu#toggle;
       ui_manager#unfocus build_menu;
-      cursor#set_state Cursor.Idle)
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" build_cancel
     |> build_menu#add_child;
+
+    build_menu#set_escape build_cancel;
 
     my_menu#toggle;
     disp_menu#toggle;
@@ -238,9 +386,6 @@ let new_game () =
   method handle_event e =
     if not (ui_manager#on_event e) then OcsfmlWindow.Event.(
       begin match e with
-        | KeyPressed { code = OcsfmlWindow.KeyCode.T ; _ } ->
-            camera#set_position (Position.create (80,80))
-
         | KeyPressed { code = OcsfmlWindow.KeyCode.Left; _ } ->
             if not dir_key_pressed then begin
               camera#move (-1,0);
@@ -271,13 +416,20 @@ let new_game () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
+            self#select_next
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.W ; _ } ->
+            self#select_pred
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
-            cdata#actual_player#event_state = ClientPlayer.Waiting -> Cursor.(
+            event_state () = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
               match cursor#get_state with
               |Idle -> begin
-                match cdata#player_unit_at_position cursor#position
-                      cdata#actual_player with
+                match cdata#player_unit_at_position
+                        cursor#position
+                        cdata#actual_player with
                 | Some u when (not u#has_played) ->
                     cursor#set_state (Displace (cdata#map, u,
                       Logics.accessible_positions u
@@ -288,7 +440,7 @@ let new_game () =
                     (* We only check out buildings where there are no unit *)
                     begin match cdata#building_at_position cursor#position with
                       | (Some b, Some p) when
-                        p = (cdata#actual_player :> logicPlayer) ->
+                        p#get_id = (cdata#actual_player :> logicPlayer)#get_id ->
                           if b#product <> [] then begin
                             (* Compute the list of producibles into a menu *)
                             build_menu#clear_children;
@@ -304,14 +456,14 @@ let new_game () =
                               in
                               new item
                                 ~enabled:(u#price <= p#get_value_resource)
-                                ("flatman_" ^ s)
+                                (Characters.handler#texture_from_id (p#get_id) s)
                                 (s ^ " (" ^ (string_of_int u#price) ^ ")")
                                 (fun () ->
                                   build_menu#toggle;
                                   ui_manager#unfocus build_menu;
-                                  cdata#actual_player#set_state (
+                                  set_client_state (
                                     ClientPlayer.Received ([],
-                                      Action.Create_unit (b,u)
+                                      Action.Create_unit (b#get_id,u)
                                     )
                                   ) ;
                                   cursor#set_state Cursor.Idle
@@ -336,7 +488,8 @@ let new_game () =
                         (cdata#camera#project cursor#position);
                       ui_manager#focus disp_menu;
                       disp_menu#toggle
-                  |Some (u') when u = u' && List.mem cursor#position acc ->
+                  |Some (u')
+                    when u#get_id = u'#get_id && List.mem cursor#position acc ->
                       disp_menu#set_position
                         (cdata#camera#project cursor#position);
                       ui_manager#focus disp_menu;
@@ -348,7 +501,7 @@ let new_game () =
                   atk_menu#toggle;
                   atk_menu#set_position (cdata#camera#project cursor#position);
                   ui_manager#focus atk_menu
-              | Build b -> ())
+              | _ -> ())
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.Escape ; _ } ->
             cdata#camera#cursor#set_state Cursor.Idle
@@ -363,7 +516,7 @@ let new_game () =
     cdata#minimap#compute cdata#map cdata#players;
 
     (* Rendering goes here *)
-    Render.renderer#render_game window cdata;
+    Render.renderer#render_game window cdata uphandle;
     Render.renderer#draw_gui window ui_manager;
 
     window#display

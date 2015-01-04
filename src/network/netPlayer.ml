@@ -26,42 +26,48 @@ object (self)
   (* asks for the next action over the network
      does not handle timeout yet *)
 
-  method get_next_action =
-    Log.infof "#get_next_action" ;
-
-
-    let boolean = Send_recv.send sockfd 0 "" 3.0 in
-    (* TODO: if boolean is false then kill this player*)
-    flush out_channel ;
+  method get_next_action = 
+    Log.infof "send \"get_next_action\"" ;
+    let success = Send_recv.send sockfd Types.get_next_action_code "" Types.clock in
     
-    if not boolean
-    then () (* kill the player *)
+    if not success then
+      failwith "send \"get_next_action\" failure in netPlayer !"
     else
-      Log.infof "#get_next_action sent" ;
-    
-    let receipt  = Send_recv.recv sockfd 3.0 in 
-    Log.infof "#get_next_action received";
-    match receipt with
-    | Some(2, str) -> Action.from_string str
-    | None -> [Position.create (0,0)], Action.Wait (* kill this player *)
-    | _ -> [Position.create (0,0)], Action.Wait (* Wait by default *)
-		       
-  method set_logicPlayerList playersList =
-	()
+      begin
+	Log.infof "recv";
+	let receipt  = Send_recv.recv sockfd Types.clock in 
 
+	match receipt with
+	  | Some(code, str) when code = Types.next_action_code -> 
+	    Log.infof "-> \"next_action\"";
+	    Action.from_string str
+	  | None ->
+	    Log.infof "-> None";
+	    failwith "kill the player in netPlayer !"
+            (* [Position.create (0,0)], Action.Wait *)
+	  | _ ->
+	    failwith "Error fatal in netPlayer !"
+            (* [Position.create (0,0)], Action.Wait *)
+      end
+
+
+(*
+  method set_logicPlayerList playersList =
+    ()
+*)
+(*
   method get_logicPlayerList =
-	logicPlayerList
+    logicPlayerList
+*)
 
   (* send updates over the network *)
 
   method update u =
-    Log.infof "#update";
+    Log.infof "send  \"update\"";
     
-    let boolean = Send_recv.send sockfd 1 (Types.to_string u) 3.0 in
-    flush out_channel ;
-    if not boolean
-    then ()    (* TODO: kill this player*)
-    else
-      Log.infof "#update sent"
-    
+    let success = Send_recv.send sockfd Types.update_code (Types.to_string u) Types.clock in
+
+    if not success then
+      failwith "send \"update\" failure in netPlayer !"
+	
 end

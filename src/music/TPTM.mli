@@ -74,11 +74,11 @@ val fork : t -> t -> t
 *)
 val join : t -> t -> t
 
-(** {2 Normalization functions} *)
+(** {2 Normalization and rendering functions} *)
 
 (**
    @return a pair [(head, tail)] where
-   - [head] holds the firt (in terms of the time scale)
+   - [head] holds the first (in terms of the time scale)
    events in [t] and has Pos > 0 unless [tail] holds no events
    - [tail] holds the remaining events in [t] and has Pre = 0
 
@@ -88,9 +88,32 @@ val headTail : t -> t * t
 
 (**
    @return a fully normalized tile
-   Iterates [headTail].
+   Iterates [TPTM.headTail].
 *)
 val normalize : t -> t
+
+(** [extract_by_time extract_dur t] splits [t] into [t1] and [t2].
+    [t1] has duration [extract_dur] and holds events only
+    up to its Pos.
+    [t2] holds no events before its Pre,
+    and t == t1 % t2
+
+    Actually a partial version normalization, only normalizes
+    as long as it's useful. *)
+val extract_by_time : Time.t -> t -> t * t
+
+(**
+   [TPTM.t] to [MIDI.Multitrack.buffer] conversion
+ *)
+val to_MIDI_buffer : ?samplerate:int -> ?division:MIDI.division ->
+		     ?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer
+
+(**
+   Convert [t] to MIDI and stream it to the user, all in another
+   forked process, without stopping the current process
+ *)
+val play : ?samplerate:int -> ?division:MIDI.division ->
+	   ?tempo:Time.Tempo.t -> t -> unit 
 
 (** {2 Testing functions} *) 
 
@@ -108,9 +131,3 @@ val fromList : t list -> t
    defined by the [Format.formatter]
 *)
 val fprintf : Format.formatter -> t -> unit
-
-(**
-   Convert [t] to MIDI and stream it to the user.
- *)
-val play : ?samplerate:int -> ?division:MIDI.division ->
-	   ?tempo:Time.Tempo.t -> t -> unit 

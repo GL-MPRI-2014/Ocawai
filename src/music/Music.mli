@@ -9,6 +9,9 @@
    Borrows much from @author "Paul Hudak"'s Haskell library Euterpea 
 *)
 
+exception Negative_duration_note
+exception Not_found
+
 (** {2 Type definitions} *)
 
 type 'a t = Note of (Time.t * 'a)
@@ -20,15 +23,23 @@ type pitchClass  = Cff | Cf | C | Dff | Cs | Df | Css | D | Eff | Ds
 		   | Gf | Fss | G | Aff | Gs | Af | Gss | A | Bff | As 
 		   | Bf | Ass | B | Bs | Bss
 type pitch = pitchClass * octave
+
+(** Velocity values [vel] should be verify : [0 <= vel <= 127] *)  
 type velocity = int
 
 val pitch_to_string : pitch -> string 
+
+(** Reads a string like ["Aff4"] or ["C5"] and returns the associated pitch.
+
+    Raises [Not_found] if the string does not denote a correct pitch.
+ *)
+val pitch_of_string : string -> pitch
   
 (**
    The class [param] defines an instantiation for the type ['a t]
 
    We use a class here for extensivity.
-*)
+ *)
 class param : pitch -> velocity ->
 	      object
 		val mutable pitch : pitch (** The note's pitch *)
@@ -45,6 +56,29 @@ class param : pitch -> velocity ->
    The instantiation of ['a t] used in other modules
 *)
 type event = param t
+
+(** 
+   Event comparison function, *with* some semantical meaning :
+   Rests are lower than events,
+   Events are compared with help of the value :
+   (duration^4 + velocity^2 + frequency_of_pitch).
+   
+   This function is used during the DList normalisation process,
+   to build sets of events.
+
+   Same specification as [Pervasives.compare]
+ *)
+val compare : event -> event -> int
+
+(** 
+   Event syntactic equality
+ *)
+val is_equal : event -> event -> bool
+
+(**
+   Checks if the input event has null velocity
+ *)
+val is_silent : event -> bool
 
 (** {2 Basic Music creation} *)
 

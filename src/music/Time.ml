@@ -4,6 +4,8 @@
 
 open Num
 
+exception Unsupported_MIDI_division
+
 (** The time-unit is the rationals *)
 type t = num
 
@@ -16,6 +18,8 @@ let minus = ( -/ )
 let inverse = minus_num
 
 let compare = compare_num
+
+let is_equal = eq_num
 
 let sign = sign_num
 
@@ -56,14 +60,17 @@ let dden : t = fromPair (7, 32)
  *)
 let toFloat : t -> float = Num.float_of_num
 let toInt : t -> int = Num.int_of_num
+let toNum : t -> Num.num = fun t -> t
 
 let toMidiTicks : division:MIDI.division -> t -> int = fun
     ~division duration ->
   match division with
   | MIDI.Ticks_per_quarter tpq ->
      let tpq = fromInt tpq in
-     toInt (Num.mult_num tpq duration)
-  | _ -> failwith "Unrecognized MIDI division"
+     (** We multiply the duration by [4] because a quarter = (1/4) in our model
+         and [tpq] is in {i Ticks per Quarter} *) 
+     toInt (Num.mult_num tpq (Num.mult_num duration @@ Int 4))
+  | _ -> raise Unsupported_MIDI_division 
 
 
 (** {2 Tempo definition and management} *)
@@ -77,16 +84,22 @@ module Tempo = struct
 
   type t = Num.num
 
+  let fromInt : int -> t = fun new_tempo ->
+    Num.( // ) (Int new_tempo) (Int 120)
+
   (** {2 Basic values} *)
 
-  (** The basic tempo ratio 1, defines a tempo of 120BPM *)
+  (** The default tempo ratio 1, defines a tempo of 120BPM *)
   let base : t = Num.Int 1
 
   (** {2 Tempo conversions} *)
 
-  let tempoToMspq : t -> int = function
+  let toMicrosecondsPerQuarters : t -> int = function
     | tempo ->
-       Num.int_of_num (Num.round_num (
+       (* Using Num.ceiling_num here since we do not want to
+          create buffers too small for the data we want to put in them
+          because of roundings *)
+       Num.int_of_num (Num.ceiling_num (
 	   ((Num.Int 1) // (
 	      let baseTempo = Num.Int 120 in
 	      baseTempo */ tempo

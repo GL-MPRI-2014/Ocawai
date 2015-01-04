@@ -39,12 +39,14 @@ let manager = object(self)
     self#reset_window
 
   method push (state : State.state) =
+    if self#is_running then self#current#paused ;
     states <- state :: states
 
 
   method pop =
-    self#current#destroy;
-    states <- List.tl states
+    self#current#destroy ;
+    states <- List.tl states ;
+    if self#is_running then self#current#resumed
 
   method current = List.hd states
 

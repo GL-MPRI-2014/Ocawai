@@ -1,5 +1,7 @@
 fun next_playable l = {
+  log_str "Calling next_playable\n";
   if (list_empty l) {
+    log_str "List empty : ending turn\n";
     end_turn ()
   }
   else {
@@ -8,6 +10,7 @@ fun next_playable l = {
     if ((unit_has_played u) || (list_empty acc)) {
       next_playable (list_tl l)
     } else {
+      log_str "Found playable unit !\n";
       u
     }
   }
@@ -15,6 +18,7 @@ fun next_playable l = {
 
 // Returns the closest unit in l from position pos
 fun closest_to pos l = {
+  log_str "Calling closest_to\n";
   var actual_dist = 100000;
   var actual_pos  = (0,0);
   fun closest_aux l = {
@@ -42,29 +46,42 @@ fun log_position p = {
 }
 
 move default {
+  log_str "Entering move (default)\n";
   var acc = accessible_positions selected_unit;
   fun has_army player = {
     !(list_empty (army_of player));
   }
+  log_str "Filtering list ... ";
   var undead_players = list_filter has_army players;
-  if (list_empty undead_players) { end_turn (); };
-  var ptarget = list_hd undead_players;
-  var parmy = army_of ptarget;
-  var n = list_length parmy;
-  var rnd = rand n;
-  var target = list_nth parmy rnd;
-  var pos_target = unit_position target;
-  var select_pos = closest_to pos_target acc;
-  log_str "Moving unit to : ";
-  log_position select_pos;
-  log_str "\n";
-  dijkstra_to selected_unit select_pos
+  log_str "Done !\n";
+  if (!(undead_players == [])) {
+    log_str "Visible players \n";
+    var ptarget = list_hd undead_players;
+    var parmy = army_of ptarget;
+    var n = list_length parmy;
+    var rnd = rand n;
+    var target = list_nth parmy rnd;
+    var pos_target = unit_position target;
+    var select_pos = closest_to pos_target acc;
+    log_str "Moving unit to : ";
+    log_position select_pos;
+    log_str "\n";
+    dijkstra_to selected_unit select_pos
+  }
+  else { 
+    log_str "No visible players \n";
+    var rnd = rand (list_length acc);
+    var select_pos = list_nth acc rnd;
+    dijkstra_to selected_unit select_pos
+  }
 }
 
 attack default {
+  log_str "Entering attack (default)\n";
   var range = unit_range selected_unit;
   var inrange = ennemies_in_range selected_pos range;
   if (list_empty inrange) {
+    log_str "Done nothing\n";
     do_nothing ()
   } else {
     var atkunit = list_hd inrange;
@@ -92,5 +109,6 @@ init {
 }
 
 main {
+  log_str "Entering main\n";
   next_playable (army_of self)
 }

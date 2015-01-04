@@ -29,6 +29,7 @@ type t = <
   percentage_boat : int;
   life_max : int;
   hp : int;
+  set_hp : int -> unit;
   attack : armor -> int -> int;
   attack_interval : armor -> int -> int * int;
   take_damage : int -> unit;
@@ -68,4 +69,3 @@ val create_unbound_from_parsed_unit : Unit_t.t -> unbound_t
 
 (** Create a parsed record from an unbound unit *)
 val create_parsed_unit_from_unbound : unbound_t -> Unit_t.t
-

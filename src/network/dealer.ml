@@ -73,12 +73,11 @@ object (self)
 	self#list_scan id
       with
 	(*TO DO : add a raise exception *)
+
 	Not_found -> failwith "Wrong id"
-	
   (* TODO *)
   method set_map str =
     ()
-
 
 
   (* manages Get_next_action *)
@@ -86,38 +85,15 @@ object (self)
   method manage_gna =
     let clip = self#is_set in
     let action = clip#get_next_action in
-<<<<<<< HEAD
-=======
-    Log.infof "Sending..." ;
-
-(*@@@@@@@@@@@@@@@@@@@@ new @@@@@@@@@@@@@@@@@@@@
-let boolean = Send_recv.send sockfd 2 (to_string [Closures]) 3.0
-
-With
- -> sockfd the socket
- -> '2' the code for "Next_action action"
- -> to_string [Closures]
- -> 3.0 is the timeout
-
-if boolean is false then kill this player
-@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*)
-
-(*#################### old ####################*)
-    to_channel out_channel (Next_action action) [Closures] ;
-(*#############################################*)
->>>>>>> da3920b8bcdbb49ce1951e0e61c1aa3d39d9173d
-
-    Log.infof "Sending..." ;
-    let boolean = Send_recv.send sockfd 2 (Action.to_string action) 3.0 in
-    if not boolean
-    then (* kill the player *) ()
-    else
-    Log.infof "Sent." ;
-    flush out_channel
-
+    Log.infof "send \"next_action\"" ;
+    let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) Types.clock in
+    
+    if not success then
+      failwith "send \"next_action failure in dealer !"
+	
 
   (* do what has to be done with an update... *)
-
+	
   method manage_update = function
     | Game_over -> ()
     | Classement -> ()
@@ -129,30 +105,32 @@ if boolean is false then kill this player
     | Delete_building (b,id) -> (self#get_player id)#delete_building b
     | Move_unit (u,p,id) -> (self#get_player id)#move_unit u p
     | Set_unit_hp (u,h,id) -> (self#get_player id)#set_unit_hp u h
-(* for initialization only *)
+    (* for initialization only *)
     | Set_client_player id -> self#set_player_id id
     | Set_logic_player_list lst -> self#set_logicPlayerList lst
     | Map str -> self#set_map str
+    | Your_turn -> (* TODO ? *) ()
+    | Building_changed _ -> (* TODO ? *) ()
 
   (* please give a call to this method just after having created this object *)
 
-  method run =
-    while true
-    do
-      Log.infof "Receiving..." ;
-      let receipt  = Send_recv.recv sockfd 3.0 in
-      Log.infof "Received." ;
+
+  method run = 
+    while true 
+    do 
+      Log.infof "recv" ;
+      let receipt  = Send_recv.recv sockfd Types.clock in
+
       match receipt with
-      | Some (0, _) -> self#manage_gna
-      | Some(1, update) -> self#manage_update (Types.from_string update)
-      | _ -> (* kill this player *) ()
+	| Some (code, _) when code = Types.get_next_action_code ->
+	  Log.infof "-> \"get_next_action\"";
+	  self#manage_gna
+	| Some(code, update) when code = Types.update_code ->
+	  Log.infof "-> \"update\"";
+	  self#manage_update (Types.from_string update)
+	| None -> Log.infof "-> None"
+	| Some (n,_) -> Log.infof "-> code : %d" n
     done
-
-<<<<<<< HEAD
-=======
-
-
->>>>>>> da3920b8bcdbb49ce1951e0e61c1aa3d39d9173d
 end
 
 type t = dealer

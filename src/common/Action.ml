@@ -2,9 +2,9 @@
 
 type movement = Position.t list
 
-type action = 
-| Attack_unit of (Unit.t * Unit.t)
-| Create_unit of (Building.t * Unit.unbound_t)
+type action =
+| Attack_unit of (Unit.id * Unit.id)
+| Create_unit of (Building.id * Unit.unbound_t)
 | Wait
 | End_turn
 
@@ -18,7 +18,8 @@ let from_string (str : string) =
  (* TODO: implement this method *)
 let to_string (a : t) =
   ""
-  
+
+
 exception Bad_unit
 exception Has_played
 exception Bad_path

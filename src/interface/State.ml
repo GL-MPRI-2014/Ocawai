@@ -4,6 +4,10 @@ class virtual state = object(self)
 
   method handle_event (e : OcsfmlWindow.Event.t) = ()
 
+  method resumed = ()
+
+  method paused = ()
+
   method destroy = ()
 
 end

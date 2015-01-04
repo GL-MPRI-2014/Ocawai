@@ -1,20 +1,5 @@
 [
   {
-    "name": "general",
-    "movement_type": "Walk",
-    "vision_range": 5,
-    "attack_range_min": 1,
-    "attack_range_max": 5,
-    "move_range": 3,
-    "attack_base": 40,
-    "armor": "Light",
-    "percentage_light": 100,
-    "percentage_normal": 30,
-    "percentage_heavy": 10,
-    "price": 100,
-    "life_max": 50
-  },
-  {
     "name": "bazooka",
     "movement_type": "Walk",
     "vision_range": 3,

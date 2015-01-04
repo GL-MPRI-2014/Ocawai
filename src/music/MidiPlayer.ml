@@ -1,4 +1,16 @@
-module MusicLog = Log.Make (struct let section = "Music" end)
+open Synth
+
+module MusicLog = Log.Make (struct let section = "Music" end) 
+
+let might_adsr adsr g =
+  match adsr with
+    | None -> g
+    | Some a -> new Audio.Mono.Generator.adsr a g
+
+let volume = ref 100
+
+let set_volume v = volume := v
+let get_volume () = !volume
 
 class asynchronousMidiPlayer =
 
@@ -8,9 +20,7 @@ class asynchronousMidiPlayer =
   let buf = Audio.create channels blen in
   let mchannels = 16 in
   let mbuf = MIDI.Multitrack.create mchannels blen in
-  let adsr = Audio.Mono.Effect.ADSR.make sample_rate (0.02,0.01,0.9,0.05) in
-  let synth = new Synth.Multitrack.create mchannels (fun _ -> new Synth.square ~adsr sample_rate) in
-  let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:0.5 () in
+  let adsr = Audio.Mono.Effect.ADSR.make sample_rate (0.1, 0.0, 1.0, 0.0) in
   
   object(self)
 
@@ -18,6 +28,28 @@ class asynchronousMidiPlayer =
     val mutable should_run = ref true
     val mutable current_playing = ref 0
     val mutable current_adding = ref 0
+    val synth = (let  synth () =
+      new Synth.create
+        (fun f v ->
+          new Audio.Generator.of_mono
+            (new Audio.Mono.Generator.adsr adsr
+              (new Audio.Mono.Generator.add
+                (new Audio.Mono.Generator.add
+                  (new Audio.Mono.Generator.add
+                    (new Audio.Mono.Generator.add
+                      (new Audio.Mono.Generator.add
+                        (new Audio.Mono.Generator.add
+                          (new Audio.Mono.Generator.add
+                            (new Audio.Mono.Generator.sine sample_rate ~volume:v f)
+                            (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.1.0) (2.*.f)))
+                          (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.1) (3.*.f)))
+                        (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.2) (4.*.f)))
+                      (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.1) (5.*.f)))
+                    (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.0) (6.*.f)))
+                  (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.0) (7.*.f)))
+                (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.00) (8.*.f)))))
+    in
+    new Synth.Multitrack.create mchannels (fun _ -> (synth ())))
 
     (* This is just blit mapped in every sub channel of a multitrack buf *)
     method private multi_blit b1 o1 b2 o2 len =
@@ -43,8 +75,9 @@ class asynchronousMidiPlayer =
                         channels
                         sample_rate in
       while (!should_run) do
+        let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:((float_of_int !volume) /. 100.) () in
         self#multi_blit (!main_buffer) (!current_playing) mbuf 0 blen;
-        current_playing := !current_playing + blen;
+        current_playing := !current_playing + blen + 1;
         synth#play mbuf 0 buf 0 blen;
         agc#process buf 0 blen;
         pulse#write buf 0 blen
@@ -78,4 +111,5 @@ let play_midi_file fname run =
     Thread.delay 0.1;
   done;
   f#close;
-  player#stop ()
+  player#stop ();
+  Thread.exit ()

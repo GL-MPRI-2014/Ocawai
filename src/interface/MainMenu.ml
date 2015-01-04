@@ -13,6 +13,7 @@ class main_menu = object(self)
   val bg_texture = new texture (`File ((Utils.base_path ()) ^ "textures/gui/capture.png"))
   val mutable bg_offset = (0.,0.)
   val mutable bg_dir = (0.,0.)
+  val mutable music_run = ref true
 
   val key_seq = OcsfmlWindow.KeyCode.([
     Up;
@@ -73,14 +74,16 @@ class main_menu = object(self)
       [
         new Home.textured_actionnable "gameon" "gameon_hover"
           (w/.2., h /. 2. +. 30.)
-          (fun () -> manager#push
-            (new LoadScreen.state Game.new_game :> State.state)) ;
+          (fun () -> new CharacterScreen.state |> manager#push) ;
         new Home.textured_actionnable "quit" "quit_hover"
           (w /. 2. -. 130., h /. 2. +. 230.)
           (fun () -> manager#window#close) ;
         new Home.textured_actionnable "settings" "settings_hover"
           (w /. 2. +. 100., h /.2. +. 220.)
-          (fun () -> new SettingsScreen.state |> manager#push)
+          (fun () -> new SettingsScreen.state |> manager#push) ;
+        new Home.textured_actionnable "credits" "credits_hover"
+          (w /. 2. -. 50., h -. 50.)
+          (fun () -> new Credits.state |> manager#push)
       ]
 
   method handle_event e =
@@ -114,9 +117,18 @@ class main_menu = object(self)
 
     window#display
 
+  method paused =
+    Printf.printf "I was called !\n%!";
+    music_run := false
+
+  method resumed =
+    music_run := true
+
   initializer
     let window = manager#window in
     let (w,h) = window#get_size in
-    self#set_screen w h
+    self#set_screen w h;
+    let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_menu) (music_run)
 
 end

@@ -8,6 +8,8 @@ type id_player = int
 (** Type of the data sent from the engine to the player/client *)
 type update =
     Game_over
+  | Your_turn
+  | Turn_of of id_player
   | Classement 
   | Set_army of Unit.t list * id_player
   | Set_building of Building.t list * id_player
@@ -17,10 +19,23 @@ type update =
   | Delete_building of Building.id * id_player(*fog or kill*)
   | Move_unit of Unit.id * Action.movement * id_player
   | Set_unit_hp of Unit.id * int * id_player
+  | Building_changed of Building.t
+  | Set_unit_played of Unit.id * id_player * bool
+  | Harvest_income
+  | Use_resource of int
 (* for initialization only *)
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list
   | Map of string
+
+
+let get_next_action_code = 0
+let update_code = 1
+let next_action_code = 2
+let error_code = 3
+
+let clock = 3.0
+
 
 let from_string (str : string) = 
   Game_over

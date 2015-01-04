@@ -25,7 +25,7 @@ class entrypoints = object(self)
 
   method add_main t = main <- Some(t)
 
-  method add_init t = main <- Some(t)
+  method add_init t = init <- Some(t)
 
   method add_move (sl, t) =
     List.iter (fun s -> Hashtbl.add moves s t) sl
@@ -219,3 +219,7 @@ let building_script (env, ep) building =
     List.find (fun u -> u#name = s)
     Config.config#unbound_units_list
   | _ -> assert false
+
+let call_f (env, _) f =
+  apply_f env (get_global_value f env) [`Unit]
+

@@ -98,8 +98,8 @@ class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
       | _ -> false)
 end
 
-class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
-  ~m_bar_icon ~m_bar_text
+class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
+  ~m_bar_icon ~m_bar_text ()
   = object(self)
 
   inherit [item] evq_container as super
@@ -123,6 +123,10 @@ class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
   val mutable toolbar_icon = m_bar_icon
 
   val mutable toolbar_text = m_bar_text
+
+  val mutable escape = escape
+
+  method set_escape (esc : unit -> unit) = escape <- Some esc
 
   method draw target lib = if self#active then begin
     new rectangle_shape ~fill_color:theme.Theme.default_color
@@ -155,7 +159,12 @@ class ingame_menu ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
 
   initializer
     self#add_event(function
-      | Event.KeyPressed {Event.code = KeyCode.Return ; _ }
+      | Event.KeyPressed { Event.code = OcsfmlWindow.KeyCode.Escape; _ } ->
+          begin match escape with
+            | Some esc -> esc () ; true
+            | None -> false
+          end
+      | Event.KeyPressed { Event.code = KeyCode.Return ; _ }
       | Event.KeyPressed { Event.code = KeyCode.Space ; _ } ->
           nb_items <> 0 &&
           ((List.nth self#children (nb_items - self#selected - 1))#action;

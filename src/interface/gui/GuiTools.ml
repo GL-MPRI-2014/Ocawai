@@ -51,10 +51,13 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
 
       (* Enlarges the string while it fits *)
       let rec fit strel sep =
-        let s = text#get_string in
-        if not (set_too_long false (s ^ sep ^ (List.hd strel))) then
-          fit (List.tl strel) sep
-        else String.concat sep strel
+        match strel with
+        | [] -> ""
+        | e :: r ->
+            let s = text#get_string in
+            if not (set_too_long false (s ^ sep ^ e)) then
+              fit r sep
+            else String.concat sep strel
       in
 
       (* We have to treat the case where the first word is already too long *)
@@ -66,7 +69,7 @@ let rec rect_print (target : #OcsfmlGraphics.render_target)
 
       (* Computes the remaining text and sets the current line *)
       let remaining = match words with
-        | [] -> failwith "inconsistent test"
+        | [] -> failwith "inconsistent text"
         | w::r when toolong w -> String.concat " " ((fit (char_list w) "") :: r)
         | strel -> fit strel " "
       in
