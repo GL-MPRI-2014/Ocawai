@@ -16,6 +16,7 @@ object (self)
   val mutable in_channel = in_channel_of_descr s
   val mutable out_channel = out_channel_of_descr s
 
+
   (* Mazzocchi asked for it *)
 
   method change_socket s =
@@ -51,8 +52,8 @@ object (self)
       end
 
 	  
-  method set_logicPlayerList playersList =
-	()
+  method set_logicPlayerList (playersList : Player.logicPlayer list) =
+	logicPlayerList <- playersList
 
   method get_logicPlayerList =
 	logicPlayerList

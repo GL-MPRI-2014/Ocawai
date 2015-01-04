@@ -15,6 +15,9 @@ type t = movement * action
 
 val from_string : string -> t
 val to_string : t -> string
+val mov_from_string : string -> movement
+val mov_to_string : movement -> string
+
 
 (** Exception raised if the unit moving does not exist or does not belong
     to the player *)

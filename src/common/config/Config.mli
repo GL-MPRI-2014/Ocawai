@@ -121,7 +121,7 @@ object
   
   method string_of_unit : Unit.t -> string
   method unit_of_string : string -> Unit.t
-  
+
   method string_of_battlefield : Battlefield.t -> string
   method battlefield_of_string : string -> Battlefield.t
   
