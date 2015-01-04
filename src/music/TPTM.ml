@@ -60,11 +60,8 @@ let headTail : t -> (t * t) = fun (Tile events) ->
   let (head, tail) = DList.headTail events in
   (Tile head, Tile tail)
 
-let rec normalize : t -> t = fun t ->
-  let (head, tail) = headTail t in
-  if isZero tail then
-    head
-  else head % normalize tail
+let normalize : t -> t = fun (Tile events) ->
+  Tile (DList.normalize events)
 
 (** [extract_by_time extract_dur t] splits [t] into [t1] and [t2].
     [t1] has duration [extract_dur] and holds events only
