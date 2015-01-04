@@ -522,7 +522,9 @@ let new_game ?character () =
       |ClientPlayer.Waiting -> 
         Mutex.unlock cdata#mutex;
         Mutex.lock cdata#mutex;
-      | _ -> ()
+      |ClientPlayer.Idle -> 
+        Mutex.unlock cdata#mutex;
+        Thread.yield ()
     end;
 
     self#keyboard_events;
