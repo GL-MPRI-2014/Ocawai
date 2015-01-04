@@ -58,12 +58,27 @@ class param : pitch -> velocity ->
 type event = param t
 
 (** 
-   Event comparison function, not very meaningful semantically,
-   used during the DList normalisation process to build sets of events.
+   Event comparison function, *with* some semantical meaning :
+   Rests are lower than events,
+   Events are compared with help of the value :
+   (duration^4 + velocity^2 + frequency_of_pitch).
+   
+   This function is used during the DList normalisation process,
+   to build sets of events.
 
    Same specification as [Pervasives.compare]
  *)
-val compare : 'a t -> 'a t -> int
+val compare : event -> event -> int
+
+(** 
+   Event syntactic equality
+ *)
+val is_equal : event -> event -> bool
+
+(**
+   Checks if the input event has null velocity
+ *)
+val is_silent : event -> bool
 
 (** {2 Basic Music creation} *)
 
