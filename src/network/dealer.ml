@@ -97,7 +97,11 @@ object (self)
   method manage_update = function
     | Game_over -> ()
     | Your_turn -> ()
+    | Turn_of _ -> ()
+    | Harvest_income -> ()
     | Classement -> ()
+    | Set_unit_played _ -> ()
+    | Use_resource _ -> ()
     | Set_army (l,id) -> (self#get_player id)#set_army l
     | Set_building (l,id) -> (self#get_player id)#set_buildings l
     | Add_unit (u,id) -> (self#get_player id)#add_unit u
@@ -111,6 +115,7 @@ object (self)
     | Set_logic_player_list lst -> self#set_logicPlayerList lst
     | Map str -> self#set_map str
     | Building_changed b -> ()
+
 
   (* please give a call to this method just after having created this object *)
 

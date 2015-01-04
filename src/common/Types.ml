@@ -27,7 +27,6 @@ type update =
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list
   | Map of string
-  | Building_changed of Building.t
 
 
 let get_next_action_code = 0
@@ -60,6 +59,8 @@ let disassemble str sep =
 		  
 		  
 		  
+(* ALL THE BLACKOUT METHODS NEED a Config.config OBJECT, WHICH DOESN'T EXIST YET IN DEALER AND NETPLAYER... *)
+
 let from_string (str : string) = 
   
   let lst = disassemble str '@' in
@@ -71,8 +72,16 @@ let from_string (str : string) =
 
 	    | "Your_turn" -> Your_turn
 
+	    | "Turn_of" -> begin
+			   match q with
+			   | id_str::_ -> Turn_of (int_of_string id_str)
+			   | _ -> failwith "Error in potocol"
+			 end
+
 	    | "Classement" -> Classement
-				
+
+	    | "Harvest_income" -> Harvest_income
+	      
 	    (*| "Set_army" -> begin
 			    match q with 
 			    | army_str::id_str::_ -> let unit_str_lst = disassemble str '&' in
@@ -164,8 +173,14 @@ let to_string = function
   | Your_turn -> 
      "Your_turn"
 
+  | Turn_of id_player ->
+     String.concat "@" ("Turn_of"::(string_of_int id_player)::[])
+
   | Classement -> 
      "Classement"
+
+  | Harvest_income ->
+     "Harvest_income"
 
   (*| Set_army (unit_list, id_player) -> 
      let str = String.concat "&" (List.map config#string_of_unit unit_list) in
