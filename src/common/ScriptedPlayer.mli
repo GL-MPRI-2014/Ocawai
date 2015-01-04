@@ -5,7 +5,7 @@ object
 	    
   method init_script : Battlefield.t -> (Player.logicPlayer list) -> unit
 								       
-  method get_next_action : Action.t
+  method get_next_action : Mutex.t -> Action.t
 
 
   method update : Types.update -> unit
