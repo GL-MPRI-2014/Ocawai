@@ -79,7 +79,10 @@ class main_menu = object(self)
           (fun () -> manager#window#close) ;
         new Home.textured_actionnable "settings" "settings_hover"
           (w /. 2. +. 100., h /.2. +. 220.)
-          (fun () -> new SettingsScreen.state |> manager#push)
+          (fun () -> new SettingsScreen.state |> manager#push) ;
+        new Home.textured_actionnable "credits" "credits_hover"
+          (w /. 2. -. 50., h -. 50.)
+          (fun () -> new Credits.state |> manager#push)
       ]
 
   method handle_event e =
