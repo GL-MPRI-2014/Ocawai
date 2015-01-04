@@ -168,6 +168,14 @@ let new_game ?character () =
     and lb = List.rev cdata#actual_player#get_buildings in
     self#select_playable lu lb
 
+  val mutable music_run = ref true
+			        
+  method paused =
+    music_run := false
+
+  method resumed =
+    music_run := true
+
   initializer
     let actual_player = my_player#copy in
     cdata#init_core
@@ -179,7 +187,11 @@ let new_game ?character () =
             (actual_player :> logicPlayer)
           else p#copy)
         m_players) ;
+    (** Run music *)
     Mood.init cdata;
+    let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_game) (music_run);
+
     (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera

@@ -22,9 +22,19 @@ let sequence notes =
   in
   List.fold_left aggregate TPTM.zero notes
 
+let chord duration pitches =
+  let aggregate tile pitch =
+    fork tile @@ TPTM.make_withDelay (dummy_simple_event (duration, pitch))
+  in
+  List.fold_left aggregate TPTM.zero pitches
+ 
 let menu_music = (reset @@ sequence [(hn, (C, 3));
 				     (hn, (E, 3))]) %
 		   (sequence [(hn, (G, 3)); (hn, (B, 4))])
+
+let winner_music = chord wn @@ [(C, 4); (E, 4); (G, 4)]
+
+let loser_music = chord wn @@ [(C, 4); (Ef, 4); (G, 4)]
 
 let music_player =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -64,6 +74,25 @@ let music_player =
         (match !midi_player with | Some midi_player -> midi_player#stop () | None -> ());
         midi_player := None;
         Thread.delay 0.1
+      done
+
+    method play_game : bool ref -> unit = fun run ->
+      let tempo = Time.Tempo.fromInt 100 in
+      let midi_player = new MidiPlayer.asynchronousMidiPlayer in
+      ignore @@ Thread.create (self#add_next_measure tempo) midi_player;
+      ignore @@ Thread.create (midi_player#play) ();
+      while true do
+	while !run do
+	  let mood = Mood.get () in
+	  let next_tile =
+	    if mood <= 0. then
+	      loser_music
+	    else winner_music
+	  in
+	  self#bufferize next_tile;
+          Thread.delay ((self#duration_one_measure tempo) -. 0.001)
+	done;
+        Thread.delay 0.1;
       done
 
     method private pick_measure : unit -> unit = fun () ->
