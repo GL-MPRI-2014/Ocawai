@@ -119,6 +119,8 @@ class main_menu = object(self)
   initializer
     let window = manager#window in
     let (w,h) = window#get_size in
-    self#set_screen w h
-
+    self#set_screen w h;
+    let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_menu) ()
+			    
 end
