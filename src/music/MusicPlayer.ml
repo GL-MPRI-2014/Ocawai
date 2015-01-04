@@ -83,7 +83,7 @@ let music_player =
 	    else winner_music
 	  in
 	  self#bufferize next_tile;
-          Thread.delay (self#duration_one_measure tempo)
+          Thread.delay ((self#duration_one_measure tempo) -. 0.001)
 	done;
         Thread.delay 0.1;
       done
