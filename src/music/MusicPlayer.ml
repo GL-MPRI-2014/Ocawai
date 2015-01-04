@@ -101,6 +101,3 @@ let music_player =
     initializer
       Random.self_init ()
   end
-
-let () =
-  
