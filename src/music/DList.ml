@@ -131,9 +131,17 @@ and fprint_headTail fmt = fun ht ->
 		 fprintf_sub tailT
 		 
 and fprint_eventsSet fmt = fun set ->
-  let printer = Format.pp_print_list Music.fprintf in
+  (* Copied from the 4.02.0 stdlib, to format a list *)
+  let rec pp_print_list ?(pp_sep = Format.pp_print_cut) pp_v ppf = function
+    | [] -> ()
+    | [v] -> pp_v ppf v
+    | v :: vs ->
+       pp_v ppf v;
+       pp_sep ppf ();
+       pp_print_list ~pp_sep pp_v ppf vs
+  in
+  let printer = pp_print_list Music.fprintf in
   Format.fprintf fmt "@[<1>MusicSet(%a@,)@]" printer (MusicSet.elements set) 
-
 
 let printf : t -> unit = fprintf Format.std_formatter
 
@@ -151,13 +159,13 @@ let rec headTail_tuple : t -> headTail =
       This in an auxiliary function with the plumbing exposed.
   *)
   (* New stuff *)
-  let aggregate ht1 ht2 =
+  (* let aggregate ht1 ht2 =
     let to_next1 = ht1.to_next
     and to_events2 = ht2.to_events in
     ht1.to_next <- to_next1 /+/ to_events2;
     ht2.to_events <- Time.zero
     (* End of new stuff *)
-  in
+  in *)
   function
   | Sync dur ->
     makeHeadTail Time.zero (MusicSet.empty) dur zero
