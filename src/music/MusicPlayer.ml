@@ -48,13 +48,16 @@ let music_player =
 
     method play_menu : bool ref -> unit = fun run ->
       let tempo = Time.Tempo.fromInt 100 in
-      ignore @@ Thread.create (self#play_next_measure) tempo;  
+      let midi_player = new MidiPlayer.asynchronousMidiPlayer in
+      ignore @@ Thread.create (self#play_next_measure tempo) midi_player;
       while true do
         while !run do
+          ignore @@ Thread.create (midi_player#play) ();
           self#bufferize menu_music;
           Thread.delay (self#duration_one_measure tempo)
         done;
-        Thread.delay 0.1
+        Thread.delay 0.1;
+        midi_player#stop ()
       done
 
     method private pick_measure : unit -> unit = fun () ->
@@ -62,9 +65,7 @@ let music_player =
       (* TODO, right now
        let mood = Mood.get () in *)()
       
-    method play_next_measure : Tempo.t -> unit = fun tempo ->
-      let midi_player = new MidiPlayer.asynchronousMidiPlayer in
-      ignore @@ Thread.create (midi_player#play) ();
+    method play_next_measure = fun tempo midi_player ->
       while true do
         let (next_measure, rest) =
           TPTM.extract_by_time wn buffer
