@@ -20,6 +20,13 @@ let to_string (a : t) =
   ""
 
 
+let mov_to_string (m : movement) =
+  ""
+  
+let mov_from_string (str : string) =
+  Position.create(0,0)::[]
+
+
 exception Bad_unit
 exception Has_played
 exception Bad_path
