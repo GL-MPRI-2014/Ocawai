@@ -196,8 +196,7 @@ let new_game ?character () =
         manager#window#get_height / 2 - 80)
       ~m_size:(400, 110) ~m_theme:Theme.blue_theme
       ~m_text:("Do you really want to forfeit ? The game will be considered "
-                ^ "lost... Also, notice how this text is perfectly handled ! "
-                ^ "This is beautiful isn't it ?")
+                ^ "lost...")
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
 
     (* Buttons for the forfeit popup *)
