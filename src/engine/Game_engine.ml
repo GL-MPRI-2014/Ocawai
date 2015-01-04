@@ -142,6 +142,9 @@ class game_engine () = object (self)
     Log.infof "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
+    Mutex.unlock mutex;
+    Thread.yield ();
+    Mutex.lock mutex;
     (* Notify the player *)
     player#update Types.Your_turn;
     (* Notify the others *)
@@ -150,7 +153,9 @@ class game_engine () = object (self)
     |> List.filter (fun p -> p <> players.(self#actual_player))
     |> List.iter (fun p -> p#update (Types.Turn_of pid));
 
+    Mutex.unlock mutex;
     let next_wanted_action = player#get_next_action mutex in
+    Mutex.lock mutex;
 
     begin try
       let next_action = Logics.try_next_action

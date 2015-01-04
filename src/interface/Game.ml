@@ -30,9 +30,11 @@ let rec get_next_action mutex =
   Mutex.lock mutex;
   match !client_state with
   | ClientPlayer.Received a -> 
-      client_state := ClientPlayer.Idle ; 
+      client_state := ClientPlayer.Idle; 
       Mutex.unlock mutex; a
-  | _ -> get_next_action mutex
+  | _ -> 
+    Mutex.unlock mutex; 
+    get_next_action mutex
 
 
 let new_game ?character () =
@@ -512,6 +514,16 @@ let new_game ?character () =
       end)
 
   method render window =
+
+    begin match event_state () with
+      |ClientPlayer.Received(_) ->
+        Mutex.unlock cdata#mutex; 
+        Thread.yield (); 
+      |ClientPlayer.Waiting -> 
+        Mutex.unlock cdata#mutex;
+        Mutex.lock cdata#mutex;
+      | _ -> ()
+    end;
 
     self#keyboard_events;
     Interpolators.update () ;
