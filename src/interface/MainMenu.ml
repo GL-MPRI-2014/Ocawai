@@ -13,6 +13,7 @@ class main_menu = object(self)
   val bg_texture = new texture (`File ((Utils.base_path ()) ^ "textures/gui/capture.png"))
   val mutable bg_offset = (0.,0.)
   val mutable bg_dir = (0.,0.)
+  val mutable music_run = ref true
 
   val key_seq = OcsfmlWindow.KeyCode.([
     Up;
@@ -119,6 +120,8 @@ class main_menu = object(self)
   initializer
     let window = manager#window in
     let (w,h) = window#get_size in
-    self#set_screen w h
+    self#set_screen w h;
+    let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_menu) (music_run)
 
 end

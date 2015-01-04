@@ -58,9 +58,13 @@ class game_engine () = object (self)
 
   method private create_n_scripted =
     (* create one scripted from its id 1..n *)
-    let create_one _ =
-      new ScriptedPlayer.scripted_player
-        ((Utils.base_path ()) ^ "scripts/test.script")
+    let create_one = function
+      |2->
+        new ScriptedPlayer.scripted_player
+          ((Utils.base_path ()) ^ "scripts/olive.script")
+      |_->
+        new ScriptedPlayer.scripted_player
+          ((Utils.base_path ()) ^ "scripts/test.script")
     in
     (* create n scripted calling create_one *)
     let rec create_n = function
