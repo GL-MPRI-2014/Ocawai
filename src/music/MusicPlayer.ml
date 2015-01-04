@@ -60,7 +60,6 @@ let music_player =
             | Some (midi_player) ->
                 self#bufferize menu_music;
               Thread.delay 0.1
-              (*Thread.delay (self#duration_one_measure tempo *. 0.99)*)
         done;
         (match !midi_player with | Some midi_player -> midi_player#stop () | None -> ());
         midi_player := None;
