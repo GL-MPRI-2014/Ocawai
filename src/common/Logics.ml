@@ -115,7 +115,7 @@ let unit_of_position pos player player_list =
   let rec check_players l = match l with
     | [] -> (false,true)
     | p :: t ->
-      if check_army p#get_army then (true, p = player)
+      if check_army p#get_army then (true, p#get_id = player#get_id)
       else check_players t
   in
   check_players player_list

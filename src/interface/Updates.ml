@@ -64,6 +64,7 @@ class handler data camera = object(self)
         |> player#add_unit
     | Add_building (b,pid) ->
         let player = Logics.find_player pid data#players in
+        (* assert (b#player_id = Some (player#get_id)) ; *)
         Oo.copy b
         |> player#add_building
     | Delete_unit (uid,pid) ->
@@ -71,6 +72,9 @@ class handler data camera = object(self)
         player#delete_unit uid
     | Delete_building (bid,pid) ->
         let player = Logics.find_player pid data#players in
+        (List.find
+          (fun b -> b#get_id = bid)
+          data#neutral_buildings)#set_neutral ;
         player#delete_building bid
     | Move_unit (uid,path,pid) ->
         let player = Logics.find_player pid data#players in

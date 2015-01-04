@@ -141,6 +141,15 @@ class game_engine () = object (self)
   method run : unit =
     Log.infof "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
+
+    (* Notify the player *)
+    player#update Types.Your_turn;
+    (* Notify the others *)
+    let pid = player#get_id in
+    Array.to_list players
+    |> List.filter (fun p -> p <> players.(self#actual_player))
+    |> List.iter (fun p -> p#update (Types.Turn_of pid));
+
     let next_wanted_action =  player#get_next_action in
     begin try
       let next_action = Logics.try_next_action
@@ -262,13 +271,6 @@ class game_engine () = object (self)
     else (
       (* Enfin, on change de joueur en cours *)
       self#next_player;
-      (* Notify the player *)
-      players.(self#actual_player)#update Types.Your_turn;
-      (* Notify the others *)
-      let pid = players.(self#actual_player)#get_id in
-      Array.to_list players
-      |> List.filter (fun p -> p <> players.(self#actual_player))
-      |> List.iter (fun p -> p#update (Types.Turn_of pid))
     )
 
   method private apply_movement movement =
@@ -277,7 +279,8 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players;
+    (* Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players; *)
+    self#notify_all (Types.Move_unit(u#get_id,movement,(player#get_id))) ;
     u#set_played true ;
     self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true))
 
