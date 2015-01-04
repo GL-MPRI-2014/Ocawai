@@ -7,7 +7,7 @@ let might_adsr adsr g =
     | None -> g
     | Some a -> new Audio.Mono.Generator.adsr a g
 
-let volume = ref 100
+let volume = ref 15
 
 let set_volume v = volume := v
 let get_volume () = !volume

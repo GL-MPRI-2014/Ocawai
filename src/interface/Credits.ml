@@ -4,6 +4,13 @@ open GuiTools
 
 open Manager
 
+type credits =
+  | OCAWAI
+  | Section of string * name list
+  | Thank_you
+  | Tips
+and name = string
+
 class state = object(self)
 
   inherit State.state as super
@@ -12,7 +19,6 @@ class state = object(self)
   val bold = Fonts.load_font "FreeSansBold.ttf"
 
   val mutable off = 0.
-  val mutable top = 0.
 
   method handle_event e =
     OcsfmlWindow.Event.(
@@ -23,46 +29,66 @@ class state = object(self)
       | _ -> ()
     )
 
-  method private print s b size =
+  method private print s b size top =
     let window = manager#window in
     let (w,h) = foi2D window#get_size in
     rect_print window s (if b then bold else font) Color.white
       (Pix size) (Pix 5) Center
-      { left = 10.; top = h -. 50. -. off +. top; width = w -. 20.; height = h };
-    top <- top +. (float_of_int size *. 2.5)
+      { left = 10.; top = h -. 50. -. off +. top; width = w -. 20.; height = h }
 
-  method private title s =
-    self#print s true 30
+  method private title s top =
+    self#print s true 30 top
 
-  method private text s =
-    self#print s false 25
+  method private text s top =
+    self#print s false 25 top
+
+  method private credits seq =
+    let top = ref 0. in
+    let aux = function
+      | OCAWAI ->
+          self#print "OCAWAI" true 100 !top ;
+          top := !top +. 150.
+      | Thank_you ->
+          top := !top +. 50. ;
+          self#print "Thank you!" true 50 !top
+      | Section (title,names) ->
+          self#title title !top ;
+          top := !top +. 34. ;
+          List.iter (fun s -> self#text s !top ; top := !top +. 28.) names ;
+          top := !top +. 20.
+      | Tips ->
+          top := !top +. 150. ;
+          self#print "By the way, press escape to quit..." false 15 !top ;
+          top := !top +. 20.
+    in List.iter aux seq
 
   method render window =
 
-    off <- off +. 0.8 ;
+    off <- off +. 1.3 ;
 
     let color = Color.rgb 10 10 10 in
     window#clear ~color ();
 
-    (* Ugly *)
-    top <- 0. ;
-
-    self#print "OCAWAI" true 100 ;
-
-    self#title "Textures Hardcoding" ;
-    self#text  "Dada" ;
-    self#text  "Dudu" ;
-    top <- top +. 20. ;
-
-    self#title "Fireworks" ;
-    self#text  "Who did that?" ;
-    top <- top +. 20. ;
-
-    self#title "Minimap Mipmapping" ;
-    self#text  "VLanvin" ;
-    top <- top +. 50. ;
-
-    self#print "Thank you!" true 50 ;
+    self#credits [
+      OCAWAI ;
+      Section ("Textures Hardcoding",
+        ["Sheeft"]
+      ) ;
+      Section ("Fireworks",
+        ["Paul-Gallot"]
+      ) ;
+      Section ("Minimap Mipmapping",
+        ["VLanvin"]
+      ) ;
+      Section ("Konami Snake",
+        ["VLanvin";"Artymort";"Sheeft"]
+      ) ;
+      Section ("Clickodromization",
+        ["Nobody... right?"]
+      ) ;
+      Thank_you ;
+      Tips
+    ] ;
 
     window#display
 

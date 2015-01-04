@@ -51,3 +51,10 @@ let timeToSamplesNumber : ?samplerate:int -> ?division:MIDI.division ->
       ?tempo:(tempo = Time.Tempo.base) ~duration ->
   let tempo_mspq = Time.Tempo.toMicrosecondsPerQuarters tempo in
   samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration)
+
+let samplesToSeconds ?samplerate:(samplerate = samplerate) samples =
+  let duration_seconds_num =
+    Num.mult_num (Num.num_of_int samples) @@
+      Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate)
+  in
+  Num.float_of_num duration_seconds_num
