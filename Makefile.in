@@ -83,9 +83,9 @@ output_client = dummy_client.native
 output_network = dealer.native
 output_gprof = profile
 
+menhir_command = -use-menhir -yaccflag --explain
 
-
-command = ocamlbuild -use-ocamlfind -cflags $(cflags) -use-menhir -yaccflag --explain
+command = ocamlbuild -use-ocamlfind -cflags $(cflags) 
 
 interface_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
 
@@ -95,11 +95,11 @@ gprof_command = gprof $(output_profile) gmon.out >> $(output_gprof)
 
 script_command = $(command) $(menhir_command) -Is $(script_src) -package $(script_dependencies) $(output_script)
 
-engine_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine) -tag $(engine_tags)
+engine_command = $(command) $(menhir_command) -Is $(engine_src) -package $(engine_dependencies) $(output_engine) -tag $(engine_tags)
 
-client_command = $(command) -Is $(engine_src) -package $(engine_dependencies) $(output_client) -tag $(engine_tags)
+client_command = $(command) $(menhir_command) -Is $(engine_src) -package $(engine_dependencies) $(output_client) -tag $(engine_tags)
 
-network_command = $(command) -Is $(network_src) $(output_network)
+network_command = $(command) $(menhir_command) -Is $(network_src) $(output_network)
 
 #get every source file of the project
 #needed for the target doc
@@ -310,7 +310,7 @@ check_interface: interface
 	./interface_test.native
 
 check_script: engine
-	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) script_test.native -tag $(engine_tags)
+	ocamlbuild -use-ocamlfind $(menhir_command) -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) script_test.native -tag $(engine_tags)
 	./script_test.native
 
 check: check_player check_generation check_logics check_music check_interface check_script
