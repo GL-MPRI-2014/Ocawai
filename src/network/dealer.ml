@@ -85,17 +85,18 @@ object (self)
   method manage_gna =
     let clip = self#is_set in
     let action = clip#get_next_action in
+
     Log.infof "send \"next_action\"" ;
     let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) Types.clock in
     
     if not success then
       failwith "send \"next_action failure in dealer !"
-	
 
   (* do what has to be done with an update... *)
 	
   method manage_update = function
     | Game_over -> ()
+    | Your_turn -> ()
     | Classement -> ()
     | Set_army (l,id) -> (self#get_player id)#set_army l
     | Set_building (l,id) -> (self#get_player id)#set_buildings l
@@ -109,11 +110,9 @@ object (self)
     | Set_client_player id -> self#set_player_id id
     | Set_logic_player_list lst -> self#set_logicPlayerList lst
     | Map str -> self#set_map str
-    | Your_turn -> (* TODO ? *) ()
-    | Building_changed _ -> (* TODO ? *) ()
+    | Building_changed b -> ()
 
   (* please give a call to this method just after having created this object *)
-
 
   method run = 
     while true 
@@ -134,5 +133,5 @@ object (self)
 end
 
 type t = dealer
-
+	   
 let create_dealer sockfd = new dealer sockfd

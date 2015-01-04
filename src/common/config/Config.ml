@@ -446,7 +446,7 @@ object (self)
     let al = Array.of_list l in
     let (u,p,pid,id,hp,h_p) = (self#unbound_unit_of_char al.(0).[0], Position.create(int_of_string al.(1),int_of_string al.(2)), int_of_string al.(3), int_of_string al.(4), int_of_string al.(5), al.(6)="1") in
     Unit.bind_extended u p pid id hp h_p
-
+	   
   method private string_of_battlefield_off m off2 =
     let (w,h) = Battlefield.size m in
     let s = Utils.init_string
