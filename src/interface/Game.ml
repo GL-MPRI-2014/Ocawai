@@ -494,13 +494,21 @@ let new_game ?character () =
               end
               | Displace (_,u,(acc,_)) ->
                   let uopt = cdata#unit_at_position cursor#position in
+                  let uopt = begin match uopt with
+                    | Some u ->
+                        let (i,j) = Position.topair u#position in
+                        let fog = cdata#actual_player#get_fog in
+                        if Array.length fog > 0 && fog.(i).(j) = 0 then None
+                        else uopt
+                    | None -> None
+                  end in
                   begin match uopt with
-                  |None when List.mem cursor#position acc ->
+                  | None when List.mem cursor#position acc ->
                       disp_menu#set_position
                         (cdata#camera#project cursor#position);
                       ui_manager#focus disp_menu;
                       disp_menu#toggle
-                  |Some (u')
+                  | Some u'
                     when u#get_id = u'#get_id && List.mem cursor#position acc ->
                       disp_menu#set_position
                         (cdata#camera#project cursor#position);
