@@ -39,6 +39,9 @@ val sign : t -> int
 *)
 val compare : t -> t -> int
 
+(** Equality test *)
+val is_equal : t -> t -> bool
+
 (** Return the smaller of the two arguments. *)
 val min : t -> t -> t
 
@@ -88,6 +91,8 @@ val dden : t (** double-dotted eighth note *)
 val toFloat : t -> float 
 
 val toInt : t -> int
+
+val toNum : t -> Num.num
 
 (**
    @param division the MIDI division, given in ticks per quarter

@@ -2,11 +2,15 @@ open OcsfmlGraphics
 
 type mini_tile = Forest | Mountain | Plain | Water | Sand
 
+type mini_unit = Unit | Building
+
 let player_colors = [|
   Color.rgb 255   0   0;
   Color.rgb   0 255   0;
   Color.rgb   0   0 255;
   Color.rgb 255 255   0 |]
+
+let pairsum (a,b) = a + b
 
 class minimap def width height = object(self)
 
@@ -27,7 +31,7 @@ class minimap def width height = object(self)
     let n = List.length players in
     for i = 0 to def - 1 do
       for j = 0 to def - 1 do
-        majority_map.(i).(j) <- Array.make n 0
+        majority_map.(i).(j) <- Array.make n (0,0)
       done;
     done;
     let act_player = ref 0 in
@@ -40,8 +44,23 @@ class minimap def width height = object(self)
           ((foi py) /. (foi (height - 1))) *. (foi (def - 1)))
         in
         majority_map.(px').(py').(!act_player) <-
-          majority_map.(px').(py').(!act_player) + 1
+          (fst majority_map.(px').(py').(!act_player) + 1, 0)
       ) p#get_army;
+      incr act_player
+    ) players;
+    act_player := 0;
+    List.iter (fun p ->
+      List.iter (fun u ->
+        let (px,py) = Position.topair u#position in
+        let foi = float_of_int in
+        let (px', py') = Utils.iof2D (
+          ((foi px) /. (foi (width  - 1))) *. (foi (def - 1)),
+          ((foi py) /. (foi (height - 1))) *. (foi (def - 1)))
+        in
+        majority_map.(px').(py').(!act_player) <-
+          (fst majority_map.(px').(py').(!act_player), 
+           snd majority_map.(px').(py').(!act_player) + 1)
+      ) p#get_buildings;
       incr act_player
     ) players;
     for i = 0 to def - 1 do
@@ -49,13 +68,17 @@ class minimap def width height = object(self)
         let maxp = ref (-1) in
         let maxu = ref 0    in
         for k = 0 to n-1 do
-          if majority_map.(i).(j).(k) > !maxu then begin
-            maxu := majority_map.(i).(j).(k);
+          if pairsum majority_map.(i).(j).(k) > !maxu then begin
+            maxu := pairsum majority_map.(i).(j).(k);
             maxp := k
           end
         done;
         if !maxp <> -1 then
-          player_map.(i).(j) <- Some !maxp
+          let (a,b) = majority_map.(i).(j).(!maxp) in
+          if a >= b then 
+            player_map.(i).(j) <- Some (!maxp, Unit)
+          else 
+            player_map.(i).(j) <- Some (!maxp, Building)
       done;
     done
 
@@ -145,11 +168,12 @@ class minimap def width height = object(self)
           (ratio,ratio) fill_color;
         match player_map.(i).(j) with
         |None -> ()
-        |Some(p) ->
+        |Some(p,t) ->
           let alpha = (sin (Unix.gettimeofday () *. 3.) +. 1.)/. 2. in
           let alpha = int_of_float (100. *. alpha) + 50 in
-          self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
-            (ratio,ratio) (Color.rgba 255 255 255 alpha);
+          if t = Unit then 
+            self#add_rectangle vao ((8.+.(foi i)*.ratio), (8.+.(foi j)*.ratio))
+              (ratio,ratio) (Color.rgba 255 255 255 alpha);
           self#add_rectangle vao ((9.+.(foi i)*.ratio), (9.+.(foi j)*.ratio))
             (ratio-.2.,ratio-.2.) player_colors.(p);
       done;

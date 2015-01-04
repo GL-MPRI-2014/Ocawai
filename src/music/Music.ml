@@ -8,7 +8,7 @@ exception Not_found
 type time = Time.t
 
 type 'a t = Note of (time * 'a)
-	    | Rest of time
+	  | Rest of time
 
 type velocity = int (** Should be between 0 and 127 for MIDI *)
 
@@ -37,22 +37,27 @@ class param pitch velocity = object (self)
     velocity <- newVelocity
 end
 
+(** Parameters *syntactic* equality *)
+let is_equal_param : param -> param -> bool = fun p1 p2 ->
+  p1#velocity = p2#velocity
+  && p1#pitch = p2#pitch
+
 type event = param t
 
 (** 
-   Event comparison function, a bit arbitrary, used during
-   the DList normalisation process to build sets of events.
+   Event syntactic equality
  *)
-let compare : 'a t -> 'a t -> int = fun t1 t2 ->
-  match (t1, t2) with
-  | (Rest dur1, Rest dur2) -> Time.compare dur1 dur2
-  | (Rest _, Note _) -> -1
-  | (Note _, Rest _) -> +1
-  | (Note (dur1, param1), Note (dur2, param2)) ->
-     let comp_time = Time.compare dur1 dur2 in
-     if comp_time = 0 then
-       Pervasives.compare param1 param2
-     else comp_time
+let is_equal : event -> event -> bool = fun e1 e2 ->
+  match (e1, e2) with
+  | Rest dur1, Rest dur2 -> Time.is_equal dur1 dur2
+  | Note (dur1, param1), Note (dur2, param2) ->
+     Time.is_equal dur1 dur2 &&
+       is_equal_param param1 param2
+  | _ -> false
+
+let is_silent : event -> bool = function
+  | Rest _ -> true
+  | Note (_, param) -> param#velocity = 0
 
 let note : time -> 'a -> 'a t = fun dur a ->
   if Time.compare dur Time.zero < 0 then raise Negative_duration_note;
@@ -139,6 +144,7 @@ let pitch_to_string : pitch -> string = function
 (** {3 MIDI conversion} *)
 
 let frequency_of_string s =
+  (** TODO : fix conversion, should have (frequency B4) > (frequency E4) *)
     if (String.length s < 2) then failwith "Couldn't parse this note.";
     let oct = int_of_char s.[String.length s - 1] - int_of_char '0' in
     let off = ref (match s.[0] with
@@ -161,6 +167,9 @@ let frequency_of_string s =
     end;
     64 + 12 * (oct - 4) + !off
 
+let frequency_of_pitch p =
+  frequency_of_string @@ pitch_to_string p
+
 let toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	     ?tempo:Time.Tempo.t -> event -> MIDI.buffer
   = fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -177,7 +186,7 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
 						   ~tempo ~duration
      in
      let buffer = MIDI.create(midi_duration)
-     and note = frequency_of_string (pitch_to_string (param#pitch))
+     and note = frequency_of_pitch @@ param#pitch
      (** TODO : Requires patching mm.Audio.Note to read sharp
                                  and flat notes *)
      and velocity = MidiV.velocityFromInt (param#velocity)
@@ -189,3 +198,28 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
      MIDI.insert buffer (0, MIDI.Note_on(note, velocity));
      MIDI.insert buffer (midi_duration-1, MIDI.Note_off(note, velocity));
      buffer
+
+let measure_event : event -> Num.num =
+  let open Num in
+  function
+  | Rest dur -> Time.toNum dur
+  | Note (dur, param) ->
+     let open Time in
+     let pitch = param#pitch
+     and velocity = param#velocity in
+     let freq_num = num_of_int @@ frequency_of_pitch pitch
+     and vel_num = num_of_int velocity
+     and dur_num = Time.toNum dur
+     in
+     (dur_num **/ Int(4)) +/ (vel_num **/ Int(2)) +/ freq_num 
+
+(** 
+   Event comparison function, used during
+   the DList normalisation process to build sets of events.
+ *)
+let compare : 'a t -> 'a t -> int = fun t1 t2 ->
+  let my_compare t1 t2 = Num.compare_num (measure_event t1) @@ measure_event t2 in
+  match (t1, t2) with
+  | (Rest _, Note _) -> -1
+  | (Note _, Rest _) -> +1
+  | t1, t2 -> my_compare t1 t2

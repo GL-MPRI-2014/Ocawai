@@ -7,17 +7,11 @@ open Music
 open DList
 open TPTM
 
-let dummy_event =
-  note (Time.fromInt 1) (new Music.param (C, 4) 127)
-
 let dummy_event_plus dur (pitch, velocity) =
   note dur (new Music.param pitch velocity)
 
 let dummy_simple_event (dur, pitch) =
-  dummy_event_plus dur ((pitch, 4), 127)
-
-let dummy_simple_event_pitchclass (dur, pitchClass) =
-  dummy_event_plus dur (pitchClass, 127)
+  dummy_event_plus dur (pitch, 127)
 
 (**
    notes : [(int, Music.pitch)], duration and pitch, all on octave 4.
@@ -28,13 +22,9 @@ let sequence notes =
   in
   List.fold_left aggregate TPTM.zero notes
 
-let pierrot =
-  sequence [(en, C); (en, C); (en, C); (en, D); (qn, E); (qn, D);
-	    (en, C); (en, E); (en, D); (en, D); (hn, C)]
-
-let pierrot_canon = fork pierrot @@ (delay wn) % pierrot   
-						   
-let first_measure = fst @@ extract_by_time bn pierrot_canon
+let menu_music = (reset @@ sequence [(hn, (C, 3));
+				     (hn, (E, 3))]) %
+		   (sequence [(hn, (G, 3)); (hn, (B, 4))])
 
 let music_player =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -44,26 +34,39 @@ let music_player =
     (** The main Tile we will use to store the music to play,
         we maintain Pre buffer = Pos buffer = O *)
     val mutable buffer = TPTM.zero
+
+    method private duration_one_measure ?tempo:(tempo = Time.Tempo.base) =
+      let duration_seconds_num =
+        Num.mult_num (Num.num_of_int @@ MidiV.timeToSamplesNumber Time.wn)
+                     (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
+      in
+      Num.float_of_num duration_seconds_num
 				  
-    method bufferize : TPTM.t -> unit = fun t ->
+    method private bufferize : TPTM.t -> unit = fun t ->
       let open TPTM in
       buffer <- reset @@ buffer % t
-				    
-    method play_next_measure : unit -> unit = fun () ->
-      let one_measure =
-        let duration_seconds_num =
-          Num.mult_num (Num.num_of_int @@ MidiV.timeToSamplesNumber Time.wn)
-                 (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
-        in
-        Num.float_of_num duration_seconds_num
-      in
+
+    method play_menu : unit -> unit = fun () ->
+      let tempo = Time.Tempo.fromInt 100 in
+      ignore @@ Thread.create (self#play_next_measure) tempo;  
+      while true do
+	self#bufferize menu_music;
+        Thread.delay (self#duration_one_measure ~tempo)
+      done
+
+    method private pick_measure : unit -> unit = fun () ->
+      (** Get current mood and pick a measure to play *)
+      let mood = Mood.get () in
+      (* TODO, right now *)()
+      
+    method play_next_measure : Tempo.t -> unit = fun tempo ->
       while true do
         let (next_measure, rest) =
           TPTM.extract_by_time wn buffer
         in
         buffer <- reset rest;
-        TPTM.fork_play next_measure;
-        Thread.delay (one_measure)
+        TPTM.fork_play ~tempo next_measure;
+        Thread.delay (self#duration_one_measure ~tempo)
       done
 
     method read_note : unit =
@@ -77,7 +80,7 @@ let music_player =
         let notes_strings = Str.split (Str.regexp " ") (read_line ()) in
 	try
           let note_reader = fun str ->
-            TPTM.make_withDelay @@ dummy_simple_event_pitchclass @@
+            TPTM.make_withDelay @@ dummy_simple_event @@
               (wn, Music.pitch_of_string str)
           in 
           let notes = List.map note_reader notes_strings in
@@ -87,9 +90,7 @@ let music_player =
 	     | ["q"] -> running := false
 	     | _ -> ()
       done
-  end
 
-let () =
-  let my_music_player = music_player () in
-  ignore @@ Thread.create my_music_player#play_next_measure (); 
-  my_music_player#read_note
+    initializer
+      Random.self_init ()
+  end

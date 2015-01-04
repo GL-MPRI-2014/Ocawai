@@ -10,6 +10,16 @@ type action =
 
 type t = movement * action
 
+
+ (* TODO: implement this method *)
+let from_string (str : string) =
+  [Position.create(0,0)],Wait
+
+ (* TODO: implement this method *)
+let to_string (a : t) =
+  ""
+
+
 exception Bad_unit
 exception Has_played
 exception Bad_path

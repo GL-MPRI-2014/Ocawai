@@ -58,9 +58,13 @@ class game_engine () = object (self)
 
   method private create_n_scripted =
     (* create one scripted from its id 1..n *)
-    let create_one _ =
-      new ScriptedPlayer.scripted_player
-        ((Utils.base_path ()) ^ "scripts/test.script")
+    let create_one = function
+      |2->
+        new ScriptedPlayer.scripted_player
+          ((Utils.base_path ()) ^ "scripts/olive.script")
+      |_->
+        new ScriptedPlayer.scripted_player
+          ((Utils.base_path ()) ^ "scripts/test.script")
     in
     (* create n scripted calling create_one *)
     let rec create_n = function
@@ -141,6 +145,15 @@ class game_engine () = object (self)
   method run : unit =
     Log.infof "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
+
+    (* Notify the player *)
+    player#update Types.Your_turn;
+    (* Notify the others *)
+    let pid = player#get_id in
+    Array.to_list players
+    |> List.filter (fun p -> p <> players.(self#actual_player))
+    |> List.iter (fun p -> p#update (Types.Turn_of pid));
+
     let next_wanted_action =  player#get_next_action in
     begin try
       let next_action = Logics.try_next_action
@@ -242,8 +255,12 @@ class game_engine () = object (self)
       ) changed_buildings
     ) players;
 
-    List.iter (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid))) added ;
-    List.iter (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid))) removed ;
+    List.iter
+      (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid)))
+      added ;
+    List.iter
+      (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid)))
+      removed ;
 
     let rec aux lst =
       match lst with
@@ -262,13 +279,6 @@ class game_engine () = object (self)
     else (
       (* Enfin, on change de joueur en cours *)
       self#next_player;
-      (* Notify the player *)
-      players.(self#actual_player)#update Types.Your_turn;
-      (* Notify the others *)
-      let pid = players.(self#actual_player)#get_id in
-      Array.to_list players
-      |> List.filter (fun p -> p <> players.(self#actual_player))
-      |> List.iter (fun p -> p#update (Types.Turn_of pid))
     )
 
   method private apply_movement movement =

@@ -1,0 +1,235 @@
+// Idée : on envoit le minimum de soldats sur les unités visibles
+// s'il reste des unités, elles explorent le terrain
+
+// Idées à implémenter :
+// attaquer en priorité celles qui sont les plus dangereuse (somme des dégats possibles ?)
+// prendre les bâtiments
+// prendre en compte la troisième armée ?
+// commencer par bouger les unités qui explorent ?
+
+log_str "script olive2\n";
+
+var mission = assoc_create ();
+
+// returns the list of visible ennemies
+fun get_ennemies a = {
+  fun for_each_player p = {
+    if(p==self) // me
+    {
+      []
+    }
+    else // an ennemy
+    {
+      army_of p;
+    }
+  }
+  list_flatten (list_map for_each_player players);
+}
+
+fun next_playable l = {
+  if (list_empty l) {
+    end_turn ()
+  }
+  else {
+    var u = list_hd l;
+    var acc = accessible_positions u;
+    if ((unit_has_played u) || (list_empty acc)) {
+      next_playable (list_tl l)
+    } else {
+      u
+    }
+  }
+}
+
+// Returns the closest unit in l from position pos
+fun closest_to pos l = {
+  var actual_unit = list_hd l;
+  var actual_dist = dist2D pos (unit_position actual_unit);
+  fun closest_aux l = {
+    if (!(list_empty l)) {
+      var u = list_hd l;
+      var d = dist2D (unit_position u) pos;
+      if (d < actual_dist) {
+	      actual_dist = d;
+	      actual_unit = u;
+      };
+      closest_aux (list_tl l)
+    }
+  }
+  closest_aux (list_tl l);
+  actual_unit
+}
+
+// Outputs a position in the log
+fun log_position p = {
+  log_str "(";
+  log_int (fst p);
+  log_str ",";
+  log_int (snd p);
+  log_str ")";
+}
+
+// sort a list of position from farest to nearest to a given position
+fun sort_farest_to_nearest pos l = {
+  fun comp a b = {
+    (dist2D pos b) - (dist2D pos a)
+  }
+  list_sort comp l
+}
+
+// sort a list of position from nearest to farest to a given position
+fun sort_nearest_to_farest pos l = {
+  fun comp a b = {
+    (dist2D pos a) - (dist2D pos b)
+  }
+  list_sort comp l
+}
+
+
+// return the list of possible positions to attack 'on' by 'by'
+fun position_to_attack by on = {
+  var pos = unit_position on;
+  var range = unit_range by;
+  var range_min = fst range;
+  var range_max = snd range;
+  fun in_range p = {
+    var dist = dist2D pos p;
+    (dist >= range_min) && (dist <= range_max);
+  }
+  list_filter in_range (accessible_positions by);
+}
+
+move default {
+  fun unbound a = {
+    // TODO se diriger là ou on découvre le plus de terrain : il faut connaitre le brouillard
+    var acc = accessible_positions selected_unit;
+    if(list_empty acc) {
+      []
+    }
+    else {
+      var ennemies = get_ennemies ();
+      if(list_empty ennemies) {
+        var select_pos =
+          list_hd (sort_farest_to_nearest (unit_position selected_unit) acc);
+        log_str "Exploration :\n";
+        log_str "Moving unit to : ";
+        log_position select_pos;
+        log_str "\n";
+        dijkstra_to selected_unit select_pos;
+      }
+      else {
+        var target = closest_to (unit_position selected_unit) ennemies;
+        var pos_target = unit_position target;
+        var select_pos = list_hd (sort_nearest_to_farest pos_target acc);
+        log_str "Moving unit to : ";
+        log_position select_pos;
+        log_str "\n";
+        dijkstra_to selected_unit select_pos
+      }
+    }
+  }
+  fun bound e = {
+    var acc =
+      sort_farest_to_nearest
+        (unit_position e)
+        (position_to_attack selected_unit e);
+    if(list_empty acc) {
+      unbound ();
+    }
+    else {
+      log_str "Moving to attack unit to : ";
+      log_position (list_hd acc);
+      log_str "\n";
+      dijkstra_to selected_unit (list_hd acc);
+    }
+  }
+  assoc_get mission bound unbound selected_unit;
+}
+
+attack default {
+  fun bound e = { 
+    log_str "Attacking unit at : ";
+    log_position (unit_position e);
+    log_str "\n";
+    log_str "expected damage : ";
+    log_int (expected_damage selected_unit e);
+    log_str "\n";
+    e
+  }
+  assoc_get mission bound do_nothing selected_unit;
+}
+
+build factory {
+  "infantry";
+}
+
+build airport {
+  // AUTOWIN
+  "helicopter";
+}
+
+build default {
+  do_nothing ();
+}
+
+fun ignore arg = {}
+
+init {
+  // all ennemies
+  var ennemies = get_ennemies ();
+  // we remain point of life after programmed attacks
+  var pv_remaining = assoc_create ();
+  fun for_each_soldier s = {
+    assoc_set pv_remaining s (life_of s);
+  }
+  list_iter for_each_soldier ennemies;
+  fun get_pv e = {
+    fun bound pv = { pv }
+    fun unbound a =  { 0 }
+    assoc_get pv_remaining bound unbound e;
+  }
+  
+  // for all ennemies and all my units, we see if we can attack and the expected damage
+  var units_by_ennemies = assoc_create ();
+  fun add_ennemy e = {
+    fun map unit = {
+      (unit, (expected_damage unit e, position_to_attack unit e));
+    }
+    fun filter info = { // whether there are positions
+      !(list_empty (snd (snd info)));
+    }
+    var units_all = list_map map (army_of self);
+    var units_in_range = list_filter filter units_all;
+    assoc_set units_by_ennemies e units_in_range
+  }
+  list_iter add_ennemy ennemies;
+  
+  // mission given to my unit
+  mission = assoc_create ();
+  // for all ennemies, we send enough unit to kill it (if possible)
+  fun iter e = {
+    fun f l = {
+      var pv = get_pv e;
+      if(pv > 0 && !(list_empty l)) {
+        var hd = list_hd l;
+        // only if unbound, and if expected_damage > 0
+        fun unbound a = {
+          assoc_set mission (fst hd) e;
+          assoc_set pv_remaining e (pv - (fst (snd hd)));
+        }
+        if((fst (snd hd)) > 0) {
+          assoc_get mission ignore unbound (fst hd);
+        };
+        f (list_tl l);
+      }
+    }
+    assoc_get units_by_ennemies f ignore e;
+  }
+  list_iter iter ennemies;
+  
+  // remaining units explore
+}
+
+main {
+  next_playable (army_of self)
+}
