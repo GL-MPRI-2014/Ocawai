@@ -170,7 +170,6 @@ let new_game ?character () =
 
   initializer
     let actual_player = my_player#copy in
-    Mood.init cdata;
     cdata#init_core
       m_map
       actual_player
@@ -180,6 +179,7 @@ let new_game ?character () =
             (actual_player :> logicPlayer)
           else p#copy)
         m_players) ;
+    Mood.init cdata;
     (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
