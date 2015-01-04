@@ -5,17 +5,19 @@
     the destination. *)
 type movement = Position.t list
 
+
 (** Action allowed for a player during it's turn*)
-type action = 
-| Attack_unit of (Unit.t * Unit.t)
-| Create_unit of (Building.t * Unit.unbound_t)
+type action =
+| Attack_unit of (Unit.unit_id * Unit.unit_id)
+| Create_unit of (Building.building_id * Unit.unbound_t)
 | Wait
 | End_turn
 
 (** Type use to move a unit*)
 type t = movement * action
 
-
+val from_string : string -> t
+val to_string : t -> string
 
 (** Exception raised if the unit moving does not exist or does not belong
     to the player *)
@@ -28,7 +30,7 @@ exception Has_played
     passing through impassable terrain) *)
 exception Bad_path
 
-(** Exception raised if the attack is illegal, i.e. wrong unit attacking, 
+(** Exception raised if the attack is illegal, i.e. wrong unit attacking,
     attacked unit not in range, or ranged attack just after moving. *)
 exception Bad_attack
 

@@ -1,8 +1,8 @@
 (**
    DList module used in music generation.
-   DLists implement constant time insert in head AND tail.
+   DLists implement constant time insertion at the list's head as well as at its tail.
 
-   Represents the background, lower-level implementation for the Tile module.
+   Represents the background, lower-level implementation for the TPTM module.
 
    Based on the TPTM model developed by P. Hudak and
    D. Janin, code inspired by Theis Bazin's work on this model.
@@ -29,9 +29,16 @@ val zero : t
 val isZero : t -> bool
 
 (**
-   Encapsulate an event into a singleton, that is a single element list
+   Encapsulate an event into a {b zero-duration} singleton,
+   {i i.e.} a single element list
 *)
 val return : Music.event -> t
+
+(** 
+   Box the input [event] into a single event list,
+   with [Start = 0 && Dur = duration event]
+ *)
+val returnWithDelay : Music.event -> t
 
 (**
    @return the duration of the tile
@@ -56,7 +63,27 @@ val (/::/) : t -> t -> t
 *)
 val headTail : t -> t * t
 
-(** {2 Testing functions} *) 
+
+(**
+   Return a DList of the form :
+   A sync from (Pos == 0) to start,
+   |--> ...
+   |--> The n-th event and the strictly positive sync to the (n+1)-th event,
+   |--> ...
+   |--> The last event and the (possibly negative) sync to Pos
+   
+   Obtained by iterating [headTail] on the input [t].
+ *) 
+val normalize : t -> t
+
+(**
+   Equality test
+
+   Two DLists are equal iff there normal forms are equal
+ *)
+val is_equal : t -> t -> bool
+
+(** {2 Advanced DList creation functions} *)
 
 (**
    @return the tile containing all events in the [Music.event list] as a chord

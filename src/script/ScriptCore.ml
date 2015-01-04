@@ -236,7 +236,28 @@ let scr_listflatten =
     | `List(l) -> `List (flattener l)
       | _ -> assert false)
 
+let scr_listsort =
+  `Fun(function
+    |`Fun f -> `Fun(function
+      |`List l -> `List
+          (List.sort
+            (fun a b -> match (f a) with
+              |`Fun fa ->
+                (match fa b with
+                  |`Int i -> i
+                  |_ -> assert false
+                )
+              |_ -> assert false
+            )
+            l
+          )
+      | _ -> assert false
+      )
+    | _ -> assert false
+  )
 
+let scr_compare =
+  `Fun(fun a -> `Fun(fun b -> `Int (compare a b)))
 
 (** Pair functions *)
 let scr_fst =
@@ -322,6 +343,12 @@ let scr_range =
     | _ -> assert false
   )
 
+let scr_life = 
+  `Fun(function
+    |`Soldier(u) -> `Int(u#hp)
+    | _ -> assert false
+  )
+
 let scr_expected_damage =
   `Fun (fun (su : ScriptValues.value) ->
     `Fun (fun (sv : ScriptValues.value)->
@@ -386,16 +413,27 @@ let scr_assoc_create =
       l := (key, value) :: !l;
       `Unit
     )) in
-  let getter l default =
-    `Fun(fun key ->
-      try
-        List.assoc key !l
-      with
-        Not_found -> default
+  let getter l =
+    `Fun(function
+      |`Fun bound ->
+        `Fun (function
+          |`Fun unbound ->
+            `Fun(fun key ->
+              try
+                let b = List.assoc key !l in
+                bound b
+              with
+                Not_found -> unbound `Unit
+            )
+          | _ -> assert false
+        )
+      | _ -> assert false
     ) in
-  `Fun(fun default ->
-    let l = ref [] in
-    `Pair(setter l, getter l default)
+  `Fun(function
+    |`Unit ->
+      let l = ref [] in
+      `Pair(setter l, getter l)
+    | _ -> assert false
   )
 
 let intpair = `Pair_t (`Int_t, `Int_t)
@@ -403,6 +441,7 @@ let intpair = `Pair_t (`Int_t, `Int_t)
 let init () =
   let a0 = `Alpha_t 0 in
   let a1 = `Alpha_t 1 in
+  let a2 = `Alpha_t 2 in
   (* Functions on base types *)
   expose scr_or  (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_or" ;
   expose scr_and (`Fun_t(`Bool_t, `Fun_t(`Bool_t, `Bool_t))) "_and";
@@ -446,6 +485,12 @@ let init () =
   expose scr_listflatten
     (`Fun_t(`List_t(`List_t(a0)), `List_t(a0)))
     "list_flatten";
+  expose scr_listsort
+    (`Fun_t(`Fun_t(a0, `Fun_t(a0, `Int_t)), `Fun_t(`List_t(a0), `List_t(a0))))
+    "list_sort";
+  expose scr_compare
+    (`Fun_t(a0, `Fun_t(a0, `Int_t)))
+    "compare";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, intpair)) "unit_range";
@@ -456,14 +501,15 @@ let init () =
   expose scr_donothing (`Fun_t(`Unit_t, a0)) "do_nothing";
   (* Functions on associative lists *)
   let setter_t = `Fun_t(a0, `Fun_t(a1, `Unit_t)) in
-  let getter_t = `Fun_t(a0, a1) in
+  let getter_t = `Fun_t(`Fun_t(a1,a2), `Fun_t(`Fun_t(`Unit_t,a2), `Fun_t(a0, a2))) in
   let assoc_t a b = `Pair_t(setter_t, getter_t) in
-  expose scr_assoc_create (`Fun_t(a1, assoc_t a0 a1)) "assoc_create";
+  expose scr_assoc_create (`Fun_t(`Unit_t, assoc_t a0 a1)) "assoc_create";
   expose scr_fst (`Fun_t(assoc_t a0 a1, setter_t)) "assoc_set";
   expose scr_snd (`Fun_t(assoc_t a0 a1, getter_t)) "assoc_get";
   expose scr_validunit (`Fun_t(`String_t, `Bool_t)) "is_valid_unit";
   expose scr_producible_units (`Fun_t(`Building_t, `List_t(`Soldier_t))) "producible_units";
   expose scr_funds (`Fun_t(`Player_t,`Int_t)) "funds_of";
-  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of"
+  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of";
+  expose scr_life (`Fun_t(`Soldier_t,`Int_t)) "life_of"
 
 

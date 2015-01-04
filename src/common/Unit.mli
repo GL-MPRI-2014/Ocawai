@@ -30,8 +30,9 @@ type unbound_t = <
   percentage_boat : int;
   life_max : int
 >
-			
-(** Unit type *)
+
+
+  (** Unit type *)
 type t = <
   name : string;
   position : Position.t;
@@ -54,13 +55,13 @@ type t = <
   percentage_boat : int;
   life_max : int;
   hp : int;
+  set_hp : int -> unit;
   attack : armor -> int -> int;
   attack_interval : armor -> int -> int * int;
   take_damage : int -> unit;
   has_played : bool;
   set_played : bool -> unit
 >
-
   
 (** Create a unit from a unbound unit, a position and the controlling player id *)
 val bind : unbound_t -> Position.t -> int -> t
@@ -74,4 +75,3 @@ val create_unbound_from_parsed_unit : Unit_t.t -> unbound_t
 (** Create a parsed record from an unbound unit.
   @see 'Config.mli' useful for serialization *)
 val create_parsed_unit_from_unbound : unbound_t -> Unit_t.t
-

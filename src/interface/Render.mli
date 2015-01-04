@@ -29,7 +29,7 @@ val renderer : <
 
   (** Draw the whole game on the screen *)
   render_game : OcsfmlGraphics.render_window ->
-    ClientData.client_data -> unit;
+    ClientData.client_data -> Updates.handler -> unit;
 
   (** Load the various ressources stored in ressources/ *)
   init : unit

@@ -8,7 +8,7 @@ Déplacement : prairie/route/sable/forêt/montagne/eau peu profonde/eau profonde
 Attaque : contre armure légère/moyenne/lourde (en % des dégâts de base de l'unité). Ne dépend pas du terrain.
 Portée : minimale-maximale
 Carburant : Les unités aériennes consomment 1 de carburant par tour hors base/porte avion.
-Toute  unité apparaît sur la carte avec 100 points de vie, et meurt (en disparaissant de la carte) quand elle tombe à 0 points de vie.
+Toute unité apparaît sur la carte avec 100 points de vie, et meurt (en disparaissant de la carte) quand elle tombe à 0 points de vie.
 Si une unité se fait attaquer au corps à corps par une unité qu'elle a la possibilité d'attaquer, elle répond avec 50% des dégâts qu'elle ferait en initialisant l'attaque.
 Les attaques du jeu ont toutes une composante aléatoire.
 

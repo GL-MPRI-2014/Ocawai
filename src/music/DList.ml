@@ -65,7 +65,7 @@ let (/::/) : t -> t -> t = fun t1 t2 ->
 
 let returnWithDelay : Music.event -> t = fun event ->
   let dur = Music.duration event in
-  (return event) /::/ (sync dur)
+  (return event) /::/ (sync dur)  
 
 (** List <-> DList functions *)
 
@@ -77,7 +77,7 @@ let fromList_sequence : Music.event list -> t =
   List.fold_left
     (fun acc event -> acc /::/ returnWithDelay event) zero
 
-(** Normalization functions *)
+(** {2 Normalization utilities} *)
 
 module MusicT =
   struct
@@ -98,6 +98,56 @@ type headTail = {mutable to_events : time;
 let makeHeadTail to_events events to_next tail =
   {to_events = to_events; events = events; to_next = to_next; tailT = tail}
 
+(** {2 Printing functions} *)
+
+let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
+  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]@." Music.fprintf event
+  | Sync dur -> Format.fprintf fmt "@[<1>Sync(%a@,)@]@." Time.fprintf dur
+  | Prod(tag, t1, t2) ->
+    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]@." fprint_tag tag fprintf_sub t1 fprintf_sub t2
+
+and fprintf_sub : Format.formatter -> t -> unit = fun fmt -> function
+  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]" Music.fprintf event
+  | Sync dur -> Format.fprintf fmt "@[<1>Sync(%a@,)@]" Time.fprintf dur
+  | Prod(tag, t1, t2) ->
+    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]" fprint_tag tag fprintf_sub t1 fprintf_sub t2
+
+and fprint_tag fmt = function
+  | Tag(dur, start) -> Format.fprintf fmt "@[<1>Tag(@[Dur =@ %a,@ Start =@ %a@]@,)@]"
+    Time.fprintf dur fprint_start start
+
+and fprint_start fmt = function
+  | None -> Format.fprintf fmt "%s" "None"
+  | Some(dur) -> Format.fprintf fmt "@[%a@]" Time.fprintf dur
+
+and fprint_headTail fmt = fun ht ->
+  let to_events = ht.to_events
+  and events_set = ht.events
+  and to_next = ht.to_next
+  and tailT = ht.tailT in
+  Format.fprintf fmt "@[<1>headTail(@[to_events =@ %a,@ \
+		      events =@ %a,@ to_next =@ %a,@ tailT =@ %a@]@,)@]"
+		 Time.fprintf to_events fprint_eventsSet events_set Time.fprintf to_next
+		 fprintf_sub tailT
+		 
+and fprint_eventsSet fmt = fun set ->
+  (* Copied from the 4.02.0 stdlib, to format a list *)
+  let rec pp_print_list ?(pp_sep = Format.pp_print_cut) pp_v ppf = function
+    | [] -> ()
+    | [v] -> pp_v ppf v
+    | v :: vs ->
+       pp_v ppf v;
+       pp_sep ppf ();
+       pp_print_list ~pp_sep pp_v ppf vs
+  in
+  let printer = pp_print_list Music.fprintf in
+  Format.fprintf fmt "@[<1>MusicSet(%a@,)@]" printer (MusicSet.elements set) 
+
+let printf : t -> unit = fprintf Format.std_formatter
+
+
+(** {2 Normalization functions} *)
+
 let rec headTail_tuple : t -> headTail =
   (** Returns a tuple containing a decomposition of
       the input tail where :
@@ -108,6 +158,14 @@ let rec headTail_tuple : t -> headTail =
       needed to rebuild the tile correctly.
       This in an auxiliary function with the plumbing exposed.
   *)
+  (* New stuff *)
+  (* let aggregate ht1 ht2 =
+    let to_next1 = ht1.to_next
+    and to_events2 = ht2.to_events in
+    ht1.to_next <- to_next1 /+/ to_events2;
+    ht2.to_events <- Time.zero
+    (* End of new stuff *)
+  in *)
   function
   | Sync dur ->
     makeHeadTail Time.zero (MusicSet.empty) dur zero
@@ -130,7 +188,7 @@ let rec headTail_tuple : t -> headTail =
       let headTuple1 = headTail_tuple t1
       in if (Time.sign (headTuple1.to_next) <= 0)
         then (** There are no more events in t1's tail and t2 is empty :
-		 the tail is pure sync. *)
+        	 the tail is pure sync. *)
           ( headTuple1.to_next <- dur2;
 	    headTuple1 )
         else ( headTuple1.tailT <- (headTuple1.tailT) /::/ (sync dur2);
@@ -158,7 +216,7 @@ let rec headTail_tuple : t -> headTail =
       | (false, false) -> (* The first events in both t1 and t2 are synchronized *)
 	let headTuple1 = headTail_tuple t1
 	and headTuple2 = headTail_tuple t2 in
-	let sync_endTail1ToNext2 =
+        let sync_endTail1ToNext2 =
           (Time.inverse dur1) /+/ headTuple1.to_events /+/ headTuple2.to_next in
 	let newHT =
           makeHeadTail headTuple1.to_events (MusicSet.union headTuple1.events headTuple2.events)
@@ -177,7 +235,7 @@ let rec headTail_tuple : t -> headTail =
       | (false, true) -> (* t2 starts first *)
 	let headTuple1 = headTail_tuple t1 in
 	let headTuple2 = headTail_tuple t2 in
-	let next_of_head = shifted_start2 /+/ headTuple2.to_next in
+        let next_of_head = shifted_start2 /+/ headTuple2.to_next in
 	let newHT = makeHeadTail shifted_start2 headTuple2.events in
         if (* next_of_head <= start1 *)
 	  (Time.compare next_of_head start1 <= 0) then
@@ -200,9 +258,56 @@ let headTail : t -> t * t =
      applied and hidden. *)
   fun t ->
     let headTailT = headTail_tuple t in
+    Format.fprintf Format.std_formatter
+		   "@[Extracted one head-tail-tuple :@ %a@]@." fprint_headTail headTailT;
     let head = (sync (headTailT.to_events)) /::/
       fromList_parallel (MusicSet.elements headTailT.events) /::/ (sync headTailT.to_next)
     in (head, headTailT.tailT)
+
+let rec normalize : t -> t = fun t -> 
+  let (head, tail) = headTail t in
+  if isZero tail then
+    head
+  else head /::/ normalize tail
+
+(** Equality function *)
+
+let rec is_silent : t -> bool = function
+  | Sync _ -> true
+  | Event (event) -> Music.is_silent event
+  | Prod (tag, t1, t2) -> is_silent t1 && is_silent t2
+
+(** Tag syntactic equality *)
+let is_equal_tag : tag -> tag -> bool = fun tag1 tag2 ->
+  match (tag1, tag2) with
+  | Tag (dur1, None), Tag (dur2, None) -> Time.is_equal dur1 dur2
+  | Tag (dur1, Some(start1)), Tag (dur2, Some(start2)) ->
+     Time.is_equal dur1 dur2 &&
+       Time.is_equal start1 start2
+  | _ -> false
+
+(** Syntactic equality *)
+let rec is_equal : t -> t -> bool = fun t1 t2 ->
+  match (t1, t2) with
+  | Sync dur1, Sync dur2 -> Time.is_equal dur1 dur2
+  | Event event1, Event event2 -> Music.is_equal event1 event2
+  | (Prod(tag1, t1_1, t1_2), Prod(tag2, t2_1, t2_2)) ->
+     is_equal_tag tag1 tag2 &&
+       is_equal t1_1 t2_1 &&
+	 is_equal t1_2 t2_2
+  | _ -> false
+  
+(*
+(**
+   Equality modulo observational equivalency
+ *)
+let rec is_equivalent : t -> t -> bool = fun t1 t2 ->
+  match (t1, t2) with
+  | (Rest dur1, Rest dur2) -> Time.is_equal dur1 dur2
+  | (Rest dur1, Event _ as event) -> (Time.equal dur1 Time.zero) &&
+					       is_silent event
+  | (Rest dur1, Prod (dur2, 
+ *)				
 
 (*
 type normalized_t = NormSync of time
@@ -211,45 +316,8 @@ type normalized_t = NormSync of time
 
 let normalize : t -> normalized_t
  *)
-
-(** {2 Testing functions} *)
-
-(** {3 Pretty_printing} *)
-
-let rec fprintf : Format.formatter -> t -> unit = fun fmt -> function
-  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]@." Music.fprintf event
-  | Sync dur -> Format.fprintf fmt "@[<1>Sync(%a@,)@]@." Time.fprintf dur
-  | Prod(tag, t1, t2) ->
-    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]@." fprint_tag tag fprintf_sub t1 fprintf_sub t2
-
-and fprintf_sub : Format.formatter -> t -> unit = fun fmt -> function
-  | Event event -> Format.fprintf fmt "@[<1>Event(%a@,)@]" Music.fprintf event
-  | Sync dur -> Format.fprintf fmt "@[<1>Sync(%a@,)@]" Time.fprintf dur
-  | Prod(tag, t1, t2) ->
-    Format.fprintf fmt "@[Prod(@[%a,@ %a,@ %a@]@,)@]" fprint_tag tag fprintf_sub t1 fprintf_sub t2
-
-and fprint_tag fmt = function
-  | Tag(dur, start) -> Format.fprintf fmt "@[<1>Tag(@[Dur =@ %a,@ Start =@ %a@]@,)@]"
-    Time.fprintf dur fprint_start start
-
-and fprint_start fmt = function
-  | None -> Format.fprintf fmt "%s" "None"
-  | Some(dur) -> Format.fprintf fmt "@[%a@]" Time.fprintf dur
-
-let printf : t -> unit = fprintf Format.std_formatter
-
+  
 (** {2 MIDI conversion} *)
-
-(**
-let compute_pos : t -> Time.t = function
-  | Event event -> 
-  | Sync dur -> dur
-  | Prod(Tag(dur, start), t1, t2) -> 
- *)
-
-(** Representation of (Pre, Pos, Events buffer) *)
-(* type tiledBuffer = TiledB of (time * time * (MIDI.buffer option))
- *)
 
 (**
    Converts a DList to a MIDI.buffer
@@ -291,7 +359,7 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	 | (Some st1, Some st2) -> 
 	    let rel_offset = dur1 /+/ st2 /-/ st1 in
 	    let midi_duration ~duration =
-	      MidiV.timeToMidiDuration ~samplerate ~division
+	      MidiV.timeToSamplesNumber ~samplerate ~division
 				       ~tempo ~duration in
 	    (midi_duration (Time.abs rel_offset), Time.sign rel_offset)
 	 | _ -> failwith "Empty but non-None MIDI.buffer"
