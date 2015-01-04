@@ -343,6 +343,12 @@ let scr_range =
     | _ -> assert false
   )
 
+let scr_life = 
+  `Fun(function
+    |`Soldier(u) -> `Int(u#hp)
+    | _ -> assert false
+  )
+
 let scr_expected_damage =
   `Fun (fun (su : ScriptValues.value) ->
     `Fun (fun (sv : ScriptValues.value)->
@@ -503,6 +509,7 @@ let init () =
   expose scr_validunit (`Fun_t(`String_t, `Bool_t)) "is_valid_unit";
   expose scr_producible_units (`Fun_t(`Building_t, `List_t(`Soldier_t))) "producible_units";
   expose scr_funds (`Fun_t(`Player_t,`Int_t)) "funds_of";
-  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of"
+  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of";
+  expose scr_life (`Fun_t(`Soldier_t,`Int_t)) "life_of"
 
 

@@ -13,7 +13,8 @@ type action =
 
 type t = movement * action
 
-
+val from_string : string -> t
+val to_string : t -> string
 
 (** Exception raised if the unit moving does not exist or does not belong
     to the player *)
