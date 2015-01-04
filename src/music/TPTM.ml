@@ -95,13 +95,6 @@ let extract_by_time : Time.t -> t -> t * t = fun extract_dur t ->
   in
   aux Time.zero zero t
 
-let samples_to_seconds ?samplerate:(samplerate = MidiV.samplerate) samples =
-  let duration_seconds_num =
-    Num.mult_num (Num.num_of_int samples) @@
-      Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate)
-  in
-  Num.float_of_num duration_seconds_num
-
 let to_MIDI_buffer : ?samplerate:int -> ?division:MIDI.division ->
 		?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -125,7 +118,7 @@ let play : ?samplerate:int -> ?division:MIDI.division ->
   let midi_player = new MidiPlayer.asynchronousMidiPlayer in
   let buffer = to_MIDI_buffer ~samplerate ~division ~tempo t in
   let duration = MIDI.Multitrack.duration buffer in
-  let duration_seconds = samples_to_seconds duration in
+  let duration_seconds = MidiV.samplesToSeconds ~samplerate duration in
   midi_player#add buffer;
   let killer () =
     Thread.delay duration_seconds;
