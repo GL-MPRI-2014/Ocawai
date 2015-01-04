@@ -46,13 +46,17 @@ let music_player =
       let open TPTM in
       buffer <- reset @@ buffer % t
 
-    method play_menu : unit -> unit = fun () ->
+    method play_menu : bool ref -> unit = fun run ->
       let tempo = Time.Tempo.fromInt 100 in
       ignore @@ Thread.create (self#play_next_measure) tempo;  
       while true do
-	self#bufferize menu_music;
-        Thread.delay (self#duration_one_measure ~tempo)
+        while !run do
+          self#bufferize menu_music;
+          Thread.delay (self#duration_one_measure ~tempo)
+        done;
+        Thread.delay 0.1
       done
+
 
     method private pick_measure : unit -> unit = fun () ->
       (** Get current mood and pick a measure to play *)

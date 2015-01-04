@@ -1,0 +1,18 @@
+fun test_assoc () = {
+  fun bound b = {
+    b
+  }
+  fun unbound unit = {
+    0
+  }
+  var a1 = assoc_create ();
+  assoc_set a1 0 15;
+  var r1 = assoc_get a1 bound unbound 0; // 15
+  var r2 = assoc_get a1 bound unbound 1; // 0
+  var a2 = assoc_create ();
+  var r3 = assoc_get a2 bound unbound 0; // 0
+  assoc_set a2 0 30;
+  var r4 = assoc_get a2 bound unbound 0; // 30
+  var r5 = assoc_get a1 bound unbound 0; // 15
+  (r1 == 15) && (r2 == 0) && (r3 == 0) && (r4 == 30) && (r5 == 15);
+}
