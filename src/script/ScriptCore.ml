@@ -236,7 +236,28 @@ let scr_listflatten =
     | `List(l) -> `List (flattener l)
       | _ -> assert false)
 
+let scr_listsort =
+  `Fun(function
+    |`Fun f -> `Fun(function
+      |`List l -> `List
+          (List.sort
+            (fun a b -> match (f a) with
+              |`Fun fa ->
+                (match fa b with
+                  |`Int i -> i
+                  |_ -> assert false
+                )
+              |_ -> assert false
+            )
+            l
+          )
+      | _ -> assert false
+      )
+    | _ -> assert false
+  )
 
+let scr_compare =
+  `Fun(fun a -> `Fun(fun b -> `Int (compare a b)))
 
 (** Pair functions *)
 let scr_fst =
@@ -464,6 +485,12 @@ let init () =
   expose scr_listflatten
     (`Fun_t(`List_t(`List_t(a0)), `List_t(a0)))
     "list_flatten";
+  expose scr_listsort
+    (`Fun_t(`Fun_t(a0, `Fun_t(a0, `Int_t)), `Fun_t(`List_t(a0), `List_t(a0))))
+    "list_sort";
+  expose scr_compare
+    (`Fun_t(a0, `Fun_t(a0, `Int_t)))
+    "compare";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, intpair)) "unit_range";

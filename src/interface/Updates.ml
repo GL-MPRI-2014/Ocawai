@@ -11,6 +11,10 @@ type animation =
   | Pause of int
   | Nothing
 
+(* Logger *)
+module Log = Log.Make (struct let section = "Updates" end)
+open Log
+
 (* Number of frames for a unit to run through a tile *)
 let walking_time = 3
 
@@ -31,6 +35,30 @@ class handler data camera = object(self)
   (* Current player *)
   val mutable current_turn = Nobody_s_turn
 
+  (* Log an update *)
+  method private log_update = function
+    | Game_over -> infof "Game Over"
+    | Your_turn -> infof "Your turn"
+    | Turn_of id -> infof "Turn of P%d" id
+    | Classement -> infof "Classement... WTF!?"
+    | Set_army _ -> infof "Set army..."
+    | Set_building _ -> infof "Set building..."
+    | Add_unit (u,pid) -> infof "P%d adds U%d" pid u#get_id
+    | Add_building (b,pid) -> infof "P%d adds B%d" pid b#get_id
+    | Delete_unit (uid,pid) -> infof "P%d lost U%d" pid uid
+    | Delete_building (bid,pid) -> infof "P%d lost B%d" pid bid
+    | Move_unit (uid,_,pid) -> infof "U%d of P%d moved" uid pid
+    | Set_unit_hp (uid,hp,pid) ->
+        infof "P%d's U%d set hp to %d" pid uid hp
+    | Set_unit_played (uid,pid,b) ->
+        infof "P%d's U%d set played to %B" pid uid b
+    | Harvest_income -> infof "Time to harvest income"
+    | Use_resource p -> infof "Spent %d flowers" p
+    | Set_client_player _ -> infof "Set client player..."
+    | Set_logic_player_list _ -> infof "Set logic player list..."
+    | Map _ -> infof "Map..."
+    | Building_changed b -> infof "Building changed B%d" b#get_id
+
   (* Tells if a position is foggy *)
   method private foggy p =
     let (i,j) = Position.topair p in
@@ -41,7 +69,9 @@ class handler data camera = object(self)
     not (self#foggy p)
 
   (* The purpose of this method is to do the update for real *)
-  method private ack_update : Types.update -> unit = function
+  method private ack_update u =
+    self#log_update u ;
+    match u with
     | Game_over -> () (* TODO *)
     | Your_turn ->
         current_turn <- Your_turn

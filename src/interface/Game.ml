@@ -184,6 +184,7 @@ let new_game ?character () =
             (actual_player :> logicPlayer)
           else p#copy)
         m_players) ;
+    Mood.init cdata;
     (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
@@ -201,8 +202,7 @@ let new_game ?character () =
         manager#window#get_height / 2 - 80)
       ~m_size:(400, 110) ~m_theme:Theme.blue_theme
       ~m_text:("Do you really want to forfeit ? The game will be considered "
-                ^ "lost... Also, notice how this text is perfectly handled ! "
-                ^ "This is beautiful isn't it ?")
+                ^ "lost...")
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Forfeit" in
 
     (* Buttons for the forfeit popup *)
