@@ -43,6 +43,7 @@
     "percentage_light": 40,
     "percentage_normal": 100,
     "percentage_heavy": 100,
+    "percentage_boat": 20,
     "price": 60,
     "life_max": 100
   },
@@ -79,18 +80,30 @@
     "life_max": 50
   },
   {
-    "name": "vtb",
-    "movement_type": "Roll",
+    "name": "apc",
+    "movement_type": "Tread",
     "vision_range": 4,
-    "move_range": 7
+    "move_range": 7,
+    "armor": "Normal",
+    "price": 15,
+    "life_max": 50
   },
   {
-    "name": "dca",
-    "movement_type": "Roll",
-    "vision_range": 4,
+    "name": "aat",
+    "movement_type": "Tread",
+    "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 6
+    "move_range": 6,
+    "attack_base": 60,
+    "armor": "Normal",
+    "spawn_number": 1,
+    "percentage_light": 70,
+    "percentage_normal": 40,
+    "percentage_heavy": 1,
+    "percentage_flying": 100,
+    "price": 30,
+    "life_max": 40
   },
   {
     "name": "artillery",
@@ -105,6 +118,7 @@
     "percentage_light": 40,
     "percentage_normal": 70,
     "percentage_heavy": 100,
+    "percentage_boat": 70,
     "price": 30,
     "life_max": 40
   },
@@ -114,7 +128,16 @@
     "vision_range": 6,
     "attack_range_min": 3,
     "attack_range_max": 6,
-    "move_range": 4
+    "move_range": 4,
+    "attack_base": 80,
+    "armor": "Normal",
+    "percentage_light": 40,
+    "percentage_normal": 70,
+    "percentage_heavy": 100,
+    "percentage_flying": 50,
+    "percentage_boat": 70,
+    "price": 60,
+    "life_max": 30
   },
   {
     "name": "helicopter",
@@ -122,7 +145,16 @@
     "vision_range": 5,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 7
+    "move_range": 6,
+    "spawn_number": 1,
+    "attack_base": 50,
+    "armor": "Flying",
+    "percentage_light": 100,
+    "percentage_normal": 70,
+    "percentage_heavy": 20,
+    "percentage_flying": 75,
+    "price": 30,
+    "life_max": 40
   },
   {
     "name": "bomber",
@@ -130,21 +162,37 @@
     "vision_range": 4,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 6
+    "move_range": 7,
+    "attack_base": 100,
+    "armor": "Flying",
+    "percentage_light": 40,
+    "percentage_normal": 100,
+    "percentage_heavy": 100,
+    "percentage_boat": 50,
+    "price": 60,
+    "life_max": 80
   },
   {
     "name": "fighter",
     "movement_type": "Fly",
-    "vision_range": 5,
+    "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 8
+    "move_range": 10,
+    "attack_base": 70,
+    "armor": "Flying",
+    "percentage_flying": 100, 
+    "price": 50,
+    "life_max": 80
   },
   {
     "name": "ulm",
     "movement_type": "Fly",
-    "vision_range": 4,
-    "move_range": 7
+    "vision_range": 7,
+    "move_range": 10,
+    "armor": "Flying",
+    "price": 30,
+    "life_max": 1
   },
   {
     "name": "submarine",
@@ -152,7 +200,12 @@
     "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 6
+    "move_range": 6,
+    "attack_base": 70,
+    "armor": "Boat",
+    "percentage_boat": 100,
+    "price": 40,
+    "life_max": 50
   },
   {
     "name": "barge",

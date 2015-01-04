@@ -12,5 +12,7 @@ exception GeneratorFailure
 class t : Player.logicPlayer list -> object
   method field : Battlefield.t
   method armies : Unit.t list list
-  method spawns : Position.t list
+  method buildings : Building.t list
+  method neutral_buildings : Building.t list
+  method cursor_init_positions : (Types.id_player, Position.t) Hashtbl.t
 end

@@ -12,8 +12,8 @@ object
 
   method set_config_name : string -> unit
   
-  (** Initialize the tiles, units, settings,and settings_default files*)
-  method init : string * string * string * string -> unit
+  (** Initialize the tiles, units, unbound_buildings settings,and settings_default files*)
+  method init : string * string * string * string * string -> unit
   
   (** Initialize the engine settings files*)
   method init_engine : string * string -> unit
@@ -38,6 +38,16 @@ object
   
   (** Create an unbound_unit from its name by searching in unbond_units_list *)
   method unbound_unit : string -> Unit.unbound_t
+  
+  (** Return the price of a given unit name *)
+  method price : string -> int
+  
+  
+  (** Tiles list obtained by reading the json config file *)
+  method unbound_buildings_list : Building.unbound_t list
+  
+  (** Create a tile from its name by searching in tile_list*)
+  method unbound_building : string -> Building.unbound_t
   
   
   (** settings obtained by reading the settings json file if present, settings-default if not*)
@@ -77,8 +87,8 @@ object
   method reset_all : unit
   
   
-  (** load from tiles, units and settings serialized strings *)
-  method load_from_strings : string -> string -> string -> unit
+  (** load from tiles, units unbound_buildings and settings serialized strings *)
+  method load_from_strings : string -> string -> string -> string -> unit
   
   
   (** Save currents settings in settings file, persistent until make clean*)
@@ -97,10 +107,14 @@ object
   
   method string_of_tiles_list : string
   method string_of_unbound_units_list : string
+  method string_of_unbound_buildings_list : string
   method string_of_settings : string
   
   method char_of_tile : Tile.t -> char
   method tile_of_char : char -> Tile.t
+  
+  method char_of_unbound_building : Building.unbound_t -> char
+  method unbound_building_of_char : char -> Building.unbound_t
   
   method char_of_unbound_unit : Unit.unbound_t -> char
   method unbound_unit_of_char : char -> Unit.unbound_t
@@ -118,8 +132,8 @@ val config : t
 
 (** {6 Default files} *)
 
-(** default tiles, units, settings,and settings_default paths*)
-val default_config_files : string * string * string * string
+(** default tiles, units, unbound_buildingd, settings,and settings_default paths*)
+val default_config_files : string * string * string * string * string
 
 (** default settings_engine,and settings_engine_default paths*)
 val default_engine_settings_files : string * string

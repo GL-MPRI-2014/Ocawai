@@ -6,7 +6,7 @@ module Log = Log.Make (struct let section = "Dealer" end)
 
 class dealer (s : file_descr) =
 object (self)
-	 
+
   (* The socket we read from and write into to communicate with the net player over the network *)
   val mutable sockfd = s
 
@@ -19,14 +19,14 @@ object (self)
 
   (* my client player *)
   val mutable clientPlayer : Player.player option = Some (Player.create_dummy_player [])
-		
+
 
   (* for initialization *)
 
-  method set_logicPlayerList id_list = 
+  method set_logicPlayerList id_list =
     let rec create_list logp_list = function
       | [] -> logp_list
-      | t::q -> create_list (new Player.logicPlayer ?id:(Some t) [] []::logp_list) q
+      | t::q -> create_list ((new Player.logicPlayer ?id:(Some t) ())::logp_list) q
     in
     let logp_list = create_list [] id_list in
     logicPlayerList <- logp_list
@@ -36,7 +36,7 @@ object (self)
 
 
   (* Mazzocchi asked for it *)
-	
+
   method change_socket s =
     sockfd <- s;
     in_channel <- in_channel_of_descr s;
@@ -47,18 +47,18 @@ object (self)
 
   (* scans tab_players and retreives the player with id id *)
 
-  method list_scan id = 
+  method list_scan id =
     let rec fonction_a_la_con id = function
       | [] -> raise Not_found
-      | t::q when t#get_id = id -> t 
+      | t::q when t#get_id = id -> t
       | _::q -> fonction_a_la_con id q
     in
     fonction_a_la_con id logicPlayerList
 
 
   (* verifies that clientPlayer has been set *)
-  
-  method is_set = 
+
+  method is_set =
     match clientPlayer with
     | None -> failwith "Player not set"
     | Some clip -> clip
@@ -67,7 +67,7 @@ object (self)
   (* gives the player which id is id - or fails *)
 
   method get_player id =
-    let clip = self#is_set in 
+    let clip = self#is_set in
     if clip#get_id = id then (clip :> Player.logicPlayer) else
       try
 	self#list_scan id
@@ -75,7 +75,6 @@ object (self)
 	(*TO DO : add a raise exception *)
 	Not_found -> failwith "Wrong id"
 	
-
   (* TODO *)
   method set_map str =
     ()
@@ -84,9 +83,10 @@ object (self)
 
   (* manages Get_next_action *)
 
-  method manage_gna = 
-    let clip = self#is_set in 
+  method manage_gna =
+    let clip = self#is_set in
     let action = clip#get_next_action in
+
 
     Log.infof "send \"next_action\"" ;
     let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) Types.clock in
@@ -94,7 +94,6 @@ object (self)
     if not success then
       failwith "send \"next_action failure in dealer !"
     
-
   (* do what has to be done with an update... *)
 
   method manage_update = function
@@ -131,10 +130,8 @@ object (self)
 	| None -> Log.infof "-> None"
 	| Some (n,_) -> Log.infof "-> code : %d" n
     done
-      
 end
 
 type t = dealer
-
+	   
 let create_dealer sockfd = new dealer sockfd
-

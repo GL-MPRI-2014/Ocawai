@@ -1,0 +1,30 @@
+
+type movement = [ Walk | Roll | Tread | Swim | Fly | Amphibious_Walk
+  | Amphibious_Roll | Amphibious_Tread | All ]
+
+type name_v = string
+  <ocaml validator="Utils.check_validity (
+    fun s -> s <> \"\"
+  )">
+type positive = int
+  <ocaml validator="Utils.check_validity (
+    fun x -> 0 <= x
+  )">
+
+type t = {
+  name : name_v;
+  ~product<ocaml default = "[]"> : name_v list;
+  ~income<ocaml default = "0"> : int;
+  ~vision_range<ocaml default = "3"> : positive;
+  ~spawn_number_per_player<ocaml default = "0"> : int;
+  ~spawn_number_neutral<ocaml default = "0"> : int;
+  ~movement_types<ocaml default = "[]"> : movement list;
+} 
+
+type t_list = t list
+
+type t_valid_list = { list : t_list}
+  <ocaml validator="Utils.check_validity (
+    (* contains at least a base *)
+    fun lr -> List.exists (fun t -> t.name = \"base\") lr.list
+  )">

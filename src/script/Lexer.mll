@@ -15,6 +15,7 @@
     |> h_add "attack"   ATK
     |> h_add "main"     MAIN
     |> h_add "init"     INIT
+    |> h_add "build"    BUILD
     |> h_add "true"     TRUE
     |> h_add "false"    FALSE
 
@@ -67,6 +68,8 @@ rule token = parse
   | "}" {RBRACE}
   | "[" {LBRACK}
   | "]" {RBRACK}
+  | "//" [ ^ '\r' '\n']* newline
+    {Lexing.new_line lexbuf; token lexbuf}
   | _  {raise (Script_SyntaxError ("Syntax Error, unknown char."))}
 
 and read_string buf = parse

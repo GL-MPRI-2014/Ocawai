@@ -1,31 +1,81 @@
-class client_data
-  ~(map:Battlefield.t)
-  ~(camera:Camera.camera)
-  ~(players:Player.logicPlayer list)
-  ~(actual_player:ClientPlayer.client_player) = object(self)
+let get_option o = 
+  match o with
+  |Some(t) -> t
+  |None -> failwith "Bad client data initialization"
 
-  val minimap = new Minimap.minimap 30
+class client_data = object(self)
+
+  val mutable minimap = None
+    (*new Minimap.minimap 30
     (fst (Battlefield.size map))
-    (snd (Battlefield.size map))
+    (snd (Battlefield.size map))*)
 
   val case_info = new CaseInfo.case_info
 
-  initializer
-    minimap#compute map players
+  val updates : Types.update Stack.t = Stack.create ()
 
-  method map = map
+  val mutable players : Player.logicPlayer list = []
 
-  method camera = camera
+  val mutable actual_player : ClientPlayer.client_player option = None
 
-  method minimap = minimap
+  val mutable map : Battlefield.t option = None
+
+  val mutable camera : Camera.camera option = None
+
+  val mutable neutral_buildings : Building.t list = []
+
+  method init_core m self_player player_list = 
+    let minim = new Minimap.minimap 30
+      (fst (Battlefield.size m))
+      (snd (Battlefield.size m))
+    in
+    minim#compute m player_list;
+    minimap <- Some(minim);
+    players <- player_list;
+    actual_player <- Some (self_player);
+    map <- Some(m);
+    self_player#init m players 
+
+  method init_buildings neutral = 
+    neutral_buildings <- neutral
+
+  method init_interface cam =
+    camera <- Some cam
+
+  method pop_update = 
+    try Some (Stack.pop updates)
+    with Stack.Empty -> None
+
+  method push_update u = Stack.push u updates
+
+  method top_update = 
+    try Some (Stack.top updates)
+    with Stack.Empty -> None
+
+  method map = get_option map
+
+  method camera = get_option camera
+
+  method minimap = get_option minimap
 
   method case_info = case_info
 
   method players = players
 
-  method actual_player = actual_player
+  method neutral_buildings = neutral_buildings
 
-  method current_move = camera#cursor#get_move
+  method toggle_neutral_building b = 
+    if List.mem b neutral_buildings then 
+      neutral_buildings <- (List.filter (fun bd -> bd <> b) neutral_buildings)
+    else
+      neutral_buildings <- (b :: neutral_buildings)
+
+  method actual_player = 
+    match actual_player with
+    |None -> failwith "Bad client data initialization"
+    |Some(p) -> p
+
+  method current_move = (get_option camera)#cursor#get_move
 
   method player_unit_at_position :
     'a. Position.t -> (#Player.logicPlayer as 'a) -> Unit.t option
@@ -48,7 +98,7 @@ class client_data
 
   method enemy_unit_at_position p =
     let u  = self#unit_at_position p in
-    let u' = self#player_unit_at_position p actual_player in
+    let u' = self#player_unit_at_position p self#actual_player in
     match u with
     |Some(_) when u' = None -> true
     | _ -> false
@@ -63,5 +113,27 @@ class client_data
       |t::q -> if aux t#get_army then t else iter_player q
     in
     iter_player players
+
+  method private listed_building_at_position pos blist =
+    let rec aux = function
+      | [] -> None
+      | e :: r when e#position = pos -> Some e
+      | _ :: r -> aux r
+    in aux blist
+
+  method building_at_position p =
+    let rec aux_player = function
+      | [] -> None, None
+      | e :: r ->
+          begin
+            match self#listed_building_at_position p e#get_buildings with
+            | None -> aux_player r
+            | Some b -> (Some b, Some e)
+          end
+    in
+    match aux_player players with
+      | None, _ ->
+          (self#listed_building_at_position p self#neutral_buildings, None)
+      | x -> x
 
 end

@@ -19,6 +19,9 @@ class virtual widget : object
   (** Adds an event catcher to this widget *)
   method add_event : (OcsfmlWindow.Event.t -> bool) -> unit
 
+  (** Clears events *)
+  method clear_event : unit
+
   (** Catches the given event *)
   method on_event : OcsfmlWindow.Event.t -> bool
 

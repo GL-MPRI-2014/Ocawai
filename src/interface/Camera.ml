@@ -1,9 +1,9 @@
 open Utils
 open Settings_interface_t
 
-class camera ~def_tile_size ~w ~h ~maxpos = object(self)
+class camera ~def_tile_size ~w ~h ~initpos ~maxpos = object(self)
 
-  val cursor = new Cursor.cursor ~position:(Position.create (10,10))
+  val cursor = new Cursor.cursor ~position:initpos
 
   val mutable offset = (0., 0.)
 
