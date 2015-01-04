@@ -43,6 +43,12 @@ let zero : t = sync Time.zero
 
 let isZero : t -> bool = fun t -> t = zero
 
+let isSync : t -> bool = fun t ->
+  let Tag(_, start) = getTag t in
+  match start with
+  | Some _ -> false
+  | None -> true
+
 let return : Music.event -> t = fun event -> Event event
 
 let duration : t -> Time.t = fun t ->
@@ -88,10 +94,12 @@ module MusicT =
 module MusicSet = Set.Make(MusicT)
 
 type headTail = {mutable to_events : time;
-		  (* The distance from the entrance of the head to
+		  (* The distance from the head's Pre to
 		     the events it holds. *)
 		 mutable events : MusicSet.t;
 		 mutable to_next : time;
+		 (* The delay from the head's events to the first next events in
+                    the tile OR <when the tail holds no more events> to Pos *) 
 		 mutable tailT : t
 		}
 
@@ -141,7 +149,7 @@ and fprint_eventsSet fmt = fun set ->
        pp_print_list ~pp_sep pp_v ppf vs
   in
   let printer = pp_print_list Music.fprintf in
-  Format.fprintf fmt "@[<1>MusicSet(%a@,)@]" printer (MusicSet.elements set) 
+  Format.fprintf fmt "@[<1>MusicSet(@[%a@]@,)@]" printer (MusicSet.elements set) 
 
 let printf : t -> unit = fprintf Format.std_formatter
 
@@ -165,110 +173,199 @@ let rec headTail_tuple : t -> headTail =
     ht1.to_next <- to_next1 /+/ to_events2;
     ht2.to_events <- Time.zero
     (* End of new stuff *)
+  in
+  let rec compress ht =
+    let Tag(dur_tail, start_tail) = getTag ht.tailT in
+    if isSync ht.tailT then
+      begin
+	(* ht.to_next <- ht.to_next /+/ dur_tail;
+	ht.tailT <- zero;*)
+	ht
+      end
+    else ht
   in *)
+  let compress x = x in
+  let case : int -> unit = fun n ->
+    (* Printf.printf "\027[31mCase %d\027[0m\n" n;
+       flush stdout *)
+    ()
+  in
   function
   | Sync dur ->
-    makeHeadTail Time.zero (MusicSet.empty) dur zero
+     begin
+       case 10; makeHeadTail Time.zero (MusicSet.empty) dur zero
+     end
   | Event event ->
-    makeHeadTail Time.zero (MusicSet.singleton event) Time.zero zero
+     begin
+       case 11; makeHeadTail Time.zero (MusicSet.singleton event) Time.zero zero
+     end
   | Prod ((Tag (dur, start)), t1, t2) ->
-    let Tag(dur1, startT1) = getTag t1
-    and Tag(dur2, startT2) = getTag t2 in
-    match (startT1, startT2) with
-    | (None, None) ->
-      (** Both factors are pure sync, return the total sync. *)
-      headTail_tuple (sync dur)
-    | (None, Some _) ->
-      (** t1 is pure sync, shift t2. *)
-      let headTuple2 = headTail_tuple t2
-      in (headTuple2.to_events <- (dur1 /+/ headTuple2.to_events);
-	  headTuple2)
-    | (Some _, None) ->
-      (** t2 is pure sync. *)
-      let headTuple1 = headTail_tuple t1
-      in if (Time.sign (headTuple1.to_next) <= 0)
-        then (** There are no more events in t1's tail and t2 is empty :
-        	 the tail is pure sync. *)
-          ( headTuple1.to_next <- dur2;
-	    headTuple1 )
-        else ( headTuple1.tailT <- (headTuple1.tailT) /::/ (sync dur2);
-	       headTuple1 )
-
-    | (Some start1, Some start2) ->
-      let shifted_start2 = start2 /+/ dur1 in
-      match (let comp = Time.compare start1 shifted_start2 in
-	     (comp < 0, comp > 0)) with
-      | (true, false) -> (* t1 starts first *)
-        let headTuple1 = headTail_tuple t1 in
-	let next_of_head = start1 /+/ headTuple1.to_next in
-	if (* next_of_head <= shifted_start2 *)
-	  ((Time.compare next_of_head shifted_start2) <= 0)
-	then
-	    ( headTuple1.tailT <- headTuple1.tailT /::/ t2;
-	      headTuple1 )
-          else (
-	    headTuple1.to_next <- shifted_start2 /-/ start1;
-	    (* Note that we have to_next > 0 here. *)
-            headTuple1.tailT <- (sync (next_of_head /-/ shifted_start2))
-            /::/ headTuple1.tailT /::/ t2;
-	    headTuple1)
-
-      | (false, false) -> (* The first events in both t1 and t2 are synchronized *)
-	let headTuple1 = headTail_tuple t1
-	and headTuple2 = headTail_tuple t2 in
-        let sync_endTail1ToNext2 =
-          (Time.inverse dur1) /+/ headTuple1.to_events /+/ headTuple2.to_next in
-	let newHT =
-          makeHeadTail headTuple1.to_events (MusicSet.union headTuple1.events headTuple2.events)
-            headTuple1.to_next
-            (headTuple1.tailT /::/ (sync sync_endTail1ToNext2)
-             /::/ headTuple2.tailT)
-        in
-        if ((Time.compare headTuple2.to_next headTuple1.to_next) < 0) then
-          ( newHT.to_next <- headTuple2.to_next;
-	    newHT.tailT <- (sync (headTuple1.to_next /-/ headTuple2.to_next)) /::/
-              headTuple1.tailT /::/
-              (sync sync_endTail1ToNext2) /::/ headTuple2.tailT;
-	    newHT)
-        else newHT
-	  
-      | (false, true) -> (* t2 starts first *)
+     let Tag(dur1, startT1) = getTag t1
+     and Tag(dur2, startT2) = getTag t2 in
+     match (startT1, startT2) with
+     | (None, None) ->
+	(** Both factors are pure sync, return the total sync. *)
+	begin
+	  case 12; compress @@ headTail_tuple (sync dur)
+	end
+     | (None, Some _) ->
+	(** t1 is pure sync, shift t2. *)
+	let headTuple2 = headTail_tuple t2
+	in (case 13;
+	    headTuple2.to_events <- (dur1 /+/ headTuple2.to_events);
+	    headTuple2)
+     | (Some _, None) ->
+	(** t2 is pure sync. *)
 	let headTuple1 = headTail_tuple t1 in
-	let headTuple2 = headTail_tuple t2 in
-        let next_of_head = shifted_start2 /+/ headTuple2.to_next in
-	let newHT = makeHeadTail shifted_start2 headTuple2.events in
-        if (* next_of_head <= start1 *)
-	  (Time.compare next_of_head start1 <= 0) then
-            newHT headTuple2.to_next
-	      (
-		(sync (Time.inverse next_of_head)) /::/
-		  t1 /::/
-		  (sync (headTuple2.to_events /+/ headTuple2.to_next)) /::/
-		  headTuple2.tailT
-	      )
-	  else newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) (
-            t1 /::/
-              (sync (headTuple2.to_events /+/ headTuple2.to_next)) /::/
-              headTuple2.tailT
-	  )
-      | _ -> failwith "Cannot happen."
+	let Tag(dur_tail1, start_tail1) = getTag headTuple1.tailT in
+	begin
+	  (* Some new stuff here *)
+	  match start_tail1 with
+	  | Some(_) -> 
+	     if (Time.sign (headTuple1.to_next) <= 0)
+	     then (** There are no more events in t1's tail and t2 holds no events :
+        	     the tail is pure sync. *)
+	       ( case 14;
+		 headTuple1.to_next <- dur2;
+		 compress headTuple1 )
+	     else ( case 15;
+		    headTuple1.tailT <- (headTuple1.tailT) /::/ (sync dur2);
+		    compress headTuple1 )
+	  | None -> (** There are no more real events in t1's tail, it is pure sync,
+                       of duration dur_tail1, let's mash everything up *)
+	     ( case 16;
+	       headTuple1.to_next <- dur;
+	       compress headTuple1 )
+	end
+	  
+     | (Some start1, Some start2) ->
+	let shifted_start2 = start2 /+/ dur1 in
+	match (let comp = Time.compare start1 shifted_start2 in
+	       (comp < 0, comp > 0)) with
+	| (true, false) -> (* t1 starts first *)
+	   let headTuple1 = headTail_tuple t1 in
+	   let next_of_head = start1 /+/ headTuple1.to_next in
+	   if (* next_of_head <= shifted_start2 *)
+	     ((Time.compare next_of_head shifted_start2) <= 0)
+	   then
+	     begin
+	       case 0;
+	       headTuple1.tailT <- headTuple1.tailT /::/ t2;
+	       compress headTuple1
+	     end
+	   else
+	     begin
+	       case 1;
+	       headTuple1.to_next <- shifted_start2 /-/ start1;
+	       (* Note that we have to_next > 0 here. *)
+	       headTuple1.tailT <- (sync (next_of_head /-/ shifted_start2))
+				   /::/ headTuple1.tailT /::/ t2;
+	       compress headTuple1
+	     end
+	       
+	| (false, false) -> (* The first events in both t1 and t2 are synchronized *)
+	   let headTuple1 = headTail_tuple t1
+	   and headTuple2 = headTail_tuple t2 in
+	   let sync_endTail1ToNext2 =
+	     (Time.inverse dur1) /+/ headTuple1.to_events /+/ headTuple2.to_next in
+	   let newHT =
+	     makeHeadTail headTuple1.to_events (MusicSet.union headTuple1.events headTuple2.events)
+			  headTuple1.to_next
+			  (headTuple1.tailT /::/ (sync sync_endTail1ToNext2)
+			   /::/ headTuple2.tailT)
+	   in
+	   if ((Time.compare headTuple2.to_next headTuple1.to_next) < 0) then
+	     ( case 2;
+	       newHT.to_next <- headTuple2.to_next;
+	       newHT.tailT <- (sync (headTuple1.to_next /-/ headTuple2.to_next)) /::/
+				headTuple1.tailT /::/
+				  (sync sync_endTail1ToNext2) /::/ headTuple2.tailT;
+	       compress newHT)
+	   else begin case 3; compress newHT end
+		  
+	| (false, true) -> (* t2 starts first *)
+	   let headTuple1 = headTail_tuple t1 in
+	   let headTuple2 = headTail_tuple t2 in
+	   let next_of_head = shifted_start2 /+/ headTuple2.to_next in
+	   let newHT = makeHeadTail shifted_start2 headTuple2.events in
+	   begin
+	     match (Time.compare next_of_head start1 <= 0, not (isSync headTuple2.tailT)) with
+	     | true, true ->
+		(** t2's tail still holds events, and they start before t1 *) 
+		begin
+		  (** The next events are in t2's tail *) 
+		  case 4;
+		  compress @@ newHT headTuple2.to_next @@
+		    (sync @@ Time.inverse next_of_head) /::/
+		      t1 /::/
+			(sync @@ headTuple2.to_events /+/ headTuple2.to_next) /::/
+			  headTuple2.tailT
+		end
+	     | false, true ->
+		(** t2's tail still holds events, BUT they start AFTER t1 *)
+		begin
+		  case 5;
+		  compress @@ newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) @@
+		    (sync @@ Time.inverse @@ headTuple1.to_events) /::/ t1 /::/
+		      (sync @@ headTuple2.to_events /+/ headTuple2.to_next) /::/
+			headTuple2.tailT
+		end
+	     | _, false ->
+		(** t2's tail no longer holds events, it is pure sync
+		    Let's shift back to pre, then to start of t1, play *)
+		begin
+		  case 6;
+		  compress @@ newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) @@
+		    (sync @@ Time.inverse @@ headTuple1.to_events) /::/ t1 /::/
+		      (sync @@ headTuple2.to_events /+/ headTuple2.to_next) /::/
+			headTuple2.tailT
+		end
+		
+	   end
+	| _ -> failwith "Cannot happen."
+
+let headTail_decomp : t -> t * t * t * t =
+  fun t -> 
+  let headTailT = headTail_tuple t in
+  (*
+    Format.fprintf Format.std_formatter
+		 "@[Extracted one head-tail-tuple :@ %a@]@." fprint_headTail headTailT;
+   *)  
+  let to_events = sync (headTailT.to_events)
+  and events = fromList_parallel (MusicSet.elements headTailT.events)
+  and to_next = sync headTailT.to_next in
+  (to_events, events, to_next, headTailT.tailT)
 
 let headTail : t -> t * t =
   (* Return the head and the tail of the input tile, with all the plumbing
      applied and hidden. *)
   fun t ->
     let headTailT = headTail_tuple t in
+    (*
     Format.fprintf Format.std_formatter
 		   "@[Extracted one head-tail-tuple :@ %a@]@." fprint_headTail headTailT;
-    let head = (sync (headTailT.to_events)) /::/
-      fromList_parallel (MusicSet.elements headTailT.events) /::/ (sync headTailT.to_next)
+     *)
+    let head =
+      ((sync (headTailT.to_events)) /::/ fromList_parallel 
+					   (MusicSet.elements headTailT.events)) /::/
+	(sync headTailT.to_next)
     in (head, headTailT.tailT)
 
-let rec normalize : t -> t = fun t -> 
+let normalize_new : t -> t = fun t -> 
+  let rec aux acc = fun t ->
+    let (to_events, events, to_next, tail) = headTail_decomp t in
+    if isZero tail then
+      ((acc /::/ to_events) /::/ events) /::/ to_next
+    else aux (((acc /::/ to_events) /::/ events) /::/ to_next) tail
+  in aux zero t
+
+let rec normalize_old : t -> t = fun t ->
   let (head, tail) = headTail t in
   if isZero tail then
     head
-  else head /::/ normalize tail
+  else head /::/ normalize_old tail
+
+let normalize = normalize_new
 
 (** Equality function *)
 
