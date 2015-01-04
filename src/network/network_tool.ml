@@ -144,8 +144,8 @@ let read_timeout sock buffer buffer_size timeout =
       let (fd_read, _, _) = Unix.select [sock] [] [] timeout in
       if fd_read = [] then
 	None
-      else 
-	Some (Unix.read sock buffer 0 buffer_size)
+      else
+	  Some(Unix.read sock buffer 0 buffer_size);
     end
 
 

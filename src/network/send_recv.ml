@@ -6,34 +6,26 @@
 
 (* SEND *)
 
-let rec string2int s = function
-    | 0 -> 0
-    | n -> (int_of_char s.[n - 1]) + (256 * (string2int s (n-1)))
-
-let int2string i size =
-  let result = String.create size in
-  for j = (size) downto 1 do
-      result.[size - j] <- (char_of_int ((i lsr (8 * (j - 1))) mod 256))
+(**
+ * This is function to translate an integer to string.
+ * @param n Integer to be translate
+ * @param size Length of result string
+ *)
+let int2string n length  =
+  let result = String.create length in
+  for j = (length) downto 1 do
+      result.[length - j] <- (char_of_int ((n lsr (8 * (j - 1))) mod 256))
   done;
   result
 
-(*  
-let string_of_length length =
-  let length_string = string_of_int length in
-  let size = String.length length_string in
 
+(**
+ * This function is the opposite translation.
+ *)
+let rec string2int string = function
+    | 0 -> 0
+    | n -> (int_of_char string.[n - 1]) + (256 * (string2int string (n-1)))
 
-
-  (* written by Mazzocchi *)
-  match size with
-  | 0 -> String.make 4 '0' ^ length_string
-  | 1 -> String.make 3 '0' ^ length_string
-  | 2 -> String.make 2 '0' ^ length_string
-  | 3 -> String.make 1 '0' ^ length_string
-  | 4 -> length_string
-  | _ -> assert false
-*)
-    
 
 (**
  * This function send bytes regardless of protocol.
@@ -48,15 +40,11 @@ let rec send_string sock string break_time =
 
   let size = Network_tool.write_timeout sock string length timeout in
 
-  Log.infof "break_time %f systime %f" break_time (Sys.time ());
-
-  Log.infof "In send";
   match size with
-    | None -> Log.infof "None";false
-    | Some(n) when length = n -> Log.infof "Ok";true
+    | None -> false
+    | Some(n) when length = n -> true
     | Some(n) ->
       begin
-	Log.infof "Partiel %d sur %d" n length;
 	let rest = String.sub string n (length - n) in
 	send_string sock rest break_time
       end	
@@ -75,8 +63,12 @@ let send sock magic string timeout =
   let magic_char = char_of_int magic in
   let magic_string = String.make 1 magic_char in
   let length_string =  int2string (String.length string) 4 in
-  Log.infof "length string send : '%s'" length_string;
   let data = String.concat "" [magic_string;length_string;string] in
+
+  Log.infof "SEND\n";
+  Log.infof "\tMAGIC : %d (with intention %d)\n" (int_of_char data.[0]) magic;
+  Log.infof "\tLENGTH : %d (with intention %d)\n" (string2int (String.sub data 1 4) 4)  (String.length string);
+
   send_string sock data break_time
 
 
@@ -98,34 +90,21 @@ let recv_string sock length break_time =
     
     try
       let size = Network_tool.read_timeout sock buffer length timeout in
- 
+
       match size with
-	| None ->
-	  begin
-	    Log.infof "recv_string : None\n";
-	    None
-	  end
-	| Some(0) -> 
-	  begin
-	    Log.infof "recv_string : 0\n";
-	    None
-	  end
+	| None -> None
+	| Some(0) -> None
 	| Some(n) when length = n -> 
 	  begin
-	    Log.infof "recv_string : %d = length\n" n;
 	    let string = String.sub buffer 0 n in
-	    Log.infof "recv_string : '%s'\n" string;
-	    Log.infof "recv_string : '%s'\n" buffer;
 	    let rev = List.rev (string::accum) in
 	    let data = String.concat "" rev in
-	    Log.infof "recv_string finish with : '%s'\n" data;
 	    Some(data)
 	  end 
 	| Some(n) ->
 	  begin
-	    Log.infof "recv_string : %d <> %d\n" n length;
-	  let string = String.sub buffer 0 n in
-	  recv_string' sock (string::accum) (length - n) break_time
+	    let string = String.sub buffer 0 n in
+	    recv_string' sock (string::accum) (length - n) break_time
 	  end
 	    
     with
@@ -161,10 +140,7 @@ let (|>>) arg funct =
  * @return [None] if successful on receipt and [None] otherwise
  *)
 let combine_results sock break_time magic_string data =
-  Log.infof "magic : '%s'\n" magic_string;
-  Log.infof "magic lenght : %d\n" (String.length magic_string);
-  let magic = int_of_string magic_string in
-  Log.infof "magic : %d\n" magic;
+  let magic = int_of_char magic_string.[0] in
   Some (magic, data)
 
 
@@ -176,9 +152,12 @@ let combine_results sock break_time magic_string data =
  * @return [None] if successful on receipt and [None] otherwise
  *)
 let recv_data sock break_time magic_string length_string =
-  Log.infof "length : '%s'\n" length_string;
   let length = string2int length_string 4 in
-  Log.infof "length : %d\n" length;
+
+  Log.infof "RECV\n";
+  Log.infof "\tMAGIC : %d\n" (int_of_char magic_string.[0]);
+  Log.infof "\tLENGTH : %d\n" length;
+
   let data = recv_string sock length break_time in
   data |>> (combine_results sock break_time magic_string)
 
@@ -215,6 +194,8 @@ let recv_magic sock break_time =
 let recv sock timeout =
   let break_time = Sys.time () +. timeout in
   recv_magic sock break_time
+
+
 
 
 
