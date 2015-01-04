@@ -7,6 +7,8 @@ open Music
 open DList
 open TPTM
 
+exception Incorrect_value_chord_selection
+
 let dummy_event_plus dur (pitch, velocity) =
   note dur (new Music.param pitch velocity)
 
@@ -32,9 +34,17 @@ let menu_music = (reset @@ sequence [(hn, (C, 3));
 				     (hn, (E, 3))]) %
 		   (sequence [(hn, (G, 3)); (hn, (B, 4))])
 
-let winner_music = chord wn @@ [(C, 4); (E, 4); (G, 4)]
+let winner_music = function
+  | 0 -> chord wn @@ [(C, 4); (E, 4); (G, 4)]
+  | 1 -> chord wn @@ [(G, 3); (C, 4); (E, 4)]
+  | 2 -> chord hn [(C, 4); (G, 4)] % chord hn [(G, 4); (C, 5); (E, 5)] 
+  | _ -> raise Incorrect_value_chord_selection
 
-let loser_music = chord wn @@ [(C, 4); (Ef, 4); (G, 4)]
+let loser_music = function
+  | 0 -> chord wn @@ [(C, 4); (Ef, 4); (G, 4)]
+  | 1 -> chord wn @@ [(C, 4); (Ef, 4); (A, 4)]
+  | 2 -> chord hn [(D, 4); (A, 4)] % chord hn [(A, 4); (C, 5); (Ef, 5)]
+  | _ -> raise Incorrect_value_chord_selection
 
 let music_player =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -90,10 +100,11 @@ let music_player =
             | Some (midi_player) ->
 	       begin
 		 let mood = Mood.get () in
+		 let select = Random.int 3
 		 let next_tile =
 		   if mood <= 0. then
-		     loser_music
-		   else winner_music
+		     loser_music select
+		   else winner_music select
 		 in
 		 self#bufferize next_tile;
 		 Thread.delay ((self#duration_one_measure tempo) *. 0.99)
