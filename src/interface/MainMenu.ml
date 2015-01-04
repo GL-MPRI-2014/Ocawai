@@ -118,7 +118,6 @@ class main_menu = object(self)
     window#display
 
   method paused =
-    Printf.printf "I was called !\n%!";
     music_run := false
 
   method resumed =
