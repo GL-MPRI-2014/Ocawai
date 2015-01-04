@@ -35,4 +35,7 @@ val attack_script : script -> Action.movement -> Unit.t -> Unit.t
   * @return a unit to build by the building b *)
 val building_script : script -> Building.t -> Unit.unbound_t
 
+(** [call_f f] calls a function [f] of type unit -> 'a,
+  for debugging purpose *)
+val call_f : script -> string -> ScriptValues.value
 

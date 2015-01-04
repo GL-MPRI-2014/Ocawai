@@ -309,7 +309,11 @@ check_interface: interface
 	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) interface_test.native -tag $(interface_tags)
 	./interface_test.native
 
-check: check_player check_generation check_logics check_music check_interface
+check_script: engine
+	ocamlbuild -use-ocamlfind -cflags $(cflags) -Is $(test_src) -package $(test_dependencies) script_test.native -tag $(engine_tags)
+	./script_test.native
+
+check: check_player check_generation check_logics check_music check_interface check_script
 
 log:
 	mkdir -p $(log_dir)
