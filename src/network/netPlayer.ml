@@ -50,12 +50,15 @@ object (self)
             (* [Position.create (0,0)], Action.Wait *)
       end
 
-	
+
+(*
   method set_logicPlayerList playersList =
     ()
-
+*)
+(*
   method get_logicPlayerList =
     logicPlayerList
+*)
 
   (* send updates over the network *)
       

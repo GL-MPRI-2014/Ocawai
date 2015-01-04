@@ -73,13 +73,13 @@ object (self)
 	self#list_scan id
       with
 	(*TO DO : add a raise exception *)
-	Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures];failwith "Wrong id")
+	(*Not_found -> (to_channel out_channel (Error Wrong_id_player) [Closures];failwith "Wrong id")*)
+	 Not_found -> failwith "Wrong id"
 
 
   (* TODO *)
   method set_map str =
     ()
-
 
 
   (* manages Get_next_action *)
