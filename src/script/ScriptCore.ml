@@ -236,7 +236,28 @@ let scr_listflatten =
     | `List(l) -> `List (flattener l)
       | _ -> assert false)
 
+let scr_listsort =
+  `Fun(function
+    |`Fun f -> `Fun(function
+      |`List l -> `List
+          (List.sort
+            (fun a b -> match (f a) with
+              |`Fun fa ->
+                (match fa b with
+                  |`Int i -> i
+                  |_ -> assert false
+                )
+              |_ -> assert false
+            )
+            l
+          )
+      | _ -> assert false
+      )
+    | _ -> assert false
+  )
 
+let scr_compare =
+  `Fun(fun a -> `Fun(fun b -> `Int (compare a b)))
 
 (** Pair functions *)
 let scr_fst =
@@ -319,6 +340,12 @@ let position_to_pair p =
 let scr_range =
   `Fun(function
     |`Soldier(u) -> `Pair(`Int(u#min_attack_range), `Int(u#attack_range))
+    | _ -> assert false
+  )
+
+let scr_life = 
+  `Fun(function
+    |`Soldier(u) -> `Int(u#hp)
     | _ -> assert false
   )
 
@@ -458,6 +485,12 @@ let init () =
   expose scr_listflatten
     (`Fun_t(`List_t(`List_t(a0)), `List_t(a0)))
     "list_flatten";
+  expose scr_listsort
+    (`Fun_t(`Fun_t(a0, `Fun_t(a0, `Int_t)), `Fun_t(`List_t(a0), `List_t(a0))))
+    "list_sort";
+  expose scr_compare
+    (`Fun_t(a0, `Fun_t(a0, `Int_t)))
+    "compare";
   (* Functions on units/map *)
   expose scr_hasplayed (`Fun_t(`Soldier_t, `Bool_t)) "unit_has_played";
   expose scr_range (`Fun_t(`Soldier_t, intpair)) "unit_range";
@@ -476,6 +509,7 @@ let init () =
   expose scr_validunit (`Fun_t(`String_t, `Bool_t)) "is_valid_unit";
   expose scr_producible_units (`Fun_t(`Building_t, `List_t(`Soldier_t))) "producible_units";
   expose scr_funds (`Fun_t(`Player_t,`Int_t)) "funds_of";
-  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of"
+  expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of";
+  expose scr_life (`Fun_t(`Soldier_t,`Int_t)) "life_of"
 
 
