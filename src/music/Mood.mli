@@ -8,4 +8,4 @@ type t = int
 exception NotYetInitialised
 
 val init : ClientData.client_data -> unit
-val get_mood : unit -> t
+val get : unit -> t

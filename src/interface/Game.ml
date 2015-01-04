@@ -170,6 +170,7 @@ let new_game ?character () =
 
   initializer
     let actual_player = my_player#copy in
+    Mood.init cdata;
     cdata#init_core
       m_map
       actual_player
