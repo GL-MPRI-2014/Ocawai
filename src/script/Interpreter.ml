@@ -219,3 +219,7 @@ let building_script (env, ep) building =
     List.find (fun u -> u#name = s)
     Config.config#unbound_units_list
   | _ -> assert false
+
+let call_f (env, _) f =
+  apply_f env (get_global_value f env) [`Unit]
+
