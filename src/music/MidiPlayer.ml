@@ -7,6 +7,11 @@ let might_adsr adsr g =
     | None -> g
     | Some a -> new Audio.Mono.Generator.adsr a g
 
+let volume = ref 100
+
+let set_volume v = volume := v
+let get_volume () = !volume
+
 class asynchronousMidiPlayer =
 
   let channels = 2 in
@@ -16,7 +21,6 @@ class asynchronousMidiPlayer =
   let mchannels = 16 in
   let mbuf = MIDI.Multitrack.create mchannels blen in
   let adsr = Audio.Mono.Effect.ADSR.make sample_rate (0.1, 0.0, 1.0, 0.0) in
-  let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:0.5 () in
   
   object(self)
 
@@ -71,6 +75,7 @@ class asynchronousMidiPlayer =
                         channels
                         sample_rate in
       while (!should_run) do
+        let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:((float_of_int !volume) /. 100.) () in
         self#multi_blit (!main_buffer) (!current_playing) mbuf 0 blen;
         current_playing := !current_playing + blen + 1;
         synth#play mbuf 0 buf 0 blen;

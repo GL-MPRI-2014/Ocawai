@@ -117,6 +117,13 @@ class main_menu = object(self)
 
     window#display
 
+  method paused =
+    Printf.printf "I was called !\n%!";
+    music_run := false
+
+  method resumed =
+    music_run := true
+
   initializer
     let window = manager#window in
     let (w,h) = window#get_size in
