@@ -5,12 +5,15 @@
     the destination. *)
 type movement = Position.t list
 
+
+(** Action allowed for a player during it's turn*)
 type action =
-| Attack_unit of (Unit.id * Unit.id)
-| Create_unit of (Building.id * Unit.unbound_t)
+| Attack_unit of (Unit.unit_id * Unit.unit_id)
+| Create_unit of (Building.building_id * Unit.unbound_t)
 | Wait
 | End_turn
 
+(** Type use to move a unit*)
 type t = movement * action
 
 val from_string : string -> t

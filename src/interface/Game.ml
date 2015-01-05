@@ -547,4 +547,7 @@ let new_game ?character () =
 
     window#display
 
+  method destroy =
+    music_run := false
+
 end
