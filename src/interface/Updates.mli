@@ -12,6 +12,15 @@ class handler : ClientData.client_data -> Camera.camera -> object
   (** Method to be called at each frame to update *)
   method update : unit
 
+  (** Increase speed of animations *)
+  method faster : unit
+
+  (** Decrease speed of animations *)
+  method slower : unit
+
+  (** Return speed as an string *)
+  method speed : string
+
   (** @return the position and offset required to print a given unit *)
   method unit_position : Unit.t -> (Position.t * (float * float))
 

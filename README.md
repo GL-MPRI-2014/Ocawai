@@ -24,6 +24,8 @@ sélectionné **game on!** pour lancer le jeu.
 * **0** : Réinitialiser le zoom
 * **X** : Prochaine unité (ou bâtiment) n'ayant pas joué
 * **W** : Idem à l'envers
+* **S** : Baisser la vitesse des animations
+* **D** : Augmenter la vitesse des animations
 
 
 # Compilation

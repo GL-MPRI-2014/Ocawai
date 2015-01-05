@@ -11,6 +11,12 @@ type animation =
   | Pause of int
   | Nothing
 
+type speed =
+  | Slow
+  | Normal
+  | Fast
+  | FFast
+
 (* Logger *)
 module Log = Log.Make (struct let section = "Updates" end)
 open Log
@@ -29,11 +35,30 @@ class handler data camera = object(self)
   (* Number of frames since the beginning of the animation *)
   val mutable frame_counter = 0
 
+  (* Half frame counter (for low speed) *)
+  val mutable half_frame_counter = 0
+
+  (* Speed of animations *)
+  val mutable speed = Normal
+
   (* Last staged update *)
   val mutable last_update = None
 
   (* Current player *)
   val mutable current_turn = Nobody_s_turn
+
+  (* Increases the frame counter *)
+  method private frame_incr =
+    match speed with
+    | Slow ->
+        if half_frame_counter = 1 then begin
+          frame_counter <- frame_counter + 1 ;
+          half_frame_counter <- 0
+        end
+        else half_frame_counter <- 1
+    | Normal -> frame_counter <- frame_counter + 1
+    | Fast   -> frame_counter <- frame_counter + 2
+    | FFast  -> frame_counter <- frame_counter + 4
 
   (* Log an update *)
   method private log_update = function
@@ -204,35 +229,59 @@ class handler data camera = object(self)
   method private process_animation =
     match current_animation with
     | Moving_unit (u,path) ->
-        if frame_counter + 1 = walking_time then
+        if frame_counter + 1 >= walking_time then
         begin
           frame_counter <- 0 ;
           match path with
           | [] -> current_animation <- Pause 20
           | e :: r -> current_animation <- Moving_unit (u, r)
         end
-        else frame_counter <- frame_counter + 1
+        else self#frame_incr
     | Attack ->
-        if frame_counter + 1 = attack_time
+        if frame_counter + 1 >= attack_time
         then begin
           current_animation <- Nothing ;
           camera#cursor#set_state Cursor.Idle
         end
-        else frame_counter <- frame_counter + 1
+        else self#frame_incr
     | Pause 0 -> current_animation <- Nothing
-    | Pause i -> current_animation <- Pause (i-1)
+    | Pause i ->
+        if frame_counter >= i then current_animation <- Nothing
+        else self#frame_incr
     | Nothing -> ()
 
   method update =
     if current_animation = Nothing then self#read_update ;
     self#process_animation
 
+  method faster =
+    speed <- match speed with
+      | Slow   -> Normal
+      | Normal -> Fast
+      | Fast   -> FFast
+      | FFast  -> FFast
+
+  method slower =
+    speed <- match speed with
+      | Slow   -> Slow
+      | Normal -> Slow
+      | Fast   -> Normal
+      | FFast  -> Fast
+
+  method speed =
+    match speed with
+    | Slow   -> "slow"
+    | Normal -> "normal"
+    | Fast   -> "fast"
+    | FFast  -> "ffast"
+
   method unit_position u =
     match current_animation with
     | Moving_unit (soldier, e :: n :: _) when soldier = u ->
+        let fc = min frame_counter walking_time in
         (* Beware of magic numbers *)
         let o =
-          (float_of_int frame_counter) /. (float_of_int walking_time) *. 50.
+          (float_of_int fc) /. (float_of_int walking_time) *. 50.
         in
         e, Position.(
           if      n = left  e then (-. o,   0.)

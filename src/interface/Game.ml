@@ -192,7 +192,6 @@ let new_game ?character () =
     let music_player = MusicPlayer.music_player () in
     ignore @@ Thread.create (music_player#play_game) (music_run);
 
-    (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
 
@@ -242,7 +241,8 @@ let new_game ?character () =
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
+    new item "params" "Settings" (fun () ->
+      new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
@@ -433,6 +433,12 @@ let new_game ?character () =
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.S ; _ } ->
+            uphandle#slower
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.D ; _ } ->
+            uphandle#faster
 
         | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
             self#select_next
