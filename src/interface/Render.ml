@@ -137,7 +137,7 @@ let renderer = object(self)
       name = "water" || name = "lake"
     in
     let is_beach name =
-      name = "beach" || name = "lake_beach"
+      name = "beach" || name = "lake_beach" || name = "port_beach"
     in
     if self#filter_positions map up then
     begin
