@@ -677,6 +677,7 @@ let create_buildings m =
     poslist := List.tl !poslist;
     takenlist := pos :: !takenlist;
     let b = Building.bind ub pos None in
+    if ub#name = "port" then Battlefield.set_tile m pos (Config.config#tile "port_beach");
     b::(position ub (nb-1)))
   in
   List.fold_left 
@@ -684,7 +685,7 @@ let create_buildings m =
       poslist := Battlefield.tile_filteri 
         (fun pos t -> 
           not (List.mem pos !takenlist)
-          && List.for_all (Tile.traversable_m t) e#movement_types
+          && ((e#name <> "port" && (Tile.get_name t <> "beach" && Tile.get_name t <> "lake_beach") && List.for_all (Tile.traversable_m t) e#movement_types) || (e#name = "port" && (Tile.get_name t = "beach"|| Tile.get_name t = "lake_beach")))
         ) m;
       (position e e#spawn_number_neutral)@l
     ) [] unbound_list
