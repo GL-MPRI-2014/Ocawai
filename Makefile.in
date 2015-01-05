@@ -222,6 +222,8 @@ $(distdir): FORCE
 	cp $(music_dir)/*.ml* $(distdir)/$(music_dir)
 	cp $(network_dir)/*.ml* $(distdir)/$(network_dir)
 	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
+# Used by script_test.ml
+	cp $(test_dir)/script_test_assoc.script $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 #check that distdir create a correct archive
