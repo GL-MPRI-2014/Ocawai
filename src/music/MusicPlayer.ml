@@ -100,7 +100,7 @@ let music_player =
             | Some (midi_player) ->
 	       begin
 		 let mood = Mood.get () in
-		 let select = Random.int 3
+		 let select = Random.int 3 in
 		 let next_tile =
 		   if mood <= 0. then
 		     loser_music select
