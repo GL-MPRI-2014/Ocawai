@@ -2,7 +2,7 @@ open List
 open Path
 
 
-exception Not_enough_ressource
+exception Not_enough_resources
 
 
 class logicPlayer ?id () =
@@ -69,23 +69,22 @@ class logicPlayer ?id () =
           Fog.add_unit_fog fog b#position b#vision_range
 
     (* TODO *)
-    method set_unit_hp (u : Unit.id) (h : int) = ()
+    method set_unit_hp (u : Unit.unit_id) (h : int) = ()
 
-    method delete_unit (id_unit : Unit.id) =
+    method delete_unit (id_unit : Unit.unit_id) =
       let u = (Hashtbl.find army id_unit) in
       if Array.length fog > 0 then
         Fog.delete_unit_fog fog u#position u#vision_range;
       Hashtbl.remove army id_unit
 
-
-    method get_unit_by_id (id_unit : Unit.id) =
+    method get_unit_by_id (id_unit : Unit.unit_id) =
       Hashtbl.find army id_unit
 
-    method get_building_by_id (id_building : Building.id) =
+    method get_building_by_id (id_building : Building.building_id) =
       Hashtbl.find buildings id_building
 
-    (*it is quite dirty*)
-    method move_unit (id_unit : Unit.id) (p : Action.movement) =
+
+    method move_unit (id_unit : Unit.unit_id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
       if Array.length fog > 0 then
         Fog.delete_unit_fog fog u#position u#vision_range;
@@ -93,7 +92,7 @@ class logicPlayer ?id () =
       if Array.length fog > 0 then
         Fog.add_unit_fog fog u#position u#vision_range
 
-    method delete_building (id_building : Building.id) =
+    method delete_building (id_building : Building.building_id) =
         let b = Hashtbl.find buildings id_building in
         if Array.length fog > 0 then
           Fog.delete_unit_fog fog b#position b#vision_range;
@@ -106,7 +105,7 @@ class logicPlayer ?id () =
 
     method use_resource amount =
       if resource < amount then
-        raise Not_enough_ressource
+        raise Not_enough_resources
       else
         resource <- resource - amount
 

@@ -15,12 +15,12 @@ type update =
   | Set_building of Building.t list * id_player
   | Add_unit of Unit.t * id_player
   | Add_building of Building.t * id_player
-  | Delete_unit of Unit.id *id_player (*Fog or kill*)
-  | Delete_building of Building.id * id_player(*fog or kill*)
-  | Move_unit of Unit.id * Action.movement * id_player
-  | Set_unit_hp of Unit.id * int * id_player
+  | Delete_unit of Unit.unit_id *id_player (*Fog or kill*)
+  | Delete_building of Building.building_id * id_player(*fog or kill*)
+  | Move_unit of Unit.unit_id * Action.movement * id_player
+  | Set_unit_hp of Unit.unit_id * int * id_player
   | Building_changed of Building.t
-  | Set_unit_played of Unit.id * id_player * bool
+  | Set_unit_played of Unit.unit_id * id_player * bool
   | Harvest_income
   | Use_resource of int
 (* for initialization only *)

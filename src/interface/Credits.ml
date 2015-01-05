@@ -86,6 +86,12 @@ class state = object(self)
       Section ("Clickodromization",
         ["Nobody... right?"]
       ) ;
+      Section ("Imperial March",
+        ["TBazin";"Artymort"]
+      ) ;
+      Section ("Parcel Bombing",
+        ["Mazzocchi";"juliengrange"]
+      ) ;
       Thank_you ;
       Tips
     ] ;
