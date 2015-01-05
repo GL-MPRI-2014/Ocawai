@@ -16,7 +16,7 @@ let dummy_simple_event (dur, pitch) =
   dummy_event_plus dur (pitch, 127)
 
 (**
-   notes : [(int, Music.pitch)], duration and pitch, all on octave 4.
+   notes : [(int, Music.pitch)], duration and pitch
 *) 
 let sequence notes =
   let aggregate tile note =
@@ -30,9 +30,11 @@ let chord duration pitches =
   in
   List.fold_left aggregate TPTM.zero pitches
  
-let menu_music = (reset @@ sequence [(hn, (C, 3));
-				     (hn, (E, 3))]) %
-		   (sequence [(hn, (G, 3)); (hn, (B, 4))])
+let menu_music = fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
+		 @@ sequence [(en, (C, 4)); (en, (E, 4));
+			      (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
+			      (en, (C, 5)); (en, (G, 4));
+			      (en, (F, 4)); (en, (E, 4))]
 
 let winner_music = function
   | 0 -> chord wn @@ [(C, 4); (E, 4); (G, 4)]
