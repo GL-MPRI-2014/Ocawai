@@ -4,42 +4,6 @@
 
 open OUnit2
 
-(*
-open Time
-open Music
-open DList
-open TPTM
-
-let dummy_event =
-  note (Time.fromInt 1) (new Music.param (C, 4) 127)
-
-let dummy_event_plus dur (pitch, velocity) =
-  note dur (new Music.param pitch velocity)
-
-let dummy_simple_event (dur, pitch) =
-  dummy_event_plus dur ((pitch, 4), 127)
-
-let dummy_simple_event_pitchclass (dur, pitchClass) =
-  dummy_event_plus dur (pitchClass, 127)
-
-(**
-   notes : [(int, Music.pitch)], duration and pitch, all on octave 4.
-*) 
-let sequence notes =
-  let aggregate tile note =
-    tile % (TPTM.make_withDelay (dummy_simple_event note))
-  in
-  List.fold_left aggregate TPTM.zero notes
-
-let pierrot =
-  sequence [(en, C); (en, C); (en, C); (en, D); (qn, E); (qn, D);
-	    (en, C); (en, E); (en, D); (en, D); (hn, C)]
-
-let pierrot_canon = fork pierrot @@ (delay wn) % pierrot   
-						   
-let first_measure = fst @@ extract_by_time bn pierrot_canon
- *)
-
 let () =
   Random.self_init ()
 
