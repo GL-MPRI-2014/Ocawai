@@ -169,7 +169,7 @@ let new_game ?character () =
     self#select_playable lu lb
 
   val mutable music_run = ref true
-			        
+
   method paused =
     music_run := false
 
@@ -302,6 +302,12 @@ let new_game ?character () =
                (cdata#actual_player :> Player.logicPlayer)
                cdata#players
         in
+        let visible u =
+          let (i,j) = Position.topair u#position in
+          let fog = cdata#actual_player#get_fog in
+          Array.length fog < 0 || fog.(i).(j) > 0
+        in
+        let in_range = List.filter visible in_range in
         if List.mem cursor#position r && in_range <> [] then begin
           cursor#set_state (Cursor.Action
             (u, cursor#position, in_range));
