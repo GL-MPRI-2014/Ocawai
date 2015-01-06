@@ -23,13 +23,15 @@ class base_particle ~position ~rotation ~speed
       let spe = (dt *. (fst speed), dt *. (snd speed)) in
       position <- Utils.addf2D position spe)
 
-  method origin = (scale *. 11., 1.)
+  method private origin = (scale *. 11., 1.)
 
   method update dt = List.iter (fun f -> f dt) updates
 
+  method life_ratio = age /. life
+
   method add_update f = updates <- f :: updates
 
-  method kill = dead <- true
+  method private kill = dead <- true
 
   method is_alive = not dead
 

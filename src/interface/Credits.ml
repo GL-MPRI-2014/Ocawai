@@ -75,11 +75,16 @@ class state = object(self)
 
     particles#render;
 
-    if Random.int 100 <= 1 then begin
-      let (sx, sy) = Utils.foi2D window#get_size in
+    let (sx, sy) = Utils.foi2D window#get_size in
+
+    if Random.int 90 <= 1 then begin
       let position = (Random.float sx, Random.float sy) in
-      Booms.boom_circle particles position (OcsfmlGraphics.Color.rgb 0 255 0) 100
+      Booms.boom_circle particles (Random.float 200. +. 700.) position (Booms.random_color ()) 100
     end;
+
+    Booms.continuous_fountain particles (0., sy) (-1.);
+    
+    Booms.continuous_fountain particles (sx, sy) (4.141592);
 
     self#credits [
       OCAWAI ;
