@@ -235,11 +235,15 @@ class game_engine () = object (self)
         let enemy_id = (List.hd (List.tl actual_player_l))  in
         if self#is_dead players.(enemy_id) then
             (is_over <- true;
-             players.(self#actual_player)#update (Types.Game_over);
+             players.(self#actual_player)#update (Types.You_win);
              players.(enemy_id)#update (Types.Game_over)
             )
         else self#run
         )
+    else if List.length actual_player_l = 1 then begin
+      is_over <- true;
+      players.(self#actual_player)#update (Types.You_win)
+    end
     else self#run
 
 
@@ -288,7 +292,10 @@ class game_engine () = object (self)
     in
     aux actual_player_l;
     if List.length actual_player_l = 1 then
-      players.(self#actual_player)#update (Types.Game_over)
+      (* WTF ?! *)
+      (* The game should end now, not just say the last player lost *)
+      (* players.(self#actual_player)#update (Types.Game_over) *)
+      ()
     else (
       (* Enfin, on change de joueur en cours *)
       self#next_player;

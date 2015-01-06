@@ -63,6 +63,7 @@ class handler data camera = object(self)
   (* Log an update *)
   method private log_update = function
     | Game_over -> infof "Game Over"
+    | You_win -> infof "You win"
     | Your_turn -> infof "Your turn"
     | Turn_of id -> infof "Turn of P%d" id
     | Classement -> infof "Classement... WTF!?"
@@ -100,6 +101,7 @@ class handler data camera = object(self)
     | Game_over -> () (* TODO *)
     | Your_turn ->
         current_turn <- Your_turn
+    | You_win -> () (* TODO *)
     | Turn_of id ->
         current_turn <- Turn_of id
     | Classement -> () (* WTF?! TODO ? *)
@@ -191,6 +193,11 @@ class handler data camera = object(self)
               (* TODO Animation *)
               self#ack_update u ;
               (* There should'nt be any update but still... *)
+              self#read_update
+          | You_win ->
+              Sounds.play_sound "yeah" ;
+              (* TODO Animation *)
+              self#ack_update u ;
               self#read_update
           | Set_unit_hp (uid,_,pid) ->
               self#stage_ack u ;

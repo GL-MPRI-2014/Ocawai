@@ -9,6 +9,7 @@ type id_player = int
 (** Type of the data sent from the engine to the player/client *)
 type update =
   | Game_over
+  | You_win
   | Your_turn
   | Turn_of of id_player
   | Classement
@@ -44,5 +45,3 @@ val clock : float
 
 val from_string : string -> update
 val to_string : update -> string
-
-
