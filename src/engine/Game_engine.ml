@@ -38,14 +38,25 @@ class game_engine () = object (self)
 
   method private remove_player i =
     actual_player_l <- remove_indice i actual_player_l;
+    (* Updates of unit/building destruction *)
     Array.iter (fun x ->
       List.iter (fun u ->
         x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id)))
-      ) players.(i)#get_army
+      ) players.(i)#get_army ;
+      List.iter (fun b ->
+        x#update (Types.Building_changed b) ;
+        x#update (Types.Delete_building(b#get_id,(players.(i)#get_id)))
+      ) players.(i)#get_buildings ;
     ) players ;
+    (* Actually deleting units *)
     List.iter (fun u ->
       players.(i)#delete_unit u#get_id
-    ) players.(i)#get_army
+    ) players.(i)#get_army ;
+    (* Actually deleting buildings *)
+    List.iter (fun b ->
+      b#set_neutral ;
+      players.(i)#delete_building (b#get_id)
+    ) players.(i)#get_buildings
 
   method get_players =
     Array.to_list players

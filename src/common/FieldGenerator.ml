@@ -540,32 +540,6 @@ let positioning m playerslist legit_spawns neutral_buildings =
     List.iter
       (
         fun ui ->
-          for i = 0 to ui#spawn_number - 1 do
-            let ne = List.filter
-              (
-                fun p ->
-                  Battlefield.in_range m p
-                  && (Tile.traversable_m (Battlefield.get_tile m p) ui#movement_type)
-                  && not (List.mem p other_armies_pos)
-              )
-              (neighbours !army_pos) in
-            if ne = [] then
-              raise NotEnoughPlace
-            else
-              (
-                let r = Random.int (List.length ne) in
-                let pos = List.nth ne r in
-                let binded_ui = Unit.bind ui pos player#get_id in
-                player#add_unit binded_ui;
-                army := binded_ui :: !army;
-                army_pos := pos :: !army_pos;
-              )
-          done;
-      )
-      unbound_units_list;
-    List.iter
-      (
-        fun ui ->
           for i = 0 to ui#spawn_number_per_player - 1 do
             let ne = List.filter
               (
@@ -589,6 +563,32 @@ let positioning m playerslist legit_spawns neutral_buildings =
           done;
       )
       unbound_buildings_list;
+    List.iter
+      (
+        fun ui ->
+          for i = 0 to ui#spawn_number - 1 do
+            let ne = List.filter
+              (
+                fun p ->
+                  Battlefield.in_range m p
+                  && (Tile.traversable_m (Battlefield.get_tile m p) ui#movement_type)
+                  && not (List.mem p other_armies_pos)
+              )
+              (neighbours !army_pos) in
+            if ne = [] then
+              raise NotEnoughPlace
+            else
+              (
+                let r = Random.int (List.length ne) in
+                let pos = List.nth ne r in
+                let binded_ui = Unit.bind ui pos player#get_id in
+                player#add_unit binded_ui;
+                army := binded_ui :: !army;
+                army_pos := pos :: !army_pos;
+              )
+          done;
+      )
+      unbound_units_list;
     (!army, (!army_pos)@other_armies_pos, !buildings)
   in
   (* iter position_army_around for all armies*)
@@ -677,6 +677,7 @@ let create_buildings m =
     poslist := List.tl !poslist;
     takenlist := pos :: !takenlist;
     let b = Building.bind ub pos None in
+    if ub#name = "port" then Battlefield.set_tile m pos (Config.config#tile "port_beach");
     b::(position ub (nb-1)))
   in
   List.fold_left 
@@ -684,7 +685,7 @@ let create_buildings m =
       poslist := Battlefield.tile_filteri 
         (fun pos t -> 
           not (List.mem pos !takenlist)
-          && List.for_all (Tile.traversable_m t) e#movement_types
+          && ((e#name <> "port" && (Tile.get_name t <> "beach" && Tile.get_name t <> "lake_beach") && List.for_all (Tile.traversable_m t) e#movement_types) || (e#name = "port" && (Tile.get_name t = "beach"|| Tile.get_name t = "lake_beach")))
         ) m;
       (position e e#spawn_number_neutral)@l
     ) [] unbound_list
