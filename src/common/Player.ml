@@ -43,9 +43,7 @@ class logicPlayer ?id () =
     method get_fog = fog
 
     method set_army a =
-      List.iter (fun u -> self#add_unit u) a;
-      if Array.length fog > 0 then
-        List.iter (fun x -> Fog.add_unit_fog fog x#position x#vision_range) a
+      List.iter (fun u -> self#add_unit u) a
 
     method add_unit u =
         Hashtbl.replace army u#get_id u;
@@ -119,7 +117,10 @@ class logicPlayer ?id () =
         fog <- Array.make_matrix size_x size_y 0;
         List.iter
           (fun x -> Fog.add_unit_fog fog x#position x#vision_range)
-          self#get_army
+          self#get_army ;
+        List.iter
+          (fun b -> Fog.add_unit_fog fog b#position b#vision_range)
+          self#get_buildings
 
     method copy =
       let copy_hashtbl h =

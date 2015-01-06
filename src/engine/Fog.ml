@@ -1,7 +1,7 @@
 (* Several functions relative to fog *)
 type t = int array array
 (* The fog is a double array of int of the size of the map,
-if the value of a case is 0, it is hidden. When a unit can see a case, we increment 
+if the value of a case is 0, it is hidden. When a unit can see a case, we increment
 the value of the case. When a unit cannot see anymore a case (moved/killed), we decrement the value of the case *)
 
 
@@ -11,7 +11,7 @@ let set_fog_for_unit (fog: t) (p:Position.t) range k=
     let (x,y) = Position.topair p in
     let (size_x,size_y)= (Array.length fog,Array.length fog.(0)) in
     (* On commence par s'occuper de la croix autour du joueur *)
-    fog.(x).(y) <- fog.(x).(y) +1;    
+    fog.(x).(y) <- fog.(x).(y) + k;
     for i=1 to range do
         if (x+i) < size_x then fog.(x+i).(y) <- fog.(x+i).(y) +k;
         if (x-i) >= 0 then fog.(x-i).(y) <- fog.(x-i).(y) +k
@@ -27,16 +27,16 @@ let set_fog_for_unit (fog: t) (p:Position.t) range k=
             (
                 if (x+i) < size_x then
                 (
-                if (y+j) < size_y then fog.(x+i).(y+j) <- fog.(x+i).(y+j)+1;
-                if (y-j) >= 0 then fog.(x+i).(y-j) <- fog.(x+i).(y-j)+1;
+                if (y+j) < size_y then fog.(x+i).(y+j) <- fog.(x+i).(y+j)+k;
+                if (y-j) >= 0 then fog.(x+i).(y-j) <- fog.(x+i).(y-j)+k;
                 );
                 if (x-i) >= 0 then
                 (
-                if (y+j) < size_y then fog.(x-i).(y+j) <- fog.(x-i).(y+j)+1;
-                if (y-j) >=0 then fog.(x-i).(y-j) <- fog.(x-i).(y-j) +1;
+                if (y+j) < size_y then fog.(x-i).(y+j) <- fog.(x-i).(y+j)+k;
+                if (y-j) >=0 then fog.(x-i).(y-j) <- fog.(x-i).(y-j) +k;
                 )
             )
-        done;
+        done
     done
 
 (* update du fog quand on ajoute une unité *)
@@ -69,5 +69,3 @@ let rec visible_buildings fog (a:Building.t list)=
                 u::(visible_buildings fog t)
             else
                 (visible_buildings fog t)
-
-
