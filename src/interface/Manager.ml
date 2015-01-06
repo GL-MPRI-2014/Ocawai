@@ -58,6 +58,7 @@ let manager = object(self)
     | Some e ->
         OcsfmlWindow.Event.(
         begin match e with
+          | KeyPressed { code = c; _ } when Obj.magic c = -1 -> ()
           | Closed
           | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
           | KeyPressed { code = OcsfmlWindow.KeyCode.C ; control = true ; _ } ->
