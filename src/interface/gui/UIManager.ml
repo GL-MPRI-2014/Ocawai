@@ -30,6 +30,9 @@ class ui_manager = object(self)
   method add_widget : 'a. (#Widget.widget as 'a) -> unit =
     fun w -> widgets <- (w :> Widget.widget) :: widgets
 
+  method rem_widget : 'a. (#Widget.widget as 'a) -> unit =
+    fun w -> widgets <- List.filter (fun w' -> (w :> Widget.widget) <> w') widgets
+
   method draw target texlib =
     List.iter (fun w -> w#draw target texlib) (List.rev widgets)
 end
