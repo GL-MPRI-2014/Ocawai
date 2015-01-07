@@ -9,6 +9,7 @@ type credits =
   | Section of string * name list
   | Thank_you
   | Tips
+  | Break
 and name = string
 
 class state = object(self)
@@ -62,11 +63,13 @@ class state = object(self)
           top := !top +. 150. ;
           self#print "By the way, press escape to quit..." false 15 !top ;
           top := !top +. 20.
-    in List.iter aux seq
+      | Break ->
+          let (_,h) = foi2D manager#window#get_size in
+          top := !top +. h /. 3.
+    in List.iter aux seq ;
+    !top
 
   method render window =
-
-    off <- off +. 1.2 ;
 
     particles#update;
 
@@ -79,14 +82,18 @@ class state = object(self)
 
     if Random.int 90 <= 1 then begin
       let position = (Random.float sx, Random.float sy) in
-      Booms.boom_circle particles (Random.float 200. +. 700.) position (Booms.random_color ()) 100
+      Booms.boom_circle particles
+        (Random.float 200. +. 700.)
+        position
+        (Booms.random_color ())
+        100
     end;
 
     Booms.continuous_fountain particles (0., sy) (-1.);
-    
+
     Booms.continuous_fountain particles (sx, sy) (4.141592);
 
-    self#credits [
+    let height = self#credits [
       OCAWAI ;
       Section ("Textures Hardcoding",
         ["Sheeft"]
@@ -119,23 +126,28 @@ class state = object(self)
         ["VLanvin"]
       ) ;
       Section ("Imperial March",
-        ["TBazin";"Artymort"]
+        ["tbazin";"Artymort"]
+      ) ;
+      Section ("Star Crafting",
+        ["OlivierMarty"]
       ) ;
       Section ("Parcel Bombing",
-        ["paul-gallot";"Mazzocchi";"juliengrange"]
+        ["Paul-Gallot";"Mazzocchi";"juliengrange"]
       ) ;
-      Section ("",
-        []
-      );
+      Break ;
       Section ("And for supporting us and our awful jokes...",
         []
-      ) ;
-      Section ("... special thanks to :",
+      );
+      Section ("... special thanks to:",
         ["dbaelde"; "ngrosshans"]
       ) ;
       Thank_you ;
       Tips
-    ] ;
+    ] in
+
+    (* Increasing offset while it has meaning to do so *)
+    if off < sy /. 3. +. height
+      then off <- off +. 5. ;
 
     window#display
 
