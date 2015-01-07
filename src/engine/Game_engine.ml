@@ -216,16 +216,16 @@ class game_engine () = object (self)
                   b#position
                   (self#get_players :> Player.logicPlayer list))
         && player#has_resource uu#price
-        then (
+        then begin
           player#use_resource uu#price;
           player#update (Types.Use_resource uu#price);
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
-          Array.iter (fun x ->
-            x#update (Types.Add_unit(u,(player#get_id)))
-          ) players;
-          u#set_played true ;
-          self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true)))
+          self#notify_all
+            (Types.Set_unit_played (u#get_id,player#get_id,true)) ;
+          self#notify_all (Types.Add_unit(u,(player#get_id))) ;
+          u#set_played true
+        end
         else raise Bad_create
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
@@ -307,10 +307,9 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    (* Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players; *)
+    self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true)) ;
     self#notify_all (Types.Move_unit(u#get_id,movement,(player#get_id))) ;
-    u#set_played true ;
-    self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true))
+    u#set_played true
 
 end
 
