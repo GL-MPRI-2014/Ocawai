@@ -32,7 +32,11 @@ class game_engine () = object (self)
     Array.iter (fun p -> p#update u) players
 
   method private next_player =
-    actual_player_l <- (List.tl actual_player_l) @ [List.hd actual_player_l]
+    actual_player_l <- (List.tl actual_player_l) @ [List.hd actual_player_l] ;
+
+    (* Capture buildings before telling him its his turn *)
+    self#capture_buildings
+
   method private actual_player =
     List.hd actual_player_l
 
@@ -161,6 +165,7 @@ class game_engine () = object (self)
 
     (* Notify the player *)
     player#update Types.Your_turn;
+
     (* Notify the others *)
     let pid = player#get_id in
     Array.to_list players
@@ -246,6 +251,26 @@ class game_engine () = object (self)
     end
     else self#run
 
+  (* Capture buildings at the beginning of a turn *)
+  method private capture_buildings =
+    let (changed_buildings,added,removed) =
+      Logics.capture_buildings
+        (self#get_players :> Player.logicPlayer list)
+        (players.(self#actual_player) :> Player.logicPlayer)
+        (get_opt field)#buildings
+    in
+    (*send the list of changed buildings to the players*)
+    Array.iter (fun p ->
+      List.iter (fun b ->
+        p#update (Types.Building_changed (fst b))
+      ) changed_buildings
+    ) players;
+    List.iter
+      (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid)))
+      added ;
+    List.iter
+      (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid)))
+      removed
 
   method private end_turn =
     let player = players.(self#actual_player) in
@@ -256,28 +281,7 @@ class game_engine () = object (self)
       )
       player#get_army;
     player#harvest_buildings_income;
-    player#update Types.Harvest_income ;
-
-    (*update buildings at the end of a turn*)
-    let (changed_buildings,added,removed) = Logics.capture_buildings
-      (self#get_players :> Player.logicPlayer list)
-      (players.(self#actual_player) :> Player.logicPlayer)
-      (get_opt field)#buildings
-    in
-
-    (*send the list of changed buildings to the players*)
-    Array.iter (fun p ->
-      List.iter (fun b ->
-        p#update (Types.Building_changed (fst b))
-      ) changed_buildings
-    ) players;
-
-    List.iter
-      (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid)))
-      added ;
-    List.iter
-      (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid)))
-      removed ;
+    player#update Types.Harvest_income;
 
     let rec aux lst =
       match lst with
