@@ -12,7 +12,7 @@ class logicPlayer ?id () =
     val buildings = Hashtbl.create 23
     val mutable resource = 0
     val mutable base : Building.t option = None
-    val mutable fog = [||]
+    val mutable fog = Fog.init 0 0
     (*Quite dirty mutable id. Can't we do without it ?*)
     val mutable id_ =
       match id with
@@ -27,16 +27,10 @@ class logicPlayer ?id () =
       Hashtbl.fold (fun id u l -> u::l) army []
 
     method get_visible_army_for (p:logicPlayer) =
-        if Array.length fog > 0 then
-            Fog.visible_army p#get_fog self#get_army
-        else
-            self#get_army
+      Fog.visible_army p#get_fog self#get_army
 
     method get_visible_buildings_for (p:logicPlayer) =
-        if Array.length fog > 0 then
-            Fog.visible_buildings p#get_fog self#get_buildings
-        else
-            self#get_buildings
+      Fog.visible_buildings p#get_fog self#get_buildings
 
     method get_id = id_
 
@@ -47,9 +41,7 @@ class logicPlayer ?id () =
 
     method add_unit u =
         Hashtbl.replace army u#get_id u;
-        if Array.length fog > 0 then
-          Fog.add_unit_fog fog u#position u#vision_range
-        (*TODO*)
+        Fog.add_entity fog u#position u#vision_range
 
     method set_buildings b =
       List.iter (fun building -> self#add_building building) b
@@ -63,16 +55,14 @@ class logicPlayer ?id () =
 
     method add_building (b:Building.t) =
         Hashtbl.replace buildings b#get_id b;
-        if Array.length fog > 0 then
-          Fog.add_unit_fog fog b#position b#vision_range
+        Fog.add_entity fog b#position b#vision_range
 
     (* TODO *)
     method set_unit_hp (u : Unit.unit_id) (h : int) = ()
 
     method delete_unit (id_unit : Unit.unit_id) =
       let u = (Hashtbl.find army id_unit) in
-      if Array.length fog > 0 then
-        Fog.delete_unit_fog fog u#position u#vision_range;
+      Fog.remove_entity fog u#position u#vision_range;
       Hashtbl.remove army id_unit
 
     method get_unit_by_id (id_unit : Unit.unit_id) =
@@ -84,17 +74,14 @@ class logicPlayer ?id () =
 
     method move_unit (id_unit : Unit.unit_id) (p : Action.movement) =
       let u = self#get_unit_by_id id_unit in
-      if Array.length fog > 0 then
-        Fog.delete_unit_fog fog u#position u#vision_range;
+      Fog.remove_entity fog u#position u#vision_range;
       u#move (final_position (get_path p));
-      if Array.length fog > 0 then
-        Fog.add_unit_fog fog u#position u#vision_range
+      Fog.add_entity fog u#position u#vision_range
 
     method delete_building (id_building : Building.building_id) =
-        let b = Hashtbl.find buildings id_building in
-        if Array.length fog > 0 then
-          Fog.delete_unit_fog fog b#position b#vision_range;
-        Hashtbl.remove buildings id_building
+      let b = Hashtbl.find buildings id_building in
+      Fog.remove_entity fog b#position b#vision_range;
+      Hashtbl.remove buildings id_building
 
     method get_value_resource = resource
 
@@ -114,12 +101,12 @@ class logicPlayer ?id () =
 
     method init (field: Battlefield.t) (players:logicPlayer list) =
         let (size_x,size_y) = Battlefield.size field in
-        fog <- Array.make_matrix size_x size_y 0;
+        fog <- Fog.init size_x size_y ;
         List.iter
-          (fun x -> Fog.add_unit_fog fog x#position x#vision_range)
+          (fun x -> Fog.add_entity fog x#position x#vision_range)
           self#get_army ;
         List.iter
-          (fun b -> Fog.add_unit_fog fog b#position b#vision_range)
+          (fun b -> Fog.add_entity fog b#position b#vision_range)
           self#get_buildings
 
     method copy =
@@ -128,27 +115,13 @@ class logicPlayer ?id () =
         Hashtbl.iter (fun k v -> Hashtbl.add h' k (Oo.copy v)) h ;
         h'
       in
-      let copy_matrix a =
-        if a = [||] then [||]
-        else begin
-          let n = Array.length a
-          and m = Array.length (a.(0)) in
-          let a' = Array.make_matrix n m (a.(0).(0)) in
-          for i = 0 to n - 1 do
-            for j = 0 to m - 1 do
-              a'.(i).(j) <- a.(i).(j)
-            done
-          done ;
-          a'
-        end
-      in
       {<
           id_ = id_ ;
           army = copy_hashtbl army ;
           buildings = copy_hashtbl buildings ;
           resource = resource ;
           base = base ;
-          fog = copy_matrix fog
+          fog = Fog.copy fog
       >}
 
     initializer

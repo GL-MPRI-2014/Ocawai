@@ -279,7 +279,7 @@ let renderer = object(self)
       in
       List.iter (self#highlight_tile target camera
         (Color.rgba 255 255 100 150)) range;
-      if List.mem camera#cursor#position range then 
+      if List.mem camera#cursor#position range then
         List.iter (self#highlight_tile target camera
           (Color.rgba 255 50 50 255)) attack_range
     end
@@ -316,11 +316,7 @@ let renderer = object(self)
     (data : ClientData.client_data) (uphandle : Updates.handler) =
     (* For the fog *)
     let fog = data#actual_player#get_fog in
-    let foggy p =
-      let (i,j) = Position.topair p in
-      try fog.(i).(j) = 0
-      with _ -> false
-    in
+    let foggy p = Fog.hidden fog p in
     (* Rendering *)
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;

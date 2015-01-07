@@ -1,3 +1,4 @@
+
 open OcsfmlGraphics
 open Utils
 
@@ -198,11 +199,11 @@ let new_game ?character () =
     let disp_menu = new ingame_menu ~m_position:position ~m_width:150
       ~m_item_height:30 ~m_theme:Theme.yellow_theme
       ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" ()
-    in 
+    in
 
     let cursor = camera#cursor in
 
-    if atk then begin 
+    if atk then begin
       new item "attack" "Attack" (fun () ->
         ui_manager#rem_widget disp_menu;
         ui_manager#unfocus disp_menu;
@@ -213,12 +214,9 @@ let new_game ?character () =
                 (cdata#actual_player :> Player.logicPlayer)
                 cdata#players
           in
-          let visible u =
-            let (i,j) = Position.topair u#position in
-            let fog = cdata#actual_player#get_fog in
-            Array.length fog < 0 || fog.(i).(j) > 0
+          let in_range =
+            Fog.visible_army cdata#actual_player#get_fog in_range
           in
-          let in_range = List.filter visible in_range in
           if List.mem cursor#position r && in_range <> [] then begin
             cursor#set_state (Cursor.Action
               (u, cursor#position, in_range));
@@ -290,7 +288,7 @@ let new_game ?character () =
       ~m_theme:Theme.blue_theme
     in
 
-    main_button#set_callback (fun () -> 
+    main_button#set_callback (fun () ->
       if camera#cursor#get_state = Cursor.Idle then begin
         my_menu#toggle; main_button#toggle; ui_manager#focus my_menu
       end);
@@ -523,9 +521,8 @@ let new_game ?character () =
                   let uopt = cdata#unit_at_position cursor#position in
                   let uopt = begin match uopt with
                     | Some u ->
-                        let (i,j) = Position.topair u#position in
                         let fog = cdata#actual_player#get_fog in
-                        if Array.length fog > 0 && fog.(i).(j) = 0 then None
+                        if Fog.hidden_unit fog u then None
                         else uopt
                     | None -> None
                   end in

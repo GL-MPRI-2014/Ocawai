@@ -87,9 +87,7 @@ class handler data camera = object(self)
 
   (* Tells if a position is foggy *)
   method private foggy p =
-    let (i,j) = Position.topair p in
-    try data#actual_player#get_fog.(i).(j) = 0
-    with _ -> false
+    Fog.hidden data#actual_player#get_fog p
 
   method private visible p =
     not (self#foggy p)
