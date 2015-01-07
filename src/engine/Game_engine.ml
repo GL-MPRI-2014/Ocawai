@@ -26,6 +26,9 @@ class game_engine () = object (self)
   val mutable field = None
   val mutable actual_player_l = []
   val mutable is_over = false
+  val mutable killed  = false
+
+  method kill = killed <- true
 
   (* Sends the update to all players *)
   method private notify_all u =
@@ -248,7 +251,7 @@ class game_engine () = object (self)
     else if List.length actual_player_l = 1 then begin
       is_over <- true;
       players.(self#actual_player)#update (Types.You_win)
-    end
+    end else if killed then ()
     else self#run
 
   (* Capture buildings at the beginning of a turn *)
