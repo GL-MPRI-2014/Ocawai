@@ -139,8 +139,8 @@ and fprint_headTail fmt = fun ht ->
 		 fprintf_sub tailT
 		 
 and fprint_eventsSet fmt = fun set ->
-  (* Copied from the 4.02.0 stdlib, to format a list *)
   let rec pp_print_list ?(pp_sep = Format.pp_print_cut) pp_v ppf = function
+    (* Copied from the 4.02.0 stdlib, formats a list *)
     | [] -> ()
     | [v] -> pp_v ppf v
     | v :: vs ->
@@ -444,14 +444,6 @@ let rec is_equivalent : t -> t -> bool = fun t1 t2 ->
 					       is_silent event
   | (Rest dur1, Prod (dur2, 
  *)				
-
-(*
-type normalized_t = NormSync of time
-		  | NormEvent of event
-		  | NormProd of (tag * t * t)
-
-let normalize : t -> normalized_t
- *)
   
 (** {2 MIDI conversion} *)
 
@@ -523,5 +515,5 @@ let rec toMidi : ?samplerate:int -> ?division:MIDI.division ->
 	   MIDI.add new_buffer midi_offset b2 0 new_duration;
 	   MIDI.add new_buffer 0 b1 0 new_duration
        );
-       (* print_string "Conversion completed"; *) Some(new_buffer)
+       Some(new_buffer)
      )
