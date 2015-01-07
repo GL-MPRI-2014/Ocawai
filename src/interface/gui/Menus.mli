@@ -28,15 +28,7 @@ class key_button : icon:string -> text:string -> m_position:(int*int) ->
 
   method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 
-end
-
-
-(** Same as key_button, but togges itself after usage *)
-class key_button_oneuse : icon:string -> text:string -> m_position:(int*int)
-  -> m_size:(int*int) -> keycode:OcsfmlWindow.KeyCode.t ->
-  callback:(unit -> unit) -> m_theme:Theme.t -> object
-
-  inherit key_button
+  method set_callback : (unit -> unit) -> unit
 
 end
 

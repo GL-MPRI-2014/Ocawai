@@ -20,6 +20,8 @@ class state = object(self)
 
   val mutable off = 0.
 
+  val mutable particles = new ParticleManager.particle_manager manager#window
+
   method handle_event e =
     OcsfmlWindow.Event.(
       match e with
@@ -64,10 +66,25 @@ class state = object(self)
 
   method render window =
 
-    off <- off +. 1.3 ;
+    off <- off +. 1.2 ;
+
+    particles#update;
 
     let color = Color.rgb 10 10 10 in
     window#clear ~color ();
+
+    particles#render;
+
+    let (sx, sy) = Utils.foi2D window#get_size in
+
+    if Random.int 90 <= 1 then begin
+      let position = (Random.float sx, Random.float sy) in
+      Booms.boom_circle particles (Random.float 200. +. 700.) position (Booms.random_color ()) 100
+    end;
+
+    Booms.continuous_fountain particles (0., sy) (-1.);
+    
+    Booms.continuous_fountain particles (sx, sy) (4.141592);
 
     self#credits [
       OCAWAI ;
@@ -75,22 +92,46 @@ class state = object(self)
         ["Sheeft"]
       ) ;
       Section ("Fireworks",
-        ["Paul-Gallot"]
-      ) ;
-      Section ("Minimap Mipmapping",
         ["VLanvin"]
       ) ;
       Section ("Konami Snake",
-        ["VLanvin";"Artymort";"Sheeft"]
+        ["Artymort";"Sheeft"]
+      ) ;
+      Section ("Random Cartography",
+        ["dbusatto"]
+      ) ;
+      Section ("Increasing Sloccount Rating",
+        ["Saroupille"]
       ) ;
       Section ("Clickodromization",
         ["Nobody... right?"]
+      ) ;
+      Section ("Hiding Everything Everywhere",
+        ["teoule17"]
+      ) ;
+      Section ("Number Crushing",
+        ["MetaMetaMath"]
+      ) ;
+      Section ("The Man with Two Names",
+        ["m-legrand"; "Nilexys"]
+      ) ;
+      Section ("Minimap Mipmapping",
+        ["VLanvin"]
       ) ;
       Section ("Imperial March",
         ["TBazin";"Artymort"]
       ) ;
       Section ("Parcel Bombing",
-        ["Mazzocchi";"juliengrange"]
+        ["paul-gallot";"Mazzocchi";"juliengrange"]
+      ) ;
+      Section ("",
+        []
+      );
+      Section ("And for supporting us and our awful jokes...",
+        []
+      ) ;
+      Section ("... special thanks to :",
+        ["dbaelde"; "ngrosshans"]
       ) ;
       Thank_you ;
       Tips
