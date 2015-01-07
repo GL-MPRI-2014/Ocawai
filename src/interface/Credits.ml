@@ -21,6 +21,10 @@ class state = object(self)
 
   val mutable off = 0.
 
+  val mutable last_update = Unix.gettimeofday ()
+
+  val mutable finished = false
+
   val mutable particles = new ParticleManager.particle_manager manager#window
 
   method handle_event e =
@@ -80,8 +84,8 @@ class state = object(self)
 
     let (sx, sy) = Utils.foi2D window#get_size in
 
-    if Random.int 90 <= 1 then begin
-      let position = (Random.float sx, Random.float sy) in
+    if Random.int 90 <= 1 && not finished then begin
+      let position = (Random.float sx, Random.float (sy /. 2.5)) in
       Booms.boom_circle particles
         (Random.float 200. +. 700.)
         position
@@ -89,9 +93,14 @@ class state = object(self)
         100
     end;
 
-    Booms.continuous_fountain particles (0., sy) (-1.);
+    let yellow = OcsfmlGraphics.Color.rgb 220 220 20 in
 
-    Booms.continuous_fountain particles (sx, sy) (4.141592);
+    Booms.continuous_fountain particles (0., sy) (-1.) 0.25 yellow;
+
+    Booms.continuous_fountain particles (sx, sy) (4.141592) 0.25 yellow;
+
+    if finished then 
+      Booms.continuous_flower particles (sx /. 2., sy);
 
     let height = self#credits [
       OCAWAI ;
@@ -145,9 +154,13 @@ class state = object(self)
       Tips
     ] in
 
+    let dt = Unix.gettimeofday () -. last_update in
+    last_update <- Unix.gettimeofday ();
     (* Increasing offset while it has meaning to do so *)
     if off < sy /. 3. +. height
-      then off <- off +. 5. ;
+      then off <- off +. (50. *. dt)
+    else
+      finished <- true;
 
     window#display
 
