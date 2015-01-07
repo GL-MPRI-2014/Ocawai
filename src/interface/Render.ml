@@ -271,9 +271,17 @@ let renderer = object(self)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
     | Cursor.Idle -> ()
-    | Cursor.Displace(_,_,(range,_)) -> begin
+    | Cursor.Displace(_,my_unit,(range,_)) -> begin
+      let attack_range = Position.range camera#cursor#position my_unit#min_attack_range
+        my_unit#attack_range in
+      let attack_range =
+        List.filter (self#filter_positions map) attack_range
+      in
       List.iter (self#highlight_tile target camera
-        (Color.rgba 255 255 100 150)) range
+        (Color.rgba 255 255 100 150)) range;
+      if List.mem camera#cursor#position range then 
+        List.iter (self#highlight_tile target camera
+          (Color.rgba 255 50 50 255)) attack_range
     end
     | Cursor.Action(my_unit,p,_) -> begin
       let range = Position.range p my_unit#min_attack_range
