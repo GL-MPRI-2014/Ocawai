@@ -283,12 +283,17 @@ let new_game ?character () =
     |> forfeit_popup#add_child;
 
     (* Button to open ingame menu *)
-    let main_button = new key_button_oneuse ~icon:"return"
+    let main_button = new key_button ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
-      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu)
+      ~callback:(fun () -> ())
       ~m_theme:Theme.blue_theme
     in
+
+    main_button#set_callback (fun () -> 
+      if camera#cursor#get_state = Cursor.Idle then begin
+        my_menu#toggle; main_button#toggle; ui_manager#focus my_menu
+      end);
 
     (* Ingame menu items *)
     new item "cancel" "End turn" (fun () ->

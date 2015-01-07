@@ -55,12 +55,16 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
   val mutable size = m_size
 
   val mutable theme = m_theme
+  
+  val mutable callback : unit -> unit = callback
 
   initializer
     self#add_event (function
       |Event.KeyPressed {Event.code = kc; _ } when keycode = kc ->
           (callback (); true)
       | _ -> false)
+
+  method set_callback c = callback <- c
 
   method draw target lib = if self#active then begin
     new rectangle_shape ~fill_color:theme.Theme.default_color
@@ -84,19 +88,6 @@ class key_button ~icon ~text ~m_position ~m_size ~keycode
 
 end
 
-
-class key_button_oneuse ~icon ~text ~m_position ~m_size ~keycode
-  ~callback ~m_theme = object(self)
-
-  inherit key_button ~icon ~text ~m_position ~m_size ~keycode ~callback
-    ~m_theme
-
-  initializer
-    self#add_event(function
-      |Event.KeyPressed {Event.code = kc; _ } when keycode = kc ->
-          (self#toggle; true)
-      | _ -> false)
-end
 
 class ingame_menu ?escape ~m_position ~m_width ~m_item_height ~m_theme ~m_bar_height
   ~m_bar_icon ~m_bar_text ()
