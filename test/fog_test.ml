@@ -42,15 +42,15 @@ let print_ascii_extended (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:P
     print_endline ""
   done
 
-let print_ascii_extended_fog (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list) fog=
+let print_ascii_extended_fog (m:Battlefield.t) (a:Unit.t list list) (p:Path.t) (sp:Position.t list) fog =
   let (w,h) = Battlefield.size m in
   for j = 0 to h-1 do
     for i = 0 to w-1 do
-        if fog.(i).(j) = 0 then 
-            (print_string "??")
+        if hidden fog (Position.create (i,j)) then
+            (print_string "?")
         else
             (
-            print_string "u"; print_int fog.(i).(j)
+            print_string "u"
             );
 
     done;
@@ -65,7 +65,7 @@ let print_fog generator fog = print_ascii_extended_fog generator#field generator
 
 let () =
 
-  
+
     let p1 = (Player.create_dummy_player [] ) in
     let p2 = (Player.create_dummy_player [] ) in
     let generator = new FieldGenerator.t [(p1 :>Player.logicPlayer);(p2:>Player.logicPlayer)] in

@@ -15,12 +15,12 @@ val copy : t -> t
 
 (** @param fog the fog of a certain player
   * @param pos the position you want to survey
-  * @return [true] iff the case if under the fog of war *)
+  * @return [true] iff the case is under the fog of war *)
 val hidden : t -> Position.t -> bool
 
 (** @param fog the fog of a certain player
   * @param pos the position you want to survey
-  * @param [true] iff the case if visible *)
+  * @return [true] iff the case is visible *)
 val visible : t -> Position.t -> bool
 
 (** Tells if a unit is hidden by the fog of war *)
