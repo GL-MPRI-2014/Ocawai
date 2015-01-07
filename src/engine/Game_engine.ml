@@ -153,8 +153,8 @@ class game_engine () = object (self)
     in player_aux self#get_players
 
   method private is_dead player =
-    player#get_army = [] (*no more units*)
-    || (match player#get_base with
+    (*player#get_army = [] (*no more units*)
+    ||*) (match player#get_base with
       | None -> true
       | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
     )
@@ -226,9 +226,9 @@ class game_engine () = object (self)
           player#update (Types.Use_resource uu#price);
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
+          self#notify_all (Types.Add_unit(u,(player#get_id))) ;
           self#notify_all
             (Types.Set_unit_played (u#get_id,player#get_id,true)) ;
-          self#notify_all (Types.Add_unit(u,(player#get_id))) ;
           u#set_played true
         end
         else raise Bad_create
@@ -296,6 +296,7 @@ class game_engine () = object (self)
     in
     aux actual_player_l;
     if List.length actual_player_l = 1 then
+      (* TODO *)
       (* WTF ?! *)
       (* The game should end now, not just say the last player lost *)
       (* players.(self#actual_player)#update (Types.Game_over) *)
