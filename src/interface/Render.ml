@@ -314,6 +314,14 @@ let renderer = object(self)
   (* Draw the whole game *)
   method render_game (target : render_window)
     (data : ClientData.client_data) (uphandle : Updates.handler) =
+
+    let (sx, sy) = Utils.foi2D target#get_size in
+
+    new sprite 
+      ~texture:(TextureLibrary.(get_texture texture_library "background"))
+      ~scale:(max (sx /. 2048.) 1., max (sy /. 2048.) 1.)
+      ()
+    |> target#draw;
     (* For the fog *)
     let fog = data#actual_player#get_fog in
     let foggy p = Fog.hidden fog p in
