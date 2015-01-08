@@ -20,7 +20,7 @@
   },
   {
     "name": "port",
-    "product": ["submarine"],
+    "product": ["submarine","destroyer"],
     "income": 10,
     "spawn_number_neutral" : 3,
     "movement_types" : ["Walk", "Swim"]
