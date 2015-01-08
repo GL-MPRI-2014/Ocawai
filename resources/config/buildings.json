@@ -27,7 +27,7 @@
   },
   {
     "name": "airport",
-    "product": ["helicopter","bomber","fighter"],
+    "product": ["helicopter","bomber","fighter","ulm"],
     "income": 10,
     "spawn_number_neutral" : 3,
     "movement_types" : ["Walk", "Roll", "Tread", "Fly"]
