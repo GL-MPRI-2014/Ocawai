@@ -1,3 +1,4 @@
+
 open OcsfmlGraphics
 open Utils
 
@@ -82,10 +83,6 @@ let new_game ?character () =
   val cdata : ClientData.client_data = m_cdata
 
   val uphandle = m_uphandle
-
-  val disp_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
-    ~m_item_height:30 ~m_theme:Theme.yellow_theme
-    ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" ()
 
   val atk_menu = new ingame_menu ~m_position:(0,0) ~m_width:150
     ~m_item_height:30 ~m_theme:Theme.red_theme
@@ -173,6 +170,14 @@ let new_game ?character () =
     and lb = List.rev cdata#actual_player#get_buildings in
     self#select_playable lu lb
 
+  val mutable music_run = ref true
+
+  method paused =
+    music_run := false
+
+  method resumed =
+    music_run := true
+
   initializer
     let actual_player = my_player#copy in
     cdata#init_core
@@ -184,10 +189,74 @@ let new_game ?character () =
             (actual_player :> logicPlayer)
           else p#copy)
         m_players) ;
+    (** Run music *)
     Mood.init cdata;
-    (* assert (List.mem (cdata#actual_player :> logicPlayer) cdata#players) ; *)
+    let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_game) (music_run);
+
     cdata#init_buildings m_engine#get_neutral_buildings;
     cdata#init_interface m_camera
+
+  (* Creates a menu for moving and attacking units *)
+  (* Only creates the attack button if required *)
+  method private create_disp_menu position atk =
+
+    let disp_menu = new ingame_menu ~m_position:position ~m_width:150
+      ~m_item_height:30 ~m_theme:Theme.yellow_theme
+      ~m_bar_height:30 ~m_bar_icon:"menu_icon" ~m_bar_text:"Action" ()
+    in
+
+    let cursor = camera#cursor in
+
+    if atk then begin
+      new item "attack" "Attack" (fun () ->
+        ui_manager#rem_widget disp_menu;
+        ui_manager#unfocus disp_menu;
+        match cursor#get_state with
+        |Cursor.Displace(_,u,(r,_)) ->
+          let in_range = Logics.units_inrange cursor#position
+                (u#min_attack_range, u#attack_range)
+                (cdata#actual_player :> Player.logicPlayer)
+                cdata#players
+          in
+          let in_range =
+            Fog.visible_army cdata#actual_player#get_fog in_range
+          in
+          if List.mem cursor#position r && in_range <> [] then begin
+            cursor#set_state (Cursor.Action
+              (u, cursor#position, in_range));
+            camera#set_position (List.hd in_range)#position
+          end else if List.mem cursor#position r then begin
+            set_client_state (ClientPlayer.Received
+              (cdata#current_move, Action.Wait));
+            cursor#set_state Cursor.Idle
+          end else
+            cursor#set_state Cursor.Idle
+        | _ -> assert false)
+      |> disp_menu#add_child;
+    end;
+
+    new item "move" "Move" (fun () ->
+      ui_manager#rem_widget disp_menu;
+      ui_manager#unfocus disp_menu;
+      set_client_state (ClientPlayer.Received
+        (cdata#current_move, Action.Wait));
+      cursor#set_state Cursor.Idle)
+    |> disp_menu#add_child;
+
+    let move_cancel () =
+      ui_manager#rem_widget disp_menu;
+      ui_manager#unfocus disp_menu;
+      cursor#set_state Cursor.Idle
+    in
+
+    new item "cancel" "Cancel" move_cancel
+    |> disp_menu#add_child;
+
+    ui_manager#add_widget disp_menu;
+    disp_menu#set_escape move_cancel;
+    ui_manager#focus disp_menu
+
 
   method private create_ui =
     (* Main ingame menu *)
@@ -207,7 +276,7 @@ let new_game ?character () =
 
     (* Buttons for the forfeit popup *)
     new Windows.text_framed_item
-      (50, 70) (100, 25) "Yes !" (fun () -> Manager.manager#pop)
+      (50, 70) (100, 25) "Yes !" (fun () -> m_engine#kill; Manager.manager#pop)
       Theme.blue_theme
     |> forfeit_popup#add_child;
 
@@ -217,12 +286,17 @@ let new_game ?character () =
     |> forfeit_popup#add_child;
 
     (* Button to open ingame menu *)
-    let main_button = new key_button_oneuse ~icon:"return"
+    let main_button = new key_button ~icon:"return"
       ~text:"Menu" ~m_size:(150, 30) ~keycode:(OcsfmlWindow.KeyCode.Return)
       ~m_position:(manager#window#get_width / 2 - 75, 0)
-      ~callback:(fun () -> my_menu#toggle; ui_manager#focus my_menu)
+      ~callback:(fun () -> ())
       ~m_theme:Theme.blue_theme
     in
+
+    main_button#set_callback (fun () ->
+      if camera#cursor#get_state = Cursor.Idle then begin
+        my_menu#toggle; main_button#toggle; ui_manager#focus my_menu
+      end);
 
     (* Ingame menu items *)
     new item "cancel" "End turn" (fun () ->
@@ -235,7 +309,8 @@ let new_game ?character () =
       ui_manager#focus forfeit_popup; my_menu#toggle; main_button#toggle)
     |> my_menu#add_child;
 
-    new item "params" "Settings" (fun () -> new SettingsScreen.state |> manager#push ;
+    new item "params" "Settings" (fun () ->
+      new SettingsScreen.state |> manager#push ;
       my_menu#toggle; main_button#toggle; ui_manager#unfocus my_menu)
     |> my_menu#add_child;
 
@@ -284,49 +359,6 @@ let new_game ?character () =
 
     atk_menu#set_escape atk_cancel;
 
-    (* Displacement menu items *)
-    new item "attack" "Attack" (fun () ->
-      disp_menu#toggle;
-      ui_manager#unfocus disp_menu;
-      match cursor#get_state with
-      |Cursor.Displace(_,u,(r,_)) ->
-        let in_range = Logics.units_inrange cursor#position
-               (u#min_attack_range, u#attack_range)
-               (cdata#actual_player :> Player.logicPlayer)
-               cdata#players
-        in
-        if List.mem cursor#position r && in_range <> [] then begin
-          cursor#set_state (Cursor.Action
-            (u, cursor#position, in_range));
-          camera#set_position (List.hd in_range)#position
-        end else if List.mem cursor#position r then begin
-          set_client_state (ClientPlayer.Received
-            (cdata#current_move, Action.Wait));
-          cursor#set_state Cursor.Idle
-        end else
-          cursor#set_state Cursor.Idle
-      | _ -> assert false)
-    |> disp_menu#add_child;
-
-    new item "move" "Move" (fun () ->
-      disp_menu#toggle;
-      ui_manager#unfocus disp_menu;
-      set_client_state (ClientPlayer.Received
-        (cdata#current_move, Action.Wait));
-      cursor#set_state Cursor.Idle)
-    |> disp_menu#add_child;
-
-    let move_cancel () =
-      disp_menu#toggle;
-      ui_manager#unfocus disp_menu;
-      cursor#set_state Cursor.Idle
-    in
-
-    new item "cancel" "Cancel" move_cancel
-    |> disp_menu#add_child;
-
-    disp_menu#set_escape move_cancel;
-
     (* Build menu items *)
 
     let build_cancel () =
@@ -341,7 +373,6 @@ let new_game ?character () =
     build_menu#set_escape build_cancel;
 
     my_menu#toggle;
-    disp_menu#toggle;
     atk_menu#toggle;
     build_menu#toggle;
 
@@ -350,9 +381,9 @@ let new_game ?character () =
     ui_manager#add_widget forfeit_popup;
     ui_manager#add_widget main_button;
     ui_manager#add_widget my_menu;
-    ui_manager#add_widget disp_menu;
     ui_manager#add_widget atk_menu;
     ui_manager#add_widget build_menu
+
 
   initializer
     self#create_ui;
@@ -421,6 +452,12 @@ let new_game ?character () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.M ; _ } ->
             camera#toggle_zoom
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.S ; _ } ->
+            uphandle#slower
+
+        | KeyPressed { code = OcsfmlWindow.KeyCode.D ; _ } ->
+            uphandle#faster
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.X ; _ } ->
             self#select_next
 
@@ -487,18 +524,29 @@ let new_game ?character () =
               end
               | Displace (_,u,(acc,_)) ->
                   let uopt = cdata#unit_at_position cursor#position in
+                  let uopt = begin match uopt with
+                    | Some u ->
+                        let fog = cdata#actual_player#get_fog in
+                        if Fog.hidden_unit fog u then None
+                        else uopt
+                    | None -> None
+                  end in
                   begin match uopt with
-                  |None when List.mem cursor#position acc ->
-                      disp_menu#set_position
-                        (cdata#camera#project cursor#position);
-                      ui_manager#focus disp_menu;
-                      disp_menu#toggle
-                  |Some (u')
+                  | None when List.mem cursor#position acc ->
+                     self#create_disp_menu
+                        (cdata#camera#project cursor#position)
+                        (Logics.units_inrange cursor#position
+                          (u#min_attack_range, u#attack_range)
+                          (cdata#actual_player :> Player.logicPlayer)
+                          cdata#players <> [])
+                  | Some u'
                     when u#get_id = u'#get_id && List.mem cursor#position acc ->
-                      disp_menu#set_position
-                        (cdata#camera#project cursor#position);
-                      ui_manager#focus disp_menu;
-                      disp_menu#toggle
+                      self#create_disp_menu
+                        (cdata#camera#project cursor#position)
+                        (Logics.units_inrange cursor#position
+                          (u#min_attack_range, u#attack_range)
+                          (cdata#actual_player :> Player.logicPlayer)
+                          cdata#players <> [])
                   |_ ->
                       cursor#set_state Idle
                   end
@@ -538,5 +586,8 @@ let new_game ?character () =
     Render.renderer#draw_gui window ui_manager;
 
     window#display
+
+  method destroy =
+    music_run := false
 
 end

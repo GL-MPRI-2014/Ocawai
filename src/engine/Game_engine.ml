@@ -26,24 +26,44 @@ class game_engine () = object (self)
   val mutable field = None
   val mutable actual_player_l = []
   val mutable is_over = false
+  val mutable killed  = false
+
+  method kill = killed <- true
 
   (* Sends the update to all players *)
   method private notify_all u =
     Array.iter (fun p -> p#update u) players
 
   method private next_player =
-    actual_player_l <- (List.tl actual_player_l) @ [List.hd actual_player_l]
+    actual_player_l <- (List.tl actual_player_l) @ [List.hd actual_player_l] ;
+
+    (* Capture buildings before telling him its his turn *)
+    self#capture_buildings
+
   method private actual_player =
     List.hd actual_player_l
 
   method private remove_player i =
     actual_player_l <- remove_indice i actual_player_l;
+    (* Updates of unit/building destruction *)
     Array.iter (fun x ->
       List.iter (fun u ->
-        x#delete_unit u#get_id;
         x#update (Types.Delete_unit(u#get_id,(players.(i)#get_id)))
-      ) players.(i)#get_army
-    ) players
+      ) players.(i)#get_army ;
+      List.iter (fun b ->
+        x#update (Types.Building_changed b) ;
+        x#update (Types.Delete_building(b#get_id,(players.(i)#get_id)))
+      ) players.(i)#get_buildings ;
+    ) players ;
+    (* Actually deleting units *)
+    List.iter (fun u ->
+      players.(i)#delete_unit u#get_id
+    ) players.(i)#get_army ;
+    (* Actually deleting buildings *)
+    List.iter (fun b ->
+      b#set_neutral ;
+      players.(i)#delete_building (b#get_id)
+    ) players.(i)#get_buildings
 
   method get_players =
     Array.to_list players
@@ -58,9 +78,13 @@ class game_engine () = object (self)
 
   method private create_n_scripted =
     (* create one scripted from its id 1..n *)
-    let create_one _ =
-      new ScriptedPlayer.scripted_player
-        ((Utils.base_path ()) ^ "scripts/test.script")
+    let create_one = function
+      |2->
+        new ScriptedPlayer.scripted_player
+          ((Utils.base_path ()) ^ "scripts/olive.script")
+      |_->
+        new ScriptedPlayer.scripted_player
+          ((Utils.base_path ()) ^ "scripts/test.script")
     in
     (* create n scripted calling create_one *)
     let rec create_n = function
@@ -86,6 +110,7 @@ class game_engine () = object (self)
       List.iter (fun p -> p#init_script map players) sc_players;
       actual_player_l <- actual_player_list nbplayers;
       List.iter (fun x -> x#init map players) self#get_players;
+      self#notify_players;
       (players, map)
 
   method init_net port nbplayers =
@@ -132,8 +157,8 @@ class game_engine () = object (self)
     in player_aux self#get_players
 
   method private is_dead player =
-    player#get_army = [] (*no more units*)
-    || (match player#get_base with
+    (*player#get_army = [] (*no more units*)
+    ||*) (match player#get_base with
       | None -> true
       | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
     )
@@ -145,13 +170,6 @@ class game_engine () = object (self)
     Mutex.unlock mutex;
     Thread.yield ();
     Mutex.lock mutex;
-    (* Notify the player *)
-    player#update Types.Your_turn;
-    (* Notify the others *)
-    let pid = player#get_id in
-    Array.to_list players
-    |> List.filter (fun p -> p <> players.(self#actual_player))
-    |> List.iter (fun p -> p#update (Types.Turn_of pid));
 
     Mutex.unlock mutex;
     let next_wanted_action = player#get_next_action mutex in
@@ -205,16 +223,16 @@ class game_engine () = object (self)
                   b#position
                   (self#get_players :> Player.logicPlayer list))
         && player#has_resource uu#price
-        then (
+        then begin
           player#use_resource uu#price;
           player#update (Types.Use_resource uu#price);
           let u = Unit.bind uu b#position player#get_id in
           player#add_unit u;
-          Array.iter (fun x ->
-            x#update (Types.Add_unit(u,(player#get_id)))
-          ) players;
-          u#set_played true ;
-          self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true)))
+          self#notify_all (Types.Add_unit(u,(player#get_id))) ;
+          self#notify_all
+            (Types.Set_unit_played (u#get_id,player#get_id,true)) ;
+          u#set_played true
+        end
         else raise Bad_create
     with
       |Bad_unit |Bad_path |Bad_attack |Has_played |Bad_create -> self#end_turn
@@ -224,13 +242,37 @@ class game_engine () = object (self)
         let enemy_id = (List.hd (List.tl actual_player_l))  in
         if self#is_dead players.(enemy_id) then
             (is_over <- true;
-             players.(self#actual_player)#update (Types.Game_over);
+             players.(self#actual_player)#update (Types.You_win);
              players.(enemy_id)#update (Types.Game_over)
             )
         else self#run mutex
         )
+    else if List.length actual_player_l = 1 then begin
+      is_over <- true;
+      players.(self#actual_player)#update (Types.You_win)
+    end else if killed then ()
     else self#run mutex
 
+  (* Capture buildings at the beginning of a turn *)
+  method private capture_buildings =
+    let (changed_buildings,added,removed) =
+      Logics.capture_buildings
+        (self#get_players :> Player.logicPlayer list)
+        (players.(self#actual_player) :> Player.logicPlayer)
+        (get_opt field)#buildings
+    in
+    (*send the list of changed buildings to the players*)
+    Array.iter (fun p ->
+      List.iter (fun b ->
+        p#update (Types.Building_changed (fst b))
+      ) changed_buildings
+    ) players;
+    List.iter
+      (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid)))
+      added ;
+    List.iter
+      (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid)))
+      removed
 
   method private end_turn =
     let player = players.(self#actual_player) in
@@ -240,29 +282,9 @@ class game_engine () = object (self)
         self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,false))
       )
       player#get_army;
+
     player#harvest_buildings_income;
-    player#update Types.Harvest_income ;
-
-    (*update buildings at the end of a turn*)
-    let (changed_buildings,added,removed) = Logics.capture_buildings
-      (self#get_players :> Player.logicPlayer list)
-      (players.(self#actual_player) :> Player.logicPlayer)
-      (get_opt field)#buildings
-    in
-
-    (*send the list of changed buildings to the players*)
-    Array.iter (fun p ->
-      List.iter (fun b ->
-        p#update (Types.Building_changed (fst b))
-      ) changed_buildings
-    ) players;
-
-    List.iter
-      (fun (b,pid) -> self#notify_all (Types.Add_building (b,pid)))
-      added ;
-    List.iter
-      (fun (bid,pid) -> self#notify_all (Types.Delete_building (bid,pid)))
-      removed ;
+    player#update Types.Harvest_income;
 
     let rec aux lst =
       match lst with
@@ -277,11 +299,28 @@ class game_engine () = object (self)
     in
     aux actual_player_l;
     if List.length actual_player_l = 1 then
-      players.(self#actual_player)#update (Types.Game_over)
+      (* TODO *)
+      (* WTF ?! *)
+      (* The game should end now, not just say the last player lost *)
+      (* players.(self#actual_player)#update (Types.Game_over) *)
+      ()
     else (
       (* Enfin, on change de joueur en cours *)
       self#next_player;
+      self#notify_players
     )
+
+  method private notify_players = 
+    let player = players.(self#actual_player) in 
+      
+    (* Notify the player *)
+    player#update Types.Your_turn;
+
+    (* Notify the others *)
+    let pid = player#get_id in
+    Array.to_list players
+    |> List.filter (fun p -> p <> players.(self#actual_player))
+    |> List.iter (fun p -> p#update (Types.Turn_of pid));
 
   method private apply_movement movement =
     let player = players.(self#actual_player) in
@@ -289,10 +328,9 @@ class game_engine () = object (self)
       (player :> Player.logicPlayer) in
 
     player#move_unit (u#get_id) movement;
-    (* Array.iter (fun x -> x#update (Types.Move_unit(u#get_id,movement,(player#get_id))) ) players; *)
+    self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true)) ;
     self#notify_all (Types.Move_unit(u#get_id,movement,(player#get_id))) ;
-    u#set_played true ;
-    self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,true))
+    u#set_played true
 
 end
 

@@ -34,7 +34,7 @@ val find_unit : Position.t -> Player.logicPlayer -> Unit.t
 (** @param id the id of the unit
   * @param players the list of players
   * @return the unit corresponding to [id] *)
-val unit_of_id : Unit.id ->
+val unit_of_id : Unit.unit_id ->
                  Player.logicPlayer list ->
                  Unit.t
 
@@ -42,7 +42,7 @@ val unit_of_id : Unit.id ->
   * @param players the list of players
   * @param neutrals the list of neutral buildings
   * @return the building associated to the id [id] *)
-val building_of_id : Building.id ->
+val building_of_id : Building.building_id ->
                      Player.logicPlayer list ->
                      Building.t list ->
                      Building.t
@@ -60,7 +60,7 @@ val capture_buildings : Player.logicPlayer list ->
                         Building.t list ->
                         ((Building.t  * (Player.logicPlayer option)) list
                        * (Building.t  * int) list
-                       * (Building.id * int) list)
+                       * (Building.building_id * int) list)
 
 (** @return the minimum and maximum damage for an attack *)
 val damage_interval : Unit.t -> Unit.t -> int * int

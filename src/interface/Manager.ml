@@ -3,12 +3,8 @@ let manager = object(self)
   val mutable states : State.state list = []
   val mutable fullscreen = true
   val mutable window : OcsfmlGraphics.render_window =
-    if Array.length (OcsfmlWindow.VideoMode.get_full_screen_modes ()) = 0
-    then new OcsfmlGraphics.render_window
-              (OcsfmlWindow.VideoMode.create ~w:800 ~h:600 ())
-              "OCAWAI"
-    else new OcsfmlGraphics.render_window
-              (OcsfmlWindow.VideoMode.get_full_screen_modes ()).(0)
+    new OcsfmlGraphics.render_window
+              (OcsfmlWindow.VideoMode.get_desktop_mode ())
               ~style:[OcsfmlWindow.Window.Fullscreen]
               "OCAWAI"
 
@@ -39,12 +35,14 @@ let manager = object(self)
     self#reset_window
 
   method push (state : State.state) =
+    if self#is_running then self#current#paused ;
     states <- state :: states
 
 
   method pop =
-    self#current#destroy;
-    states <- List.tl states
+    self#current#destroy ;
+    states <- List.tl states ;
+    if self#is_running then self#current#resumed
 
   method current = List.hd states
 
@@ -56,6 +54,7 @@ let manager = object(self)
     | Some e ->
         OcsfmlWindow.Event.(
         begin match e with
+          | KeyPressed { code = c; _ } when Obj.magic c = -1 -> ()
           | Closed
           | KeyPressed { code = OcsfmlWindow.KeyCode.Q ; control = true ; _ }
           | KeyPressed { code = OcsfmlWindow.KeyCode.C ; control = true ; _ } ->

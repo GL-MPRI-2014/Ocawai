@@ -1,7 +1,8 @@
 {
     "map_width": 30,
     "map_height": 30,
-    
+
     "string_compression_offset": 48,
-    "serializer_offset": 97
+    "serializer_offset": 97,
+    "network_clock": 3.0
 }

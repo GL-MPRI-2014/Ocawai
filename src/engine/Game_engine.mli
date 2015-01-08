@@ -1,4 +1,5 @@
 class game_engine : unit -> object
+    method kill : unit
     method get_players : Player.player list
     method get_neutral_buildings : Building.t list
     method cursor_init_position : Types.id_player -> Position.t

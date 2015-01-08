@@ -4,42 +4,6 @@
 
 open OUnit2
 
-(*
-open Time
-open Music
-open DList
-open TPTM
-
-let dummy_event =
-  note (Time.fromInt 1) (new Music.param (C, 4) 127)
-
-let dummy_event_plus dur (pitch, velocity) =
-  note dur (new Music.param pitch velocity)
-
-let dummy_simple_event (dur, pitch) =
-  dummy_event_plus dur ((pitch, 4), 127)
-
-let dummy_simple_event_pitchclass (dur, pitchClass) =
-  dummy_event_plus dur (pitchClass, 127)
-
-(**
-   notes : [(int, Music.pitch)], duration and pitch, all on octave 4.
-*) 
-let sequence notes =
-  let aggregate tile note =
-    tile % (TPTM.make_withDelay (dummy_simple_event note))
-  in
-  List.fold_left aggregate TPTM.zero notes
-
-let pierrot =
-  sequence [(en, C); (en, C); (en, C); (en, D); (qn, E); (qn, D);
-	    (en, C); (en, E); (en, D); (en, D); (hn, C)]
-
-let pierrot_canon = fork pierrot @@ (delay wn) % pierrot   
-						   
-let first_measure = fst @@ extract_by_time bn pierrot_canon
- *)
-
 let () =
   Random.self_init ()
 
@@ -316,16 +280,52 @@ let test_dlist_3 test_ctxt =
   (** Start at zero with a D for one qn, then back to -1 (qn) for a C for one qn.
       => Head should be : from pre to the first event, {i i.e.} a C, and the
       strictly positive sync to the next event, which is one qn after. *)
+  let product_forward =
+    my_sync /::/ (my_note_delay C) /::/
+      ((my_sync /::/ my_sync) /::/ my_note D)
+  and manual_head_forward =
+    (my_sync /::/ my_note C) /::/ (sync @@ Time.plus wn bn) in
+
   let product = (((my_note D /::/ my_neg_sync) /::/ my_neg_sync) /::/
 		  my_note_delay C)
   and manual_head = my_double_neg_sync /::/ my_note C /::/ my_double_sync in
-  let simple = my_note_delay C /::/ my_sync /::/ my_note D in
-  let headTail_couple = headTail product in
-  ignore @@ headTail simple;
-  Format.print_newline ();
-  assert_equal ~cmp:DList.is_equal
-	       ~printer:dlist_to_string
-	       manual_head (fst @@ headTail_couple)
+
+  let product_sym = (my_note_delay C) /::/
+		      ((my_neg_sync /::/ my_neg_sync) /::/ my_note D)
+  and manual_head_sym = my_neg_sync /::/ my_note D /::/ my_sync in
+
+  let product_synced_void_tails =
+    (my_sync /::/ my_note_delay C /::/ my_double_neg_sync) /::/ (
+      my_sync/::/ my_note_delay D)
+  and manual_head_synced_void_tails =
+    my_sync /::/ (my_note C /::/ my_note D) /::/ my_sync in
+
+  let product_synced_void2 =
+    (
+      my_sync /::/ my_note_delay C /::/ my_sync /::/ my_note_delay E /::/
+	my_double_neg_sync /::/ my_double_neg_sync
+    ) /::/
+      (my_sync/::/ my_note_delay D)
+  and manual_head_synced_void2 =
+    my_sync /::/ (my_note C /::/ my_note D) /::/ my_double_sync in
+
+  let dlist_assert_equal = assert_equal ~cmp:DList.is_equal
+					~printer:dlist_to_string in
+  dlist_assert_equal ~msg:"Simple forward product, first events are in t1,
+			   tail1 holds no event"
+		    manual_head_forward (fst @@ headTail product_forward);
+  dlist_assert_equal ~msg:"First events in both tiles are synchronized\
+			   Both tails are empty"
+		     manual_head_synced_void_tails (fst @@ headTail product_synced_void_tails);
+  dlist_assert_equal ~msg:"First events in both tiles are synchronized\
+			   t1's tail is NOT empty"
+		     manual_head_synced_void2 (fst @@ headTail product_synced_void2);
+  dlist_assert_equal ~msg:"Product, first events are in t2"
+		     manual_head (fst @@ headTail product);
+  dlist_assert_equal ~msg:"Symetric product, first events are in t2"
+		     manual_head_sym (fst @@ headTail product_sym)
+
+
 
 (** Test simple normalization *)
 let test_dlist_4 test_ctxt =

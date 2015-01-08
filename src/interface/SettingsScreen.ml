@@ -34,7 +34,12 @@ class state = object(self)
             Sounds.play_sound "click";
             Sounds.set_volume (float_of_int i))
             "Sounds volume" :> Home.actionnable) ;
-        (new Setters.toogle (w /. 2., 150. +. 3. *. Setters.setter_height)
+        (new Setters.slider (w /. 2., 150. +. 3. *. Setters.setter_height)
+          ~default: (MidiPlayer.get_volume ())
+          (fun i ->
+            MidiPlayer.set_volume i)
+            "Music volume" :> Home.actionnable) ;
+        (new Setters.toogle (w /. 2., 150. +. 4. *. Setters.setter_height)
           "Fullscreen"
           ~default: true
           manager#set_fullscreen :> Home.actionnable) ;

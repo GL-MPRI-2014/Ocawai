@@ -20,6 +20,10 @@ class ui_manager : object
     * widgets with no parent *)
   method add_widget : #Widget.widget -> unit
 
+  (** Remove a widget from the manager. Should only be used with
+    * widgets with no parent *)
+  method rem_widget : #Widget.widget -> unit
+
   (** Draws the UI *)
   method draw : OcsfmlGraphics.render_window -> TextureLibrary.t -> unit
 

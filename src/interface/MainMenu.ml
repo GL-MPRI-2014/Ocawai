@@ -13,6 +13,7 @@ class main_menu = object(self)
   val bg_texture = new texture (`File ((Utils.base_path ()) ^ "textures/gui/capture.png"))
   val mutable bg_offset = (0.,0.)
   val mutable bg_dir = (0.,0.)
+  val mutable music_run = ref true
 
   val key_seq = OcsfmlWindow.KeyCode.([
     Up;
@@ -44,13 +45,13 @@ class main_menu = object(self)
     bg_offset <- Utils.addf2D bg_offset bg_dir;
     let ox, oy = bg_offset in
     if ox <= 0. && oy <= 0. then
-      bg_dir <- (0.07, 0.)
+      bg_dir <- (0.22, 0.)
     else if ox >= 200. && oy <= 0. then
-      bg_dir <- (0., 0.07)
+      bg_dir <- (0., 0.22)
     else if ox >= 200. && oy >= 200. then
-      bg_dir <- (-0.07, 0.)
+      bg_dir <- (-0.22, 0.)
     else if ox <= 0. && oy >= 200. then
-      bg_dir <- (0., -0.07)
+      bg_dir <- (0., -0.22)
 
 
   method private handle_keys e =
@@ -116,9 +117,17 @@ class main_menu = object(self)
 
     window#display
 
+  method paused =
+    music_run := false
+
+  method resumed =
+    music_run := true
+
   initializer
     let window = manager#window in
     let (w,h) = window#get_size in
-    self#set_screen w h
+    self#set_screen w h;
+    let music_player = MusicPlayer.music_player () in
+    ignore @@ Thread.create (music_player#play_menu) (music_run)
 
 end

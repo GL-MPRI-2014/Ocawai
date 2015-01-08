@@ -53,7 +53,7 @@
     "walk_cost": 1,
     "roll_cost": 2,
     "tread_cost": 1,
-    "swim_cost": 1,
+    "swim_cost": -1,
     "fly_cost": 1,
     "structure": <"Border":("water",50,2)>
   },
@@ -62,9 +62,17 @@
     "walk_cost": 1,
     "roll_cost": 2,
     "tread_cost": 1,
-    "swim_cost": 1,
+    "swim_cost": -1,
     "fly_cost": 1,
     "structure": <"Border":("lake",50,2)>
+  },
+  {
+    "name": "port_beach",
+    "walk_cost": 1,
+    "roll_cost": 2,
+    "tread_cost": 1,
+    "swim_cost": 1,
+    "fly_cost": 1
   },
   {
     "name": "forest",

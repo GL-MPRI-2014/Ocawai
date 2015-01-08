@@ -71,6 +71,7 @@ val en : t (** eighth note = une croche *)
 val sn : t (** sixteenth note *)
 val tn : t (** thirty-second note *)
 val sfn : t (** sixty-fourth note *)
+val tren : t (** triplets = tiers de triolet de croches *)
 
 val dwn : t (** dotted whole note *)
 val dhn : t (** dotted half note *)
@@ -78,7 +79,7 @@ val dqn : t (** dotted quarter note *)
 val den : t (** dotted eighth note *)
 val dsn : t (** dotted sixteenth note *)
 val dtn : t (** dotted thirty-second note *)
-
+	    
 val ddhn : t (** double-dotted half note *)
 val ddqn : t (** double-dotted quarter note *)
 val dden : t (** double-dotted eighth note *)

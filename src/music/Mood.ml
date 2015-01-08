@@ -23,10 +23,7 @@ let get () =
     | None -> raise NotYetInitialised
     | Some data ->
         let fog = data#actual_player#get_fog in
-        let visible p =
-          let (i,j) = Position.topair p in
-          if Array.length fog > 0 then fog.(i).(j) <> 0 else true
-        in
+        let visible p = Fog.visible fog p in
         let our_army = data#actual_player#get_army
         and enemy_army = List.flatten
                           (List.map
@@ -50,7 +47,7 @@ let get () =
         saw_min := min (!saw_min) value;
         saw_max := max (!saw_max) value;
         let intervale = float_of_int (!saw_max - !saw_min) in
-        (2. *. 
+        (2. *.
           ((float_of_int (value - !saw_min))
           /. (intervale)))
         -. 1.
@@ -58,4 +55,3 @@ let get () =
 let init (client_data' : ClientData.client_data) =
   client_data := Some client_data';
   base := int_of_float (get ())
-

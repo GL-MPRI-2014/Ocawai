@@ -7,20 +7,16 @@ open Music
 open DList
 open TPTM
 
-let dummy_event =
-  note (Time.fromInt 1) (new Music.param (C, 4) 127)
+exception Incorrect_value_chord_selection
 
 let dummy_event_plus dur (pitch, velocity) =
   note dur (new Music.param pitch velocity)
 
 let dummy_simple_event (dur, pitch) =
-  dummy_event_plus dur ((pitch, 4), 127)
-
-let dummy_simple_event_pitchclass (dur, pitchClass) =
-  dummy_event_plus dur (pitchClass, 127)
+  dummy_event_plus dur (pitch, 127)
 
 (**
-   notes : [(int, Music.pitch)], duration and pitch, all on octave 4.
+   notes : [(int, Music.pitch)], duration and pitch
 *) 
 let sequence notes =
   let aggregate tile note =
@@ -28,13 +24,29 @@ let sequence notes =
   in
   List.fold_left aggregate TPTM.zero notes
 
-let pierrot =
-  sequence [(en, C); (en, C); (en, C); (en, D); (qn, E); (qn, D);
-	    (en, C); (en, E); (en, D); (en, D); (hn, C)]
+let chord duration pitches =
+  let aggregate tile pitch =
+    fork tile @@ TPTM.make_withDelay (dummy_simple_event (duration, pitch))
+  in
+  List.fold_left aggregate TPTM.zero pitches
+ 
+let menu_music = fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
+		 @@ sequence [(en, (C, 4)); (en, (E, 4));
+			      (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
+			      (en, (C, 5)); (en, (G, 4));
+			      (en, (F, 4)); (en, (E, 4))]
 
-let pierrot_canon = fork pierrot @@ (delay wn) % pierrot   
-						   
-let first_measure = fst @@ extract_by_time bn pierrot_canon
+let winner_music = function
+  | 0 -> chord wn @@ [(C, 4); (E, 4); (G, 4)]
+  | 1 -> chord wn @@ [(G, 3); (C, 4); (E, 4)]
+  | 2 -> chord hn [(C, 4); (G, 4)] % chord hn [(G, 4); (C, 5); (E, 5)] 
+  | _ -> raise Incorrect_value_chord_selection
+
+let loser_music = function
+  | 0 -> chord wn @@ [(C, 4); (Ef, 4); (G, 4)]
+  | 1 -> chord wn @@ [(C, 4); (Ef, 4); (A, 4)]
+  | 2 -> chord hn [(D, 4); (A, 4)] % chord hn [(A, 4); (C, 5); (Ef, 5)]
+  | _ -> raise Incorrect_value_chord_selection
 
 let music_player =
   fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
@@ -44,26 +56,76 @@ let music_player =
     (** The main Tile we will use to store the music to play,
         we maintain Pre buffer = Pos buffer = O *)
     val mutable buffer = TPTM.zero
+
+    method private duration_one_measure tempo =
+      let duration_seconds_num =
+        Num.mult_num (Num.num_of_int @@ MidiV.timeToSamplesNumber Time.wn)
+                     (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
+      in
+      Num.float_of_num duration_seconds_num
 				  
-    method bufferize : TPTM.t -> unit = fun t ->
+    method private bufferize : TPTM.t -> unit = fun t ->
       let open TPTM in
       buffer <- reset @@ buffer % t
-				    
-    method play_next_measure : unit -> unit = fun () ->
-      let one_measure =
-        let duration_seconds_num =
-          Num.mult_num (Num.num_of_int @@ MidiV.timeToSamplesNumber Time.wn)
-                 (Num.div_num (Num.num_of_int 1) (Num.num_of_int samplerate))
-        in
-        Num.float_of_num duration_seconds_num
-      in
+
+    method play_menu : bool ref -> unit = fun run ->
+      let tempo = Time.Tempo.fromInt 100 in
+      let midi_player = ref None in
       while true do
+        while !run do
+          match !midi_player with
+            | None ->
+                let mp = new MidiPlayer.asynchronousMidiPlayer in
+                midi_player := Some (mp);
+                ignore @@ Thread.create (mp#play) ();
+                ignore @@ Thread.create (self#add_next_measure tempo mp) run;
+            | Some (midi_player) ->
+                self#bufferize menu_music;
+              Thread.delay 0.1
+        done;
+        (match !midi_player with | Some midi_player -> midi_player#stop () | None -> ());
+        midi_player := None;
+        Thread.delay 0.1
+      done
+
+    method play_game : bool ref -> unit = fun run ->
+      let tempo = Time.Tempo.fromInt 100 in
+      let midi_player = ref None in
+      while true do
+        while !run do
+          match !midi_player with
+            | None ->
+                let mp = new MidiPlayer.asynchronousMidiPlayer in
+                midi_player := Some (mp);
+                ignore @@ Thread.create (mp#play) ();
+                ignore @@ Thread.create (self#add_next_measure tempo mp) run;
+            | Some (midi_player) ->
+	       begin
+		 let mood = Mood.get () in
+		 let select = Random.int 3 in
+		 let next_tile =
+		   if mood <= 0. then
+		     loser_music select
+		   else winner_music select
+		 in
+		 self#bufferize next_tile;
+		 Thread.delay ((self#duration_one_measure tempo) *. 0.99)
+	       end
+        done;
+        (match !midi_player with | Some midi_player -> midi_player#stop () | None -> ());
+        midi_player := None;
+        Thread.delay 0.1
+      done
+      
+    method add_next_measure = fun tempo midi_player run ->
+      while !run do
         let (next_measure, rest) =
           TPTM.extract_by_time wn buffer
         in
         buffer <- reset rest;
-        TPTM.fork_play next_measure;
-        Thread.delay (one_measure)
+        let new_buffer = TPTM.to_MIDI_buffer ~tempo next_measure in
+	midi_player#add new_buffer;
+        Thread.delay (self#duration_one_measure tempo)
       done
 
     method read_note : unit =
@@ -77,7 +139,7 @@ let music_player =
         let notes_strings = Str.split (Str.regexp " ") (read_line ()) in
 	try
           let note_reader = fun str ->
-            TPTM.make_withDelay @@ dummy_simple_event_pitchclass @@
+            TPTM.make_withDelay @@ dummy_simple_event @@
               (wn, Music.pitch_of_string str)
           in 
           let notes = List.map note_reader notes_strings in
@@ -87,9 +149,7 @@ let music_player =
 	     | ["q"] -> running := false
 	     | _ -> ()
       done
-  end
 
-let () =
-  let my_music_player = music_player () in
-  ignore @@ Thread.create my_music_player#play_next_measure (); 
-  my_music_player#read_note
+    initializer
+      Random.self_init ()
+  end

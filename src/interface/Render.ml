@@ -137,7 +137,7 @@ let renderer = object(self)
       name = "water" || name = "lake"
     in
     let is_beach name =
-      name = "beach" || name = "lake_beach"
+      name = "beach" || name = "lake_beach" || name = "port_beach"
     in
     if self#filter_positions map up then
     begin
@@ -271,9 +271,17 @@ let renderer = object(self)
   method private draw_range (target : render_window) camera map =
     match camera#cursor#get_state with
     | Cursor.Idle -> ()
-    | Cursor.Displace(_,_,(range,_)) -> begin
+    | Cursor.Displace(_,my_unit,(range,_)) -> begin
+      let attack_range = Position.range camera#cursor#position my_unit#min_attack_range
+        my_unit#attack_range in
+      let attack_range =
+        List.filter (self#filter_positions map) attack_range
+      in
       List.iter (self#highlight_tile target camera
-        (Color.rgba 255 255 100 150)) range
+        (Color.rgba 255 255 100 150)) range;
+      if List.mem camera#cursor#position range then
+        List.iter (self#highlight_tile target camera
+          (Color.rgba 255 50 50 255)) attack_range
     end
     | Cursor.Action(my_unit,p,_) -> begin
       let range = Position.range p my_unit#min_attack_range
@@ -306,13 +314,17 @@ let renderer = object(self)
   (* Draw the whole game *)
   method render_game (target : render_window)
     (data : ClientData.client_data) (uphandle : Updates.handler) =
+
+    let (sx, sy) = Utils.foi2D target#get_size in
+
+    new sprite 
+      ~texture:(TextureLibrary.(get_texture texture_library "background"))
+      ~scale:(max (sx /. 2048.) 1., max (sy /. 2048.) 1.)
+      ()
+    |> target#draw;
     (* For the fog *)
     let fog = data#actual_player#get_fog in
-    let foggy p =
-      let (i,j) = Position.topair p in
-      try fog.(i).(j) = 0
-      with _ -> false
-    in
+    let foggy p = Fog.hidden fog p in
     (* Rendering *)
     self#render_map target data#camera data#map;
     self#draw_range target data#camera data#map;
@@ -422,6 +434,10 @@ let renderer = object(self)
     GuiTools.(rect_print
       target current font Color.white (Pix 30) (Pix 10) Right
       { left = 20. ; top = h -. 50. ; width = w -. 40. ; height = 100. });
+    (* Display speed of action *)
+    let speed = uphandle#speed in
+    if speed <> "normal" then
+      self#draw_txr target speed ~position:(w-.50.,h-.70.) ~size:(75.,75.) () ;
     (* Display framerate *)
     FPS.display target
 

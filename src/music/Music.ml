@@ -144,6 +144,7 @@ let pitch_to_string : pitch -> string = function
 (** {3 MIDI conversion} *)
 
 let frequency_of_string s =
+  (** TODO : fix conversion, should have (frequency B4) > (frequency E4) *)
     if (String.length s < 2) then failwith "Couldn't parse this note.";
     let oct = int_of_char s.[String.length s - 1] - int_of_char '0' in
     let off = ref (match s.[0] with

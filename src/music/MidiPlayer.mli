@@ -6,11 +6,15 @@
    @author Mathias Sable Meyer
 *)
 
+(** Volume is here an int from 0 to 100*)
+val get_volume : unit -> int
+val set_volume : int -> unit
+
 (**
-  The class of the midi player that has shiny buffer behaviour.
+  The class of the midi player that has {b shiny} buffer behaviour.
 
   This object is supposed to behave this way : you add some initial buffers,
-  then start playing music on background (Thread.create x#play ()), then add
+  then start playing music in the background (Thread.create x#play ()), then add
   even more amazing music whenever you actually have it, and it plays everything
   seamlessly.
 *)

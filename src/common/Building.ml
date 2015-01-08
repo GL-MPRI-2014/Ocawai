@@ -26,17 +26,18 @@ object (self)
   initializer if id0 = -1 then id <- Oo.id self
 end
 
-
 type t = building
+		   
 type unbound_t = unbound_building
-type id = int
+				   
+type building_id = int
 
 
-let bind ub pos p_id =
-  new building ub pos p_id (-1)
+let bind ub pos player_id =
+  new building ub pos player_id (-1)
 
-let bind_extended ub pos p_id id =
-  new building ub pos p_id id
+let bind_extended ub pos player_id building_id =
+  new building ub pos player_id building_id
 
 
 let create_unbound_from_parsed_building pb =
