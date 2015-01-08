@@ -15,5 +15,6 @@ type t = {~none<ocaml default = "()(* to make a non-linked copy of s : {s with n
   
   string_compression_offset<ocaml mutable> : offset;
   serializer_offset<ocaml mutable> : offset;
+  network_clock<ocaml mutable> : float;
 }
 

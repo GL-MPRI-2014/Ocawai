@@ -10,7 +10,7 @@ class logicPlayer ?id () =
 
     val army = Hashtbl.create 97
     val buildings = Hashtbl.create 23
-    val mutable resource = 0
+    val mutable resource = 20
     val mutable base : Building.t option = None
     val mutable fog = Fog.init 0 0
     (*Quite dirty mutable id. Can't we do without it ?*)
