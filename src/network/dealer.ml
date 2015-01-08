@@ -82,10 +82,9 @@ object (self)
 
   (* manages Get_next_action *)
 
-  method manage_gna =
+  method manage_gna mutex =
     let clip = self#is_set in
-    let action = clip#get_next_action in
-
+    let action = clip#get_next_action mutex in
     Log.infof "send \"next_action\"" ;
     let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) Types.clock in
     
@@ -119,7 +118,7 @@ object (self)
 
   (* please give a call to this method just after having created this object *)
 
-  method run = 
+  method run mutex = 
     while true 
     do 
       Log.infof "recv" ;
@@ -128,7 +127,7 @@ object (self)
       match receipt with
 	| Some (code, _) when code = Types.get_next_action_code ->
 	  Log.infof "-> \"get_next_action\"";
-	  self#manage_gna
+	  self#manage_gna mutex
 	| Some(code, update) when code = Types.update_code ->
 	  Log.infof "-> \"update\"";
 	  self#manage_update (Types.from_string update)

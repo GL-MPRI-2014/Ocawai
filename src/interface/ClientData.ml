@@ -24,6 +24,8 @@ class client_data = object(self)
 
   val mutable neutral_buildings : Building.t list = []
 
+  val mutable mutex = Mutex.create ()
+
   method init_core m self_player player_list =
     let minim = new Minimap.minimap 30
       (fst (Battlefield.size m))
@@ -34,6 +36,8 @@ class client_data = object(self)
     players <- player_list;
     actual_player <- Some (self_player);
     map <- Some(m)
+
+  method mutex = mutex
 
   method init_buildings neutral =
     neutral_buildings <- neutral

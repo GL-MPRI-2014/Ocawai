@@ -163,11 +163,18 @@ class game_engine () = object (self)
       | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
     )
 
-  method run : unit =
+  method run mutex : unit =
     Log.infof "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
-    let next_wanted_action =  player#get_next_action in
+    Mutex.unlock mutex;
+    Thread.yield ();
+    Mutex.lock mutex;
+
+    Mutex.unlock mutex;
+    let next_wanted_action = player#get_next_action mutex in
+    Mutex.lock mutex;
+
     begin try
       let next_action = Logics.try_next_action
             (self#get_players :> Player.logicPlayer list)
@@ -238,13 +245,13 @@ class game_engine () = object (self)
              players.(self#actual_player)#update (Types.You_win);
              players.(enemy_id)#update (Types.Game_over)
             )
-        else self#run
+        else self#run mutex
         )
     else if List.length actual_player_l = 1 then begin
       is_over <- true;
       players.(self#actual_player)#update (Types.You_win)
     end else if killed then ()
-    else self#run
+    else self#run mutex
 
   (* Capture buildings at the beginning of a turn *)
   method private capture_buildings =
