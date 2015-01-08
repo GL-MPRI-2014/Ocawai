@@ -317,7 +317,7 @@ let renderer = object(self)
 
     let (sx, sy) = Utils.foi2D target#get_size in
 
-    new sprite 
+    new sprite
       ~texture:(TextureLibrary.(get_texture texture_library "background"))
       ~scale:(max (sx /. 2048.) 1., max (sy /. 2048.) 1.)
       ()
@@ -348,6 +348,12 @@ let renderer = object(self)
         (self#draw_unit target uphandle data#camera foggy chara)
         p#get_army
     ) data#players;
+    (* Drawing an explosion *)
+    begin match uphandle#burst_position with
+    | Some pos ->
+        self#draw_from_map target data#camera "boom" pos ()
+    | None -> ()
+    end ;
     (* Displaying fog *)
     let camera = data#camera in
     List.iter
@@ -365,8 +371,6 @@ let renderer = object(self)
         ~position:pos ~scale:(30./.50.,30./.50.) ()
     in
     let is_foggy = foggy data#camera#cursor#position in
-    (* It seems we cannot trust the following function *)
-    (* let s_unit = data#visible_unit_at_position data#camera#cursor#position in *)
     let s_unit =
       if is_foggy then None
       else data#unit_at_position data#camera#cursor#position
@@ -384,7 +388,6 @@ let renderer = object(self)
             "" data#players
     | None -> ""
     in
-    (* let chara = "flatman" in *)
     let damage = Cursor.(
         match (data#camera#cursor#get_state,s_unit) with
         | (Action(u1,_,_), Some u2) ->

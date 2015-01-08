@@ -27,4 +27,7 @@ class handler : ClientData.client_data -> Camera.camera -> object
   (** @return the player whose turn is the current *)
   method current_turn : turn
 
+  (** @return the case where the renderer should draw an explosion *)
+  method burst_position : Position.t option
+
 end

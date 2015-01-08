@@ -8,6 +8,7 @@ type turn =
 type animation =
   | Moving_unit of Unit.t * Position.t list
   | Attack
+  | Boom of Position.t
   | Pause of int
   | Nothing
 
@@ -26,6 +27,9 @@ let walking_time = 3
 
 (* Number of frames of the focus on an attacked unit *)
 let attack_time = 30
+
+(* Number of frames for a boom *)
+let boom_time = 10
 
 class handler data camera = object(self)
 
@@ -197,6 +201,11 @@ class handler data camera = object(self)
               (* TODO Animation *)
               self#ack_update u ;
               self#read_update
+          | Delete_unit (uid,pid) ->
+              let player = Logics.find_player pid data#players in
+              let un = player#get_unit_by_id uid in
+              current_animation <- Boom un#position ;
+              self#ack_update u
           | Set_unit_hp (uid,_,pid) ->
               self#stage_ack u ;
               let player = Logics.find_player pid data#players in
@@ -206,25 +215,22 @@ class handler data camera = object(self)
                 camera#cursor#set_state Cursor.Watched_attack ;
                 Sounds.play_sound "shots" ;
                 current_animation <- Attack
-                (* TODO Add animations *)
               end
               else self#read_update
           | Building_changed b ->
               if self#visible b#position then
                 camera#set_position b#position ;
               (* TODO Play some sound here? *)
-              (* data#toggle_neutral_building b ; *)
               self#ack_update u ;
               (* TODO Add some animation? *)
               self#read_update
           | Your_turn ->
-              (* TODO Animation. One needed for the others turn. *)
+              (* TODO Animation. *)
               (* TODO Center the camera on the player (how?) *)
               (* camera#set_position (data#actual_player) *)
               self#ack_update u ;
               self#read_update
           | _ ->
-              (* TODO Stop ignoring them *)
               self#ack_update u ;
               self#read_update
         end
@@ -238,7 +244,7 @@ class handler data camera = object(self)
         begin
           frame_counter <- 0 ;
           match path with
-          | [] -> current_animation <- Pause 20
+          | [] -> current_animation <- Pause 10
           | e :: r -> current_animation <- Moving_unit (u, r)
         end
         else self#frame_incr
@@ -249,9 +255,13 @@ class handler data camera = object(self)
           camera#cursor#set_state Cursor.Idle
         end
         else self#frame_incr
+    | Boom _ ->
+        if frame_counter + 1 >= boom_time
+        then current_animation <- Nothing
+        else self#frame_incr
     | Pause 0 -> current_animation <- Nothing
-    | Nothing -> 
-        Mutex.unlock data#mutex; 
+    | Nothing ->
+        Mutex.unlock data#mutex;
         Thread.yield ()
     | Pause i ->
         if frame_counter >= i then current_animation <- Nothing
@@ -303,5 +313,10 @@ class handler data camera = object(self)
     | _ -> u#position, (0.,0.)
 
   method current_turn = current_turn
+
+  method burst_position =
+    match current_animation with
+    | Boom pos -> Some pos
+    | _ -> None
 
 end
