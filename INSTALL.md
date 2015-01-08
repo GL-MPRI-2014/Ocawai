@@ -10,4 +10,5 @@
 
 #Notice
 
+* Autoconf version >= 2.68 is required 
 * Dolog 1.0 is not supported. Use Dolog 0.5
