@@ -250,12 +250,16 @@ class handler data camera = object(self)
         end
         else self#frame_incr
     | Pause 0 -> current_animation <- Nothing
+    | Nothing -> 
+        Mutex.unlock data#mutex; 
+        Thread.yield ()
     | Pause i ->
         if frame_counter >= i then current_animation <- Nothing
         else self#frame_incr
-    | Nothing -> ()
 
   method update =
+    Mutex.unlock data#mutex;
+    Mutex.lock data#mutex;
     if current_animation = Nothing then self#read_update ;
     self#process_animation
 

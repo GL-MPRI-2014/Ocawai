@@ -59,25 +59,26 @@ class scripted_player ?(id) (scr : string)  =
         print_endline ("Warning, script invalid argument : " ^ s);
         ([], Action.End_turn)
 
-  method private get_next_build =
+  method private get_next_build mutex =
     try
       let b = List.hd playable_buildings in
       playable_buildings <- List.tl playable_buildings;
       let u = Interpreter.building_script script b in
       ([], Action.Create_unit (b#get_id,u))
     with
-    | ScriptCore.Do_nothing -> self#get_next_action
+    | ScriptCore.Do_nothing -> self#get_next_action mutex
     | ScriptCore.End_turn -> ([], Action.End_turn)
     | Invalid_argument(s) ->
         print_endline ("Warning, script invalid argument : " ^ s);
         ([], Action.End_turn)
 
-  method get_next_action =
-    Thread.delay 0.10;
+  method get_next_action m =
+    Mutex.unlock m;
+    Thread.yield ();
     if self#has_playable_unit then
       self#get_next_movement
     else if playable_buildings <> [] then
-      self#get_next_build
+      self#get_next_build m
     else
       ([], Action.End_turn)
 

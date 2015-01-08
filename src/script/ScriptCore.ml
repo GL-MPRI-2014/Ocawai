@@ -404,13 +404,17 @@ let scr_cost =
   )
 
 (** Associative maps *)
+module ValueMap = Map.Make(struct
+    type t = ScriptValues.value
+    let compare = compare
+  end)
+
 (* it is a pair : a setter and a getter *)
 let scr_assoc_create =
   let setter l =
     `Fun(fun key ->
     `Fun(fun value ->
-      l := List.remove_assoc key !l;
-      l := (key, value) :: !l;
+      l := ValueMap.add key value !l;
       `Unit
     )) in
   let getter l =
@@ -420,7 +424,7 @@ let scr_assoc_create =
           |`Fun unbound ->
             `Fun(fun key ->
               try
-                let b = List.assoc key !l in
+                let b = ValueMap.find key !l in
                 bound b
               with
                 Not_found -> unbound `Unit
@@ -431,7 +435,7 @@ let scr_assoc_create =
     ) in
   `Fun(function
     |`Unit ->
-      let l = ref [] in
+      let l = ref ValueMap.empty in
       `Pair(setter l, getter l)
     | _ -> assert false
   )

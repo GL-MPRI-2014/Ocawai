@@ -136,7 +136,7 @@ class virtual player  ?(id) () =
   object (self)
   inherit logicPlayer ?id:id ()
   val mutable logic_player_list:logicPlayer list = []
-  method virtual get_next_action :  Action.t
+  method virtual get_next_action : Mutex.t -> Action.t
 
   method set_logic_player_list playerList = logic_player_list <- playerList
   method get_logic_player_list = logic_player_list
@@ -150,7 +150,7 @@ class dummy_player ?(id) (a: Action.t list) =
   object
     inherit player ?id:id ()
     val mutable actions = (a: Action.t list)
-    method get_next_action  =
+    method get_next_action _ =
       if length a == 0 then
         ([], Action.End_turn)
       else
