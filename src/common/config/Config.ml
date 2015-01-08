@@ -429,7 +429,6 @@ object (self)
     s0^","^s1^","^s2^","^s3^","^s4^","^s5^","^s6
 
   method unit_of_string s =
-  print_endline s;
     let s_size = String.length s in
     let rec to_list_aux = function
     | n when n = s_size -> []
@@ -446,7 +445,32 @@ object (self)
     let al = Array.of_list l in
     let (u,p,pid,id,hp,h_p) = (self#unbound_unit_of_char al.(0).[0], Position.create(int_of_string al.(1),int_of_string al.(2)), int_of_string al.(3), int_of_string al.(4), int_of_string al.(5), al.(6)="1") in
     Unit.bind_extended u p pid id hp h_p
-	   
+    
+  method string_of_building (u:Building.t) =
+    let s0 = let s = "0" in s.[0] <- (self#char_of_unbound_building (u:> Building.unbound_t));s in
+    let (s1,s2) = let (a,b) = Position.topair u#position in (string_of_int a,string_of_int b) in
+    let s3 = match u#player_id with None -> "None" | Some id -> string_of_int id in
+    let s4 = string_of_int u#get_id in
+    s0^","^s1^","^s2^","^s3^","^s4
+
+  method building_of_string s =
+    let s_size = String.length s in
+    let rec to_list_aux = function
+    | n when n = s_size -> []
+    | n when s.[n] < '0' || s.[n] > '9' -> n::(to_list_aux (n+1))
+    | n -> to_list_aux (n+1)
+    in
+    let rec to_list = function
+    | [] -> assert false
+    | [p] -> let ss = String.sub s (p+1) 1 in [ss]
+    | p::q::l -> let ss = String.sub s (p+1) (q-p-1) in ss::(to_list (q::l))
+    in
+    let l = to_list ((-1)::1::(to_list_aux 2)) in
+    if List.length l <> 5 then failwith "not a valid building" else
+    let al = Array.of_list l in
+    let (u,p,pid,id) = (self#unbound_building_of_char al.(0).[0], Position.create(int_of_string al.(1),int_of_string al.(2)), (match al.(3) with | "None" -> None | id -> Some (int_of_string id)), int_of_string al.(4)) in
+    Building.bind_extended u p pid id
+
   method private string_of_battlefield_off m off2 =
     let (w,h) = Battlefield.size m in
     let s = Utils.init_string
