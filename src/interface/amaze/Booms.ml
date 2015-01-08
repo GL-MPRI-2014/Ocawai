@@ -27,12 +27,16 @@ class circle_particle ~maxspeed ~position ~color =
 
 end
 
+let buf = new OcsfmlAudio.sound_buffer (`File("./resources/sounds/explosion-01.wav"))
+let sound = new OcsfmlAudio.sound ~buffer:buf ()
 
 let rec boom_circle (manager : particle_manager) maxspeed position color = function
   |0 -> ()
   |n -> 
     let p = new circle_particle ~maxspeed ~position ~color in
     manager#add_particle p;
+    (*sound#play;*)
+    Sounds.play_sound "explosion-01";
     boom_circle manager maxspeed position color (n-1)
     
 
