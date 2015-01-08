@@ -88,6 +88,7 @@ class handler data camera = object(self)
     | Set_logic_player_list _ -> infof "Set logic player list..."
     | Map _ -> infof "Map..."
     | Building_changed b -> infof "Building changed B%d" b#get_id
+    | Config _ -> infof "Config"
 
   (* Tells if a position is foggy *)
   method private foggy p =
@@ -154,6 +155,7 @@ class handler data camera = object(self)
     | Building_changed b ->
         let b = Oo.copy b in
         data#toggle_neutral_building b
+    | Config _ -> ()
 
 
   method private ack_staged =

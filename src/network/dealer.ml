@@ -115,7 +115,7 @@ object (self)
     | Set_logic_player_list lst -> self#set_logicPlayerList lst
     | Map str -> self#set_map str
     | Building_changed b -> ()
-
+    | Config (s1,s2,s3,s4) -> Config.config#load_from_strings s1 s2 s3 s4
 
   (* please give a call to this method just after having created this object *)
 

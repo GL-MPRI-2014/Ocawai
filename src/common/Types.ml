@@ -28,6 +28,7 @@ type update =
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list
   | Map of string
+  | Config of string * string * string * string
 
 
 let get_next_action_code = 0
@@ -172,6 +173,12 @@ let from_string (str : string) =
 				      | _ -> failwith "Error in protocol"
 				    end
 
+	      | "Config" -> begin
+			    match q with
+			    | s1::s2::s3::s4::_ -> Config (s1,s2,s3,s4)
+			    | _ -> failwith "Error in protocol"
+			  end
+
 	      | _ -> failwith "Error in protocol"
 
 
@@ -234,8 +241,11 @@ let to_string update =
 		   
   | Map string ->
      String.concat "" ("Map"::string::[])
-
+		   
   | Building_changed building ->
-     String.concat str1 (Config.config#string_of_building building::[])
-
+     String.concat str1 ("Building_changed"::Config.config#string_of_building building::[])
+		   
+  | Config (s1,s2,s3,s4) ->
+     String.concat str1 ("Config"::s1::s2::s3::s4::[])
+		   
   | _ -> failwith "Update not known"
