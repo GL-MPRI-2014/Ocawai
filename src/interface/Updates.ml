@@ -9,6 +9,8 @@ type animation =
   | Moving_unit of Unit.t * Position.t list
   | Attack
   | Boom of Position.t
+  | End_lost
+  | End_win
   | Pause of int
   | Nothing
 
@@ -17,6 +19,11 @@ type speed =
   | Normal
   | Fast
   | FFast
+
+type state =
+  | Playing
+  | Lost
+  | Won
 
 (* Logger *)
 module Log = Log.Make (struct let section = "Updates" end)
@@ -30,6 +37,12 @@ let attack_time = 30
 
 (* Number of frames for a boom *)
 let boom_time = 10
+
+(* Number of frames for the end screen *)
+let end_time = 30
+
+(* Font *)
+let font = Fonts.load_font "FreeSansBold.ttf"
 
 class handler data camera = object(self)
 
@@ -50,6 +63,9 @@ class handler data camera = object(self)
 
   (* Current player *)
   val mutable current_turn = Nobody_s_turn
+
+  (* Curent state *)
+  val mutable current_state = Playing
 
   (* Increases the frame counter *)
   method private frame_incr =
@@ -101,10 +117,12 @@ class handler data camera = object(self)
   method private ack_update u =
     self#log_update u ;
     match u with
-    | Game_over -> () (* TODO *)
+    | Game_over ->
+        current_state <- Lost
     | Your_turn ->
         current_turn <- Your_turn
-    | You_win -> () (* TODO *)
+    | You_win ->
+        current_state <- Won
     | Turn_of id ->
         current_turn <- Turn_of id
     | Classement -> () (* WTF?! TODO ? *)
@@ -124,7 +142,6 @@ class handler data camera = object(self)
         |> player#add_unit
     | Add_building (b,pid) ->
         let player = Logics.find_player pid data#players in
-        (* assert (b#player_id = Some (player#get_id)) ; *)
         Oo.copy b
         |> player#add_building
     | Delete_unit (uid,pid) ->
@@ -194,14 +211,14 @@ class handler data camera = object(self)
               else (self#ack_update u ; self#read_update)
           | Game_over ->
               Sounds.play_sound "lose" ;
-              (* TODO Animation *)
-              self#ack_update u ;
+              current_animation <- End_lost ;
+              self#stage_ack u ;
               (* There should'nt be any update but still... *)
               self#read_update
           | You_win ->
               Sounds.play_sound "yeah" ;
-              (* TODO Animation *)
-              self#ack_update u ;
+              current_animation <- End_win ;
+              self#stage_ack u ;
               self#read_update
           | Delete_unit (uid,pid) ->
               let player = Logics.find_player pid data#players in
@@ -259,6 +276,11 @@ class handler data camera = object(self)
         else self#frame_incr
     | Boom _ ->
         if frame_counter + 1 >= boom_time
+        then current_animation <- Nothing
+        else self#frame_incr
+    | End_win
+    | End_lost ->
+        if frame_counter + 1 >= end_time
         then current_animation <- Nothing
         else self#frame_incr
     | Pause 0 -> current_animation <- Nothing
@@ -320,5 +342,34 @@ class handler data camera = object(self)
     match current_animation with
     | Boom pos -> Some pos
     | _ -> None
+
+  method end_screen (target:OcsfmlGraphics.render_window) = OcsfmlGraphics.(
+    let (w,h) = Utils.foi2D target#get_size in
+    let fade b text =
+      let rate =
+        if b || frame_counter > end_time then 1.
+        else (float_of_int frame_counter) /. (float_of_int end_time)
+      in
+      let color = Color.rgba 255 255 255 (int_of_float (rate *. 230.)) in
+      let size = 130 + (int_of_float ((1. -. rate) *. 100.)) in
+        GuiTools.(rect_print
+          target text font color (Pix size) (Pix 10) Center
+          { left = 0. ; top = h /. 3. ; width = w ; height = 500. })
+    in
+    match current_animation with
+    | End_win -> fade false "You win!"
+    | End_lost -> fade false "Game Over"
+    | _ ->
+        begin match current_state with
+        | Lost ->
+            fade true "Game Over" ;
+            GuiTools.(rect_print
+              target "You can watch the other keep playing..."
+              font (Color.rgba 255 255 255 230) (Pix 30) (Pix 10) Center
+              { left = 0. ; top = 2. *. h /. 3. ; width = w ; height = 500. })
+        | Won -> fade true "You win!"
+        | Playing -> ()
+        end
+  )
 
 end

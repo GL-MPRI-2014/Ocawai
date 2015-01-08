@@ -30,4 +30,7 @@ class handler : ClientData.client_data -> Camera.camera -> object
   (** @return the case where the renderer should draw an explosion *)
   method burst_position : Position.t option
 
+  (** Draws the end screen (when it is time) *)
+  method end_screen : OcsfmlGraphics.render_window -> unit
+
 end

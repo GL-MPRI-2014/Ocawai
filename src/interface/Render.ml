@@ -432,7 +432,7 @@ let renderer = object(self)
     let current = Updates.(match uphandle#current_turn with
       | Your_turn -> "Your turn"
       | Turn_of id -> Printf.sprintf "Turn of #%d" id
-      | Nobody_s_turn -> "Nobody's turn..." (* TODO Maybe just empty string *)
+      | Nobody_s_turn -> ""
     ) in
     GuiTools.(rect_print
       target current font Color.white (Pix 30) (Pix 10) Right
@@ -441,6 +441,8 @@ let renderer = object(self)
     let speed = uphandle#speed in
     if speed <> "normal" then
       self#draw_txr target speed ~position:(w-.50.,h-.70.) ~size:(75.,75.) () ;
+    (* Display end of game *)
+    uphandle#end_screen target ;
     (* Display framerate *)
     FPS.display target
 
