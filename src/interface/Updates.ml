@@ -224,6 +224,7 @@ class handler data camera = object(self)
               let player = Logics.find_player pid data#players in
               let un = player#get_unit_by_id uid in
               current_animation <- Boom un#position ;
+              Sounds.play_sound "scream" ;
               self#ack_update u
           | Set_unit_hp (uid,_,pid) ->
               self#stage_ack u ;
