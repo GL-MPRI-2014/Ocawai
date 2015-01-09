@@ -6,7 +6,6 @@
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 3,
-    "spawn_number": 0,
     "attack_base": 50,
     "armor": "Light",
     "percentage_light": 20,
@@ -18,7 +17,7 @@
   {
     "name": "tank",
     "movement_type": "Tread",
-    "vision_range": 3,
+    "vision_range": 2,
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 5,
@@ -52,7 +51,7 @@
     "vision_range": 6,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 8,
+    "move_range": 12,
     "attack_base": 20,
     "armor": "Normal",
     "percentage_light": 100,
@@ -89,7 +88,7 @@
   {
     "name": "artillery",
     "movement_type": "Tread",
-    "vision_range": 4,
+    "vision_range": 2,
     "attack_range_min": 2,
     "attack_range_max": 3,
     "move_range": 3,
@@ -105,7 +104,7 @@
   {
     "name": "missilelauncher",
     "movement_type": "Roll",
-    "vision_range": 6,
+    "vision_range": 1,
     "attack_range_min": 3,
     "attack_range_max": 6,
     "move_range": 4,
@@ -138,7 +137,7 @@
   {
     "name": "bomber",
     "movement_type": "Fly",
-    "vision_range": 4,
+    "vision_range": 1,
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 7,
@@ -148,7 +147,7 @@
     "percentage_normal": 100,
     "percentage_heavy": 100,
     "percentage_boat": 50,
-    "price": 60,
+    "price": 90,
     "life_max": 80
   },
   {
@@ -161,7 +160,7 @@
     "attack_base": 70,
     "armor": "Flying",
     "percentage_flying": 100, 
-    "price": 50,
+    "price": 70,
     "life_max": 80
   },
   {
@@ -170,20 +169,20 @@
     "vision_range": 7,
     "move_range": 10,
     "armor": "Flying",
-    "price": 30,
+    "price": 20,
     "life_max": 1
   },
   {
     "name": "submarine",
     "movement_type": "Swim",
-    "vision_range": 3,
+    "vision_range": 5,
     "attack_range_min": 1,
     "attack_range_max": 1,
     "move_range": 6,
     "attack_base": 70,
     "armor": "Boat",
     "percentage_boat": 100,
-    "price": 40,
+    "price": 30,
     "life_max": 50
   },
   {
@@ -195,18 +194,32 @@
   {
     "name": "destroyer",
     "movement_type": "Swim",
-    "vision_range": 5,
+    "vision_range": 3,
     "attack_range_min": 1,
     "attack_range_max": 1,
-    "move_range": 7
+    "move_range": 6,
+    "attack_base": 60,
+    "armor": "Boat",
+    "percentage_flying": 100,
+    "percentage_boat": 50,
+    "price": 40,
+    "life_max": 70
   },
   {
     "name": "battleship",
     "movement_type": "Swim",
-    "vision_range": 5,
-    "attack_range_min": 1,
-    "attack_range_max": 3,
-    "move_range": 6
+    "vision_range": 1,
+    "attack_range_min": 3,
+    "attack_range_max": 8,
+    "move_range": 4,
+    "attack_base": 100,
+    "armor": "Boat",
+    "percentage_light": 30,
+    "percentage_normal": 80,
+    "percentage_heavy": 100,
+    "percentage_boat": 60,
+    "price": 100,
+    "life_max": 90
   },
   {
     "name": "aircraftcarrier",
