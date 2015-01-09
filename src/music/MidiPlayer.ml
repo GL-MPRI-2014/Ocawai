@@ -68,12 +68,12 @@ class asynchronousMidiPlayer =
       end else failwith "Wrong number of channels"
 
     method play () =
-      let () = MusicLog.infof "Started playing music, created pulseaudio output" in
       let pulse = new MMPulseaudio.writer
                         "OCAWAI"
                         "Music of the OCAWAI game"
                         channels
                         sample_rate in
+      let () = MusicLog.infof "Started playing music, created pulseaudio output" in
       while (!should_run) do
         let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:((float_of_int !volume) /. 100.) () in
         self#multi_blit (!main_buffer) (!current_playing) mbuf 0 blen;
@@ -94,22 +94,36 @@ class asynchronousMidiPlayer =
 		     (MIDI.Multitrack.duration new_buffer);
       current_adding := !current_adding + (MIDI.Multitrack.duration new_buffer)
 
+    method remaining () =
+      (!current_adding - !current_playing)
+
   end
 
 let play_midi_file fname run =
-  let f = new MIDI.IO.Reader.of_file fname in
+  let blen = 1024 in
+  let sample_rate = 44100 in
+  let f = ref (new MIDI.IO.Reader.of_file fname) in
   let player = new asynchronousMidiPlayer in
-  let tmpbuf = MIDI.Multitrack.create 16 1024 in
-  let r = ref (f#read 44100 tmpbuf 0 1024) in
+  let tmpbuf = MIDI.Multitrack.create 16 blen in
+  let r = ref (!f#read sample_rate tmpbuf 0 blen) in
   player#add tmpbuf;
   let _ = Thread.create (player#play) () in
-  while !r <> 0 do
-    r := f#read 44100 tmpbuf 0 1024;
-    player#add tmpbuf
+  while !run do
+    Thread.delay 0.001;
+    if (player#remaining ()) < 2048 then begin
+      !f#close;
+      f := new MIDI.IO.Reader.of_file fname;
+      r := !f#read sample_rate tmpbuf 0 blen;
+      player#add tmpbuf
+    end;
+    while !r <> 0 do
+      r := !f#read sample_rate tmpbuf 0 blen;
+      player#add tmpbuf
+    done;
+    while !r = 0 && (player#remaining ()) < 2048 do
+      Thread.delay 0.2
+    done
   done;
-  while (!run) do
-    Thread.delay 0.1;
-  done;
-  f#close;
+  !f#close;
   player#stop ();
   Thread.exit ()
