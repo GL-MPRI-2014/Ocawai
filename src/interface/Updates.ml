@@ -223,10 +223,14 @@ class handler data camera = object(self)
           | Delete_unit (uid,pid) ->
               let player = Logics.find_player pid data#players in
               let un = player#get_unit_by_id uid in
-              if self#visible un#position then begin 
+              if self#visible un#position then begin
                 current_animation <- Boom un#position ;
                 Sounds.play_sound "scream" ;
                 self#ack_update u
+              end
+              else begin
+                self#ack_update u ;
+                self#read_update
               end
           | Set_unit_hp (uid,_,pid) ->
               self#stage_ack u ;
