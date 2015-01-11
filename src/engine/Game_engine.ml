@@ -110,6 +110,7 @@ class game_engine () = object (self)
       List.iter (fun p -> p#init_script map players) sc_players;
       actual_player_l <- actual_player_list nbplayers;
       List.iter (fun x -> x#init map players) self#get_players;
+      self#notify_players;
       (players, map)
 
   method init_net port nbplayers =
@@ -162,20 +163,18 @@ class game_engine () = object (self)
       | Some b -> b#player_id <> Some (player#get_id) (*base taken*)
     )
 
-  method run : unit =
+  method run mutex : unit =
     Log.infof "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
-    (* Notify the player *)
-    player#update Types.Your_turn;
+    Mutex.unlock mutex;
+    Thread.yield ();
+    Mutex.lock mutex;
 
-    (* Notify the others *)
-    let pid = player#get_id in
-    Array.to_list players
-    |> List.filter (fun p -> p <> players.(self#actual_player))
-    |> List.iter (fun p -> p#update (Types.Turn_of pid));
+    Mutex.unlock mutex;
+    let next_wanted_action = player#get_next_action mutex in
+    Mutex.lock mutex;
 
-    let next_wanted_action =  player#get_next_action in
     begin try
       let next_action = Logics.try_next_action
             (self#get_players :> Player.logicPlayer list)
@@ -246,13 +245,13 @@ class game_engine () = object (self)
              players.(self#actual_player)#update (Types.You_win);
              players.(enemy_id)#update (Types.Game_over)
             )
-        else self#run
+        else self#run mutex
         )
     else if List.length actual_player_l = 1 then begin
       is_over <- true;
       players.(self#actual_player)#update (Types.You_win)
     end else if killed then ()
-    else self#run
+    else self#run mutex
 
   (* Capture buildings at the beginning of a turn *)
   method private capture_buildings =
@@ -283,6 +282,7 @@ class game_engine () = object (self)
         self#notify_all (Types.Set_unit_played (u#get_id,player#get_id,false))
       )
       player#get_army;
+
     player#harvest_buildings_income;
     player#update Types.Harvest_income;
 
@@ -307,7 +307,20 @@ class game_engine () = object (self)
     else (
       (* Enfin, on change de joueur en cours *)
       self#next_player;
+      self#notify_players
     )
+
+  method private notify_players = 
+    let player = players.(self#actual_player) in 
+      
+    (* Notify the player *)
+    player#update Types.Your_turn;
+
+    (* Notify the others *)
+    let pid = player#get_id in
+    Array.to_list players
+    |> List.filter (fun p -> p <> players.(self#actual_player))
+    |> List.iter (fun p -> p#update (Types.Turn_of pid));
 
   method private apply_movement movement =
     let player = players.(self#actual_player) in

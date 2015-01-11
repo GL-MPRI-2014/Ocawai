@@ -28,6 +28,10 @@ class asynchronousMidiPlayer :
     (** Loops and play the main buffer *)
     method play : unit -> unit
 
+    (** Gives you information on how long, in buffer size, the player can still
+        output music *)
+    method remaining : unit -> int
+
     (** Stop playing properly *)
     method stop : unit -> unit
 

@@ -10,7 +10,7 @@ class logicPlayer ?id () =
 
     val army = Hashtbl.create 97
     val buildings = Hashtbl.create 23
-    val mutable resource = 0
+    val mutable resource = 20
     val mutable base : Building.t option = None
     val mutable fog = Fog.init 0 0
     (*Quite dirty mutable id. Can't we do without it ?*)
@@ -136,7 +136,7 @@ class virtual player  ?(id) () =
   object (self)
   inherit logicPlayer ?id:id ()
   val mutable logic_player_list:logicPlayer list = []
-  method virtual get_next_action :  Action.t
+  method virtual get_next_action : Mutex.t -> Action.t
 
   method set_logic_player_list playerList = logic_player_list <- playerList
   method get_logic_player_list = logic_player_list
@@ -150,7 +150,7 @@ class dummy_player ?(id) (a: Action.t list) =
   object
     inherit player ?id:id ()
     val mutable actions = (a: Action.t list)
-    method get_next_action  =
+    method get_next_action _ =
       if length a == 0 then
         ([], Action.End_turn)
       else

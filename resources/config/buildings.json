@@ -1,7 +1,6 @@
 [
   {
-    "name": "base",
-    "income" : 20
+    "name": "base"
   },
   {
     "name": "factory",
@@ -14,23 +13,23 @@
       "artillery",
       "missilelauncher"
     ],
-    "income": 10,
-    "spawn_number_per_player" : 1,
-    "spawn_number_neutral" : 2,
+    "income": 5,
+    "spawn_number_per_player" : 2,
+    "spawn_number_neutral" : 3,
     "movement_types" : ["Walk", "Roll", "Tread"]
   },
   {
     "name": "port",
-    "product": ["submarine"],
+    "product": ["submarine","destroyer","battleship"],
     "income": 10,
-    "spawn_number_neutral" : 2,
+    "spawn_number_neutral" : 3,
     "movement_types" : ["Walk", "Swim"]
   },
   {
     "name": "airport",
-    "product": ["helicopter"],
+    "product": ["helicopter","bomber","fighter","ulm"],
     "income": 10,
-    "spawn_number_neutral" : 1,
+    "spawn_number_neutral" : 3,
     "movement_types" : ["Walk", "Roll", "Tread", "Fly"]
   },
   {

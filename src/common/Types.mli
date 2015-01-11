@@ -29,7 +29,7 @@ type update =
   | Set_client_player of id_player
   | Set_logic_player_list of id_player list
   | Map of string
-
+  | Config of string * string * string * string
 
 val get_next_action_code : int
 val update_code : int

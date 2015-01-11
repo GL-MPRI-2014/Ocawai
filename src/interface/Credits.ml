@@ -25,6 +25,8 @@ class state = object(self)
 
   val mutable finished = false
 
+  val mutable run = ref true
+
   val mutable particles = new ParticleManager.particle_manager manager#window
 
   method handle_event e =
@@ -163,5 +165,11 @@ class state = object(self)
       finished <- true;
 
     window#display
+
+  initializer
+    ignore @@ Thread.create (MidiPlayer.play_midi_file "./resources/music/HymneToJoy.mid") run
+
+  method destroy =
+    run := false
 
 end
