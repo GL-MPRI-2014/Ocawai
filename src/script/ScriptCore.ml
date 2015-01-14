@@ -506,10 +506,10 @@ let init () =
   (* Functions on associative lists *)
   let setter_t = `Fun_t(a0, `Fun_t(a1, `Unit_t)) in
   let getter_t = `Fun_t(`Fun_t(a1,a2), `Fun_t(`Fun_t(`Unit_t,a2), `Fun_t(a0, a2))) in
-  let assoc_t a b = `Pair_t(setter_t, getter_t) in
-  expose scr_assoc_create (`Fun_t(`Unit_t, assoc_t a0 a1)) "assoc_create";
-  expose scr_fst (`Fun_t(assoc_t a0 a1, setter_t)) "assoc_set";
-  expose scr_snd (`Fun_t(assoc_t a0 a1, getter_t)) "assoc_get";
+  let assoc_t = `Pair_t(setter_t, getter_t) in
+  expose scr_assoc_create (`Fun_t(`Unit_t, assoc_t)) "assoc_create";
+  expose scr_fst (`Fun_t(assoc_t, setter_t)) "assoc_set";
+  expose scr_snd (`Fun_t(assoc_t, getter_t)) "assoc_get";
   expose scr_validunit (`Fun_t(`String_t, `Bool_t)) "is_valid_unit";
   expose scr_producible_units (`Fun_t(`Building_t, `List_t(`Soldier_t))) "producible_units";
   expose scr_funds (`Fun_t(`Player_t,`Int_t)) "funds_of";
