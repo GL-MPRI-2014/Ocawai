@@ -45,6 +45,11 @@ val returnWithDelay : Music.event -> t
 *)
 val duration : t -> Time.t
 
+(**
+   Modifies the input [t] and adds the input modifier for the rendering
+ *)
+val modify : Modify.t -> t -> t
+
 (** {2 DList operators} *)
 
 (**
@@ -104,11 +109,12 @@ val fromList_sequence : Music.event list -> t
 val fprintf : Format.formatter -> t -> unit
 
 (**
-   Recursively converts DList to a MIDI.buffer.
+   Recursively converts a DList to a MIDI.Multitrack.buffer.
 
    @param int is the samplerate of the conversion
    @param MIDI.division is the chosen grid division
    @return the conversion of the given ['a t] into a MIDI event
 *)
-val toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     ?tempo:Time.Tempo.t -> t -> MIDI.buffer option
+val toMidi : ?channels:int -> ?samplerate:int ->
+	     ?division:MIDI.division -> ?tempo:Time.Tempo.t ->
+	     ?context:Modify.Context.t -> t -> MIDI.Multitrack.buffer option

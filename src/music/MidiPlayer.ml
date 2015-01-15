@@ -1,4 +1,5 @@
 open Synth
+open Instrument
 
 module MusicLog = Log.Make (struct let section = "Music" end) 
 
@@ -20,7 +21,6 @@ class asynchronousMidiPlayer =
   let buf = Audio.create channels blen in
   let mchannels = 16 in
   let mbuf = MIDI.Multitrack.create mchannels blen in
-  let adsr = Audio.Mono.Effect.ADSR.make sample_rate (0.1, 0.0, 1.0, 0.0) in
   
   object(self)
 
@@ -28,29 +28,14 @@ class asynchronousMidiPlayer =
     val mutable should_run = ref true
     val mutable current_playing = ref 0
     val mutable current_adding = ref 0
-    val synth = (let  synth () =
-      new Synth.create
-        (fun f v ->
-          new Audio.Generator.of_mono
-            (new Audio.Mono.Generator.adsr adsr
-              (new Audio.Mono.Generator.add
-                (new Audio.Mono.Generator.add
-                  (new Audio.Mono.Generator.add
-                    (new Audio.Mono.Generator.add
-                      (new Audio.Mono.Generator.add
-                        (new Audio.Mono.Generator.add
-                          (new Audio.Mono.Generator.add
-                            (new Audio.Mono.Generator.sine sample_rate ~volume:v f)
-                            (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.1.0) (2.*.f)))
-                          (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.1) (3.*.f)))
-                        (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.2) (4.*.f)))
-                      (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.1) (5.*.f)))
-                    (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.0) (6.*.f)))
-                  (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.0) (7.*.f)))
-                (new Audio.Mono.Generator.sine sample_rate ~volume:(v*.0.00) (8.*.f)))))
-    in
-    new Synth.Multitrack.create mchannels (fun _ -> (synth ())))
-
+    val synth =
+      let synth = fun () -> to_synth ~samplerate:sample_rate Organ in
+      new Synth.Multitrack.create mchannels @@
+	(function 
+	  | 0 -> to_synth ~samplerate:sample_rate Kick
+	  | 1 -> to_synth ~samplerate:sample_rate Snare
+	  | _ -> synth ())
+	  
     (* This is just blit mapped in every sub channel of a multitrack buf *)
     method private multi_blit b1 o1 b2 o2 len =
       if (MIDI.Multitrack.channels b1 = MIDI.Multitrack.channels b2) then begin

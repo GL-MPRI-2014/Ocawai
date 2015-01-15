@@ -5,13 +5,18 @@
 (**
    Standard 44,1kHz samplerate
 *)
-let samplerate = 44100
+let samplerate : int = 44100
 
 (**
    Standard MIDI-division value
  *)
 let div_value = 96
-let division = MIDI.Ticks_per_quarter div_value
+let division : MIDI.division = MIDI.Ticks_per_quarter div_value
+
+(**
+   Default number of channels to use
+ *)
+let channels : int = 16
 
 (**
    Convert a 7 bit integer between 0 and 127 to a float
@@ -48,7 +53,8 @@ let samples_of_delta samplerate division tempo delta =
 let timeToSamplesNumber : ?samplerate:int -> ?division:MIDI.division ->
 			  ?tempo:Time.Tempo.t -> duration:Time.t -> int =
   fun ?samplerate:(sr = samplerate) ?division:(div = division)
-      ?tempo:(tempo = Time.Tempo.base) ~duration ->
+      ?tempo:(tempo = Time.Tempo.base)
+      ~duration ->
   let tempo_mspq = Time.Tempo.toMicrosecondsPerQuarters tempo in
   samples_of_delta sr div tempo_mspq (Time.toMidiTicks div duration)
 

@@ -118,5 +118,6 @@ val fprintf : Format.formatter -> event -> unit
    @param MIDI.division is the chosen grid division
    @return the conversion of the given ['a t] into a MIDI event
 *)
-val toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     ?tempo:Time.Tempo.t -> event -> MIDI.buffer
+val toMidi : ?channels:int -> ?samplerate:int -> ?division:MIDI.division ->
+	     ?tempo:Time.Tempo.t -> ?context:Modify.Context.t ->
+	     event -> MIDI.Multitrack.buffer

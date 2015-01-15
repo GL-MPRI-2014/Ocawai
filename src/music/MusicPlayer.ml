@@ -30,11 +30,25 @@ let chord duration pitches =
   in
   List.fold_left aggregate TPTM.zero pitches
  
-let menu_music = fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
-		 @@ sequence [(en, (C, 4)); (en, (E, 4));
-			      (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
-			      (en, (C, 5)); (en, (G, 4));
-			      (en, (F, 4)); (en, (E, 4))]
+let menu_music_backup = fork (fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
+		       @@ sequence [(en, (C, 4)); (en, (E, 4));
+				    (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
+				    (en, (C, 5)); (en, (G, 4));
+				    (en, (F, 4)); (en, (E, 4))]
+		      ) @@
+		   modify (Modify.Instrument (Instrument.Snare)) @@
+		     (delay en) %
+		       sequence [(en, (C, 5));
+				 (tren, (C, 5)); (tren, (C, 5)); (tren, (C, 5));
+				 (en, (C, 5)); (en, (C, 5));
+				 (en, (C, 5)); (en, (C, 5))]
+		
+let menu_music = fork (modify (Modify.Instrument (Instrument.Snare)) @@
+			 sequence [(qn, (C, 5)); (qn, (C, 5));
+				   (qn, (C, 5)); (qn, (C, 5))]
+		      ) @@  
+		   sequence [(qn, (C, 5)); (qn, (C, 5));
+			     (qn, (C, 5)); (qn, (C, 5))]
 
 let winner_music = function
   | 0 -> chord wn @@ [(C, 4); (E, 4); (G, 4)]
@@ -151,5 +165,6 @@ let music_player =
       done
 
     initializer
+      TPTM.fprintf Format.std_formatter @@ snd @@ TPTM.headTail menu_music;
       Random.self_init ()
   end
