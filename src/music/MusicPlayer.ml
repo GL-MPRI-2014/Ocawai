@@ -30,29 +30,43 @@ let chord duration pitches =
   in
   List.fold_left aggregate TPTM.zero pitches
  
-let menu_music_backup = fork (fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
-		       @@ sequence [(en, (C, 4)); (en, (E, 4));
-				    (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
-				    (en, (C, 5)); (en, (G, 4));
-				    (en, (F, 4)); (en, (E, 4))]
-		      ) @@
-		   modify (Modify.Instrument (Instrument.Snare)) @@
-		     (delay en) %
-		       sequence [(en, (C, 5));
-				 (tren, (C, 5)); (tren, (C, 5)); (tren, (C, 5));
-				 (en, (C, 5)); (en, (C, 5));
-				 (en, (C, 5)); (en, (C, 5))]
-		
-let menu_music = fork (modify (Modify.Instrument (Instrument.Snare)) @@
-			 sequence [(qn, (C, 5)); (qn, (C, 5));
-				   (qn, (C, 5)); (qn, (C, 5))]
-		      ) @@  
-		   sequence [(qn, (C, 5)); (qn, (C, 5));
-			     (qn, (C, 5)); (qn, (C, 5))]
+let kick_all_4 = modify (Modify.Instrument (Instrument.Kick)) @@
+		   sequence [(qn, (C, 2)); (qn, (C, 2));
+			     (qn, (C, 2)); (qn, (C, 2))]
+let snare_2_3 = modify (Modify.Instrument (Instrument.Snare)) @@
+		   (reset @@ delay qn % (sequence [(hn, (C, 5)); (qn, (C, 5))]) )
+		     % delay wn
 
+let the_beat = fork kick_all_4 snare_2_3
+(*
+let kick_all_4PlusOne = modify (Modify.Instrument (Instrument.Kick)) @@
+			  fork (sequence [(qn, (C, 2)); (qn, (C, 2));
+					  (qn, (C, 2)); (qn, (C, 2))])
+			  @@ delay hn % delay qn % delay en % sequence [(en, (C, 2))]
+ *)
+let menu_music = fork (fork (fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
+			     @@ sequence [(en, (C, 4)); (en, (E, 4));
+					  (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
+					  (en, (C, 5)); (en, (G, 4));
+				    (en, (F, 4)); (en, (E, 4))]
+			    ) @@
+			 modify (Modify.Instrument (Instrument.Snare)) @@
+			   (delay en) %
+			     sequence [(en, (C, 5));
+				       (tren, (C, 5)); (tren, (C, 5)); (tren, (C, 5));
+				       (en, (C, 5)); (en, (C, 5));
+				       (en, (C, 5)); (en, (C, 5))]
+		      ) @@ kick_all_4
+
+let menu_music_simple = fork ((chord hn [(C, 2); (G, 2)]) % (chord hn [(E, 2); (C, 3)]))
+			@@ sequence [(en, (C, 4)); (en, (E, 4));
+				     (tren, (C, 4)); (tren, (F, 4)); (tren, (A, 5));
+				     (en, (C, 5)); (en, (G, 4));
+				     (en, (F, 4)); (en, (E, 4))]
+				 
 let winner_music = function
   | 0 -> chord wn @@ [(C, 4); (E, 4); (G, 4)]
-  | 1 -> chord wn @@ [(G, 3); (C, 4); (E, 4)]
+  | 1 -> menu_music_simple (* chord wn @@ [(G, 3); (C, 4); (E, 4)] *)
   | 2 -> chord hn [(C, 4); (G, 4)] % chord hn [(G, 4); (C, 5); (E, 5)] 
   | _ -> raise Incorrect_value_chord_selection
 
@@ -119,8 +133,8 @@ let music_player =
 		 let select = Random.int 3 in
 		 let next_tile =
 		   if mood <= 0. then
-		     loser_music select
-		   else winner_music select
+		     the_beat % loser_music select
+		   else the_beat % winner_music select
 		 in
 		 self#bufferize next_tile;
 		 Thread.delay ((self#duration_one_measure tempo) *. 0.99)

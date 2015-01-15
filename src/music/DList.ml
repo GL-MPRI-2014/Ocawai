@@ -172,6 +172,10 @@ let printf : t -> unit = fprintf Format.std_formatter
 
 (** {2 Normalization functions} *)
 
+let make_with_context : t -> Modify.Context.t -> t = fun dlist context ->
+  let f = fun dlist modifier -> Modify (modifier, dlist) in
+  Modify.fold_left f dlist context
+			
 let headTail_tuple : t -> headTail = fun t ->
   (** Returns a tuple containing a decomposition of
       the input tail where :
@@ -186,6 +190,10 @@ let headTail_tuple : t -> headTail = fun t ->
       -> Is it really necessary ? 
    *)
   let rec aux_context : Modify.Context.t -> t -> headTail = fun context ->
+    let add_context_tail : headTail -> headTail = fun ht ->
+      let new_tail = make_with_context ht.tailT context in
+      ht.tailT <- new_tail; ht
+    in 
     function
     | Sync dur ->
        makeHeadTail Time.zero (MusicContextSet.empty) dur zero
@@ -195,7 +203,7 @@ let headTail_tuple : t -> headTail = fun t ->
        let new_context = let copy = Modify.Context.copy context in
 			 Modify.replaceContext modifier copy; copy
        in 
-       aux_context new_context t 
+       aux_context new_context t
     | Prod ((Tag (dur, start)), t1, t2) ->
        let Tag(dur1, startT1) = getTag t1
        and Tag(dur2, startT2) = getTag t2 in
@@ -207,7 +215,7 @@ let headTail_tuple : t -> headTail = fun t ->
 	  (** t1 is pure sync, shift t2. *)
 	  let headTuple2 = aux_context (Modify.Context.copy context) t2
 	  in (headTuple2.to_events <- (dur1 /+/ headTuple2.to_events);
-	      headTuple2)
+	      add_context_tail headTuple2)
        | (Some _, None) ->
 	  (** t2 is pure sync. *)
 	  let headTuple1 = aux_context (Modify.Context.copy context) t1 in
@@ -220,13 +228,13 @@ let headTail_tuple : t -> headTail = fun t ->
 	       then (** There are no more events in t1's tail and t2 holds no events :
         	     the tail is pure sync. *)
 		 ( headTuple1.to_next <- dur2;
-		   headTuple1 )
+		   add_context_tail headTuple1 )
 	       else ( headTuple1.tailT <- (headTuple1.tailT) /::/ (sync dur2);
-		      headTuple1 )
+		      add_context_tail headTuple1 )
 	    | None -> (** There are no more real events in t1's tail, it is pure sync,
                        of duration dur_tail1, let's mash everything up *)
 	       ( headTuple1.to_next <- dur;
-		 headTuple1 )
+		 add_context_tail headTuple1 )
 	  end
 	    
        | (Some start1, Some start2) ->
@@ -244,7 +252,7 @@ let headTail_tuple : t -> headTail = fun t ->
                   before the start of t2 *)
 		  begin
 		    headTuple1.tailT <- headTuple1.tailT /::/ t2;
-		    headTuple1
+		    add_context_tail headTuple1
 		  end
 	       | false, true -> 
 		  (** t1's tail still holds some events, but they happen after
@@ -253,7 +261,7 @@ let headTail_tuple : t -> headTail = fun t ->
 		    headTuple1.to_next <- shifted_start2 /-/ start1;
 		    headTuple1.tailT <- (sync (next_of_head /-/ shifted_start2))
 					/::/ headTuple1.tailT /::/ t2;
-		    headTuple1
+		    add_context_tail headTuple1
 		  end
 	       | _, false ->
 		  (** t1's tail no longer holds events, it is pure sync
@@ -261,7 +269,7 @@ let headTail_tuple : t -> headTail = fun t ->
 		  begin
 		    headTuple1.to_next <- (Time.inverse start1) /+/ shifted_start2;
 		    headTuple1.tailT <- t2;
-		    headTuple1
+		    add_context_tail headTuple1
 		  end
 	     end	  
 	       
@@ -287,27 +295,27 @@ let headTail_tuple : t -> headTail = fun t ->
 		    newHT.tailT <- (sync (headTuple1.to_next /-/ headTuple2.to_next)) /::/
 				     headTuple1.tailT /::/
 				       (sync sync_endTail1ToNext2) /::/ headTuple2.tailT;
-		    newHT)
+		    add_context_tail newHT)
 	       | false, true, true ->
 		  (** Both tiles still hold events, and those in tail1 come first *)
-		  ( newHT)
+		  ( add_context_tail newHT)
 	       | _, false, true ->
 		  (** Only tail2 still holds events, let's compress tail1
                     and skip to tail2 *)
 		  newHT.to_next <- (Time.inverse start1) /+/ dur1 /+/
 				     start2 /+/ headTuple2.to_next;
 		  newHT.tailT <- tail2;
-		  newHT
+		  add_context_tail newHT
 	       | _, true, false ->
 		  (** Only tail1 still holds events, let's play tail1
                     and skip to Pos *)
 		  newHT.tailT <- tail1 /::/ sync dur2;
-		  newHT
+		  add_context_tail newHT
 	       | _, false, false ->
 		  (** Both tails are pure sync, let's compress it all ! *)
 		  newHT.to_next <- dur /-/ start1;
 		  newHT.tailT <- zero;
-		  newHT
+		  add_context_tail newHT
 	     end
 		  
 	  | (false, true) -> (* t2 starts first *)
@@ -321,7 +329,7 @@ let headTail_tuple : t -> headTail = fun t ->
 		  (** t2's tail still holds events, and they start before t1 *) 
 		  begin
 		    (** The next events are in t2's tail *) 
-		    newHT headTuple2.to_next @@
+		    add_context_tail @@newHT headTuple2.to_next @@
 		      (sync @@ Time.inverse next_of_head) /::/
 			t1 /::/
 			  (sync @@ headTuple2.to_events /+/ headTuple2.to_next) /::/
@@ -330,7 +338,8 @@ let headTail_tuple : t -> headTail = fun t ->
 	       | false, true ->
 		  (** t2's tail still holds events, BUT they start AFTER t1 *)
 		  begin
-		    newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) @@
+		    add_context_tail @@
+		      newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) @@
 		      (sync @@ Time.inverse @@ headTuple1.to_events) /::/ t1 /::/
 			(sync @@ headTuple2.to_events /+/ headTuple2.to_next) /::/
 			  headTuple2.tailT
@@ -339,7 +348,8 @@ let headTail_tuple : t -> headTail = fun t ->
 		  (** t2's tail no longer holds events, it is pure sync
 		    Let's shift back to pre, then to start of t1 and play *)
 		  begin
-		    newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) @@
+		    add_context_tail @@
+		      newHT ((Time.inverse shifted_start2) /+/ headTuple1.to_events) @@
 		      (sync @@ Time.inverse @@ headTuple1.to_events) /::/ t1 /::/
 			(sync @@ headTuple2.to_events /+/ headTuple2.to_next) /::/
 			  headTuple2.tailT
@@ -353,7 +363,7 @@ let headTail_tuple : t -> headTail = fun t ->
 let make_with_context : event -> Modify.Context.t -> t = fun event context ->
   let f = fun dlist modifier -> Modify (modifier, dlist) in
   Modify.fold_left f (return event) context
-			
+
 let from_contextList_parallel : (event * Modify.Context.t) list -> t =
   fun eventContext_list ->
   let make_one = fun (event, context) -> make_with_context event context in
