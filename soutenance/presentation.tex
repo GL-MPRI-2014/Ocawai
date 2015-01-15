@@ -5,6 +5,8 @@
 \usepackage{graphicx}
 \usepackage[french]{babel}
 
+\DeclareUnicodeCharacter{00A0}{ }
+
 \usepackage{pifont}
 
 \usepackage[footheight=1em]{beamerthemeboxes}
@@ -23,6 +25,7 @@
 \usetheme{Montpellier}
 \usecolortheme{rose}
 
+\setbeamercovered{transparent}
 \newenvironment{bitemize}{\begin{itemize}[<+->]}{\end{itemize}}
 
 \author{MPRI}
@@ -34,4 +37,116 @@
 \begin{frame}
 \titlepage
 \end{frame}
+
+\begin{frame}
+\frametitle{Introduction}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Environnement de développement}
+
+\begin{bitemize}
+  \item \textbf{OPAM} : package manager
+  \item \textbf{Autotools} : Makefile, autoconf
+  \item \textbf{oUnit} : tests unitaires
+  \item \textbf{Dolog} : Système de log
+  \item \textbf{Travis} : Intégration continue
+\end{bitemize}
+\end{frame}
+
+\section{Langage de Script}
+
+\subsection{Objectifs}
+
+\begin{frame}
+  On veut un langage : 
+  \vspace{10pt}
+  \begin{itemize}
+    \item Simple mais puissant
+
+    \vspace{10pt}
+
+    \item Rapide à écrire et à débuguer
+
+    \vspace{10pt}
+
+    \item Une interface flexible avec Ocaml
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  Pour cela le langage est :
+  \vspace{10pt}
+  \begin{itemize}
+    \item Découpé clairement en points d'entrées 
+
+    \vspace{10pt}
+
+    \item Muni de fonctions puissantes
+
+    \vspace{10pt}
+
+    \item Muni d'un type-checker
+  \end{itemize}
+
+  \vspace{10pt}
+
+  Il est aussi possible d'exposer à volonter des types et des fonctions.
+\end{frame}
+
+\subsection{Exemples}
+\begin{frame}
+  \fontsize{6pt}{7.2}\selectfont
+
+  //Fonctions et variables globales\\
+  var x = 42;\\
+  fun id x = \{x\};\\
+  \vspace{10pt}
+  //Points d'entrée\\
+  \textbf{move} unit1, unit2, ... \{\\
+    \hspace{15pt}//Calculs\\
+    \hspace{15pt}position;\\
+  \}\\
+  \vspace{10pt}
+  \textbf{attack} unit1, unit2, ... \{\\
+    \hspace{15pt}//Calculs\\
+    \hspace{15pt}position;\\
+  \}\\
+  \vspace{10pt}
+  \textbf{build} building1, building2, ... \{\\
+    \hspace{15pt}//Calculs\\
+    \hspace{15pt}unit\_to\_build;\\
+  \}\\
+  \vspace{10pt}
+  \textbf{init} \{\\
+    \hspace{15pt}...\\
+  \}\\
+  \vspace{10pt}
+  \textbf{main} \{\\
+    \hspace{15pt}...\\
+    \hspace{15pt}unit\_to\_move;\\
+  \}\\
+\end{frame}
+
+\begin{frame}
+  Exposition de fonctions : \\
+
+  \vspace{15pt}
+
+  let pair a b = `Pair(a,b) \\
+
+  \vspace{10pt}
+
+  let ppint = `Fun (function |`Int(i) -> print\_int i | \_ -> assert false) \\
+
+  \vspace{10pt}
+
+  expose pair (`Fun (`Alpha(0), `Fun(`Alpha(1), `Pair(`Alpha(0), `Alpha(1))))) "make\_a\_pair" \\
+
+  \vspace{10pt}
+
+  expose ppint (`Fun (`Int, `Unit)) "print\_int"
+\end{frame}
+
 \end{document}
