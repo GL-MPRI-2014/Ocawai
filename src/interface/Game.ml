@@ -464,6 +464,12 @@ let new_game ?character () =
         | KeyPressed { code = OcsfmlWindow.KeyCode.W ; _ } ->
             self#select_pred
 
+        | KeyPressed { code = OcsfmlWindow.KeyCode.P ; _ } ->
+            manager#window#capture 
+            |> fun i -> i#save_to_file (Printf.sprintf "screenshot_%f.png"
+              (Unix.gettimeofday ()))
+            |> ignore
+
         | KeyPressed { code = OcsfmlWindow.KeyCode.Space ; _ } when
             event_state () = ClientPlayer.Waiting -> Cursor.(
               let cursor = cdata#camera#cursor in
