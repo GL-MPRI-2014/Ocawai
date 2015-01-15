@@ -1,6 +1,7 @@
 \documentclass[french,xcolor={usenames,dvipsnames}]{beamer}
 \usepackage[utf8]{inputenc} 
 \usepackage[T1]{fontenc}
+\usepackage{listings}
 \usepackage{lmodern}
 \usepackage{graphicx}
 \usepackage[french]{babel}
@@ -31,7 +32,7 @@
 \author{MPRI}
 \date{\today}
 \title{OCAWAI}
-
+\subtitle{Ocaml Advance wars With Artificial Intelligence}
 \begin{document}
 
 \begin{frame}
@@ -42,9 +43,10 @@
 \section{Introduction}
 
 \begin{frame}
-\frametitle{Introduction}
+\frametitle{Structure globale}
 
 \end{frame}
+
 
 \begin{frame}
 \frametitle{Environnement de développement}
@@ -60,8 +62,23 @@
 
 \section{Moteur}
 
+\begin{frame}
+\frametitle{Player}
+\end{frame}
+
+\begin{frame}
+\frametitle{Logique \& génération}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Moteur}
+\end{frame}
+
+
 \section{Interface}
 
+\subsection{Musique}
 \section{Réseau}
 
 \section{Langage de Script}
@@ -138,26 +155,28 @@
   \}\\
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   Exposition de fonctions : \\
+  
+  \begin{lstlisting}[language=caml]
+  let pair a b = `Pair(a,b) 
 
-  \vspace{15pt}
 
-  let pair a b = `Pair(a,b) \\
-
-  \vspace{10pt}
 
   let ppint = `Fun (function |`Int(i) -> print\_int i | \_ -> assert false) \\
 
-  \vspace{10pt}
 
-  expose pair (`Fun (`Alpha(0), `Fun(`Alpha(1), `Pair(`Alpha(0), `Alpha(1))))) "make\_a\_pair" \\
 
-  \vspace{10pt}
-
+  expose pair (`Fun (`Alpha(0), `Fun(`Alpha(1), `Pair(`Alpha(0), `Alpha(1))))) "make\_a\_pair"
   expose ppint (`Fun (`Int, `Unit)) "print\_int"
+
+  \end{lstlisting}
 \end{frame}
 
 \section{Conclusion}
 
 \end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
