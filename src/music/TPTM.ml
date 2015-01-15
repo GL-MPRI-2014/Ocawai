@@ -9,6 +9,12 @@ type event = Music.event
 
 type t = Tile of DList.t
 
+(**
+   Modifies the input [t] and adds the input modifier
+ *)
+let modify : Modify.t -> t -> t = fun modifier (Tile dl) ->
+  Tile (DList.modify modifier dl)
+
 (** {2 Base tiles} *)
 
 let zero : t = Tile (DList.zero)
@@ -95,20 +101,16 @@ let extract_by_time : Time.t -> t -> t * t = fun extract_dur t ->
   in
   aux Time.zero zero t
 
-let to_MIDI_buffer : ?samplerate:int -> ?division:MIDI.division ->
-		?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer =
-  fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
-      ?tempo:(tempo = Time.Tempo.base) ->
+let to_MIDI_buffer : ?channels:int -> ?samplerate:int -> ?division:MIDI.division ->
+		     ?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer =
+  fun ?channels:(channels = MidiV.channels) ?samplerate:(samplerate = MidiV.samplerate)
+      ?division:(division = MidiV.division) ?tempo:(tempo = Time.Tempo.base) ->
   fun t ->
   let Tile(dl) = normalize t in
   let events = DList.toMidi ~samplerate ~division ~tempo dl in
   match events with
   | None -> MIDI.Multitrack.create 16 0
-  | Some(buf) -> 
-     let duration = MIDI.Multitrack.duration [|buf|] in
-     let multi_track = MIDI.Multitrack.create 16 duration in
-     multi_track.(0) <- buf;
-     multi_track
+  | Some(buf) -> buf
 
 let play : ?samplerate:int -> ?division:MIDI.division ->
 		?tempo:Time.Tempo.t -> t -> unit =
