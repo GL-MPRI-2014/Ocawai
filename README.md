@@ -3,7 +3,7 @@ OCAWAI
 
 Projet de Génie Logiciel du MPRI, année 2014-2015
 
-[![Is it building ? Click here for more details.](https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014.svg?branch=master)](https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014/builds)
+[![Is it building ? Click here for more details.](https://travis-ci.org/GL-MPRI-2014/Ocawai.svg?branch=master)](https://travis-ci.org/GL-MPRI-2014/Ocawai/builds)
 
 # Comment utiliser l'application
 
