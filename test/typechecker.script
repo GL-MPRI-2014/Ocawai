@@ -1,0 +1,8 @@
+// Testing int
+print_int 10;
+
+// Testing string
+print_string "Hello, world!";
+
+// Testing unit
+();
