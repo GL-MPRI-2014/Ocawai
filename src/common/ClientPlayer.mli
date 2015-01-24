@@ -10,12 +10,12 @@ type action_state = Idle | Waiting | Received of Action.t
     updates from the engine. *)
 class client_player : ?id:Types.id_player ->
                       (Types.update -> unit) ->
-                      (Mutex.t -> Action.t) ->
+                      (unit -> Action.t) ->
 object
 
   inherit Player.player
 
-  method get_next_action : Mutex.t -> Action.t
+  method get_next_action : Action.t
 
   (** Handle a new update from the engine *)
   method update : Types.update -> unit

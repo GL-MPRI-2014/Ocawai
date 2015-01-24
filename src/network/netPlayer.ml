@@ -27,7 +27,7 @@ object (self)
   (* asks for the next action over the network
      does not handle timeout yet *)
 
-  method get_next_action mutex = 
+  method get_next_action = 
     Log.infof "send \"get_next_action\"" ;
     let success = Send_recv.send sockfd Types.get_next_action_code "" Types.clock in
     

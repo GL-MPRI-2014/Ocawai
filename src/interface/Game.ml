@@ -23,19 +23,14 @@ let set_client_state s =
 let event_state () =
   !client_state
 
-let rec get_next_action mutex =
-  Mutex.lock mutex;
-  client_state := ClientPlayer.Waiting;
-  Mutex.unlock mutex;
-  Thread.yield ();
-  Mutex.lock mutex;
-  match !client_state with
-  | ClientPlayer.Received a -> 
-      client_state := ClientPlayer.Idle; 
-      Mutex.unlock mutex; a
-  | _ -> 
-    Mutex.unlock mutex; 
-    get_next_action mutex
+let get_next_action () =
+  client_state := ClientPlayer.Waiting ;
+  let rec get_aux () =
+    Thread.delay 0.25;
+    match !client_state with
+    | ClientPlayer.Received a -> client_state := ClientPlayer.Idle ; a
+    | _ -> get_aux ()
+  in get_aux ()
 
 
 let new_game ?character () =
@@ -387,7 +382,7 @@ let new_game ?character () =
 
   initializer
     self#create_ui;
-    Thread.create (fun () -> m_engine#run cdata#mutex) ()
+    Thread.create (fun () -> m_engine#run) ()
     |> ignore
 
   val mutable last_event = 0.
@@ -568,18 +563,6 @@ let new_game ?character () =
       end)
 
   method render window =
-
-    begin match event_state () with
-      |ClientPlayer.Received(_) ->
-        Mutex.unlock cdata#mutex; 
-        Thread.yield (); 
-      |ClientPlayer.Waiting -> 
-        Mutex.unlock cdata#mutex;
-        Mutex.lock cdata#mutex;
-      |ClientPlayer.Idle -> 
-        Mutex.unlock cdata#mutex;
-        Thread.yield ()
-    end;
 
     self#keyboard_events;
     Interpolators.update () ;
