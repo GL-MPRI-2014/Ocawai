@@ -92,7 +92,10 @@ let rec occurs_check (t1:term_type) (t2:term_type) =
   match !t2 with
   | `None ->
       if equals_t1 t2 then raise Occurs_check
-  | `Pointer t | `List_tc t | `Array_tc t ->
+  | `Pointer t ->
+      if equals_t1 t2 then raise Occurs_check ;
+      occurs_check t1 t
+  | `List_tc t | `Array_tc t ->
       if equals_t1 t then raise Occurs_check ;
       occurs_check t1 t
   | `Fun_tc (ta,tb) | `Pair_tc (ta,tb) ->
