@@ -3,7 +3,7 @@ open Lexing
 open Checker
 
 (* Testing environment *)
-let test file f =
+let test ?(typefail=false) file f =
   ScriptCore.init () ;
   let input = open_in file in
   let lexbuf = from_channel input in
@@ -20,7 +20,8 @@ let test file f =
   | Parser.Error ->
       assert_failure "parsing error"
   | Type_checking_failure ->
-      assert_failure "type checking error"
+      if typefail then assert_equal true true
+      else assert_failure "type checking error"
 
 (* check assoc *)
 let test_assoc test_ctxt =
@@ -34,13 +35,20 @@ let value_types _ =
     assert_equal true true
   )
 
+(* Test occurs check *)
+let occurs_check _ =
+  test ~typefail:true "test/occurs_check.script" (fun s ->
+    assert_failure "shouldn't type"
+  )
+
 let suite_script =
   test_list [
     "script test" >::: [
-      "check assoc" >:: test_assoc
+      "check assoc"  >:: test_assoc
     ] ;
     "type checker" >::: [
-      "value types" >:: value_types
+      "value types"  >:: value_types ;
+      "occurs check" >:: occurs_check
     ]
   ]
 

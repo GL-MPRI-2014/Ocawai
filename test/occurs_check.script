@@ -1,0 +1,7 @@
+fun loop1 x = {
+  var n = (fst x) + 1;
+  loop1 (snd x);
+}
+
+// BUG: types but goes wrong
+// var foo = loop1 (1,"toto");
