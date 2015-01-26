@@ -6,6 +6,13 @@ open ScriptTypes
 module CheckerLog = Log.Make (struct let section = "Type Checker" end)
 open CheckerLog
 
+(* Hashtbl with physical equality on term_type *)
+module H = Hashtbl.Make(struct
+  type t = term_type
+  let equal = (==)
+  let hash = Hashtbl.hash
+end)
+
 (* Associate every variable/function name to its type *)
 let assignment = Hashtbl.create 97
 
@@ -42,6 +49,19 @@ let underscore_alpha ftype =
 
 (* Translates a type to a string *)
 let type_to_string t =
+  (* Gets an id for a term *)
+  let rec id =
+    let env = H.create 13 in
+    let i = ref 0 in
+    fun (t:term_type) ->
+      match !t with
+      | `Pointer t -> id t
+      | _ ->
+          if H.mem env t then H.find env t
+          else begin
+            H.add env t (!i) ; incr i ; !i - 1
+          end
+  in
   let rec aux parenthesis t =
     match (deref t) with
     | `Int_tc        -> "int"
@@ -63,8 +83,8 @@ let type_to_string t =
           s
     | `Pair_tc (a,b) -> "(" ^ (aux true a) ^ " * " ^ (aux true b) ^ ")"
     | `Pointer t     -> assert false
-    | `None          -> "any_type"
-    in
+    | `None          -> "_'a" ^ (string_of_int (id t))
+  in
   aux false t
 
 
