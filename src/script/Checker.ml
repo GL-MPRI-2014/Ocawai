@@ -48,7 +48,7 @@ let underscore_alpha ftype =
   in aux ftype
 
 (* Translates a type to a string *)
-let type_to_string t =
+let type_to_string =
   (* Gets an id for a term *)
   let rec id =
     let env = H.create 13 in
@@ -61,7 +61,7 @@ let type_to_string t =
           else begin
             H.add env t (!i) ; incr i ; !i - 1
           end
-  in
+  in fun t ->
   let rec aux parenthesis t =
     match (deref t) with
     | `Int_tc        -> "int"
