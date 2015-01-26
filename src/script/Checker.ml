@@ -92,6 +92,12 @@ exception Unification_failure
 exception Occurs_check
 exception Occurs_check_func of term_type * term_type
 
+(* Find the first non-pointer type variable *)
+let rec find (t:term_type) =
+  match !t with
+  | `Pointer t -> find t
+  | _ -> t
+
 (* Tells if t1 and t2 points to the same value *)
 let rec same_val (t1:term_type) (t2:term_type) =
   t1 == t2 ||
@@ -134,8 +140,8 @@ let rec unify (t1:term_type) (t2:term_type) =
     match (deref t1, deref t2) with
     | `Alpha_tc i, _ -> assert false
     | _, `Alpha_tc i -> assert false
-    | `None, _     -> t1 := `Pointer t2
-    | _, `None     -> t2 := `Pointer t1
+    | `None, _     -> (find t1) := `Pointer (find t2)
+    | _, `None     -> (find t2) := `Pointer (find t1)
     | `List_tc t1, `List_tc t2   -> unify t1 t2
     | `Array_tc t1, `Array_tc t2 -> unify t1 t2
     | `Fun_tc (t1,t1'), `Fun_tc (t2,t2')   -> unify t1 t2 ; unify t1' t2'
