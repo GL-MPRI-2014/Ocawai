@@ -127,8 +127,7 @@ let rec unify (t1:term_type) (t2:term_type) =
   debugf
     "[unifying] types\t%s\tand\t%s"
     (type_to_string t1) (type_to_string t2) ;
-  (* TODO Check whether we want it physical *)
-  if not (t1 == t2) then (
+  if not (same_val t1 t2) then (
     (* Always occurs check *)
     occurs_check t1 t2 ;
     occurs_check t2 t1 ;
