@@ -35,6 +35,12 @@ let value_types _ =
     assert_equal true true
   )
 
+(* unit -> unit *)
+let unit_unit _ =
+  test "test/unit_unit.script" (fun s ->
+    assert_equal true true
+  )
+
 (* First test of occurs check *)
 let occurs_check1 _ =
   test ~typefail:true "test/occurs_check1.script" (fun s ->
@@ -53,6 +59,7 @@ let suite_script =
       "check assoc"  >:: test_assoc
     ] ;
     "type checker" >::: [
+      "unit -> unit"   >:: unit_unit ;
       "value types"    >:: value_types ;
       "occurs check 1" >:: occurs_check1 ;
       "occurs check"   >:: occurs_check

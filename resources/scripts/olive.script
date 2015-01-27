@@ -147,7 +147,7 @@ move default {
 }
 
 attack default {
-  fun bound e = { 
+  fun bound e = {
     log_str "Attacking unit at : ";
     log_position (unit_position e);
     log_str "\n";
@@ -174,6 +174,9 @@ build default {
 
 fun ignore arg = {}
 
+// This is ugly sorry
+fun ignore_unit unit = {}
+
 init {
   // all ennemies
   var ennemies = get_ennemies ();
@@ -188,7 +191,7 @@ init {
     fun unbound a =  { 0 }
     assoc_get pv_remaining bound unbound e;
   }
-  
+
   // for all ennemies and all my units, we see if we can attack and the expected damage
   var units_by_ennemies = assoc_create ();
   fun add_ennemy e = {
@@ -203,7 +206,7 @@ init {
     assoc_set units_by_ennemies e units_in_range
   }
   list_iter add_ennemy ennemies;
-  
+
   // mission given to my unit
   mission = assoc_create ();
   // for all ennemies, we send enough unit to kill it (if possible)
@@ -223,10 +226,10 @@ init {
         f (list_tl l);
       }
     }
-    assoc_get units_by_ennemies f ignore e;
+    assoc_get units_by_ennemies f ignore_unit e;
   }
   list_iter iter ennemies;
-  
+
   // remaining units explore
 }
 
