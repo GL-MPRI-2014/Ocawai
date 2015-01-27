@@ -230,6 +230,7 @@ $(distdir): FORCE
 	cp $(test_dir)/typechecker.script $(distdir)/$(test_dir)
 	cp $(test_dir)/occurs_check.script $(distdir)/$(test_dir)
 	cp $(test_dir)/occurs_check1.script $(distdir)/$(test_dir)
+	cp $(test_dir)/unit_unit.script $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 #check that distdir create a correct archive
