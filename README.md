@@ -30,6 +30,37 @@ sélectionné **game on!** pour lancer le jeu.
 
 # Compilation
 
+Le projet étant en *Ocaml* il vous faudra un compilateur *Ocaml* avec une version supérieur à `4.02`. De plus, il vous faudra une version de la *SFML* >= 2.0.
+
+Le support pour le système d'exploitation *Windows* n'est pas assuré.
+
+##Dépendances du projet
+
+Pour installer les bibliothèque externes, utiliser *opam* peut s'avérer être plus facile.
+
+Il vous suffira alors d'entrer la commande
+
+```bash
+opam install ocamlfind ocsfml atdgen dolog mm pulseaudio oUnit
+```
+
+pour installer les dépendances du projet.
+
+###Bibliothèques externes (Ocaml) :
+
+- `ocamlfind`
+- `ocsfml`
+- `atdgen`
+- `dolog`
+- `mm`
+- `num`
+- `threads`
+- `pulseaudio`
+- `oUnit`
+
+
+##Compilation
+
 Si c'est la première fois que vous générer le projet, lancer la
 commande `aclocal -I m4`.
 
