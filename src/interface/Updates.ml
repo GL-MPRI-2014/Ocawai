@@ -82,29 +82,29 @@ class handler data camera = object(self)
 
   (* Log an update *)
   method private log_update = function
-    | Game_over -> infof "Game Over"
-    | You_win -> infof "You win"
-    | Your_turn -> infof "Your turn"
-    | Turn_of id -> infof "Turn of P%d" id
-    | Classement -> infof "Classement... WTF!?"
-    | Set_army _ -> infof "Set army..."
-    | Set_building _ -> infof "Set building..."
-    | Add_unit (u,pid) -> infof "P%d adds U%d" pid u#get_id
-    | Add_building (b,pid) -> infof "P%d adds B%d" pid b#get_id
-    | Delete_unit (uid,pid) -> infof "P%d lost U%d" pid uid
-    | Delete_building (bid,pid) -> infof "P%d lost B%d" pid bid
-    | Move_unit (uid,_,pid) -> infof "U%d of P%d moved" uid pid
+    | Game_over -> info "Game Over"
+    | You_win -> info "You win"
+    | Your_turn -> info "Your turn"
+    | Turn_of id -> info "Turn of P%d" id
+    | Classement -> info "Classement... WTF!?"
+    | Set_army _ -> info "Set army..."
+    | Set_building _ -> info "Set building..."
+    | Add_unit (u,pid) -> info "P%d adds U%d" pid u#get_id
+    | Add_building (b,pid) -> info "P%d adds B%d" pid b#get_id
+    | Delete_unit (uid,pid) -> info "P%d lost U%d" pid uid
+    | Delete_building (bid,pid) -> info "P%d lost B%d" pid bid
+    | Move_unit (uid,_,pid) -> info "U%d of P%d moved" uid pid
     | Set_unit_hp (uid,hp,pid) ->
-        infof "P%d's U%d set hp to %d" pid uid hp
+        info "P%d's U%d set hp to %d" pid uid hp
     | Set_unit_played (uid,pid,b) ->
-        infof "P%d's U%d set played to %B" pid uid b
-    | Harvest_income -> infof "Time to harvest income"
-    | Use_resource p -> infof "Spent %d flowers" p
-    | Set_client_player _ -> infof "Set client player..."
-    | Set_logic_player_list _ -> infof "Set logic player list..."
-    | Map _ -> infof "Map..."
-    | Building_changed b -> infof "Building changed B%d" b#get_id
-    | Config _ -> infof "Config"
+        info "P%d's U%d set played to %B" pid uid b
+    | Harvest_income -> info "Time to harvest income"
+    | Use_resource p -> info "Spent %d flowers" p
+    | Set_client_player _ -> info "Set client player..."
+    | Set_logic_player_list _ -> info "Set logic player list..."
+    | Map _ -> info "Map..."
+    | Building_changed b -> info "Building changed B%d" b#get_id
+    | Config _ -> info "Config"
 
   (* Tells if a position is foggy *)
   method private foggy p =
@@ -291,16 +291,12 @@ class handler data camera = object(self)
         then current_animation <- Nothing
         else self#frame_incr
     | Pause 0 -> current_animation <- Nothing
-    | Nothing ->
-        Mutex.unlock data#mutex;
-        Thread.yield ()
+    | Nothing -> ()
     | Pause i ->
         if frame_counter >= i then current_animation <- Nothing
         else self#frame_incr
 
   method update =
-    Mutex.unlock data#mutex;
-    Mutex.lock data#mutex;
     if current_animation = Nothing then self#read_update ;
     self#process_animation
 

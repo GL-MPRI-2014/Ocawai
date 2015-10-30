@@ -703,11 +703,11 @@ let units_spawn m playerslist legit_spawns buildings =
   | 0 -> raise UnitsSpawnFail
   | n ->
     begin
-      GenLog.infof "    attempt %d / %d : " (units_spawn_attempts - n +1) units_spawn_attempts;
+      GenLog.info "    attempt %d / %d : " (units_spawn_attempts - n +1) units_spawn_attempts;
       try
         let (army,buildings,spawns) = positioning m playerslist legit_spawns buildings in
         let attempt = (m,army,spawns) in
-        GenLog.infof "    armies spawned, checking... ";
+        GenLog.info "    armies spawned, checking... ";
         flush_all();
         check_movement attempt;
         check_superposed_units attempt;
@@ -715,23 +715,23 @@ let units_spawn m playerslist legit_spawns buildings =
         (army,buildings)
       with
       | BadSpawnsSequence ->
-          GenLog.infof "    Not enough spawns found";
+          GenLog.info "    Not enough spawns found";
           units_spawn_aux (n-1)
       | NotEnoughPlace ->
-          GenLog.infof "    Not enough space around spawn for army";
+          GenLog.info "    Not enough space around spawn for army";
           units_spawn_aux (n-1)
       | InvalidPositioning ->
-          GenLog.infof "    Unit placed on an area not coresponding to its movement modes";
+          GenLog.info "    Unit placed on an area not coresponding to its movement modes";
           units_spawn_aux (n-1)
       | UnitsSuperposition ->
-          GenLog.infof "    Units superposition";
+          GenLog.info "    Units superposition";
           units_spawn_aux (n-1)
       | NoPath ->
-          GenLog.infof "    No path between armies";
+          GenLog.info "    No path between armies";
           units_spawn_aux (n-1)
     end
   in
-  GenLog.infof "  Spawning armies ...";
+  GenLog.info "  Spawning armies ...";
   units_spawn_aux units_spawn_attempts
 
 (* iterated tries to create structures *)
@@ -741,21 +741,21 @@ let create_structures m =
   | 0 -> raise StructSpawnFail
   | n ->
     begin
-      GenLog.infof "    attempt %d / %d : " (structs_attempts - n +1) structs_attempts;
+      GenLog.info "    attempt %d / %d : " (structs_attempts - n +1) structs_attempts;
       try
         let buildings = create_structs m in
-        GenLog.infof "    structures spawn success";
+        GenLog.info "    structures spawn success";
         buildings
         (* place here any checks on structures positioning*)
       with
       | StructSpawnFail ->
           raise StructSpawnFail
       | NotEnoughPlace ->
-          GenLog.infof "    Not enough space for neutral buildings";
+          GenLog.info "    Not enough space for neutral buildings";
           create_structures_aux (n-1)
     end
   in
-  GenLog.infof "  Spawning structures ...";
+  GenLog.info "  Spawning structures ...";
   create_structures_aux structs_attempts
 
 (* iterated tries to generate the map *)
@@ -763,11 +763,11 @@ let generate playerslist =
   let generate_attempts = Config.config#settings_engine.generate_attempts in
   let rec generate_aux = function
   | 0 ->
-    GenLog.errorf "generator failed, not enough tries? bad calling arguments?";
+    GenLog.error "generator failed, not enough tries? bad calling arguments?";
     raise GeneratorFailure
   | n ->
     begin
-      GenLog.infof "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
+      GenLog.info "  attempt %d / %d : " (generate_attempts - n +1) generate_attempts;
       try
         let m = 
           match Config.config#settings_engine.generation_method with
@@ -779,23 +779,23 @@ let generate playerslist =
         let nb = create_structures m in
         let (a,b) = units_spawn m playerslist (init_positioning m (List.length playerslist)) nb in
         let attempt = (m,a,b) in
-        GenLog.infof "Generation success"(* place here any check on map generation*);
+        GenLog.info "Generation success"(* place here any check on map generation*);
         attempt
       with
       | StructSpawnFail ->
-          GenLog.infof "  structures spawn aborted";
+          GenLog.info "  structures spawn aborted";
           generate_aux (n-1)
       | NotEnoughSpawns ->
-          GenLog.infof "  Spawning armies ...";
-          GenLog.infof "    not enough valid spawns";
-          GenLog.infof "  armies spawn aborted";
+          GenLog.info "  Spawning armies ...";
+          GenLog.info "    not enough valid spawns";
+          GenLog.info "  armies spawn aborted";
           generate_aux (n-1)
       | UnitsSpawnFail ->
-          GenLog.infof "  armies spawn aborted";
+          GenLog.info "  armies spawn aborted";
           generate_aux (n-1)
     end
   in
-  GenLog.infof "Generating Battlefield ...";
+  GenLog.info "Generating Battlefield ...";
   generate_aux generate_attempts
 
 

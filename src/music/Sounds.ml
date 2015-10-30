@@ -18,9 +18,9 @@ let load_sound_file file_name =
         let buf = new sound_buffer (`File(file)) in
         let sound = new sound ~buffer:buf ~volume:(!volume) () in
         Hashtbl.replace sound_bank name sound;
-        SoundsLog.infof "[stored] %s" name;
+        SoundsLog.info "[stored] %s" name;
     | _ ->
-        SoundsLog.errorf "%s is not a wav file." file_name;
+        SoundsLog.error "%s is not a wav file." file_name;
         raise (Not_a_valid_sound_file (file_name ^ " (only WAV are supported)"))
 
 let load_sounds () =
@@ -34,7 +34,7 @@ let play_sound sound =
       player#play
     with
       | Not_found ->
-        SoundsLog.errorf "Couldn't retreive sound %s" sound;
+        SoundsLog.error "Couldn't retreive sound %s" sound;
         raise (Unknown_sound sound)
 
 let set_volume f =

@@ -27,23 +27,23 @@ object (self)
   (* asks for the next action over the network
      does not handle timeout yet *)
 
-  method get_next_action mutex = 
-    Log.infof "send \"get_next_action\"" ;
+  method get_next_action = 
+    Log.info "send \"get_next_action\"" ;
     let success = Send_recv.send sockfd Types.get_next_action_code "" Types.clock in
     
     if not success then
       failwith "send \"get_next_action\" failure in netPlayer !"
     else
       begin
-	Log.infof "recv";
+	Log.info "recv";
 	let receipt  = Send_recv.recv sockfd Types.clock in 
 
 	match receipt with
 	  | Some(code, str) when code = Types.next_action_code -> 
-	    Log.infof "-> \"next_action\"";
+	    Log.info "-> \"next_action\"";
 	    Action.from_string str
 	  | None ->
-	    Log.infof "-> None";
+	    Log.info "-> None";
 	    failwith "kill the player in netPlayer !"
             (* [Position.create (0,0)], Action.Wait *)
 	  | _ ->
@@ -67,7 +67,7 @@ object (self)
   (* send updates over the network *)
 
   method update u =
-    Log.infof "send  \"update\"";
+    Log.info "send  \"update\"";
     
     let success = Send_recv.send sockfd Types.update_code (Types.to_string u) Types.clock in
 

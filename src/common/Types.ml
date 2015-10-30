@@ -99,19 +99,42 @@ let from_string (str : string) =
 
 	      | "Harvest_income" -> Harvest_income
 
-	      | "Set_army" -> begin
-			      match q with
-			      | army_str::id_str::_ -> let unit_str_lst = disassemble str sep2 in
-						       Set_army (List.map Config.config#unit_of_string unit_str_lst, int_of_string id_str)
-			      | _ -> failwith "Error in protocol"
-			    end
+	      | "Set_army" ->
+                  begin match q with
+                    | [units_str;id_str] ->
+                        let unit_str_lst = disassemble units_str sep2 in
+                        let unit_str_lst =
+                          (* TODO this should probably be handled
+                           * directly in disassemble *)
+                          if unit_str_lst = [""] then [] else unit_str_lst
+                        in
+                          Set_army
+                            (List.map
+                               Config.config#unit_of_string
+                               unit_str_lst,
+                             int_of_string id_str)
+                    | _ -> failwith "Error in protocol"
+                  end
 
-	      | "Set_building" -> begin
-				  match q with
-				  | buildings_str::id_str::_ -> let building_str_lst = disassemble str sep2 in
-								Set_building (List.map Config.config#building_of_string building_str_lst, int_of_string id_str)
-				  | _ -> failwith "Error in protocol"
-				end
+	      | "Set_building" ->
+                  begin match q with
+                    | [buildings_str;id_str] ->
+                        let building_str_lst =
+                          disassemble buildings_str sep2
+                        in
+                        let building_str_lst =
+                          (* TODO this should probably be handled
+                           * directly in disassemble *)
+                          if building_str_lst = [""] then [] else
+                            building_str_lst
+                        in
+                          Set_building
+                            (List.map
+                               Config.config#building_of_string
+                               building_str_lst,
+                             int_of_string id_str)
+                    | _ -> failwith "Error in protocol"
+                  end
 
 	      | "Add_unit" -> begin
 			      match q with

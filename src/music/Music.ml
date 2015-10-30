@@ -170,18 +170,17 @@ let frequency_of_string s =
 let frequency_of_pitch p =
   frequency_of_string @@ pitch_to_string p
 
-let toMidi : ?samplerate:int -> ?division:MIDI.division ->
-	     ?tempo:Time.Tempo.t -> event -> MIDI.buffer
-  = fun ?samplerate:(samplerate = MidiV.samplerate) ?division:(division = MidiV.division)
-	?tempo:(tempo = Time.Tempo.base)
+let toMidi : ?channels:int -> ?samplerate:int -> ?division:MIDI.division ->
+	     ?tempo:Time.Tempo.t -> ?context:Modify.Context.t ->
+	     event -> MIDI.Multitrack.buffer
+  = fun ?channels:(channels = MidiV.channels) ?samplerate:(samplerate = MidiV.samplerate)
+	?division:(division = MidiV.division) ?tempo:(tempo = Time.Tempo.base)
+	?context:(context = Modify.Context.empty ())
   -> function  
-  | Rest(duration) -> MIDI.create(MidiV.timeToSamplesNumber ~samplerate ~division
-							    ~tempo ~duration)
+  | Rest(duration) -> MIDI.Multitrack.create channels @@
+			(MidiV.timeToSamplesNumber ~samplerate ~division
+						   ~tempo ~duration)
   | Note(duration, param) ->
-     (*
-        Time.fprintf Format.std_formatter duration;
-        print_newline ();
-      *)
      let midi_duration = MidiV.timeToSamplesNumber ~samplerate ~division
 						   ~tempo ~duration
      in
@@ -191,13 +190,13 @@ let toMidi : ?samplerate:int -> ?division:MIDI.division ->
                                  and flat notes *)
      and velocity = MidiV.velocityFromInt (param#velocity)
      in
-     (*
-        print_int midi_duration;
-        print_newline ();
-      *)     
      MIDI.insert buffer (0, MIDI.Note_on(note, velocity));
      MIDI.insert buffer (midi_duration-1, MIDI.Note_off(note, velocity));
-     buffer
+     let multitrack = MIDI.Multitrack.create channels midi_duration in
+     let channel_number = Instrument.to_channel @@
+			    Modify.Context.getInstrument context in
+     multitrack.(channel_number) <- buffer;
+     multitrack
 
 let measure_event : event -> Num.num =
   let open Num in

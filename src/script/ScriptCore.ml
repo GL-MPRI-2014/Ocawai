@@ -343,7 +343,7 @@ let scr_range =
     | _ -> assert false
   )
 
-let scr_life = 
+let scr_life =
   `Fun(function
     |`Soldier(u) -> `Int(u#hp)
     | _ -> assert false
@@ -357,7 +357,7 @@ let scr_expected_damage =
         | Unit.Light -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_light)/100
         | Unit.Normal -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_normal)/100
         | Unit.Heavy -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_heavy)/100
-	| Unit.Flying -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_flying)/100 
+	| Unit.Flying -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_flying)/100
         | Unit.Boat -> (9*(u#hp)*a/(10*(u#life_max))+a/10)*(u#percentage_boat)/100)
       | _ -> assert false
       in `Int(b)
@@ -376,28 +376,28 @@ let scr_endturn =
     | _ -> assert false
   )
 
-let scr_validunit = 
+let scr_validunit =
   `Fun(function
     |`String(s) -> `Bool (List.exists (fun u -> u#name = s) Config.config#unbound_units_list)
     | _ -> assert false
   )
 
-let scr_producible_units = 
+let scr_producible_units =
   `Fun(function
-    |`Building(b) -> 
+    |`Building(b) ->
         b#product
         |> List.map (fun u -> `String u)
         |> fun l -> `List l
     | _ -> assert false
   )
 
-let scr_funds = 
+let scr_funds =
   `Fun(function
     |`Player(p) -> `Int p#get_value_resource
     | _ -> assert false
   )
 
-let scr_cost = 
+let scr_cost =
   `Fun(function
     |`String(s) -> `Int (Config.config#unbound_unit s)#price
     | _ -> assert false
@@ -416,27 +416,36 @@ let scr_assoc_create =
     `Fun(fun value ->
       l := ValueMap.add key value !l;
       `Unit
-    )) in
+    ))
+  in
   let getter l =
-    `Fun(function
-      |`Fun bound ->
+    `Fun (fun key -> ValueMap.find key !l)
+  in
+  `Fun(function
+    | `Unit ->
+        let l = ref ValueMap.empty in
+        `Pair(setter l, getter l)
+    | _ -> assert false
+  )
+
+let scr_assoc_get =
+  `Fun(function
+    | `Pair (_, `Fun get) ->
         `Fun (function
-          |`Fun unbound ->
-            `Fun(fun key ->
-              try
-                let b = ValueMap.find key !l in
-                bound b
-              with
-                Not_found -> unbound `Unit
-            )
+          | `Fun bound ->
+              `Fun (function
+                | `Fun unbound ->
+                    `Fun (fun key ->
+                      try
+                        let b = get key in
+                        bound b
+                      with
+                        Not_found -> unbound `Unit
+                    )
+                | _ -> assert false
+              )
           | _ -> assert false
         )
-      | _ -> assert false
-    ) in
-  `Fun(function
-    |`Unit ->
-      let l = ref ValueMap.empty in
-      `Pair(setter l, getter l)
     | _ -> assert false
   )
 
@@ -505,15 +514,14 @@ let init () =
   expose scr_donothing (`Fun_t(`Unit_t, a0)) "do_nothing";
   (* Functions on associative lists *)
   let setter_t = `Fun_t(a0, `Fun_t(a1, `Unit_t)) in
-  let getter_t = `Fun_t(`Fun_t(a1,a2), `Fun_t(`Fun_t(`Unit_t,a2), `Fun_t(a0, a2))) in
-  let assoc_t a b = `Pair_t(setter_t, getter_t) in
-  expose scr_assoc_create (`Fun_t(`Unit_t, assoc_t a0 a1)) "assoc_create";
-  expose scr_fst (`Fun_t(assoc_t a0 a1, setter_t)) "assoc_set";
-  expose scr_snd (`Fun_t(assoc_t a0 a1, getter_t)) "assoc_get";
+  let getter_t = `Fun_t (a0, a1) in
+  let assoc_get_t = `Fun_t(`Fun_t(a1,a2), `Fun_t(`Fun_t(`Unit_t,a2), `Fun_t(a0, a2))) in
+  let assoc_t = `Pair_t(setter_t, getter_t) in
+  expose scr_assoc_create (`Fun_t(`Unit_t, assoc_t)) "assoc_create";
+  expose scr_fst (`Fun_t(assoc_t, setter_t)) "assoc_set";
+  expose scr_assoc_get (`Fun_t(assoc_t, assoc_get_t)) "assoc_get";
   expose scr_validunit (`Fun_t(`String_t, `Bool_t)) "is_valid_unit";
   expose scr_producible_units (`Fun_t(`Building_t, `List_t(`Soldier_t))) "producible_units";
   expose scr_funds (`Fun_t(`Player_t,`Int_t)) "funds_of";
   expose scr_cost (`Fun_t(`String_t,`Soldier_t)) "price_of";
   expose scr_life (`Fun_t(`Soldier_t,`Int_t)) "life_of"
-
-

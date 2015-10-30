@@ -24,8 +24,6 @@ class client_data : object
 
   (** Accessors & functions *)
 
-  method mutex : Mutex.t
-
   method map : Battlefield.t
 
   method minimap : Minimap.minimap

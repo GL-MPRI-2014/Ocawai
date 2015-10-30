@@ -14,6 +14,11 @@ val samplerate : int
 val division : MIDI.division
 
 (**
+   Default number of channels to use
+ *)
+val channels : int
+
+(**
    Convert a 7 bit integer between 0 and 127 to a float
 *)
 val velocityFromInt : int -> float

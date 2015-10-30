@@ -11,7 +11,7 @@ class client_player ?(id) add_update get_next_action =
 
   val mutable logicPlayerList = []
 
-  method get_next_action m = get_next_action m
+  method get_next_action = get_next_action ()
 
   method update (u:Types.update) = add_update u
 

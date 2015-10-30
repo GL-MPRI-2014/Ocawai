@@ -36,11 +36,11 @@ module ScriptLoadingLog = Log.Make (struct let section = "Script" end)
 let value_table = Hashtbl.create 13
 
 let expose f t s =
-  ScriptLoadingLog.infof "[exposed] %s" s;
+  ScriptLoadingLog.info "[exposed] %s" s;
   Hashtbl.replace value_table s (f,t)
 
 let hide s =
-  ScriptLoadingLog.infof "[hide] %s" s;
+  ScriptLoadingLog.info "[hide] %s" s;
   Hashtbl.remove value_table s
 
 let type_of s =

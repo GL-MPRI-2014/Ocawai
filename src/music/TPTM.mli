@@ -35,6 +35,11 @@ val make : Music.event -> t
 *)
 val make_withDelay : Music.event -> t
 
+(**
+   Modifies the input [t] and adds the input modifier for the rendering
+ *)
+val modify : Modify.t -> t -> t
+
 (** {2 Tile operators} *)
 
 (**
@@ -105,7 +110,7 @@ val extract_by_time : Time.t -> t -> t * t
 (**
    [TPTM.t] to [MIDI.Multitrack.buffer] conversion
  *)
-val to_MIDI_buffer : ?samplerate:int -> ?division:MIDI.division ->
+val to_MIDI_buffer : ?channels:int -> ?samplerate:int -> ?division:MIDI.division ->
 		     ?tempo:Time.Tempo.t -> t -> MIDI.Multitrack.buffer
 
 (**

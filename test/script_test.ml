@@ -2,28 +2,69 @@ open OUnit2
 open Lexing
 open Checker
 
-(* check assoc *)
-let test_assoc test_ctxt =
-  ScriptCore.init ();
-  let f = "test/script_test_assoc.script" in
-  let input = open_in f in
+(* Testing environment *)
+let test ?(typefail=false) file f =
+  ScriptCore.init () ;
+  let input = open_in file in
   let lexbuf = from_channel input in
-  lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = f};
+  lexbuf.lex_curr_p <- {lexbuf.lex_curr_p with pos_fname = file} ;
   try
     let script = Parser.file Lexer.token lexbuf in
     close_in input;
     type_check script [];
     let script = Interpreter.new_script script [] in
-    assert_equal (Interpreter.call_f script "test_assoc") (`Bool(true))
+    f script
   with
-    |Lexer.Script_SyntaxError _ ->
-        assert_failure "lexing error"
-    |Parser.Error ->
-        assert_failure "parsing error"
+  | Lexer.Script_SyntaxError _ ->
+      assert_failure "lexing error"
+  | Parser.Error ->
+      assert_failure "parsing error"
+  | Type_checking_failure ->
+      if typefail then assert_equal true true
+      else assert_failure "type checking error"
+
+(* check assoc *)
+let test_assoc test_ctxt =
+  test "test/script_test_assoc.script" (fun script ->
+    assert_equal (Interpreter.call_f script "test_assoc") (`Bool true)
+  )
+
+(* Test the typing of values *)
+let value_types _ =
+  test "test/typechecker.script" (fun s ->
+    assert_equal true true
+  )
+
+(* unit -> unit *)
+let unit_unit _ =
+  test "test/unit_unit.script" (fun s ->
+    assert_equal true true
+  )
+
+(* First test of occurs check *)
+let occurs_check1 _ =
+  test ~typefail:true "test/occurs_check1.script" (fun s ->
+    assert_failure "shouldn't type"
+  )
+
+(* Test occurs check *)
+let occurs_check _ =
+  test ~typefail:true "test/occurs_check.script" (fun s ->
+    assert_failure "shouldn't type"
+  )
 
 let suite_script =
-  "script test">:::
-  ["check assoc">:: test_assoc]
+  test_list [
+    "script test" >::: [
+      "check assoc"  >:: test_assoc
+    ] ;
+    "type checker" >::: [
+      "unit -> unit"   >:: unit_unit ;
+      "value types"    >:: value_types ;
+      "occurs check 1" >:: occurs_check1 ;
+      "occurs check"   >:: occurs_check
+    ]
+  ]
 
 let () =
   run_test_tt_main suite_script

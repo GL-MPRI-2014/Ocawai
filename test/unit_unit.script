@@ -1,0 +1,9 @@
+fun ignore () = {}
+
+ignore () ;
+
+fun wrong f x = {
+  f x ; ()
+}
+
+wrong ignore () ;

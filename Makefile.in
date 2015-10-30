@@ -86,7 +86,7 @@ output_gprof = profile
 
 menhir_command = -use-menhir -yaccflag --explain
 
-command = ocamlbuild -use-ocamlfind -cflags $(cflags) 
+command = ocamlbuild -use-ocamlfind -cflags $(cflags)
 
 interface_command =	$(command) $(menhir_command) -Is $(interface_src) -package $(interface_dependencies) $(output_interface) -tag $(interface_tags)
 
@@ -227,6 +227,10 @@ $(distdir): FORCE
 	cp $(test_dir)/*.ml $(distdir)/$(test_dir)
 # Used by script_test.ml
 	cp $(test_dir)/script_test_assoc.script $(distdir)/$(test_dir)
+	cp $(test_dir)/typechecker.script $(distdir)/$(test_dir)
+	cp $(test_dir)/occurs_check.script $(distdir)/$(test_dir)
+	cp $(test_dir)/occurs_check1.script $(distdir)/$(test_dir)
+	cp $(test_dir)/unit_unit.script $(distdir)/$(test_dir)
 	cp -R $(resources_dir)/* $(distdir)/$(resources_dir)
 
 #check that distdir create a correct archive
