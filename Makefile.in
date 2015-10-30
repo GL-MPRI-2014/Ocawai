@@ -169,17 +169,17 @@ profile: $(files_atd_ml) log
 install:
 	install -d "$(DESTDIR)$(bindir)"
 	-install -m 0755 $(output_interface) "$(DESTDIR)$(bindir)/ocawai"
-	-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
-	-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
+	#-install -m 0755 $(output_engine) "$(DESTDIR)$(bindir)"
+	#-install -m 0755 $(output_network) "$(DESTDIR)$(bindir)"
 	mkdir -p $(DESTDIR)$(resourcesdir)/ocawai/
 	cp -R ./resources/* $(DESTDIR)$(resourcesdir)/ocawai/
 	chmod 777 -R $(DESTDIR)$(resourcesdir)/ocawai/
 
 uninstall:
 	-rm $(DESTDIR)$(bindir)/ocawai
-	-rm $(DESTDIR)$(bindir)/$(output_engine)
-	-rm $(DESTDIR)$(bindir)/$(output_network)
-	-rm $(DESTDIR)$(bindir)/$(output_script)
+	#-rm $(DESTDIR)$(bindir)/$(output_engine)
+	#-rm $(DESTDIR)$(bindir)/$(output_network)
+	#-rm $(DESTDIR)$(bindir)/$(output_script)
 	-rm -Rf -- $(DESTDIR)$(resourcesdir)/ocawai
 
 

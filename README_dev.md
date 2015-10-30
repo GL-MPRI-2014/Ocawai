@@ -3,21 +3,15 @@ OCAWAI
 
 Projet de Génie Logiciel du MPRI, année 2014-2015
 
-[![Is it building ? Click here for more details.](https://travis-ci.org/GL-MPRI-2014/Ocawai.svg?branch=master)](https://travis-ci.org/GL-MPRI-2014/Ocawai/builds)
-
-
-#Installer OCAWAI
-
-Vous trouverez tous les détails d'installation dans le fichier `INSTALL.md`
-
-#Lancer OCAWAI
-
-Il suffit de lancer la commande `ocawai`.
-
+[![Is it building ? Click here for more details.](https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014.svg?branch=master)](https://travis-ci.org/GL-MPRI-2014/GL_MPRI_2014/builds)
 
 # Utiliser OCAWAI
 
-La navigation dans les menus se fait avec les *flèches* et la validation avec la touche *entrée*
+*Il s'agit bien sûr d'une version de démo et tout sera potentiellement jeté
+en ce qui concerne le fonctionnement*
+
+Depuis le menu principal, il suffit d'appuyer sur **entrée** après avoir
+sélectionné **game on!** pour lancer le jeu.
 
 ## Commandes
 
@@ -35,38 +29,8 @@ La navigation dans les menus se fait avec les *flèches* et la validation avec l
 * **S** : Baisser la vitesse des animations
 * **D** : Augmenter la vitesse des animations
 
+
 # Compilation
-
-Le projet étant en *Ocaml* il vous faudra un compilateur *Ocaml* avec une version supérieur à `4.02`. De plus, il vous faudra une version de la *SFML* >= 2.0.
-
-Le support pour le système d'exploitation *Windows* n'est pas assuré.
-
-##Dépendances du projet
-
-Pour installer les bibliothèque externes, utiliser *opam* peut s'avérer être plus facile.
-
-Il vous suffira alors d'entrer la commande
-
-```bash
-opam install ocamlfind ocsfml atdgen dolog mm pulseaudio oUnit
-```
-
-pour installer les dépendances du projet.
-
-###Bibliothèques externes (Ocaml) :
-
-- `ocamlfind`
-- `ocsfml`
-- `atdgen`
-- `dolog`
-- `mm`
-- `num`
-- `threads`
-- `pulseaudio`
-- `oUnit`
-
-
-##Compilation
 
 Si c'est la première fois que vous générer le projet, lancer la
 commande `aclocal -I m4`.
@@ -97,5 +61,5 @@ dans son `.bashrc` ou `.bash_profile`).
 
 # Documentation
 
-La documentation est générée en utilisant `make doc`.
-La documentation est accessible depuis le lien symbolique `documentation.html` dans le répertoire où vous avez compilé le projet.
+La documentation est accessible depuis le lien symbolique `documentation.html`
+qui est créé après `make doc`.
