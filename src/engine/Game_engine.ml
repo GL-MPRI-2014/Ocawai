@@ -164,7 +164,7 @@ class game_engine () = object (self)
     )
 
   method run : unit =
-    Log.infof "One step (%d)..." self#actual_player ;
+    Log.info "One step (%d)..." self#actual_player ;
     let player = players.(self#actual_player) in
 
     let next_wanted_action = player#get_next_action in

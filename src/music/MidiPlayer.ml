@@ -58,7 +58,7 @@ class asynchronousMidiPlayer =
                         "Music of the OCAWAI game"
                         channels
                         sample_rate in
-      let () = MusicLog.infof "Started playing music, created pulseaudio output" in
+      let () = MusicLog.info "Started playing music, created pulseaudio output" in
       while (!should_run) do
         let agc = Audio.Effect.auto_gain_control channels sample_rate ~volume_init:((float_of_int !volume) /. 100.) () in
         self#multi_blit (!main_buffer) (!current_playing) mbuf 0 blen;
@@ -68,10 +68,10 @@ class asynchronousMidiPlayer =
         pulse#write buf 0 blen
       done;
       pulse#close;
-      MusicLog.infof "Closed pulseaudio output"
+      MusicLog.info "Closed pulseaudio output"
 
     method stop () =
-      MusicLog.infof "Stopping Music playback";
+      MusicLog.info "Stopping Music playback";
       should_run := false
 
     method add new_buffer = 

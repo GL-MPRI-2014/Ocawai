@@ -17,7 +17,7 @@ let load_tileset lib path =
     let tex = new texture (`File path) in
     let cfg = (String.sub path 0 i) ^ ".cfg" in
     let set = new Tileset.tileset tex cfg in
-    TilesetLoadingLog.infof "[stored] %s" name;
+    TilesetLoadingLog.info "[stored] %s" name;
     Hashtbl.add lib name set
   end
 
@@ -40,5 +40,5 @@ let get_tileset lib name =
     Hashtbl.find lib name 
   with 
     |Not_found ->
-      TilesetLoadingLog.errorf "Couldn't retreive texture %s" name;
+      TilesetLoadingLog.error "Couldn't retreive texture %s" name;
       raise (Unknown_tileset name)

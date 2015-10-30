@@ -85,7 +85,7 @@ object (self)
   method manage_gna =
     let clip = self#is_set in
     let action = clip#get_next_action in
-    Log.infof "send \"next_action\"" ;
+    Log.info "send \"next_action\"" ;
     let success  = Send_recv.send sockfd Types.next_action_code (Action.to_string action) Types.clock in
     
     if not success then
@@ -122,18 +122,18 @@ object (self)
   method run = 
     while true 
     do 
-      Log.infof "recv" ;
+      Log.info "recv" ;
       let receipt  = Send_recv.recv sockfd Types.clock in
 
       match receipt with
 	| Some (code, _) when code = Types.get_next_action_code ->
-	  Log.infof "-> \"get_next_action\"";
+	  Log.info "-> \"get_next_action\"";
 	  self#manage_gna 
 	| Some(code, update) when code = Types.update_code ->
-	  Log.infof "-> \"update\"";
+	  Log.info "-> \"update\"";
 	  self#manage_update (Types.from_string update)
-	| None -> Log.infof "-> None"
-	| Some (n,_) -> Log.infof "-> code : %d" n
+	| None -> Log.info "-> None"
+	| Some (n,_) -> Log.info "-> code : %d" n
     done
 end
 

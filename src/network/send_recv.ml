@@ -65,9 +65,9 @@ let send sock magic string timeout =
   let length_string =  int2string (String.length string) 4 in
   let data = String.concat "" [magic_string;length_string;string] in
 
-  Log.infof "SEND";
-  Log.infof "\tMAGIC : %d (with intention %d)" (int_of_char data.[0]) magic;
-  Log.infof "\tLENGTH : %d (with intention %d)" (string2int (String.sub data 1 4) 4)  (String.length string);
+  Log.info "SEND";
+  Log.info "\tMAGIC : %d (with intention %d)" (int_of_char data.[0]) magic;
+  Log.info "\tLENGTH : %d (with intention %d)" (string2int (String.sub data 1 4) 4)  (String.length string);
 
   send_string sock data break_time
 
@@ -109,7 +109,7 @@ let recv_string sock length break_time =
 	    
     with
       | Unix.Unix_error (_, _, _) ->
-        Log.infof "Client disconnected!";
+        Log.info "Client disconnected!";
 	None
   in
 
@@ -154,9 +154,9 @@ let combine_results sock break_time magic_string data =
 let recv_data sock break_time magic_string length_string =
   let length = string2int length_string 4 in
 
-  Log.infof "RECV";
-  Log.infof "\tMAGIC : %d" (int_of_char magic_string.[0]);
-  Log.infof "\tLENGTH : %d" length;
+  Log.info "RECV";
+  Log.info "\tMAGIC : %d" (int_of_char magic_string.[0]);
+  Log.info "\tLENGTH : %d" length;
 
   let data = recv_string sock length break_time in
   data |>> (combine_results sock break_time magic_string)

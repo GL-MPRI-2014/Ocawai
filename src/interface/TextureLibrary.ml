@@ -16,7 +16,7 @@ let load_texture lib path =
   if ext = "png" then begin 
     let tex = new texture (`File path) in
     tex#set_smooth true;
-    TextureLoadingLog.infof "[stored] %s" name;
+    TextureLoadingLog.info "[stored] %s" name;
     Hashtbl.add lib name tex
   end
 
@@ -39,6 +39,6 @@ let get_texture lib name =
     Hashtbl.find lib name 
   with 
     |Not_found ->
-      TextureLoadingLog.errorf "Couldn't retreive texture %s" name;
+      TextureLoadingLog.error "Couldn't retreive texture %s" name;
       raise (Unknown_texture name)
 
